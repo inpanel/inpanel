@@ -11,6 +11,7 @@
 			<li ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none"><a href="#nginx" ng-click="sec('nginx')" data-toggle="tab">Nginx 网站列表</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none"><a href="#apache" ng-click="sec('apache')" data-toggle="tab">Apache 网站列表</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='package'"><a href="#package" ng-click="sec('package')" data-toggle="tab">快速安装网站系统</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='subDomain'" ng-show="false"><a href="#subDomain" ng-click="sec('subDomain')" data-toggle="tab">快速创建子站点</a></li>
 		</ul>
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none" id="nginx">
@@ -118,9 +119,66 @@
 					</tbody>
 				</table>
 			</div>
+	<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='subDomain'" id="subDomain">
+		<div class="form-horizontal form-horizontal-small">
+			<div class="widget-header">
+				<i class="icon-cog"></i>
+				<h3>创建子站点</h3>
+			</div>
+			<div class="widget-content">
+				<table class="table table-button">
+				<tbody>
+				<tr class="ng-scope">
+					<th class="td-borderless" style="width:80px">
+						<span>站点域名</span>
+					</th>
+					<td class="td-borderless" colspan="2">
+						<input ng-model="site.domain" type="text" class="input-large ng-pristine ng-valid" placeholder="请输入域名">
+					</td>
+				</tr>
+				<tr class="ng-scope">
+					<th class="td-borderless" style="width:80px">
+						<span>FTP 信息</span>
+					</th>
+					<td class="td-borderless" colspan="2">
+						<div class="tab-content">
+							<div class="control-group control-group-mini">
+								<label class="control-label">用户名</label>
+								<div class="controls">
+									<input ng-model="server_name.ftp_user" type="text" class="input-large ng-pristine ng-valid" placeholder="请输入FTP用户名">
+								</div>
+							</div>
+							<div class="control-group control-group-mini">
+								<label class="control-label">密码</label>
+								<div class="controls">
+									<input ng-model="server_name.ftp_user" type="text" class="input-large ng-pristine ng-valid" placeholder="请输入FTP密码">
+								</div>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<tr class="ng-scope">
+					<th class="td-borderless" style="width:80px">
+						<span>SVN</span>
+					</th>
+					<td class="td-borderless" colspan="2">
+						<input ng-model="server_name.name" type="text" class="input-large ng-pristine ng-valid" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
+					</td>
+				</tr>
+				<tr class="ng-scope">
+					<th class="td-borderless" style="width:80px">
+						<span>数据库</span>
+					</th>
+					<td class="td-borderless" colspan="2">
+						<input ng-model="server_name.name" type="text" class="input-large ng-pristine ng-valid" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
+					</td>
+				</tr>
+				</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
-
+		</div>
 	<div ng-show="!has_httpserver" value="install" style="display:none">
 		<div class="well" style="width:400px">
 			<p>系统检测到您还未安装 HTTP 服务器。</p>

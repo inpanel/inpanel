@@ -15,6 +15,7 @@ config(['$routeProvider', function($routeProvider) {
 		when('/service/apache', _r('service/apache', ServiceApacheCtrl)).
 		when('/service/vsftpd', _r('service/vsftpd', ServiceVsftpdCtrl)).
 		when('/service/mysql', _r('service/mysql', ServiceMySQLCtrl)).
+		when('/service/MariaDB', _r('service/mysql', ServiceMySQLCtrl)).
 		when('/service/redis', _r('service/redis', ServiceRedisCtrl)).
 		when('/service/memcache', _r('service/memcache', ServiceMemcacheCtrl)).
 		when('/service/mongodb', _r('service/mongodb', ServiceMongoDBCtrl)).
