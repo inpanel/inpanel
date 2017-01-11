@@ -1,0 +1,9 @@
+<div navbar ng-init="currentItem='logout'"></div>
+<div ng-show="!loaded"><div loading ng-init="loadingText='正在退出登录......'"></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>您已退出登录！</h3>
+		<p>3 秒后将自动跳转到登录页面。</p>
+	</div>
+</div>

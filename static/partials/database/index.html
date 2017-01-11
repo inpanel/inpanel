@@ -1,0 +1,130 @@
+<div navbar ng-init="currentItem='database'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>数据库管理</h3>
+	</div>
+	
+	<div class="tabbable" ng-init="load()" ng-show="has_dbserver">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none"><a href="#mysql" ng-click="sec('mysql')" data-toggle="tab">MySQL 数据库管理</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none" id="mysql">
+				<div class="well" style="width:350px" ng-show="!$mysql.password_validated">
+					<form onsubmit="return false" method="get" action="/">
+						<div class="control-group" style="margin-bottom:10px;">
+							<label class="control-label" for="password">
+								请输入数据库管理员 root 的密码后继续操作：
+							</label>
+							<input class="input" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" autofocus><br>
+							<button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">登录 MySQL</button>
+							<a href="#/service/mysql?s=password" class="btn">忘记密码？</a>
+						</div>
+					</form>
+				</div>
+
+				<div class="well" style="width:350px" ng-show="$mysql.password_validated && dbloading">
+					<img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库列表，请稍候...
+				</div>
+
+				<div class="widget widget-table" ng-show="$mysql.password_validated && !dbloading">
+					<div class="widget-header">
+						<i class="icon-list-alt"></i><h3>数据库列表</h3>
+						<div class="pull-right" style="margin-right:10px">
+							<a class="btn btn-small" href="#/database/mysql/db/new"><i class="icon-plus"></i> 新建数据库</a>
+						</div>
+					</div>
+					<div class="widget-content">
+						<table class="table table-striped table-hover table-bordered">
+							<thead>
+								<tr>
+									<th style="width:20px" class="td-right">#</th>
+									<th>数据库名</th>
+									<th>字符集</th>
+									<th>整理</th>
+									<th class="td-right">表数量</th>
+									<th class="td-right">数据大小</th>
+									<th class="td-right">索引大小</th>
+									<th class="td-right">总大小</th>
+									<th style="width:100px">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="db in dbs">
+									<td class="td-right">{{$index+1}}</td>
+									<td>{{db.name}}</td>
+									<td>{{db.charset}}</td>
+									<td>{{db.collation}}</td>
+									<td class="td-right">{{db.tables}}</td>
+									<td class="td-right" ng-bind-html-unsafe="db.datasize | bytes2human"></td>
+									<td class="td-right" ng-bind-html-unsafe="db.indexsize | bytes2human"></td>
+									<td class="td-right" ng-bind-html-unsafe="db.totalsize | bytes2human"></td>
+									<td>
+										<div class="btn-group">
+											<a class="btn btn-small" href="#/database/mysql/db/edit/{{db.name|urlencode|urlencode}}">
+												<i class="icon-wrench"></i> 数据库管理
+											</a>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="well" style="width:350px" ng-show="$mysql.password_validated && userloading">
+					<img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
+				</div>
+
+				<div class="widget widget-table" ng-show="$mysql.password_validated && !userloading">
+					<div class="widget-header">
+						<i class="icon-list-alt"></i><h3>用户列表</h3>
+						<div class="pull-right" style="margin-right:10px">
+							<a class="btn btn-small" href="#/database/mysql/user/new"><i class="icon-plus"></i> 添加新用户</a>
+						</div>
+					</div>
+					<div class="widget-content">
+						<table class="table table-striped table-hover table-bordered">
+							<thead>
+								<tr>
+									<th style="width:20px" class="td-right">#</th>
+									<th>用户名</th>
+									<th>主机</th>
+									<th>密码</th>
+									<th>全局权限</th>
+									<th>授权权限</th>
+									<th style="width:90px">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="user in users">
+									<td class="td-right">{{$index+1}}</td>
+									<td ng-bind-html-unsafe="user.User | mysql.user"></td>
+									<td>{{user.Host}}</td>
+									<td ng-bind-html-unsafe="user.Password | mysql.haspasswd"></td>
+									<td ng-bind-html-unsafe="user | mysql.privs:'global'"></td>
+									<td ng-bind-html-unsafe="user.Grant_priv | mysql.grant"></td>
+									<td>
+										<a class="btn btn-small" href="#/database/mysql/user/edit/{{user.User|urlencode|urlencode}}%40{{user.Host|urlencode|urlencode}}" ng-show="user.User!=''">
+											<i class="icon-wrench"></i> 用户设置
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div ng-show="!has_dbserver" value="install" style="display:none">
+		<div class="well" style="width:400px">
+			<p>系统检测到您还未安装数据库服务器。</p>
+			<p>请先安装 MySQL 数据库服务后继续操作。</p>
+			<p style="padding-top:10px"><a class="btn" href="#/service?s=database">立即安装</a></p>
+		</div>
+	</div>
+</div>

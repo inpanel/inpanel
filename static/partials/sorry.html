@@ -1,0 +1,15 @@
+<div class="navbar" ng-init="$parent.navbar_loaded=true">
+	<div class="navbar-inner">
+		<a class="brand" href="/">VPSMate</a>
+	</div>
+</div>
+
+<div id="main" ng-show="!Auth.processing" style="display:none">
+	<div class="module-header">
+		<h3>您输入的页面不存在！</h3>
+	</div>
+	<div class="well" style="width:350px;padding-bottom:10px">
+		<p>请检查您是否输入了正确的地址！</p>
+		<p style="margin-top:20px"><button class="btn btn-small" onclick="history.back()">返回上一页</button></p>
+	</div>
+</div>

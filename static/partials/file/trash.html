@@ -1,0 +1,70 @@
+<div navbar ng-init="currentItem='file'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>回收站管理</h3>
+	</div>
+	
+	<div ng-init="tlist()">
+		<div style="height:50px;">
+			<div class="pull-left">
+				<a class="btn" href="#/file"><i class="icon-chevron-left"></i> 返回文件管理</a>
+			</div>
+			<div class="pull-right" ng-show="items.length>0">
+				<button class="btn" ng-click="tcleanconfirm()"><i class="icon-trash"></i> 清空回收站</button>
+			</div>
+		</div>
+
+		<div style="margin:30px 10px" ng-show="fileloading">
+			<img src="images/loading.gif" style="margin-right:5px"> 正在加载文件列表，请稍候...
+		</div>
+		
+		<div class="well" style="display:none;width:350px" ng-show="!fileloading&&items.length==0">
+			当前回收站是空的 :P
+		</div>
+
+		<div ng-show="!fileloading&&items.length>0">
+			<table class="table table-hover" style="margin-top:15px;">
+				<thead>
+					<tr>
+						<th>名称</th>
+						<th>原路径</th>
+						<th>删除时间</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="item in items">
+						<td>
+							<i class="icon-folder-open" title="文件夹" ng-show="item.isdir"></i>
+							<i class="icon-file" title="文件" ng-show="item.isreg"></i>
+							<i class="icon-asterisk" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>
+							<i class="icon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>
+							{{item.name}}
+						</td>
+						<td>{{item.path}}</td>
+						<td>{{item.time}}</td>
+						<td>
+							<button class="btn btn-mini" ng-click="restore(item.mount, item.uuid)">还原</button>
+							<button class="btn btn-mini" ng-click="tdeleteconfirm(item.name, item.mount, item.uuid)">删除</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div id="confirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{confirm_title}}</h3>
+  </div>
+  <div class="modal-body" ng-bind-html-unsafe="confirm_body">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">确定</button>
+  </div>
+</div>

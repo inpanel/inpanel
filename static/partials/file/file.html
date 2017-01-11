@@ -1,0 +1,419 @@
+<div navbar ng-init="currentItem='file'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>文件管理</h3>
+	</div>
+	
+	<div ng-init="load()" id="list">
+		<div style="height:50px;">
+			<div class="pull-left">
+				<div class="input-prepend input-append">
+					<form onsubmit="return false;" ng-submit="listdir()">
+						<span class="add-on" style="padding-left:15px">当前目录：</span>
+						<input class="input-xxlarge" type="text" ng-model="path">
+						<button class="btn" type="submit" title="刷新"><i class="icon-refresh"></i>
+						<button class="btn" type="submit">进入 <i class="icon-arrow-right"></i></button>
+					</form>
+				</div>
+			</div>
+			<div class="pull-right">
+				<a class="btn" href="#/file/trash"><i class="icon-trash"></i> 查看回收站</a>
+			</div>
+		</div>
+
+		<ul class="breadcrumb">
+			<li>目录导航：</li>
+			<li><a ng-click="listdir('/')">根目录</a> <span class="divider">/</span></li>
+			<li ng-repeat="pathinfo in pathinfos" ng-show="pathinfos.length>0"><a ng-click="listdir(pathinfo.path)">{{pathinfo.name}}</a> <span class="divider">/</span></li>
+		</ul>
+
+		<div style="margin-top:15px;height:30px;">
+			<div class="pull-left">
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="upandlist()"><i class="icon-arrow-up"></i> 返回上级</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="newfolder()"><i class="icon-plus"></i> 新建文件夹</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="newfile()"><i class="icon-plus"></i> 新建文件</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="upload()"><i class="icon-upload"></i> 上传文件</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="download()"><i class="icon-download"></i> 下载资源</button>
+				<button class="btn btn-small" ng-click="paste()" ng-disabled="clipboard.count==0||fileloading"><i class="icon-map-marker"></i> 粘贴/链接</button>
+			</div>
+			<div class="pull-right">
+				<button class="btn btn-small" data-toggle="button" ng-click="togglehidden()"><i class="icon-check"></i> 显示隐藏文件和目录</button>
+			</div>
+		</div>
+
+		<div style="margin:30px 10px" ng-show="fileloading">
+			<img src="images/loading.gif" style="margin-right:5px"> 正在加载文件列表，请稍候...
+		</div>
+
+		<div ng-show="!fileloading">
+			<table class="table table-hover" style="margin-top:15px;">
+				<thead>
+					<tr>
+						<th style="width:10px"><input type="checkbox" ng-model="selectall"></th>
+						<th>名称</th>
+						<th style="width:50px">大小</th>
+						<th style="width:40px">用户</th>
+						<th style="width:40px">组</th>
+						<th style="width:40px">权限</th>
+						<th style="width:140px">修改时间</th>
+						<th style="width:130px">操作</th>
+						<th style="width:40px">压缩</th>
+						<th style="width:70px">其它</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-show="items.length==0">
+						<td colspan="10">当前目录是空的。</td>
+					</tr>
+					<tr ng-class="'warning'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]" ng-repeat="item in items">
+						<td><input type="checkbox" ng-model="selects[item.name]"></td>
+						<td>
+							<i class="icon-folder-open" title="文件夹" ng-show="item.isdir"></i>
+							<i class="icon-file" title="文件" ng-show="item.isreg"></i>
+							<i class="icon-asterisk" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>
+							<i class="icon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>
+							<a class="black" ng-click="listdir(curpath+'/'+item.name)" ng-show="item.isdir||(item.islnk&&item.link_isdir)">{{item.name}}</a>
+							<a class="black" ng-click="editfile(item.name)" ng-show="item.isreg||(item.islnk&&!item.link_isdir)">{{item.name}}</a>
+							<span class="text-info" ng-show="item.islnk&&!item.link_broken">-> {{item.linkto}}</span>
+							<span class="text-error" ng-show="item.islnk&&item.link_broken">-> {{item.linkto}} (错误链接)</span>
+						</td>
+						<td class="td-right" style="padding-right:15px">{{item.size}}</td>
+						<td><a class="black" ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.uname|iftrue:item.uname!=''}}{{item.uid|iftrue:item.uname==''}}</a></td>
+						<td><a class="black" ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.gname|iftrue:item.gname!=''}}{{item.gid|iftrue:item.gname==''}}</a></td>
+						<td><a class="black" ng-click="chmodconfirm(item.name, item.perms, item.isdir)">{{item.perms}}</a></td>
+						<td>{{item.mtime}}</td>
+						<td>
+							<div class="btn-group">
+								<button class="btn btn-mini" ng-click="rename(item.name)" title="改名">改</button>
+								<button class="btn btn-mini" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='copy'" ng-click="togglecopy(item.name)" title="复制">复</button>
+								<button class="btn btn-mini" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='cut'" ng-click="togglecut(item.name)" title="剪切">剪</button>
+								<button class="btn btn-mini" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='link'" ng-click="togglelink(item.name)" title="链接">链</button>
+								<button class="btn btn-mini" ng-click="move2trash(item.name)" title="删除">删</button>
+							</div>
+						</td>
+						<td>
+							<button class="btn btn-mini" ng-click="decompress(item.name)" ng-show="true | ifmatch:[item.name, '.*\.(zip|gz|tgz|bz2)']" title="解压">解压</button>
+							<button class="btn btn-mini" ng-click="compressconfirm(item.name, item.isreg)" ng-show="true | ifnotmatch:[item.name, '.*\.(zip|gz|tgz|bz2)']" title="压缩">压缩</button>
+						</td>
+						<td>
+							<div class="btn-group" ng-show="item.isdir||(item.islnk&&item.link_isdir)">
+								<button class="btn btn-mini" ng-disabled="true" title="设置自动同步（即将推出）"><i class="icon-repeat"></i></button>
+								<button class="btn btn-mini" ng-disabled="true" title="设置自动备份（即将推出）"><i class="icon-share-alt"></i></button>
+							</div>
+							<a class="btn btn-mini" href="/file{{curpath+'/'+item.name}}" ng-show="item.isreg||(item.islnk&&item.link_isreg)" title="下载"><i class="icon-download-alt"></i></button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div style="margin-top:5px;height:30px;">
+			<div class="pull-left">
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="multicopy()"><i class="icon-share"></i> 批量复制</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="multicut()"><i class="icon-move"></i> 批量剪切</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="multidel()"><i class="icon-trash"></i> 批量删除</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="tarconfirm()"><i class="icon-gift"></i> 批量打包压缩</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="chownconfirm()"><i class="icon-user"></i> 批量修改用户和组</button>
+				<button class="btn btn-small" ng-disabled="fileloading" ng-click="chmodconfirm()"><i class="icon-cog"></i> 批量修改权限</button>
+			</div>
+			<div class="pull-right">
+			</div>
+		</div>
+	</div>
+
+	<div style="display:none" id="edit">
+		<h4>正在编辑：{{filepath}}</h4>
+		<div style="margin:15px 0;height:30px;">
+			<div class="pull-left">
+				<button class="btn btn-small" ng-click="return2list()"><i class="icon-chevron-left"></i> 返回文件列表</button>
+			</div>
+			<div class="pull-right">
+				字符编码：<select ng-model="filecharset" style="width:120px;margin-bottom:0;margin-right:10px">
+					<option value="utf-8">UTF-8</option>
+					<option value="gb2312">GB2312</option>
+					<option value="gbk">GBK</option>
+					<option value="gb18030">GB18030</option>
+					<option value="big5">BIG5</option>
+					<option value="euc-jp">EUC-JP</option>
+					<option value="euc-kr">EUC-KR</option>
+					<option value="iso-8859-2">ISO-8859-2</option>
+					<option value="shift_jis">Shift_JIS</option>
+				</select>
+				<button class="btn btn-primary btn-small" ng-click="savefile()"><i class="icon-ok icon-white"></i> 保存修改</button>
+				<button class="btn btn-small" ng-click="canceledit()"><i class="icon-remove"></i> 放弃修改</button>
+			</div>
+		</div>
+		<div id="editor"></div>
+		<div style="margin:15px 0;height:30px;">
+			<div class="pull-left">
+				<button class="btn btn-small" ng-click="return2list()"><i class="icon-chevron-left"></i> 返回文件列表</button>
+			</div>
+			<div class="pull-right">
+				字符编码：<select ng-model="filecharset" style="width:120px;margin-bottom:0;margin-right:10px">
+					<option value="utf-8">UTF-8</option>
+					<option value="gb2312">GB2312</option>
+					<option value="gbk">GBK</option>
+					<option value="gb18030">GB18030</option>
+					<option value="big5">BIG5</option>
+					<option value="euc-jp">EUC-JP</option>
+					<option value="euc-kr">EUC-KR</option>
+					<option value="iso-8859-2">ISO-8859-2</option>
+					<option value="shift_jis">Shift_JIS</option>
+				</select>
+				<button class="btn btn-primary btn-small" ng-click="savefile()"><i class="icon-ok icon-white"></i> 保存修改</button>
+				<button class="btn btn-small" ng-click="canceledit()"><i class="icon-remove"></i> 放弃修改</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="overwriteconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>操作确认</h3>
+  </div>
+  <div class="modal-body">
+	<p>{{overwrite_filename}} 已存在，如何处理？</p>
+		<div class="control-group">
+			<div class="controls">
+				<label class="radio">
+				  <input type="radio" ng-model="overwrite_option" value="overwrite">
+				  覆盖该文件或目录
+				</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<label class="radio">
+				  <input type="radio" ng-model="overwrite_option" value="rename">
+				  重命名为<br />
+				  <input style="margin-top:10px" type="text" ng-model="overwrite_newname" ng-disabled="overwrite_option=='overwrite'">
+				</label>
+			</div>
+		</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">取消</button>
+    <button class="btn btn-primary" onclick="$('#overwriteconfirm').modal('hide')" ng-click="overwrite()">确定</button>
+  </div>
+</div>
+
+<div id="newname" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{newname_title}}</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">{{newname_label}}：</label>
+			<div class="controls">
+				<input type="text" ng-model="newname_name">
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#newname').modal('hide')" ng-click="newname()">确定</button>
+  </div>
+</div>
+
+<div id="upload" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>上传文件到当前目录</h3>
+  </div>
+  <div class="modal-body">
+	<div style="margin:10px 20px">
+	<h5>请选择您要上传的文件：</h5>
+	<div ng-include src="'/xsrf'"></div>
+	<form id="uploadform" class="pull-left" target="uploadframe" action="/fileupload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
+        <input type="hidden" name="_xsrf" value="" id="_xsrf">
+        <input type="hidden" name="path" value="{{curpath}}">
+        <input name="ufile" type="file">
+    </form>
+	<button class="btn btn-small" ng-click="doupload()">开始上传</button>
+	<iframe frameborder="0" name="uploadframe" width="100%" height="50"></iframe>
+	</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="listdir()">关闭</button>
+  </div>
+</div>
+
+<div id="download" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>下载资源到当前目录</h3>
+  </div>
+  <div class="modal-body">
+	<div style="margin:10px 20px">
+	<h5>请在下框中输入资源的URL（一次只能下载一个）：</h5>
+	<textarea style="width:450px;height:100px" ng-model="downloadurl"></textarea>
+	</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#download').modal('hide')" ng-click="dodownload()">开始下载</button>
+  </div>
+</div>
+
+<div id="compressconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>压缩 {{compress_name}}</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">压缩格式：</label>
+			<div class="controls">
+				<select ng-model="compress_type">
+					<option value=".gz" ng-show="compress_isreg">.gz</option>
+					<option value=".tar.gz">.tar.gz</option>
+					<option value=".tar.bz2">.tar.bz2</option>
+					<option value=".zip">.zip</option>
+					<option value=".tgz">.tgz</option>
+				</select>
+			</div>
+		</div>
+		<div class="control-group" ng-show="compress_type!='.gz'">
+			<label class="control-label">压缩包文件名：</label>
+			<div class="controls">
+				<label class="">
+					<input type="text" ng-model="compress_zipname">{{compress_type}}
+				</label>
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#compressconfirm').modal('hide')" ng-click="tar()" ng-show="compress_names.length>0">确定</button>
+    <button class="btn btn-primary" onclick="$('#compressconfirm').modal('hide')" ng-click="compress()" ng-show="compress_names.length==0">确定</button>
+  </div>
+</div>
+
+<div id="selector" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{selector_title}}</h3>
+  </div>
+  <div class="modal-body">
+	<div selector></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+  </div>
+</div>
+
+<div id="chownconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>修改用户和用户组</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">用户：</label>
+			<div class="controls">
+				<select style="width:150px" ng-model="chown_user" ng-options="user for user in users"></select>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">用户组：</label>
+			<div class="controls">
+				<select style="width:150px" ng-model="chown_group" ng-options="group for group in groups"></select>
+			</div>
+		</div>
+		<div class="control-group" ng-show="chown_hasdir">
+			<label class="control-label">递归修改：</label>
+			<div class="controls">
+				<label class="checkbox"><input type="checkbox" ng-model="chown_recursively">同时修改所有子目录中的项目</label>
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#chownconfirm').modal('hide')" ng-click="chown()">确定</button>
+  </div>
+</div>
+
+<div id="chmodconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>修改权限</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">所有者权限：</label>
+			<div class="controls">
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[0][0]"> 读取
+				</label>
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[0][1]"> 写入
+				</label>
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[0][2]"> 可执行
+				</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">所属用户组权限：</label>
+			<div class="controls">
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[1][0]"> 读取
+				</label>
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[1][1]"> 写入
+				</label>
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[1][2]"> 可执行
+				</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">其他用户组权限：</label>
+			<div class="controls">
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[2][0]"> 读取
+				</label>
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[2][1]"> 写入
+				</label>
+				<label class="checkbox inline">
+				  <input type="checkbox" ng-model="chmod_permbits[2][2]"> 可执行
+				</label>
+			</div>
+		</div>
+		<div class="control-group" ng-show="chmod_hasdir">
+			<label class="control-label">递归修改：</label>
+			<div class="controls">
+				<label class="checkbox"><input type="checkbox" ng-model="chmod_recursively">同时修改所有子目录中的项目</label>
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#chmodconfirm').modal('hide')" ng-click="chmod()">确定</button>
+  </div>
+</div>
+
+<div id="confirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{confirm_title}}</h3>
+  </div>
+  <div class="modal-body" ng-bind-html-unsafe="confirm_body">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">取消</button>
+    <button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">确定</button>
+  </div>
+</div>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" ng-app="vpsmate">
+<head>
+	<meta charset="utf-8">
+	<title ng-bind-template="{{ htmlTitle }} - VPSMate">VPSMate</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=10">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap-responsive.min.css">
+	<link rel="stylesheet" href="lib/codemirror/codemirror.css">
+	<!--[if lt IE 9]>
+	<script src="lib/html5shim/html5shiv-printshiv.min.js"></script>
+	<![endif]-->
+	<link rel="stylesheet" href="css/global.css">
+	<!--[if lte IE 8]>
+	<link rel="stylesheet" href="css/ie-patch.css">
+	<![endif]-->
+</head>
+<body>
+
+<div message></div>
+
+<div class="container" style="display:none" ng-show="navbar_loaded">
+	<div ng-view></div>
+	
+	<div id="footer" class="form-actions">
+		<div class="pull-left">
+			Powered by <a href="http://www.vpsmate.org/" target="_blank">VPSMate</a>
+		</div>
+		<div class="pull-right" style="text-align:right">
+			<a class="comment btn btn-mini" href="http://bbs.vpsmate.org/" target="_blank"><i class="icon-comment"></i> 用户交流社区</a>
+		</div>
+	</div>
+
+	<div id="_authconfirm" class="modal hide fade">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h3>登录即将超时</h3>
+		</div>
+		<div class="modal-body">
+			<p>您的登录即将超时，是否要继续访问？</p>
+		</div>
+		<div class="modal-footer">
+			<a class="btn" data-dismiss="modal" aria-hidden="true" href="#/logout">退出登录</a>
+			<button class="btn btn-primary" onclick="$('#_authconfirm').modal('hide')" ng-click="_authrenew()">继续访问</button>
+		</div>
+	</div>
+</div>
+
+<div class="well" style="width:300px;margin:20px auto;" ng-show="!navbar_loaded">
+	<img src="images/loading.gif" style="margin-right:5px"> VPSMate 正在加载，请稍候...
+</div>
+
+<!--[if lte IE 6]>
+<script src="lib/ie6warning/warning.js"></script>
+<script>document.body.innerHTML='';e("lib/ie6warning/")</script>
+<![endif]-->
+<script src="lib/angular/1.0.2/angular.min.js"></script>
+<script src="lib/jquery/jquery-1.8.2.min.js"></script>
+<script src="lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="lib/codemirror/codemirror-compressed.js"></script>
+<script src="lib/md5/md5.min.js"></script>
+<script>
+var location_path = location.pathname.replace(/(\s+)?\/$/, '');
+var template_path = '';
+</script>
+<script src="js.min/vpsmate.all.js"></script>
+<!-- Uncomment it in dev mode -->
+<!--
+<script src="js/vpsmate.js"></script>
+<script src="js/services.js"></script>
+<script src="js/controllers/controllers.js"></script>
+<script src="js/controllers/service.js"></script>
+<script src="js/controllers/file.js"></script>
+<script src="js/controllers/site.js"></script>
+<script src="js/controllers/database.js"></script>
+<script src="js/controllers/utils.js"></script>
+<script src="js/directives.js"></script>
+<script src="js/filters.js"></script>
+-->
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<div ng-include src="'/xsrf'"></div>
+
+<div class="navbar" ng-init="$parent.navbar_loaded=true">
+	<div class="navbar-inner">
+		<a class="brand" href="/">VPSMate</a>
+		<ul class="nav">
+			<li class="active"><a href="/">登录</a></li>
+		</ul>
+	</div>
+</div>
+
+<div class="container" style="display:none;" ng-show="loginWarning">
+	<div class="alert alert-warning">
+		<p style="margin-top:10px">{{loginMessage}}</p>
+		<p>系统检测到您当前密码安全度为：<strong>“{{pwdStrength}}”</strong>。</p>
+		<p>为保障您的系统安全，建议您更换一个安全等级更高的密码。</p>
+		<p>
+			高安全等级的密码具备以下特征：<br>
+			<ul>
+				<li>至少包含一个大写和小写字母</li>
+				<li>至少包含一个数字</li>
+				<li>至少包含一个特殊字符</li>
+				<li>密码长度至少为六位</li>
+			</ul>
+		</p>
+		<p style="margin-top:20px">
+			<a href="#/setting?s=authinfo" class="btn btn-small btn-primary">设置登录密码</a>&nbsp;&nbsp;
+			<a href="#/main" class="btn btn-small">直接进入主界面</a>
+		</p>
+	</div>
+</div>
+
+<div id="main">
+	<form class="form-horizontal form-horizontal-small" ng-submit="login()" onsubmit="return false" method="get" action="/">
+		<legend><span class="legend">登录</span></legend>
+		<div ng-show="showLoginForm">
+			<div class="alert alert-info" style="display:none" ng-show="showForgetPwdMsg">
+				<button ng-click="showForgetPwdMsg=false" type="button" class="close">&times;</button>
+				请在服务器上执行以下命令重置管理员用户名和密码：<br>
+				* 重置用户名：
+					/usr/local/vpsmate/config.py username '用户名'<br>
+				* 重置密码：　
+					/usr/local/vpsmate/config.py password '密码'<br>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="username">用户名</label>
+				<div class="controls">
+					<input ng-model="username" ng-disabled="processing" type="text" id="username" placeholder="管理员用户名" autofocus>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="password">密码</label>
+				<div class="controls">
+					<input ng-model="password" ng-disabled="processing" type="password" id="password" placeholder="管理员密码">
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<button type="submit" id="login" class="btn btn-primary" ng-disabled="processing"><i class="icon-user icon-white"></i> <span ng-bind-template="{{ loginText }}">登录</span></button>
+					<span class="help-inline" style="padding-left:20px"><a ng-click="showForgetPwdMsg=true" href="#" onclick="return false">忘记密码？</a></span>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>

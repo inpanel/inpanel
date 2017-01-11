@@ -1,0 +1,412 @@
+<div navbar ng-init="currentItem='main'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>欢迎使用 VPSMate！</h3>
+		<p>
+			当前版本：v{{version.version}} b{{version.build}}&nbsp;&nbsp;
+			<button class="btn btn-mini" ng-click="checkUpdate()" style="display:none" ng-show="!detectVer">
+				{{ '有新的可用版本，点此更新' | iftrue:hasNewver }}
+				{{ '检测新版本' | iftrue:!hasNewver }}
+			</button>
+		</p>
+	</div>
+
+	<div class="tabbable" ng-init="loadInfo('**')">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='server'"><a href="#server" ng-click="sec('server')" data-toggle="tab">状态概览</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='network'"><a href="#network" ng-click="sec('network')" data-toggle="tab">网络信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='service'"><a href="#service" ng-click="sec('service')" data-toggle="tab">服务状态</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='hardware'"><a href="#hardware" ng-click="sec('hardware')" data-toggle="tab">硬件信息</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='server'" id="server">
+				<table class="table" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="2">状态概览</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:130px">服务器时间：</td>
+							<td>{{ info['server.datetime'] }}</td>
+						</tr>
+						<tr>
+							<td>启动时间：</td>
+							<td>{{ info['server.cpustat']['btime'] }}</td>
+						</tr>
+						<tr>
+							<td>运行时间：</td>
+							<td>{{ info['server.uptime']['up'] }}</td>
+						</tr>
+						<tr>
+							<td>空闲时间：</td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout" style="width:300px">
+									<tr>
+										<td style="width:180px">
+											{{ info['server.uptime']['idle'] }}
+										</td>
+										<td style="width:80px">
+											<span ng-bind-html-unsafe="info['server.uptime']['idle_rate'] | uptime.idlerate"></span>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td>CPU使用率：</td>
+							<td>{{ info['server.cpustat']['total']['used_rate'] }}</td>
+						</tr>
+						<tr>
+							<td>当前负载：<br></td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout" style="width:300px">
+									<tr>
+										<td style="width:130px">1 分钟进程数：</td>
+										<td style="width:30px" class="td-right">{{ info['server.loadavg']['1min'] }}</td>
+										<td style="width:20px"></td>
+										<td style="width:80px" ng-bind-html-unsafe="info['server.loadavg']['1min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']"></td>
+									</tr>
+									<tr>
+										<td>5 分钟进程数：</td>
+										<td class="td-right">{{ info['server.loadavg']['5min'] }}</td>
+										<td></td>
+										<td ng-bind-html-unsafe="info['server.loadavg']['5min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']">
+									</tr>
+									<tr>
+										<td>15 分钟进程数：</td>
+										<td class="td-right">{{ info['server.loadavg']['15min'] }}</td>
+										<td></td>
+										<td ng-bind-html-unsafe="info['server.loadavg']['15min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']">
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td>内存使用：</td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout" style="width:300px">
+									<tr>
+										<td style="width:80px">总大小：</td>
+										<td class="td-right" style="width:80px">{{ info['server.meminfo']['mem_total'] }}</td>
+										<td style="width:20px"></td>
+										<td style="width:80px"></td>
+									</tr>
+									<tr>
+										<td>已使用：</td>
+										<td class="td-right">{{ info['server.meminfo']['mem_used'] }}</td>
+										<td></td>
+										<td ng-bind-html-unsafe="info['server.meminfo']['mem_used_rate'] | space.used"></td>
+									</tr>
+									<tr>
+										<td>剩余可用：</td>
+										<td class="td-right">{{ info['server.meminfo']['mem_free'] }}</td>
+										<td></td>
+										<td ng-bind-html-unsafe="info['server.meminfo']['mem_free_rate'] | space.free"></td>
+									</tr>
+									<tr>
+										<td>Buffers：</td>
+										<td class="td-right">{{ info['server.meminfo']['mem_buffers'] }}</td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>Cached：</td>
+										<td class="td-right">{{ info['server.meminfo']['mem_cached'] }}</td>
+										<td></td>
+										<td></td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr ng-show="info['server.meminfo']['swap_total'] != '0B'">
+							<td>交换空间：</td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout" style="width:300px">
+									<tr>
+										<td style="width:80px">总大小：</td>
+										<td class="td-right" style="width:80px">{{ info['server.meminfo']['swap_total'] }}</td>
+										<td style="width:20px"></td>
+										<td style="width:80px"></td>
+									</tr>
+									<tr>
+										<td>已使用：</td>
+										<td class="td-right">{{ info['server.meminfo']['swap_used'] }}</td>
+										<td></td>
+										<td ng-bind-html-unsafe="info['server.meminfo']['swap_used_rate'] | space.used"></td>
+									</tr>
+									<tr>
+										<td>剩余可用：</td>
+										<td class="td-right">{{ info['server.meminfo']['swap_free'] }}</td>
+										<td></td>
+										<td ng-bind-html-unsafe="info['server.meminfo']['swap_free_rate'] | space.free"></td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr ng-show="info['server.mounts']">
+							<td>存储空间：</td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout" style="width:350px">
+									<tr>
+										<th>挂载点</th>
+										<th class="td-right">总大小</th>
+										<th class="td-right">已使用</th>
+										<th class="td-right">剩余可用</th>
+										<th class="td-right">使用率</th>
+									</tr>
+									<tr ng-repeat="mount in info['server.mounts']">
+										<td>{{ mount['path'] }}</td>
+										<td class="td-right">{{ mount['total'] }}</td>
+										<td class="td-right">{{ mount['used'] }}</td>
+										<td class="td-right">{{ mount['free'] }}</td>
+										<td class="td-right" ng-bind-html-unsafe="mount['used_rate'] | space.used"></td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='network'" id="network">
+				<table class="table" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="2">网络信息</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>DNS服务器：</td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout">
+									<tr ng-repeat="nameserver in info['server.nameservers']">
+										<td>{{ nameserver }}</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr ng-repeat="netiface in info['server.netifaces']">
+							<td>网络接口{{ $index+1 }}：</td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout" style="width:400px">
+									<tr>
+										<td>状态：</td>
+										<td ng-bind-html-unsafe="netiface['status'] | netiface.updown"></td>
+									</tr>
+									<tr>
+										<td>名称：</td>
+										<td>{{ netiface['name'] }} （{{ netiface['encap'] | netiface.encap }}）</td>
+									</tr>
+									<tr>
+										<td>IPv4地址：</td>
+										<td>{{ netiface['ip'] }}</td>
+									</tr>
+									<tr ng-show="netiface['encap'] != 'Loopback'">
+										<td>子网掩码：</td>
+										<td>{{ netiface['mask'] }}</td>
+									</tr>
+									<tr ng-show="netiface['gw']">
+										<td>默认网关：</td>
+										<td>{{ netiface['gw'] }}</td>
+									</tr>
+									<tr ng-show="netiface['encap'] != 'Loopback'">
+										<td>物理地址：</td>
+										<td>{{ netiface['mac'] }}</td>
+									</tr>
+									<tr>
+										<td>流量信息：</td>
+										<td>
+											<div class="well" style="width:260px;padding:3px 10px;margin-top:3px;">
+												<table class="table table-condensed table-borderless table-layout" style="width:240px;">
+													<tr>
+														<th style="width:40px"></th>
+														<th class="td-right" style="width:80px">累计流量</th>
+														<th class="td-right" style="width:80px">实时速率</th>
+													</tr>
+													<tr>
+														<td>发送：</td>
+														<td class="td-right">{{ netiface['tx'] }}</td>
+														<td class="td-right">{{ netiface['tx_speed'] | bytes2human }}/s</td>
+													</tr>
+													<tr>
+														<td>接收：</td>
+														<td class="td-right">{{ netiface['rx'] }}</td>
+														<td class="td-right">{{ netiface['rx_speed'] | bytes2human }}/s</td>
+													</tr>
+												</table>
+											</div>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='service'" id="service">
+				<table class="table" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="2">服务状态</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>VPSMate</td>
+							<td ng-bind-html-unsafe="info['service.vpsmate']['status'] | service.status"></td>
+							<td class="muted">VPS 伴侣</td>
+						</tr>
+						<tr ng-show="info['service.nginx'] != null">
+							<td>Nginx</td>
+							<td ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>
+							<td class="muted">高性能的 HTTP 服务器</td>
+						</tr>
+						<tr ng-show="info['service.httpd'] != null">
+							<td>Apache</td>
+							<td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
+							<td class="muted">老牌 HTTP 服务器</td>
+						</tr>
+						<tr ng-show="info['service.vsftpd'] != null">
+							<td>vsftpd</td>
+							<td ng-bind-html-unsafe="info['service.vsftpd']['status'] | service.status"></td>
+							<td class="muted">安全快速的FTP服务器</td>
+						</tr>
+						<tr ng-show="info['service.mysqld'] != null">
+							<td>MySQL</td>
+							<td ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
+							<td class="muted">最流行的开源关系型数据库服务器</td>
+						</tr>
+						<tr ng-show="info['service.redis'] != null">
+							<td>Redis</td>
+							<td ng-bind-html-unsafe="info['service.redis']['status'] | service.status"></td>
+							<td class="muted">高性能内存数据库</td>
+						</tr>
+						<tr ng-show="info['service.memcached'] != null">
+							<td>Memcache</td>
+							<td ng-bind-html-unsafe="info['service.memcached']['status'] | service.status"></td>
+							<td class="muted">内存数据库</td>
+						</tr>
+						<tr ng-show="info['service.mongod'] != null">
+							<td>MongoDB</td>
+							<td ng-bind-html-unsafe="info['service.mongod']['status'] | service.status"></td>
+							<td class="muted">分布式高性能的数据库服务器</td>
+						</tr>
+						<tr ng-show="info['service.php-fpm'] != null">
+							<td>PHP</td>
+							<td ng-bind-html-unsafe="info['service.php-fpm']['status'] | service.status"></td>
+							<td class="muted">PHP 脚本解析器</td>
+						</tr>
+						<tr ng-show="info['service.sendmail'] != null">
+							<td style="width:120px">Sendmail</td>
+							<td ng-bind-html-unsafe="info['service.sendmail']['status'] | service.status"></td>
+							<td class="muted">邮件传输服务</td>
+						</tr>
+						<tr ng-show="info['service.sshd'] != null">
+							<td>SSH</td>
+							<td ng-bind-html-unsafe="info['service.sshd']['status'] | service.status"></td>
+							<td class="muted">远程连接服务器</td>
+						</tr>
+						<tr ng-show="info['service.iptables'] != null">
+							<td>iptables</td>
+							<td ng-bind-html-unsafe="info['service.iptables']['status'] | service.status"></td>
+							<td class="muted">Linux 防火墙</td>
+						</tr>
+						<tr ng-show="info['service.crond'] != null">
+							<td>Cron</td>
+							<td ng-bind-html-unsafe="info['service.crond']['status'] | service.status"></td>
+							<td class="muted">定时任务管理服务器</td>
+						</tr>
+						<tr ng-show="info['service.crond'] != null && info['server.virt'] != 'Virtuozzo/OpenVZ'" style="display:none">
+							<td>NTP</td>
+							<td ng-bind-html-unsafe="info['service.ntpd']['status'] | service.status"></td>
+							<td class="muted">时间同步服务</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
+				<table class="table" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="2">系统信息</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-show="info['server.virt']">
+							<td style="width:100px">虚拟平台：</td>
+							<td>{{ info['server.virt'] }}</td>
+						</tr>
+						<tr>
+							<td>主机名称：</td>
+							<td>{{ info['server.hostname'] }}</td>
+						</tr>
+						<tr>
+							<td>发行版本：</td>
+							<td>{{ info['server.distribution'] }}</td>
+						</tr>
+						<tr>
+							<td>内核版本：</td>
+							<td>{{ info['server.uname']['kernel_name'] }} {{ info['server.uname']['kernel_release'] }} {{ info['server.uname']['kernel_version'] }}</td>
+						</tr>
+						<tr>
+							<td>系统类型：</td>
+							<td>硬件：{{ info['server.uname']['machine'] }}<br>CPU：{{ info['server.uname']['processor'] }}<br>实现：{{ info['server.uname']['platform'] }}</td>
+						</tr>
+					</tbody>
+				</table>
+
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='hardware'" id="hardware">
+				<table class="table" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="2">硬件信息</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:100px">CPU个数：</td>
+							<td>{{ info['server.cpuinfo']['cpu_count'] }} 个</td>
+						</tr>
+						<tr>
+							<td>CPU核心：</td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout" ng-class="'table-nopadding' | iftrue:info['server.cpuinfo']['core_count']==1">
+									<tr ng-show="info['server.cpuinfo']['core_count'] > 1">
+										<td colspan="2">共有 {{ info['server.cpuinfo']['core_count'] }} 个核心，型号如下：</td>
+									</tr>
+									<tr ng-repeat="core in info['server.cpuinfo']['cores']">
+										<td>{{ core['model'] }} ({{ core['bits'] }})</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td>内存大小：</td>
+							<td>{{ info['server.meminfo']['mem_total'] }}</td>
+						</tr>
+						<tr ng-show="info['server.diskinfo']['count']>0">
+							<td>存储设备：</td>
+							<td>
+								<table class="table table-condensed table-borderless table-layout" style="width:300px">
+									<tr>
+										<td colspan="2">共有 {{ info['server.diskinfo']['count'] }} 个存储设备，共 {{ info['server.diskinfo']['totalsize'] }}</td>
+									</tr>
+									<tr ng-repeat="partition in info['server.diskinfo']['partitions'] | filter:{'is_hw': true}">
+										<td>{{ partition['name'] }}</td>
+										<td>{{ partition['size'] }}</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

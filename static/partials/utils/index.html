@@ -1,0 +1,107 @@
+<div navbar ng-init="currentItem='utils'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none" ng-init="checkVirt()">
+	<div class="module-header">
+		<h3>系统工具</h3>
+	</div>
+	<div>
+		<table class="table table-button" style="width:600px">
+			<thead>
+				<tr>
+					<th colspan="3">通用系统工具</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="width:120px">用户管理</td>
+					<td style="width:380px" class="muted">管理系统用户、用户组、和用户密码。</td>
+					<td style="width:100px"><a class="btn btn-small" href="#/utils/user">进入管理</a></td>
+				</tr>
+				<tr>
+					<td style="width:120px">网络设置</td>
+					<td style="width:380px" class="muted">设置 IP 地址、网关、DNS服务器</td>
+					<td style="width:100px"><a class="btn btn-small" href="#/utils/network">进入设置</a></td>
+				</tr>
+				<tr>
+					<td>时间设置</td>
+					<td class="muted">设置服务器的时间和时区</td>
+					<td><a class="btn btn-small" href="#/utils/time">进入设置</a></td>
+				</tr>
+				<tr style="display:none" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
+					<td>磁盘分区</td>
+					<td class="muted">对磁盘进行分区、格式化、挂载等操作</td>
+					<td><a class="btn btn-small" href="#/utils/partition">进入设置</a></td>
+				</tr>
+			</tbody>
+		</table>
+		<table class="table table-button" style="width:600px">
+			<thead>
+				<tr>
+					<th colspan="2">安全增强工具</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="width:120px">SSH公钥验证</td>
+					<td style="width:380px" class="muted">防暴力破解，使用更安全的公钥验证替换密码验证</td>
+					<td style="width:100px"><a class="btn btn-small" href="#/service/ssh?s=pubkauth">进入设置</a></td>
+				</tr>
+				<tr>
+					<td>网络端口开关</td>
+					<td class="muted">利用 Linux 防火墙实现网络端口的开关</td>
+					<td><a class="btn btn-small" ng-disabled="true" href="#/utils">即将发布</a></td>
+				</tr>
+			</tbody>
+		</table>
+		<table class="table table-button" style="width:600px">
+			<thead>
+				<tr>
+					<th colspan="2">服务器初始化工具</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr style="display:none" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
+					<td style="width:120px">自动格式化挂载</td>
+					<td style="width:380px" class="muted">对未挂载的磁盘进行格式化并自动挂载</td>
+					<td style="width:100px"><a class="btn btn-small" href="#/utils/autofm">进入设置</a></td>
+				</tr>
+				<tr>
+					<td style="width:120px">数据移至数据盘</td>
+					<td style="width:380px" class="muted">将数据迁移至数据盘，并通过链接保持原路径</td>
+					<td style="width:100px"><a class="btn btn-small" href="#/utils/movedata">进入设置</a></td>
+				</tr>
+			</tbody>
+		</table>
+		<table class="table table-button" style="width:600px">
+			<thead>
+				<tr>
+					<th colspan="2">服务器重启</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="width:120px">重启服务器</td>
+					<td style="width:380px" class="muted">重启您的服务器</td>
+					<td style="width:100px"><button class="btn btn-small" ng-click="rebootconfirm()">立即重启</button></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div id="rebootconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>服务器重启确认</h3>
+  </div>
+  <div class="modal-body">
+	<p class="text-error">重启过程中，您的服务器将会持续中断服务！</p>
+	<p>确认要重启服务器吗？</p>
+	<p style="margin-top:25px">请输入大写的 OK 后继续重启：<input type="text" class="input-mini" max-length="2" ng-model="confirmok" placeholder="输入OK"></p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-danger" onclick="$('#rebootconfirm').modal('hide')" ng-disabled="confirmok!='OK'" ng-click="reboot()">确定重启</button>
+  </div>
+</div>

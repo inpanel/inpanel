@@ -1,0 +1,103 @@
+<div navbar ng-init="currentItem='utils.time'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>时间设置</h3>
+	</div>
+	
+	<div class="tabbable">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='datetime'"><a href="#datetime" ng-click="sec('datetime')" data-toggle="tab">时间设置</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='timezone'"><a href="#timezone" ng-click="sec('timezone')" data-toggle="tab">时区设置</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='sync'"><a href="#sync" ng-click="sec('sync')" data-toggle="tab">时间同步服务</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='datetime'" id="datetime" ng-init="loadDatetime()">
+				<form class="form-horizontal form-horizontal-small" ng-submit="saveDatetime()" onsubmit="return false" method="get" action="/">
+					<div class="control-group">
+						<label class="control-label">当前时间：</label>
+						<div class="controls">
+							<span class="btn">{{datetime.str + ' ' + datetime.tz}}</span>
+							<button ng-click="synctime()" class="btn" ng-disabled="processing" ng-show="ntpdStatus!='none'">同步时间</button>
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="datetime">修改时间：</label>
+						<div class="controls">
+							<div class="input-append">
+								<input class="input-medium" ng-model="newDatetime" ng-disabled="processing" size="19" type="text" id="datetime"><span class="add-on">{{datetime.tz}}</span>
+							</div>
+						</div>
+					</div>
+					<div class="control-group">
+						<div class="controls">
+							<button type="submit" class="btn" ng-disabled="processing">提交修改</button>
+						</div>
+					</div>
+				</form>
+				
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='timezone'" id="timezone" ng-init="loadTimezone()">
+				<form class="form-horizontal form-horizontal-small" ng-submit="saveTimezone()" onsubmit="return false" method="get" action="/">
+					<div class="control-group">
+						<label class="control-label">当前时区：</label>
+						<div class="controls">
+							<span class="btn">{{timezone}}</span>
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label">修改时区：</label>
+						<div class="controls">
+							<select style="width:100px" ng-init="loadTimezones()" ng-change="loadTimezones(timezone_region)" ng-model="timezone_region" ng-options="region for region in regions"></select>
+							<select style="width:120px" ng-model="timezone_city" ng-options="city for city in cities"></select>
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label">快速选择：</label>
+						<div class="controls">
+							<a class="btn btn-small" ng-click="setTimezone('Asia', 'Shanghai')">北京时间</a>
+							<a class="btn btn-small" ng-click="setTimezone('America', 'Los_Angeles')">洛杉矶时间</a>
+							<a class="btn btn-small" ng-click="setTimezone('America', 'New_York')">纽约时间</a>
+						</div>
+					</div>
+					<div class="control-group">
+						<div class="controls">
+							<button type="submit" class="btn" ng-disabled="processing">提交修改</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='sync'" id="sync" ng-init="checkVirt(loadSync)">
+				<div class="well" style="width:400px;padding-bottom:10px;display:none" ng-show="virt=='Virtuozzo/OpenVZ'">
+					<p>时间同步在 Virtuozzo/OpenVZ 虚拟化平台下无法正常工作！</p>
+					<p>此功能被禁用！</p>
+				</div>
+				<div class="well" style="width:350px;padding-bottom:10px;display:none" ng-show="virt!='Virtuozzo/OpenVZ'">
+					<div ng-show="ntpdChecking">
+						<p>正在检测NTPD服务状态...</p>
+					</div>
+					<div ng-show="!ntpdChecking&&(ntpdStatus==null)">
+						<p><span ng-bind-html-unsafe="installMessage"></span></p>
+						<p style="display:none;margin-top:20px" ng-show="showInstallBtn">
+							<button class="btn btn-small" ng-click="install()" ng-disabled="processing">确定并安装</button>
+						</p>
+					</div>
+					<div ng-show="ntpdStatus=='stopped'">
+						<p><span ng-bind-html-unsafe="startMessage"></span></p>
+						<p style="display:none;margin-top:20px" ng-show="showStartBtn">
+							<button class="btn btn-small" ng-click="start()" ng-disabled="processing">确定并启用</button>
+						</p>
+					</div>
+					<div ng-show="ntpdStatus=='running'">
+						<p><span ng-bind-html-unsafe="stopMessage"></span></p>
+						<p style="display:none;margin-top:20px" ng-show="showStopBtn">
+							<button class="btn btn-small" ng-click="stop()" ng-disabled="processing">确定并停止</button>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>

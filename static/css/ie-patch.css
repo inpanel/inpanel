@@ -1,0 +1,11 @@
+span.legend {
+	display: block;
+	width: 100%;
+	padding: 0;
+	margin-bottom: 20px;
+	font-size: 21px;
+	line-height: 40px;
+	color: #333;
+	border: 0;
+	border-bottom: 1px solid #E5E5E5;
+}

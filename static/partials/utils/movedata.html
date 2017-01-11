@@ -1,0 +1,83 @@
+<div navbar ng-init="currentItem='utils.movedata'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>数据移至数据盘</h3>
+	</div>
+	
+	<div class="alert alert-info">
+		<p>该工具帮助您将数据迁移到数据盘，而仍能够保持原访问路径（通过Linux符号连接实现）。</p>
+		<p>建议您在服务器初始化时就迁移好，避免后期数据增大后再迁移时引起的麻烦。</p>
+		<p>
+			以下是 VPSMate 建议您迁移的目录：<br>
+			<ul>
+				<li>/var/www（默认站点目录）</li>
+				<li>/var/lib（程序数据目录，数据库等默认都将数据存放在这个目录下）</li>
+			</ul>
+		</p>
+		<p class="text-error">请注意：在迁移前请确保没有网站或其它服务在使用这些数据，否则可能导致迁移失败或服务故障！</p>
+	</div>
+
+	<div class="form-horizontal form-horizontal-small" ng-init="loadMounts()">
+		<div class="control-group">
+			<label class="control-label">原始位置</label>
+			<div class="controls">
+				<div class="input-append">
+					<input ng-model="srcpath" ng-disabled="waiting" type="text" class="input-large" placeholder="请选择要迁移的目录">
+					<button class="btn" ng-click="selectsrcpath()"><i class="icon-folder-open"></i></button>
+				</div>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">目标分区</label>
+			<div class="controls">
+				<table class="table table-condensed table-borderless table-layout" style="width:350px">
+					<tr>
+						<th></th>
+						<th>挂载点</th>
+						<th class="td-right">总大小</th>
+						<th class="td-right">已使用</th>
+						<th class="td-right">剩余可用</th>
+						<th class="td-right">使用率</th>
+					</tr>
+					<tr ng-repeat="mount in mounts">
+						<td><label class="radio"><input type="radio" name="mountpoint" ng-model="mountpoint" ng-click="setdespath(mount['path'])" value="{{ mount['path'] }}"></label></td>
+						<td>{{ mount['path'] }}</td>
+						<td class="td-right">{{ mount['total'] }}</td>
+						<td class="td-right">{{ mount['used'] }}</td>
+						<td class="td-right">{{ mount['free'] }}</td>
+						<td class="td-right" ng-bind-html-unsafe="mount['used_rate'] | space.used"></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">目标位置</label>
+			<div class="controls">
+				<div class="input-append">
+					<input ng-model="despath" ng-disabled="waiting" type="text" class="input-large" placeholder="请选择迁移到的目录">
+					<button class="btn" ng-click="selectdespath()"><i class="icon-folder-open"></i></button>
+				</div>
+			</div>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<button ng-disabled="!srcpath||!despath||waiting" class="btn btn-primary" ng-click="movedata()">开始迁移</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="selector" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{selector_title}}</h3>
+  </div>
+  <div class="modal-body">
+	<div selector></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+  </div>
+</div>

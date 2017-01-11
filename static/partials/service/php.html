@@ -1,0 +1,223 @@
+<div navbar ng-init="currentItem='service.php'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none" ng-init="checkInstalled()">
+	<div class="module-header">
+		<h3>PHP - 脚本解析器</h3>
+	</div>
+	
+	<div srvinstall ng-init="name='PHP';pkg='php';expected_repolist=['base','CentALT','ius','atomic'];"></div>
+
+	<div class="tabbable" ng-show="installed">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='setting'"><a href="#setting" ng-click="sec('setting')" data-toggle="tab">服务设置</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+				<div srvbase ng-init="name='PHP';pkg='php';service='php-fpm';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
+				<table class="table table-button" style="width:600px;">
+					<thead>
+						<tr>
+							<th colspan="2">PHP 信息</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>查看 phpinfo</td>
+							<td style="width:120px;">
+								<a class="btn btn-small" target="_blank" href="/page/php/phpinfo">
+									新窗口中查看 <i class="icon-chevron-right"></i>
+								</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<table class="table table-button" style="width:600px;">
+					<thead>
+						<tr>
+							<th>PHP 设置项</th>
+							<th>说明</th>
+							<th style="width:120px;"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>short_open_tag</td>
+							<td>是否要支持 PHP 代码的短开始标签 &lt;?</td>
+							<td>
+								<label class="checkbox inline">
+									<input type="checkbox" ng-model="setting.php.short_open_tag"> 支持
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<td>expose_php</td>
+							<td>是否在 HTTP 头中包含 PHP 版本信息</td>
+							<td>
+								<label class="checkbox inline">
+									<input type="checkbox" ng-model="setting.php.expose_php"> 包含
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<td>max_execution_time</td>
+							<td>脚本最长执行时间</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-model="setting.php.max_execution_time"> 秒
+							</td>
+						</tr>
+						<tr>
+							<td>memory_limit</td>
+							<td>单个PHP进程的内存限制</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-model="setting.php.memory_limit"> MB
+							</td>
+						</tr>
+						<tr>
+							<td>display_errors</td>
+							<td>是否在出错时显示错误信息</td>
+							<td>
+								<label class="checkbox inline">
+									<input type="checkbox" ng-model="setting.php.display_errors"> 显示
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<td>post_max_size</td>
+							<td>POST 数据大小限制</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-model="setting.php.post_max_size"> MB
+							</td>
+						</tr>
+						<tr>
+							<td>upload_max_filesize</td>
+							<td>上传文件大小限制</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-model="setting.php.upload_max_filesize"> MB
+							</td>
+						</tr>
+						<tr>
+							<td>date.timezone</td>
+							<td>默认时区设置，格式如 Asia/Shanghai</td>
+							<td>
+								<input type="text" class="input-flat" style="width:100px;margin:0;" ng-model="setting.php['date.timezone']">
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2"></td>
+							<td>
+								<button type="btn btn-small" ng-click="updatephpsettings()">保存以上配置</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<table class="table table-button" style="width:600px;">
+					<thead>
+						<tr>
+							<th>FastCGI 设置项</th>
+							<th>说明</th>
+							<th style="width:120px;"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>listen</td>
+							<td>FastCGI 监听地址</td>
+							<td>
+								<input type="text" class="input-flat" style="width:100px;margin:0;" ng-model="setting.fpm.listen">
+							</td>
+						</tr>
+						<tr>
+							<td>pm</td>
+							<td>是否启用动态进程控制模型</td>
+							<td>
+								<label class="checkbox inline">
+									<input type="checkbox" ng-model="setting.fpm.pm"> 启用
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<td>pm.max_children</td>
+							<td>最大的 CGI 进程数量</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-model="setting.fpm['pm.max_children']"> 个
+							</td>
+						</tr>
+						<tr>
+							<td>pm.start_servers</td>
+							<td>起始的 CGI 进程数量</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-disabled="!setting.fpm.pm" ng-model="setting.fpm['pm.start_servers']"> 个
+							</td>
+						</tr>
+						<tr>
+							<td>pm.min_spare_servers</td>
+							<td>最小允许的空闲 CGI 进程数量</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-disabled="!setting.fpm.pm" ng-model="setting.fpm['pm.min_spare_servers']"> 个
+							</td>
+						</tr>
+						<tr>
+							<td>pm.max_spare_servers</td>
+							<td>最多允许的空闲 CGI 进程数量</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-disabled="!setting.fpm.pm" ng-model="setting.fpm['pm.max_spare_servers']"> 个
+							</td>
+						</tr>
+						<tr>
+							<td>pm.max_requests</td>
+							<td>每个 CGI 进程执行多少次后重启进程</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-model="setting.fpm['pm.max_requests']"> 个
+							</td>
+						</tr>
+						<tr>
+							<td>request_terminate_timeout</td>
+							<td>请求处理超时时间，超时后请求将被终止</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-model="setting.fpm.request_terminate_timeout"> 秒
+							</td>
+						</tr>
+						<tr>
+							<td>request_slowlog_timeout</td>
+							<td>请求处理超过多少秒后记入慢请求日志</td>
+							<td>
+								<input type="text" class="input-flat" style="width:25px;margin:0;" ng-model="setting.fpm.request_slowlog_timeout"> 秒
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2"></td>
+							<td>
+								<button type="btn btn-small" ng-click="updatefpmsettings()">保存以上配置</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
+				<div srvext ng-init="name='PHP';pkg='php';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
+				<div srvfile ng-init="items=[{name:'主配置', path:'/etc/php.ini', isfile:true},{name:'FPM配置', path:'/etc/php-fpm.conf', isfile:true},{name:'扩展配置', path:'/etc/php.d', isdir:true},{name:'', path:'/etc/php-zts.d', isdir:true}];"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
+				<div srvlog ng-init="items=[{name:'日志目录', path:'/var/log/php-fpm', isdir:true}];"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
+				<div srvupdate ng-init="name='PHP';pkg='php';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
+				<div srvuninstall ng-init="name='PHP';pkg='php';"></div>
+			</div>
+		</div>
+	</div>
+
+</div>

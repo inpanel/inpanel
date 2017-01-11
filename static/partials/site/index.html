@@ -1,0 +1,208 @@
+<div navbar ng-init="currentItem='site'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>网站管理</h3>
+	</div>
+	
+	<div class="tabbable" ng-init="load()">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none"><a href="#nginx" ng-click="sec('nginx')" data-toggle="tab">Nginx 网站列表</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none"><a href="#apache" ng-click="sec('apache')" data-toggle="tab">Apache 网站列表</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='package'"><a href="#package" ng-click="sec('package')" data-toggle="tab">快速安装网站系统</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none" id="nginx">
+				<div class="well" style="width:350px" ng-show="nginxloading">
+					<img src="images/loading.gif" style="margin-right:5px"> 正在加载站点列表，请稍候...
+				</div>
+
+				<div class="widget widget-table" ng-show="!nginxloading">
+					<div class="widget-header">
+						<i class="icon-list-alt"></i><h3>网站列表</h3>
+						<div class="pull-right" style="margin-right:10px">
+							<a class="btn btn-small" href="#/site/nginx/new"><i class="icon-plus"></i> 新建站点</a>
+						</div>
+					</div>
+					<div class="widget-content">
+						<table class="table table-striped table-hover table-bordered">
+							<thead>
+								<tr>
+									<th style="width:20px" class="td-right">#</th>
+									<th style="width:40px">状态</th>
+									<th>域名</th>
+									<th>绑定地址</th>
+									<th style="width:240px">站点引擎</th>
+									<th style="width:100px">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-show="servers.length==0">
+									<td colspan="6">尚未添加站点。</td>
+								</tr>
+								<tr ng-repeat="server in servers">
+									<td class="td-right">{{$index+1}}</td>
+									<td ng-bind-html-unsafe="server.status | site.status"></td>
+									<td>
+										<span ng-repeat="server_name in server.server_names">
+											<a href="http{{'s' | iftrue:server.listens[0].port=='443'}}://{{server_name}}" target="_blank" ng-show="server_name!='_'">{{server_name}}</a>
+											<span ng-show="server_name=='_'">任意域名</span>
+											<br>
+										</span>
+									</td>
+									<td>
+										<span ng-repeat="listen in server.listens">
+											{{listen.ip}}:{{listen.port}}
+											<span ng-show="listen.port==443||listen.port==80">({{listen.port | site.port}})</span>
+											<span ng-show="listen.default_server">(默认)</span>
+											<br>
+										</span>
+									</td>
+									<td><span ng-repeat="engine in server.engines">{{engine | site.engine}}<span ng-show="$index<server.engines.length-1">+</span></span></td>
+									<td>
+										<div class="btn-group">
+											<a class="btn btn-small" href="#/site/nginx/edit_{{server.listens[0].ip}}_{{server.listens[0].port}}_{{server.server_names[0]}}" title="设置">
+												<i class="icon-wrench"></i>
+											</a>
+											<button class="btn btn-small" ng-show="server.status!='on'" title="启用该站点" ng-click="nginx_enableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+												<i class="icon-play"></i>
+											</button>
+											<button class="btn btn-small" ng-show="server.status=='on'" title="停用该站点" ng-click="nginx_disableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+												<i class="icon-stop"></i>
+											</button>
+											<button class="btn btn-small" title="删除该站点" ng-click="nginx_deleteserverconfirm(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+												<i class="icon-remove"></i>
+											</button>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none" id="apache">
+				<!--<div class="pull-left"><h5>Apache 网站列表</h5></div>
+				<div class="pull-right"><a class="btn" href="#/site/new"><i class="icon-plus"></i> 添加新站点</a></div>
+				<table class="table table-hover table-button">
+					<tbody>
+						<tr class="warning">
+							<td colspan="6" class="text-info">注意：此处网站配置修改后需要重启 Apache，您的修改才会生效。</td>
+						</tr>
+						<tr>
+							<th style="width:20px" class="td-right">#</th>
+							<th style="width:40px">状态</th>
+							<th>域名</th>
+							<th>绑定地址</th>
+							<th style="width:150px">站点类型</th>
+							<th style="width:140px">操作</th>
+						</tr>
+					</tbody>
+				</table>-->
+				<p class="text-info" style="margin:20px">Apache站点管理功能即将推出，敬请留意 VPSMate 新版本。<a href="#/setting?s=upversion">检测新版本</a></p>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='package'" id="package">
+				<table class="table table-button" style="width:600px" ng-repeat="cate in site_packages">
+					<thead>
+						<tr>
+							<th colspan="3">{{cate.name}}</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="package in cate.packages">
+							<td style="width:120px"><a href="{{package.official_site}}" target="_blank">{{package.name}}</a></td>
+							<td style="width:380px" class="muted">{{package.description}}</td>
+							<td style="width:100px"><button class="btn btn-small" ng-click="package_install_setting(package)">开始安装</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div ng-show="!has_httpserver" value="install" style="display:none">
+		<div class="well" style="width:400px">
+			<p>系统检测到您还未安装 HTTP 服务器。</p>
+			<p>请先安装任意一款 HTTP 服务器后继续操作。</p>
+			<p class="text-info">（当前仅支持 Nginx 站点的管理配置，如需管理 Apache 站点，请留意 VPSMate 的新版本。<a href="#/setting/upversion">检测新版本</a>）</p>
+			<p style="padding-top:10px"><a class="btn" href="#/service?s=http">立即安装</a></p>
+		</div>
+	</div>
+</div>
+
+<div id="pkg_install_setting" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{curpkg.name}} 安装设置</h3>
+  </div>
+  <div class="modal-body">
+	<h5>请选择要安装的版本</h5>
+	<table class="table table-condensed" style="width:350px">
+		<thead>
+			<tr>
+				<th>版本名称</th>
+				<th>大小</th>
+				<th>选择</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="v in curpkg.versions">
+				<td>{{v.name}}</td>
+				<td>{{v.size}}</td>
+				<td><label class="radio"><input type="radio" name="pkgver" ng-model="pkgver" ng-click="package_version_select(v)" value="{{v.code}}"></label></td>
+			</tr>
+		</tbody>
+	</table>
+	<h5>请设置要安装到的目录</h5>
+	<div class="input-append">
+		<input ng-model="installpath" type="text" class="input-large" placeholder="网站系统的安装目录">
+		<button class="btn" ng-click="selectinstallpath()"><i class="icon-folder-open"></i></button>
+	</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#pkg_install_setting').modal('hide')" ng-click="package_install()">开始安装</button>
+  </div>
+</div>
+
+<div id="confirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{confirm_title}}</h3>
+  </div>
+  <div class="modal-body" ng-bind-html-unsafe="confirm_body">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">取消</button>
+    <button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">确定</button>
+  </div>
+</div>
+
+<div id="nginx_deleteserverconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>删除确认</h3>
+  </div>
+  <div class="modal-body">
+	<p>是否确认删除 “{{nginx_server_name}}” 这个站点？</p>
+	<p class="text-error">注意：此处仅删除站点配置文件，网站的其它数据不受影响。</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#nginx_deleteserverconfirm').modal('hide')" ng-click="nginx_deleteserver()">确定</button>
+  </div>
+</div>
+
+<div id="selector" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{selector_title}}</h3>
+  </div>
+  <div class="modal-body">
+	<div selector></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+  </div>
+</div>

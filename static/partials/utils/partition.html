@@ -1,0 +1,245 @@
+<div navbar ng-init="currentItem='utils.partition'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>磁盘分区</h3>
+	</div>
+	
+	<div style="display:none" ng-init="loadDiskinfo()" ng-show="diskinfo['count'] > 0">
+		<h5>物理分区管理</h5>
+		<table class="table" style="width:600px" ng-repeat="partition in diskinfo['partitions']">
+			<tbody>
+				<tr class="warning">
+					<td style="width:50px">设备{{$index+1}}</td>
+					<td style="width:50px">分区</td>
+					<td style="width:50px">大小</td>
+					<td style="width:70px">文件系统</td>
+					<td style="width:90px">挂载点</td>
+					<td style="width:220px">操作</td>
+				</tr>
+				<tr>
+					<td>{{ partition['name'] | iftrue:partition['is_hw'] }}</td>
+					<td>{{ partition['name'] | iftrue:!partition['is_hw'] }}</td>
+					<td>{{ partition['size'] }}</td>
+					<td>{{ partition['fstype'] | iftrue:!partition['is_pv']&&partition['partcount']==0 }}{{ 'LVM卷' | iftrue:partition['is_pv'] }}</td>
+					<td>{{ partition['mount'] }}</td>
+					<td>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['fstype']=='swap'&&partition['partcount']==0" ng-click="swaponconfirm(partition['name'])">启用</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!partition['is_pv']&&partition['mount']&&partition['fstype']=='swap'&&partition['partcount']==0" ng-click="swapoffconfirm(partition['name'])">停用</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['fstype']!='swap'&&partition['fstype']&&partition['partcount']==0" ng-click="mountconfirm(partition['name'], partition['fstype'])">挂载</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!partition['is_pv']&&partition['mount']&&partition['fstype']!='swap'&&partition['partcount']==0" ng-click="umountconfirm(partition['name'])">卸载</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['partcount']==0" ng-click="formatconfirm(partition['name'])">格式化</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="partition['is_hw']&&!partition['is_pv']&&!partition['mount']" ng-click="scanpartconfirm(partition['name'])">扫描</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="partition['is_hw']&&!partition['is_pv']&&!partition['mount']&&partition['unpartition']!='0'&&partition['partcount']<4" ng-click="addpartconfirm(partition['name'], partition['unpartition'])">新建分区</button>
+					</td>
+				</tr>
+				<tr ng-repeat="subpart in partition['partitions'] | filter: {'is_lv': false}">
+					<td>{{ subpart['name'] | iftrue:subpart['is_hw'] }}</td>
+					<td>{{ subpart['name'] | iftrue:!subpart['is_hw'] }}</td>
+					<td>{{ subpart['size'] }}</td>
+					<td>{{ subpart['fstype'] | iftrue:!subpart['is_pv'] }}{{ 'LVM卷' | iftrue: subpart['is_pv'] }}</td>
+					<td>{{ subpart['mount'] }}</td>
+					<td>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['fstype']=='swap'&&subpart['partcount']==0" ng-click="swaponconfirm(subpart['name'])">启用</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!subpart['is_pv']&&subpart['mount']&&subpart['fstype']=='swap'&&subpart['partcount']==0" ng-click="swapoffconfirm(subpart['name'])">停用</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['fstype']!='swap'&&subpart['fstype']&&subpart['partcount']==0" ng-click="mountconfirm(subpart['name'], subpart['fstype'])">挂载</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!subpart['is_pv']&&subpart['mount']&&subpart['fstype']!='swap'&&subpart['partcount']==0" ng-click="umountconfirm(subpart['name'])">卸载</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['partcount']==0" ng-click="formatconfirm(subpart['name'])">格式化</button>
+						<button class="btn btn-mini" ng-disabled="waiting" ng-show="!subpart['is_hw']&&!subpart['is_pv']&&!subpart['mount']" ng-click="delpartconfirm(subpart['name'])">删除分区</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	
+	<div style="margin-top:40px;display:none" ng-show="diskinfo['lvscount'] > 0">
+		<h5>LVM逻辑卷（只读）</h5>
+		<table class="table" style="width:600px">
+			<tbody>
+				<tr class="warning">
+					<td>设备</td>
+					<td>卷名</td>
+					<td>大小</td>
+					<td>文件系统</td>
+					<td>挂载点</td>
+				</tr>
+				<tr ng-repeat="partition in diskinfo['lvm']['partitions']">
+					<td>{{ partition['name'] }}</td>
+					<td>{{ partition['vname'] }}</td>
+					<td>{{ partition['size'] }}</td>
+					<td>{{ partition['fstype'] }}</td>
+					<td>{{ partition['mount'] }}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div id="swaponconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>启用交换分区 {{devname}} </h3>
+  </div>
+  <div class="modal-body">
+    <p>确定要启用交换分区 {{devname}} 吗？</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#swaponconfirm').modal('hide')" ng-click="swapon()">确定</button>
+  </div>
+</div>
+
+<div id="swapoffconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>停用交换分区 {{devname}} </h3>
+  </div>
+  <div class="modal-body">
+    <p>确定要停用交换分区 {{devname}} 吗？</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#swapoffconfirm').modal('hide')" ng-click="swapoff()">确定</button>
+  </div>
+</div>
+
+<div id="umountconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>卸载 {{devname}} </h3>
+  </div>
+  <div class="modal-body">
+    <p>确定要卸载 {{devname}} 吗？</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#umountconfirm').modal('hide')" ng-click="umount()">确定</button>
+  </div>
+</div>
+
+<div id="mountconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>挂载 {{devname}} </h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">将 {{devname}} 挂载到：</label>
+			<div class="controls">
+				<div class="input-append">
+					<input type="text" class="input-medium" ng-model="mountpoint" ng-disabled="processing">
+					<button class="btn" ng-click="selectmountpoint()" title="选择挂载点"><i class="icon-folder-open"></i></button>
+				</div>
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#mountconfirm').modal('hide')" ng-click="mount()">确定</button>
+  </div>
+</div>
+
+<div id="formatconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>格式化 {{devname}} </h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">文件系统格式：</label>
+			<div class="controls">
+				<select style="width:150px" ng-model="fstype" ng-options="fs for fs in supportfs"></select>
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#formatconfirm').modal('hide')" ng-click="format()">确定</button>
+  </div>
+</div>
+
+<div id="addpartconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>在 {{devname}} 下添加分区</h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">剩余空间：</label>
+			<div class="controls">
+				<span class="btn">{{unpartition}}</span>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">分区大小：</label>
+			<div class="controls">
+				<input type="text" class="span1" ng-model="size" />
+				<select style="width:60px" ng-model="unit" ng-init="unit='G'" ng-options="unit for unit in ['M', 'G']"></select>
+			</div>
+		</div>
+		<div class="well text-info">
+			提示：<br>
+			<ul>
+				<li>不输入分区大小表示使用所有可连续分配的空间。</li>
+				<li>如果分区大小超过可连续分配的空间，则将使用可连续分配的空间大小。</li>
+				<li>每个设备下最多可创建4个分区。</li>
+				<li>请在分区前先卸载该设备上已挂载的分区，否则分区的修改将不可见。</li>
+			</li>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#addpartconfirm').modal('hide')" ng-click="addpart()">确定</button>
+  </div>
+</div>
+
+<div id="delpartconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>删除分区 {{devname}}</h3>
+  </div>
+  <div class="modal-body">
+	<p class="text-error">分区删除后，该分区中的数据将丢失！</p>
+    <p>确定要删除分区 {{devname}} 吗？</p>
+	<p style="margin-top:25px">请输入大写的 OK 后继续重启：<input type="text" class="input-mini" max-length="2" ng-model="confirmok" placeholder="输入OK"></p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-danger" onclick="$('#delpartconfirm').modal('hide')" ng-disabled="confirmok!='OK'" ng-click="delpart()">确定删除</button>
+  </div>
+</div>
+
+<div id="scanpartconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>扫描设备 {{devname}} 的分区</h3>
+  </div>
+  <div class="modal-body">
+	<p>扫描分区前，请先卸载该设备下所有已挂载的分区。</p>
+    <p>确定要开始扫描设备 {{devname}} 吗？</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#scanpartconfirm').modal('hide')" ng-click="scanpart()">确定</button>
+  </div>
+</div>
+
+<div id="selector" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{selector_title}}</h3>
+  </div>
+  <div class="modal-body">
+	<div selector></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+  </div>
+</div>

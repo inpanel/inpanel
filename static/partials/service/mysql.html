@@ -1,0 +1,119 @@
+<div navbar ng-init="currentItem='service.mysql'"></div>
+<div ng-show="Auth.processing||!loaded"><div loading></div></div>
+
+<div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
+	<div class="module-header">
+		<h3>MySQL - 最流行的开源关系型数据库服务器</h3>
+	</div>
+	
+	<div srvinstall ng-init="name='MySQL';pkg='mysql';expected_repolist=['base','CentALT','ius','atomic'];"></div>
+
+	<div class="tabbable" ng-show="installed">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='password'"><a href="#password" ng-click="sec('password')" data-toggle="tab">密码设置</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+				<div srvbase ng-init="name='MySQL';pkg='mysql';service='mysqld';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='password'" id="password">
+				<table class="table table-button" style="width:600px;" ng-show="!forceupdate">
+					<thead>
+						<tr>
+							<th colspan="3">管理员密码设置</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="warning">
+							<td colspan="3" class="text-info">MySQL的管理员用户名为 root，密码可在此修改，默认密码为空。</th>
+						</tr>
+						<tr>
+							<td>
+								<form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
+									<div class="control-group" style="margin-bottom:10px;">
+										<label class="control-label" for="password">原密码：</label>
+										<div class="controls">
+											<input class="input" ng-model="root_opasswd" type="password" id="password" ng-disable="processing">
+										</div>
+									</div>
+									<div class="control-group" style="margin-bottom:10px;margin-top:5px;">
+										<label class="control-label" for="newpassword">新密码：</label>
+										<div class="controls">
+											<input class="input" ng-model="root_passwd" type="password" id="newpassword" ng-disable="processing">
+										</div>
+									</div>
+									<div class="control-group" style="margin-bottom:10px;margin-top:5px;">
+										<label class="control-label" for="newpasswordc">确认新密码：</label>
+										<div class="controls">
+											<input class="input" ng-model="root_passwdc" type="password" id="newpasswordc" ng-disable="processing">
+										</div>
+									</div>
+									<div class="control-group">
+										<div class="controls">
+											<button class="btn btn-primary" ng-click="updatepwd()" ng-disable="processing">修改密码</button>
+											<button class="btn" ng-click="forceupdate=true" ng-disable="processing">忘记原密码</button>
+										</div>
+									</div>
+								</form>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<table class="table table-button" style="width:600px;" ng-show="forceupdate">
+					<thead>
+						<tr>
+							<th colspan="3">忘记原密码</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="warning">
+							<td colspan="3" class="text-error">此处操作会强制修改 root 密码，在修改过程中会停止 MySQL 服务。</th>
+						</tr>
+						<tr>
+							<td>
+								<form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
+									<div class="control-group" style="margin-bottom:10px;">
+										<label class="control-label" for="password">新密码：</label>
+										<div class="controls">
+											<input class="input" ng-model="root_passwd" type="password" id="password" ng-disable="processing">
+										</div>
+									</div>
+									<div class="control-group" style="margin-bottom:10px;margin-top:5px;">
+										<label class="control-label" for="passwordc">确认新密码：</label>
+										<div class="controls">
+											<input class="input" ng-model="root_passwdc" type="password" id="passwordc" ng-disable="processing">
+										</div>
+									</div>
+									<div class="control-group">
+										<div class="controls">
+											<button class="btn btn-primary" ng-click="fupdatepwd()" ng-disable="processing">修改密码</button>
+											<button class="btn" ng-click="forceupdate=false" ng-disable="processing">返回</button>
+										</div>
+									</div>
+								</form>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
+				<div srvfile ng-init="items=[{name:'主配置', path:'/etc/my.cnf', isfile:true}];"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
+				<div srvlog ng-init="items=[{name:'日志文件', path:'/var/log/mysqld.log', isfile:true}];"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
+				<div srvupdate ng-init="name='MySQL';pkg='mysql';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
+				<div srvuninstall ng-init="name='MySQL';pkg='mysql';"></div>
+			</div>
+		</div>
+	</div>
+
+</div>

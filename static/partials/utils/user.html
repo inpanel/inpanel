@@ -1,0 +1,326 @@
+<div navbar ng-init="currentItem='utils.user'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>用户管理</h3>
+	</div>
+
+	<div class="tabbable">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='user'"><a href="#user" ng-click="sec('user')" data-toggle="tab">用户管理</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='group'"><a href="#group" ng-click="sec('group')" data-toggle="tab">用户组管理</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='user'" id="user" ng-init="loadUsers()">
+				<div class="widget widget-table">
+					<div class="widget-header">
+						<i class="icon-list-alt"></i><h3>用户管理</h3>
+						<div class="pull-right" style="margin-right:10px">
+							<button class="btn btn-small" ng-click="useraddconfirm()"><i class="icon-plus"></i> 添加新用户</button>
+						</div>
+					</div>
+					<div class="widget-content">
+						<table class="table table-striped table-hover table-bordered">
+							<thead>
+								<tr>
+									<th style="width:50px" class="td-right">ID</th>
+									<th style="width:40px">状态</th>
+									<th>用户名</th>
+									<th>备注</th>
+									<th>用户组</th>
+									<th>主目录</th>
+									<th>SHELL路径</th>
+									<th style="width:130px">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="user in users">
+									<td class="td-right">{{user.pw_uid}}</td>
+									<td ng-bind-html-unsafe="user.lock | user.lock"></td>
+									<td>{{user.pw_name}}</td>
+									<td>{{user.pw_gecos}}</td>
+									<td>{{user.pw_gname}}</td>
+									<td>{{user.pw_dir}}</td>
+									<td>{{user.pw_shell}}</td>
+									<td>
+										<button class="btn btn-mini" ng-click="usermodconfirm($index)">修改用户</button>
+										<button class="btn btn-mini" ng-click="userdelconfirm($index)">删除用户</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='group'" id="group" ng-init="loadGroups()">
+				<div class="widget widget-table">
+					<div class="widget-header">
+						<i class="icon-list-alt"></i><h3>用户组管理</h3>
+						<div class="pull-right" style="margin-right:10px">
+							<button class="btn btn-small" ng-click="groupaddconfirm()"><i class="icon-plus"></i> 添加新用户组</button>
+						</div>
+					</div>
+					<div class="widget-content">
+						<table class="table table-striped table-hover table-bordered">
+							<thead>
+								<tr>
+									<th style="width:50px" class="td-right">ID</th>
+									<th>用户组</th>
+									<th>组成员</th>
+									<th style="width:260px">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="group in groups">
+									<td class="td-right">{{group.gr_gid}}</td>
+									<td>{{group.gr_name}}</td>
+									<td><span ng-repeat="member in group.gr_mem">{{member}}<span ng-show="$index<group.gr_mem.length-1">, </span></span></td>
+									<td>
+										<button class="btn btn-mini" ng-click="groupmodconfirm($index)">修改组</button>
+										<button class="btn btn-mini" ng-click="groupdelconfirm($index)">删除组</button>
+										<button class="btn btn-mini" ng-click="groupmemsaddconfirm($index)">添加组成员</button>
+										<button class="btn btn-mini" ng-click="groupmemsdelconfirm($index)" ng-disabled="group.gr_mem.length==0">删除组成员</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+</div>
+
+<div id="useraddconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>添加新用户</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">用户名：</label>
+			<div class="controls">
+				<input type="text" ng-model="curuser.pw_name">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">备注：</label>
+			<div class="controls">
+				<input type="text" ng-model="curuser.pw_gecos">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">用户组：</label>
+			<div class="controls">
+				<select style="width:150px" ng-model="curuser.pw_gname" ng-options="group.gr_name as group.gr_name for group in groups"></select>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">主目录：</label>
+			<div class="controls">
+				<label class="checkbox"><input type="checkbox" ng-model="curuser.createhome">是否创建主目录<span ng-show="curuser.pw_name"> /home/{{curuser.pw_name}}</span>？</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">SHELL路径：</label>
+			<div class="controls">
+				<input type="text" ng-model="curuser.pw_shell">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">锁定帐户：</label>
+			<div class="controls">
+				<label class="checkbox"><input type="checkbox" ng-checked="curuser.lock">是否锁定该帐户？</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">密码：</label>
+			<div class="controls">
+				<input type="password" ng-model="curuser.pw_passwd" placeholder="如不想设置密码，请留空">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">确认密码：</label>
+			<div class="controls">
+				<input type="password" ng-model="curuser.pw_passwdc" placeholder="如不想设置密码，请留空">
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#useraddconfirm').modal('hide')" ng-click="useradd()">添加</button>
+  </div>
+</div>
+
+<div id="usermodconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>修改用户 {{curuser.pw_name}}</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">备注：</label>
+			<div class="controls">
+				<input type="text" ng-model="curuser.pw_gecos">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">用户组：</label>
+			<div class="controls">
+				<select style="width:150px" ng-model="curuser.pw_gname" ng-options="group.gr_name as group.gr_name for group in groups"></select>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">主目录：</label>
+			<div class="controls">
+				<input type="text" ng-model="curuser.pw_dir">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">SHELL路径：</label>
+			<div class="controls">
+				<input type="text" ng-model="curuser.pw_shell">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">锁定帐户：</label>
+			<div class="controls">
+				<label class="checkbox"><input type="checkbox" ng-model="curuser.lock">是否锁定该帐户？</label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">修改密码：</label>
+			<div class="controls">
+				<input type="password" ng-model="curuser.pw_passwd" placeholder="如不想修改密码，请留空">
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">确认密码：</label>
+			<div class="controls">
+				<input type="password" ng-model="curuser.pw_passwdc" placeholder="如不想修改密码，请留空">
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#usermodconfirm').modal('hide')" ng-click="usermod()">确定</button>
+  </div>
+</div>
+
+<div id="userdelconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>删除用户 {{curuser.pw_name}}</h3>
+  </div>
+  <div class="modal-body">
+	<p>确定要删除用户 {{curuser.pw_name}} 吗？</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#userdelconfirm').modal('hide')" ng-click="userdel()">确认删除</button>
+  </div>
+</div>
+
+<div id="groupaddconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>添加新用户组</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">用户组名称：</label>
+			<div class="controls">
+				<input type="text" ng-model="curgrp_name">
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#groupaddconfirm').modal('hide')" ng-click="groupadd()">添加</button>
+  </div>
+</div>
+
+<div id="groupmodconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>修改用户组 {{curgrp_name}}</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">用户组名称：</label>
+			<div class="controls">
+				<input type="text" ng-model="curgrp_newname">
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#groupmodconfirm').modal('hide')" ng-click="groupmod()">修改</button>
+  </div>
+</div>
+
+<div id="groupdelconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>删除用户组 {{curgrp_name}}</h3>
+  </div>
+  <div class="modal-body">
+	<p>确定要删除用户组 {{curgrp_name}} 吗？</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#groupdelconfirm').modal('hide')" ng-click="groupdel()">确认删除</button>
+  </div>
+</div>
+
+<div id="groupmemsaddconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>向组 {{curgrp_name}} 中添加成员</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">要添加的成员：</label>
+			<div class="controls">
+				<select style="width:150px" ng-model="curgrp_mem" ng-options="user.pw_name as user.pw_name for user in users"></select>
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#groupmemsaddconfirm').modal('hide')" ng-click="groupmemsadd()">确认添加</button>
+  </div>
+</div>
+
+<div id="groupmemsdelconfirm" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>删除组 {{curgrp_name}} 中的成员</h3>
+  </div>
+  <div class="modal-body">
+	<form class="form-horizontal" onsubmit="return false">
+		<div class="control-group">
+			<label class="control-label">要删除的成员：</label>
+			<div class="controls">
+				<select style="width:150px" ng-model="curgrp_mem" ng-options="member for member in curgrp_mems"></select>
+			</div>
+		</div>
+	</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-primary" onclick="$('#groupmemsdelconfirm').modal('hide')" ng-click="groupmemsdel()">确认删除</button>
+  </div>
+</div>

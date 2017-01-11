@@ -1,0 +1,77 @@
+<div navbar ng-init="currentItem='database'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+	<div class="module-header">
+		<h3>添加新用户</h3>
+	</div>
+	
+	<div class="well" style="width:350px" ng-show="!$mysql.password_validated">
+		<form onsubmit="return false" method="get" action="/">
+			<div class="control-group" style="margin-bottom:10px;">
+				<label class="control-label" for="password">
+					请输入数据库管理员 root 的密码后继续操作：
+				</label>
+				<input class="input" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" autofocus><br>
+				<button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">登录 MySQL</button>
+				<a href="#/service/mysql?s=password" class="btn">忘记密码？</a>
+			</div>
+		</form>
+	</div>
+
+	<div class="row-fluid" ng-show="$mysql.password_validated">
+		<div class="span6">
+			<div class="widget">
+				<div class="widget-header">
+					<i class="icon-plus-sign"></i><h3>添加新用户<span style="display:none" ng-show="dbname">到数据库 {{dbname}}</span></h3>
+				</div>
+				<div class="widget-content form-horizontal form-horizontal-small">
+					<div class="control-group control-group-mini">
+						<label class="control-label">用户名</label>
+						<div class="controls">
+							<input type="text" ng-disabled="processing" ng-model="user" autofocus>
+						</div>
+					</div>
+					<div class="control-group control-group-mini">
+						<label class="control-label">主机</label>
+						<div class="controls">
+							<input type="text" ng-disabled="processing" ng-model="host" ng-init="host='localhost'">
+							<select ng-disabled="processing" ng-model="hosttype" ng-change="host=hosttype" ng-init="hosttype='localhost'" style="width:150px">
+								<option value="%">任意（不推荐）</option>
+								<option value="localhost">本地（比较安全）</option>
+								<option value="">自定义</option>
+							</select>
+						</div>
+					</div>
+					<div class="control-group control-group-mini">
+						<label class="control-label">密码</label>
+						<div class="controls">
+							<input type="password" ng-disabled="processing||emptypassword" ng-model="password">
+							<label class="checkbox inline" style="margin-left:5px">
+								<input type="checkbox" ng-model="emptypassword"> 使用空密码
+							</label>
+						</div>
+					</div>
+					<div class="control-group control-group-mini">
+						<label class="control-label">确认密码</label>
+						<div class="controls">
+							<input type="password" ng-disabled="processing||emptypassword" ng-model="passwordc">
+						</div>
+					</div>
+					<div class="control-group control-group-mini">
+						<label class="control-label">随机密码</label>
+						<div class="controls">
+							<input type="text" ng-disabled="processing||emptypassword" ng-model="randpassword">
+							<button class="btn btn-small" ng-disabled="processing||emptypassword" ng-click="genpassword()" style="margin-left:5px">随机生成</button>
+						</div>
+					</div>
+					<div class="control-group control-group-mini">
+						<div class="controls">
+							<button class="btn" ng-disabled="processing" ng-click="newuser()">添加新用户</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

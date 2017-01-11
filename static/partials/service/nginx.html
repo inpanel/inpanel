@@ -1,0 +1,289 @@
+<div navbar ng-init="currentItem='service.nginx'"></div>
+<div ng-show="Auth.processing||!loaded"><div loading></div></div>
+
+<div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
+	<div class="module-header">
+		<h3>Nginx - 高性能的 HTTP 服务器</h3>
+	</div>
+
+	<div srvinstall ng-init="name='Nginx';pkg='nginx';expected_repolist=['base','CentALT','atomic'];"></div>
+
+	<div class="tabbable" ng-show="installed">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='setting'"><a href="#setting" ng-click="sec('setting')" data-toggle="tab">服务基本设置</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='proxy'"><a href="#proxy" ng-click="sec('proxy')" data-toggle="tab">反向代理设置</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+				<div srvbase ng-init="name='Nginx';pkg='nginx';service='nginx';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
+				<table class="table table-button table-borderless" style="width:400px;">
+					<thead>
+						<tr>
+							<th colspan="2">连接/传输设置</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:130px">单个连接下载限速</td>
+							<td>
+								<div class="input-append">
+									<input type="text" class="input-mini" ng-model="setting.limit_rate" placeholder="不限制">
+									<span class="add-on">KB/S</span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>单个IP连接数限制</td>
+							<td>
+								<div class="input-append">
+									<input type="text" class="input-mini" ng-model="setting.limit_conn" placeholder="不限制">
+									<span class="add-on">个</span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>连接计数内存限制</td>
+							<td>
+								<div class="input-append">
+									<input type="text" class="input-mini" ng-model="setting.limit_conn_zone">
+									<span class="add-on">MB</span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>上传文件大小限制</td>
+							<td>
+								<div class="input-append">
+									<input type="text" class="input-mini" ng-model="setting.client_max_body_size">
+									<span class="add-on">MB</span>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>保持连接超时</td>
+							<td>
+								<div class="input-append">
+									<input type="text" class="input-mini" ng-model="setting.keepalive_timeout">
+									<span class="add-on">秒</span>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<table class="table table-button table-borderless" style="width:400px;">
+					<thead>
+						<tr>
+							<th colspan="2">访问限制</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:80px">黑白名单</td>
+							<td>
+								<label class="radio inline">
+									<input type="radio" ng-model="setting.access_status" value="off"> 未启用
+								</label>
+								<label class="radio inline">
+									<input type="radio" ng-model="setting.access_status" value="black"> 启用黑名单
+								</label>
+								<label class="radio inline">
+									<input type="radio" ng-model="setting.access_status" value="white"> 启用白名单
+								</label>
+							</td>
+						</tr>
+						<tr ng-show="setting.access_status=='white'" style="display:none">
+							<td>白名单</td>
+							<td>
+								<textarea style="width:250px;height:80px" ng-model="setting.allow" placeholder="每行填写一个IP或网段"></textarea>
+								<br><span class="help-block" ng-show="ip">（您当前的 IP 为 {{ip}}）</span>
+							</td>
+						</tr>
+						<tr ng-show="setting.access_status=='black'" style="display:none">
+							<td>黑名单</td>
+							<td>
+								<textarea style="width:250px;height:80px" ng-model="setting.deny" placeholder="每行填写一个IP或网段"></textarea>
+								<span class="help-block" ng-show="ip">（您当前的 IP 为 {{ip}}）</span>
+							</td>
+						</tr>
+						<tr ng-show="setting.access_status!='off'" style="display:none">
+							<td colspan="2">
+								网段示例：
+								<ul>
+									<li>192.168.1.0/24 表示：192.168.1<i style="color:#aaa">.0</i> ~ 192.168.1<i style="color:#aaa">.255</i></li>
+									<li>192.168.0.0/16 表示：192.168<i style="color:#aaa">.0.0</i> ~ 192.168<i style="color:#aaa">.255.255</i></li>
+								</ul>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<table class="table table-button table-borderless" style="width:400px;">
+					<thead>
+						<tr>
+							<th colspan="2">其它设置</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:80px">GZIP压缩</td>
+							<td>
+								<label class="checkbox">
+									<input ng-model="setting.gzip" type="checkbox">
+									开启GZIP压缩
+								</label>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<button class="btn btn-primary" style="margin-left:10px" ng-click="savesettings()">保存设置</button>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='proxy'" id="proxy">
+				<table class="table table-button table-borderless" style="width:800px;">
+					<thead>
+						<tr>
+							<th colspan="2">反向代理缓存设置</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<button class="btn btn-small" ng-click="addcache($index)" ng-show="proxy_caches.length==0" style="display:none">
+									<i class="icon-plus"></i> 添加缓存区
+								</button>
+								<div class="tabbable" ng-show="proxy_caches.length>0" style="display:none">
+									<ul class="nav nav-tabs">
+										<li ng-repeat="cache in proxy_caches" ng-class="'active'|iftrue:$index==curcache" ng-click="setcache($index)">
+											<a href="#cache_{{$index}}" data-toggle="tab">{{cache.name}}</a>
+										</li>
+										<li>
+											<button class="btn btn-small" ng-click="addcache()" style="margin-left:20px;margin-top:5px">
+												<i class="icon-plus"></i> 添加缓存区
+											</button>
+											<button class="btn btn-small" ng-click="deletecache(curcache)" style="margin-left:10px;margin-top:5px">
+												<i class="icon-minus"></i> 删除缓存区
+											</button>
+										</li>
+									</ul>
+									<div class="tab-content">
+										<div class="tab-pane" ng-repeat="cache in proxy_caches" ng-class="'active'|iftrue:$index==curcache" id="cache_{{$index}}">
+											<table class="table table-button table-borderless">
+												<tr>
+													<td style="width:100px">缓存区名称</td>
+													<td>
+														<input ng-model="cache.name" type="text" class="input" placeholder="用于标识不同的缓存区，如：cache1">
+													</td>
+												</tr>
+												<tr>
+													<td>缓存计数内存</td>
+													<td>
+														<div class="input-append">
+															<input type="text" class="input-mini" ng-model="cache.mem">
+															<span class="add-on">MB</span>
+														</div>
+													</td>
+												</tr>
+												<tr>
+													<td>缓存文件目录</td>
+													<td>
+														<div class="input-append">
+															<input ng-model="cache.path" type="text" class="input" placeholder="缓存文件保存在的目录">
+															<button class="btn" ng-click="selectcachefolder($index)"><i class="icon-folder-open"></i></button>
+														</div>
+														<label class="checkbox" style="margin-top:5px">
+															<input ng-model="cache.autocreate" type="checkbox">
+															目录不存在时，自动创建目录
+														</label>
+													</td>
+												</tr>
+												<tr>
+													<td>缓存目录规则</td>
+													<td>
+														第一级目录名长度：
+														<div class="input-append">
+															<input type="text" class="input-mini" ng-model="cache.path_level_1">
+															<span class="add-on">个字母</span>
+														</div>
+														第二级目录名长度（0表示不使用该级）：
+														<div class="input-append">
+															<input type="text" class="input-mini" ng-model="cache.path_level_2">
+															<span class="add-on">个字母</span>
+														</div>
+														第三级目录名长度（0表示不使用该级）：
+														<div class="input-append">
+															<input type="text" class="input-mini" ng-model="cache.path_level_3">
+															<span class="add-on">个字母</span>
+														</div>
+													</td>
+												</tr>
+												<tr>
+													<td>缓存删除规则</td>
+													<td>
+														<span style="margin-bottom:5px;display:block">以下时间内，缓存未被访问将被删除：</span>
+														<div class="input-append">
+															<input type="text" class="input-mini" ng-model="cache.inactive">
+															<select style="width:80px" ng-model="cache.inactive_unit">
+																<option value="s">秒</option>
+																<option value="m">分钟</option>
+																<option value="h">小时</option>
+																<option value="d">天</option>
+															</select>
+														</div>
+													</td>
+												</tr>
+												<tr>
+													<td>缓存大小限制</td>
+													<td>
+														<div class="input-append">
+															<input type="text" class="input-mini" ng-model="cache.max_size">
+															<select style="width:80px" ng-model="cache.max_size_unit">
+																<option value="m">MB</option>
+																<option value="g">GB</option>
+															</select>
+														</div>
+													</td>
+												</tr>
+											</table>
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<button class="btn btn-primary" style="margin-left:10px" ng-click="savecaches()">保存设置</button>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
+				<div srvfile ng-init="items=[{name:'主目录', path:'/etc/nginx', isdir:true}];"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
+				<div srvlog ng-init="items=[{name:'日志目录', path:'/var/log/nginx', isdir:true}];"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
+				<div srvupdate ng-init="name='Nginx';pkg='nginx';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
+				<div srvuninstall ng-init="name='Nginx';pkg='nginx';"></div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<div id="selector" class="modal hide fade">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>{{selector_title}}</h3>
+  </div>
+  <div class="modal-body">
+	<div selector></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+  </div>
+</div>

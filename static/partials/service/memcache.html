@@ -1,0 +1,34 @@
+<div navbar ng-init="currentItem='service.memcache'"></div>
+<div ng-show="Auth.processing||!loaded"><div loading></div></div>
+
+<div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
+	<div class="module-header">
+		<h3>Memcache - 内存数据库</h3>
+	</div>
+	
+	<div srvinstall ng-init="name='Memcache';pkg='memcache';expected_repolist=['base','CentALT'];"></div>
+
+	<div class="tabbable" ng-show="installed">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+				<div srvbase ng-init="name='Memcache';pkg='memcache';service='memcached';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
+				<div srvfile ng-init="items=[{name:'主配置', path:'/etc/init.d/memcached', isfile:true}];"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
+				<div srvupdate ng-init="name='Memcache';pkg='memcache';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
+				<div srvuninstall ng-init="name='Memcache';pkg='memcache';"></div>
+			</div>
+		</div>
+	</div>
+
+</div>

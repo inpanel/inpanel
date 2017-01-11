@@ -1,0 +1,191 @@
+<div navbar ng-init="currentItem='service'"></div>
+<div ng-show="Auth.processing||!loaded"><div loading></div></div>
+
+<div id="main" ng-show="!Auth.processing&&loaded" style="display:none">
+	<div class="module-header">
+		<h3>服务管理</h3>
+	</div>
+
+	<div class="tabbable" ng-init="loadInfo('service.**')">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='http'"><a href="#http" ng-click="sec('http')" data-toggle="tab">HTTP服务</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP服务</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='database'"><a href="#database" ng-click="sec('database')" data-toggle="tab">数据库服务</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='appengine'"><a href="#appengine" ng-click="sec('appengine')" data-toggle="tab">应用/脚本引擎</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='mail'"><a href="#mail" ng-click="sec('mail')" data-toggle="tab">邮件服务</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统服务</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='http'" id="http">
+				<table class="table table-button" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="3">HTTP服务</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:100px">Nginx</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>
+							<td class="muted">高性能的 HTTP 服务器</td>
+							<td style="width:100px">
+								<div srvminiop ng-init="name='Nginx';service='nginx';urlname='nginx'"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Apache</td>
+							<td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
+							<td class="muted">老牌 HTTP 服务器</td>
+							<td>
+								<div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ftp'" id="ftp">
+				<table class="table table-button" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="3">FTP服务</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:100px">vsftpd</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.vsftpd']['status'] | service.status"></td>
+							<td class="muted">安全快速的FTP服务器</td>
+							<td style="width:100px">
+								<div srvminiop ng-init="name='vsftpd';service='vsftpd';urlname='vsftpd'"></div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='database'" id="database">
+				<table class="table table-button" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="3">数据库服务</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:100px">MySQL</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
+							<td class="muted">最流行的开源关系型数据库服务器</td>
+							<td style="width:100px">
+								<div srvminiop ng-init="name='MySQL';service='mysqld';urlname='mysql'"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Redis</td>
+							<td ng-bind-html-unsafe="info['service.redis']['status'] | service.status"></td>
+							<td class="muted">高性能内存数据库</td>
+							<td>
+								<div srvminiop ng-init="name='Redis';service='redis';urlname='redis'"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Memcache</td>
+							<td ng-bind-html-unsafe="info['service.memcached']['status'] | service.status"></td>
+							<td class="muted">内存数据库</td>
+							<td>
+								<div srvminiop ng-init="name='Memcache';service='memcached';urlname='memcache'"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>MongoDB</td>
+							<td ng-bind-html-unsafe="info['service.mongod']['status'] | service.status"></td>
+							<td class="muted">分布式高性能的数据库服务器</td>
+							<td>
+								<div srvminiop ng-init="name='MongoDB';service='mongod';urlname='mongodb'"></div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='appengine'" id="appengine">
+				<table class="table table-button" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="3">应用/脚本引擎</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:100px">PHP</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.php-fpm']['status'] | service.status"></td>
+							<td class="muted">PHP 脚本解析器</td>
+							<td style="width:100px">
+								<div srvminiop ng-init="name='PHP';service='php-fpm';urlname='php'"></div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mail'" id="mail">
+				<table class="table table-button" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="3">邮件服务</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:100px">Sendmail</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.sendmail']['status'] | service.status"></td>
+							<td class="muted">邮件传输服务</td>
+							<td style="width:100px">
+								<div srvminiop ng-init="name='Sendmail';service='sendmail';urlname='sendmail'"></div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
+				<table class="table table-button" style="width:600px">
+					<thead>
+						<tr>
+							<th colspan="3">系统服务</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:100px">SSH</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.sshd']['status'] | service.status"></td>
+							<td class="muted">远程连接服务器</td>
+							<td style="width:100px">
+								<div srvminiop ng-init="name='SSH';service='sshd';urlname='ssh'"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>iptables</td>
+							<td ng-bind-html-unsafe="info['service.iptables']['status'] | service.status"></td>
+							<td class="muted">Linux 防火墙</td>
+							<td>
+								<div srvminiop ng-init="name='iptables';service='iptables';urlname='iptables'"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Cron</td>
+							<td ng-bind-html-unsafe="info['service.crond']['status'] | service.status"></td>
+							<td class="muted">定时任务管理服务器</td>
+							<td>
+								<div srvminiop ng-init="name='Cron';service='crond';urlname='cron'"></div>
+							</td>
+						</tr>
+						<tr style="display:none" ng-show="info['server.virt'] != 'Virtuozzo/OpenVZ'">
+							<td>NTP</td>
+							<td ng-bind-html-unsafe="info['service.ntpd']['status'] | service.status"></td>
+							<td class="muted">时间同步服务</td>
+							<td>
+								<div srvminiop ng-init="name='NTP';service='ntpd';urlname='ntp'"></div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
