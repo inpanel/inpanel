@@ -71,15 +71,14 @@
 					</thead>
 					<tbody>
 						<tr>
-	                        <td style="width:100px">MariaDB</td>
-	                        <td style="width:60px"
-	                            ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
-	                        <td class="muted">MySQL的一个分支，主要由开源社区在维护</td>
-	                        <td style="width:100px">
-	                            <div srvminiop ng-init="name='MariaDB';service='MariaDB';urlname='MariaDB'"></div>
-	                        </td>
-	                    </tr>
-						<tr>
+              <td style="width:100px">MariaDB</td>
+              <td style="width:60px" ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
+              <td class="muted">MySQL的一个分支，主要由开源社区在维护</td>
+              <td style="width:100px">
+                  <div srvminiop ng-init="name='MariaDB';service='MariaDB';urlname='MariaDB'"></div>
+              </td>
+            </tr>
+            <tr>
 							<td style="width:100px">MySQL</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
 							<td class="muted">最流行的开源关系型数据库服务器</td>

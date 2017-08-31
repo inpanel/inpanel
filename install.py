@@ -159,7 +159,7 @@ class Install(object):
             self._run('mkdir /tmp/vpsmate_data', True)
             self._run('cp -r %s/data/* /tmp/vpsmate_data/' % self.installpath, True)
         self._run('rm -rf %s' % self.installpath)
-        self._run('git clone https://github.com/fanshengshuai/VPSMate.git %s' % self.installpath)
+        self._run('git clone https://github.com/doudoudzj/vpsmate.git %s' % self.installpath)
 
         # install new code
         # self._run('mv vpsmate %s' % self.installpath)
