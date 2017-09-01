@@ -23,7 +23,7 @@ a.black, a.black:hover, a.black:active, a.black:visited {
 }
 
 input, input:focus, button:focus {
-  outline: none;
+  outline: none !important;
 }
 
 /* table & widget */
