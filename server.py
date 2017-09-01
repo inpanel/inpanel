@@ -9,6 +9,9 @@
 
 import os
 import sys
+import subprocess
+import shlex
+
 root_path = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(root_path, 'lib'))
 
@@ -35,7 +38,7 @@ def main():
         'xsrf_cookies': True,
         'cookie_secret': make_cookie_secret(),
     }
-    
+
     application = vpsmate.web.Application([
         (r'/xsrf', vpsmate.web.XsrfHandler),
         (r'/authstatus', vpsmate.web.AuthStatusHandler),
@@ -51,9 +54,9 @@ def main():
         (r'/sitepackage/(.+)', vpsmate.web.SitePackageHandler),
         (r'/client/(.+)', vpsmate.web.ClientHandler),
         (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)',
-            vpsmate.web.StaticFileHandler, {'path': settings['static_path']}),
+         vpsmate.web.StaticFileHandler, {'path': settings['static_path']}),
         (r'/($)', vpsmate.web.StaticFileHandler,
-            {'path': settings['static_path'] + '/index.html'}),
+         {'path': settings['static_path'] + '/index.html'}),
         (r'/file/(.+)', vpsmate.web.FileDownloadHandler, {'path': '/'}),
         (r'/fileupload', vpsmate.web.FileUploadHandler),
         (r'/version', vpsmate.web.VersionHandler),

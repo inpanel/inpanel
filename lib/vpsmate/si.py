@@ -623,6 +623,7 @@ class Service(object):
 
     support_services = ['vpsmate', 'nginx', 'httpd',
                         'vsftpd', 'mysqld', 'redis', 'memcached', 'mongod', 'php-fpm',
+                        'postfix',
                         'sendmail', 'sshd', 'iptables', 'crond', 'ntpd']
 
     pidnames = {
@@ -633,7 +634,9 @@ class Service(object):
     def status(self, service):
         initscript = '/etc/init.d/%s' % service
         if not os.path.exists(initscript):
-            return None
+            initscript = '/usr/lib/systemd/system/%s.service' % service
+            if not os.path.exists(initscript):
+                return None
 
         pidfile = '/var/run/%s.pid' % service
         if not os.path.exists(pidfile):
@@ -677,15 +680,27 @@ class Service(object):
     def autostart_list(self):
         """Return a list of the autostart service name.
         """
+        startlevel = -1
         with open('/etc/inittab') as f:
             for line in f:
                 if line.startswith('id:'):
                     startlevel = line.split(':')[1]
                     break
+        if startlevel == -1:
+            p = subprocess.Popen(shlex.split('runlevel'), stdout=subprocess.PIPE, close_fds=True)
+            startlevel = int(p.stdout.read().strip().replace('N ', ''))
+            p.wait()
+
         rcpath = '/etc/rc.d/rc%s.d/' % startlevel
+        enableServicePath = '/etc/systemd/system/multi-user.target.wants/'
         services = [
             os.path.basename(os.readlink(filepath))
-            for filepath in glob.glob('%s/S*' % rcpath)]
+            for filepath in glob.glob('%s/S*' % rcpath)
+        ]
+        services += [
+            os.path.basename(filePath).replace('.service', '')
+            for filePath in glob.glob('%s*.service' % enableServicePath)
+        ]
         return services
         
 

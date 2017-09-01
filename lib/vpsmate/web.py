@@ -44,8 +44,8 @@ from async_process import call_subprocess, callbackable
 
 
 SERVER_NAME = 'VPSMate'
-VPSMATE_VERSION = '1.0'
-VPSMATE_BUILD = '10'
+VPSMATE_VERSION = '1.1'
+VPSMATE_BUILD = '11'
 
  
 class Application(tornado.web.Application):
@@ -54,7 +54,7 @@ class Application(tornado.web.Application):
         dist = si.Server.dist()
         settings['dist_name'] = dist['name'].lower()
         settings['dist_version'] = dist['version']
-        settings['dist_verint'] = int(float(dist['version']))
+        settings['dist_verint'] = int(dist['version'][0:dist['version'].find('.')])
         uname = si.Server.uname()
         settings['arch'] = uname['machine']
         if settings['arch'] == 'i686' and settings['dist_verint'] == 5: settings['arch'] = 'i386'
@@ -285,7 +285,7 @@ class LoginHandler(RequestHandler):
                 if loginfails > 0:
                     self.config.set('runtime', 'loginfails', 0)
                 self.set_secure_cookie('authed', 'yes', None)
-                
+
                 passwordcheck = self.config.getboolean('auth', 'passwordcheck')
                 if passwordcheck:
                     self.write({'code': 1, 'msg': u'%s，您已登录成功！' % username})
@@ -319,13 +319,14 @@ class LogoutHandler(RequestHandler):
 class SitePackageHandler(RequestHandler):
     """Interface for quering site packages information.
     """
+
     def get(self, op):
         self.authed()
         if hasattr(self, op):
             getattr(self, op)()
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
-    
+
     @tornado.web.asynchronous
     @tornado.gen.engine
     def getlist(self):
@@ -333,7 +334,7 @@ class SitePackageHandler(RequestHandler):
 
         packages = ''
         packages_cachefile = os.path.join(self.settings['package_path'], '.meta')
-        
+
         # fetch from cache
         if os.path.exists(packages_cachefile):
             # check the file modify time
@@ -469,6 +470,7 @@ class QueryHandler(RequestHandler):
             'mongod'       : False,
             'php-fpm'      : False,
             'sendmail'     : False,
+            'postfix'      : False,
             'sshd'         : False,
             'iptables'     : False,
             'crond'        : False,
@@ -2668,19 +2670,19 @@ class BackendHandler(RequestHandler):
 
         elif repo in ('epel', 'CentALT', 'ius'):
             # CentALT and ius depends on epel
-            for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
-                cmds.append('rpm -U %s' % rpm)
+            # for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
+            #     cmds.append('rpm -U %s' % rpm)
+            if dist_verint < 7:
+                if repo in ('CentALT', 'ius'):
+                    for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
+                        cmds.append('rpm -U %s' % rpm)
 
-            if repo in ('CentALT', 'ius'):
-                for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
-                    cmds.append('rpm -U %s' % rpm)
-        
         elif repo == '10gen':
             # REF: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/
             with open('/etc/yum.repos.d/10gen.repo', 'w') as f:
                 f.write(yum.yum_repostr['10gen'][self.settings['arch']])
-        
-        elif repo == 'atomic':
+
+        elif repo == 'atomic' and dist_verint < 7:
             # REF: http://www.atomicorp.com/channels/atomic/
             result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['atomic'], shell=True)
             if result != 0: error = True
@@ -2745,6 +2747,7 @@ class BackendHandler(RequestHandler):
         data = []
         matched = False
         for cmd in cmds:
+            print cmd
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
                 matched = True
@@ -2759,7 +2762,7 @@ class BackendHandler(RequestHandler):
                         field_value = fields[1].strip()
                         if field_name == 'name': data.append({})
                         data[-1][field_name] = field_value
-        
+
         if matched:
             code = 0
             msg = u'获取软件版本信息成功！'
