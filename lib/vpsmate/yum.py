@@ -27,9 +27,12 @@ yum_reporpms = {
             ),
         },
         6: {
-            'x86_64': ('http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-3.el6.centos.9.x86_64.rpm', ),
-            'i386':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-3.el6.centos.9.i686.rpm', ),
-            'i686':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-3.el6.centos.9.i686.rpm', ),
+            'x86_64': ('http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-9.el6.12.3.x86_64.rpm.rpm', ),
+            'i386':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-9.el6.12.3.i686.rpm', ),
+            'i686':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-9.el6.12.3.i686.rpm', ),
+        },
+        7: {
+            'x86_64': ('http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-3.1611.el7.centos.x86_64.rpm',),
         }
     },
     'epel': {
@@ -42,6 +45,9 @@ yum_reporpms = {
             'x86_64': ('http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm', ),
             'i386':   ('http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm', ),
             'i686':   ('http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm', ),
+        },
+        7: {
+            'x86_64': ('http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm',),
         },
     },
     'CentALT': {
@@ -97,9 +103,10 @@ enabled=1',
 # Alias of package we use when get versions of it
 yum_pkg_alias = {
     'nginx'         : ('nginx', 'nginx-stable', ),
+    'tomcat'        : ('tomcat', ),
     'apache'        : ('httpd', ),
     'vsftpd'        : ('vsftpd', ),
-    'mysql'         : ('mysql-server', 'mysql55-server', ),
+    'mysql'         : ('mysql-server', 'mysql55-server', 'mariadb', ),
     'redis'         : ('redis', ),
     'memcache'      : ('memcached', ),
     'mongodb'       : ('mongodb-server', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
@@ -136,6 +143,10 @@ yum_pkg_relatives = {
     'mysql55-server': {
         'mysql55-server'        : {'default': True, 'base': True, },
         'mysql55'               : {'default': True, 'base': True, },
+    },
+    'mariadb'       : {
+        'mariadb-server'        : {'default': True, 'base': True, },
+        'mariadb'               : {'default': True, 'base': True, },
     },
     'redis'         : {
         'redis'                 : {'default': True, 'base': True, },
