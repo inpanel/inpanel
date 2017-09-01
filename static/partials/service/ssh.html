@@ -23,7 +23,7 @@
 				<div srvbase ng-init="name='SSH';pkg='ssh';service='sshd';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
-				<table class="table table-button table-borderless" style="width:600px;">
+				<table class="table table-button table-borderless">
 					<thead>
 						<tr>
 							<th colspan="2">基本设置</th>
@@ -60,7 +60,7 @@
 				<button class="btn btn-primary" style="margin-left:10px" ng-click="savesettings()">保存设置</button>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pubkauth'" id="pubkauth">
-				<table class="table table-button table-borderless" style="width:600px;">
+				<table class="table table-button table-borderless">
 					<thead>
 						<tr>
 							<th colspan="2">公钥验证</th>

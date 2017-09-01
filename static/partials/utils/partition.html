@@ -8,7 +8,7 @@
 	
 	<div style="display:none" ng-init="loadDiskinfo()" ng-show="diskinfo['count'] > 0">
 		<h5>物理分区管理</h5>
-		<table class="table" style="width:600px" ng-repeat="partition in diskinfo['partitions']">
+		<table class="table" ng-repeat="partition in diskinfo['partitions']">
 			<tbody>
 				<tr class="warning">
 					<td style="width:50px">设备{{$index+1}}</td>
@@ -55,7 +55,7 @@
 	
 	<div style="margin-top:40px;display:none" ng-show="diskinfo['lvscount'] > 0">
 		<h5>LVM逻辑卷（只读）</h5>
-		<table class="table" style="width:600px">
+		<table class="table">
 			<tbody>
 				<tr class="warning">
 					<td>设备</td>

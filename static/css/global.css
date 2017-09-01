@@ -22,6 +22,10 @@ a.black, a.black:hover, a.black:active, a.black:visited {
 	color: black;
 }
 
+input, input:focus, button:focus {
+  outline: none;
+}
+
 /* table & widget */
 
 .widget .table td {
@@ -203,6 +207,9 @@ a.black, a.black:hover, a.black:active, a.black:visited {
 }
 .control-group-mini .controls {
 	margin-left: 75px;
+}
+.navbar {
+  margin-top: 20px;
 }
 .navbar .nav > li > a {
 	padding: 10px 13px 10px;

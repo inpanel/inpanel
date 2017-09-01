@@ -187,7 +187,7 @@ directive('srvbase', function(){
 			$scope.stop = serviceop('stop');
 			$scope.restart = serviceop('restart');
 		}],
-		template: '<table class="table table-button" style="width:600px;">\
+		template: '<table class="table table-button">\
 				<thead>\
 					<tr>\
 						<th colspan="2">{{name}} 服务操作</th>\
@@ -418,7 +418,7 @@ directive('srvinstall', function(){
 				);
 			};
 		}],
-		template: '<div class="well" style="width:600px;display:none" ng-show="!$scope.installed&&!$scope.checking">\
+		template: '<div class="well" style="display:none" ng-show="!$scope.installed&&!$scope.checking">\
 				<div ng-show="!installing">\
 					<p>系统检测到 {{name}} 当前尚未安装。</p>\
 					<p>是否要开始安装？</p>\
@@ -556,7 +556,7 @@ directive('srvupdate', function(){
 				);
 			};
 		}],
-		template: '<div class="well" style="width:600px;display:none" ng-show="$scope.installed&&!$scope.checking">\
+		template: '<div class="well" style="display:none" ng-show="$scope.installed&&!$scope.checking">\
 				<div ng-show="!updating">\
 					<p>在此检测并查找可用的新版本并升级。</p>\
 				</div>\
@@ -727,7 +727,7 @@ directive('srvext', function(){
 				);
 			};
 		}],
-		template: '<div class="well" style="width:600px;display:none" ng-show="$scope.installed&&!$scope.checking">\
+		template: '<div class="well" style="display:none" ng-show="$scope.installed&&!$scope.checking">\
 				<div ng-show="!operating">\
 					<p>点击下面的按钮检测扩展安装情况。</p>\
 				</div>\
@@ -833,7 +833,7 @@ directive('srvuninstall', function(){
 				);
 			};
 		}],
-		template: '<div class="well" style="width:600px;" ng-show="$scope.installed&&!$scope.checking">\
+		template: '<div class="well" ng-show="$scope.installed&&!$scope.checking">\
 				<div ng-show="!uninstalling">\
 					<p>确定要卸载 {{name}} 吗？</p>\
 				</div>\
@@ -863,7 +863,7 @@ directive('srvfile', function(){
 		controller: ['$scope', function($scope){
 		}],
 		template: '\
-			<table class="table table-button" style="width:600px;">\
+			<table class="table table-button">\
 				<tbody>\
 					<tr class="warning">\
 						<td colspan="3" class="text-error">注意：如果您没有配置文件修改经验，请勿随意修改，否则可能导致服务无法启动。</td>\
@@ -897,7 +897,7 @@ directive('srvlog', function(){
 		controller: ['$scope', function($scope){
 		}],
 		template: '\
-			<table class="table table-button" style="width:600px;">\
+			<table class="table table-button">\
 				<tbody>\
 					<tr class="warning">\
 						<td colspan="3" class="text-error">注意：尽量不要对日志文件进行修改，否则可能导致新日志无法写入。</td>\
