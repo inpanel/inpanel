@@ -31,8 +31,8 @@
 							<th class="td-borderless" style="width:80px;"><span ng-show="$index==0">站点域名</span></th>
 							<td class="td-borderless" colspan="2">
 								<input ng-model="server_name.name" type="text" class="input-large" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
-								<button class="btn btn-small" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="icon-minus"></i></button>
-								<button class="btn btn-small" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="icon-plus"></i></button>
+								<button class="btn btn-default btn-sm" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="icon-minus"></i></button>
+								<button class="btn btn-default btn-sm" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="icon-plus"></i></button>
 								<br><label class="checkbox inline" style="margin-top:5px">
 									<input ng-model="server_name.default_name" ng-click="server_name.name='_'" type="checkbox">
 									设置为任意域名可访问
@@ -42,7 +42,7 @@
 						<tr>
 							<th class="td-borderless">站点路径</th>
 							<td class="td-borderless">
-								<button class="btn btn-small" ng-click="addlocation($index)" ng-show="setting.locations.length==0" style="display:none">
+								<button class="btn btn-default btn-sm" ng-click="addlocation($index)" ng-show="setting.locations.length==0" style="display:none">
 									<i class="icon-plus"></i> 添加路径配置
 								</button>
 								<div class="tabbable" ng-show="setting.locations.length>0" style="display:none">
@@ -51,10 +51,10 @@
 											<a href="#loc_{{$index}}" data-toggle="tab">{{location.urlpath}}</a>
 										</li>
 										<li>
-											<button class="btn btn-small" ng-click="addlocation()" style="margin-left:20px;margin-top:5px">
+											<button class="btn btn-default btn-sm" ng-click="addlocation()" style="margin-left:20px;margin-top:5px">
 												<i class="icon-plus"></i> 添加路径
 											</button>
-											<button class="btn btn-small" ng-click="deletelocation(curloc)" style="margin-left:10px;margin-top:5px">
+											<button class="btn btn-default btn-sm" ng-click="deletelocation(curloc)" style="margin-left:10px;margin-top:5px">
 												<i class="icon-minus"></i> 删除路径
 											</button>
 										</li>
@@ -197,8 +197,8 @@
 													<div class="controls">
 														<input ng-model="backend.server" type="text" class="input-large" placeholder="格式为：IP:端口 或 域名:端口">
 														<input ng-model="backend.weight" type="text" class="input-mini" placeholder="权重值" ng-show="location.proxy.backends.length>1&&location.proxy.balance=='weight'">
-														<button class="btn btn-small" title="删除该后端" ng-click="proxy_deletebackend($parent.$index, $index)" ng-show="location.proxy.backends.length>1"><i class="icon-minus"></i></button>
-														<button class="btn btn-small" title="增加一个后端" ng-click="proxy_addbackend($parent.$index)" ng-show="$index==location.proxy.backends.length-1"><i class="icon-plus"></i></button>
+														<button class="btn btn-default btn-sm" title="删除该后端" ng-click="proxy_deletebackend($parent.$index, $index)" ng-show="location.proxy.backends.length>1"><i class="icon-minus"></i></button>
+														<button class="btn btn-default btn-sm" title="增加一个后端" ng-click="proxy_addbackend($parent.$index)" ng-show="$index==location.proxy.backends.length-1"><i class="icon-plus"></i></button>
 													</div>
 												</div>
 												<div class="control-group control-group-mini" ng-show="location.proxy.backends.length>1">
@@ -244,7 +244,7 @@
 													<label class="control-label">缓存区域</label>
 													<div class="controls">
 														<select style="width:150px" ng-model="location.proxy.proxy_cache" ng-options="cache for cache in proxy_caches"></select>
-														<button class="btn btn-small" title="重新加载" ng-click="loadproxycaches()"><i class="icon-refresh"></i></button>
+														<button class="btn btn-default btn-sm" title="重新加载" ng-click="loadproxycaches()"><i class="icon-refresh"></i></button>
 														<span class="help-block">如尚未创建缓存区，请<a href="#/service/nginx?s=proxy" target="_blank">点此设定</a>。</span>
 													</div>
 												</div>
@@ -290,7 +290,7 @@
 												<div class="control-group control-group-mini">
 													<label class="control-label">缓存过期</label>
 													<div class="controls">
-														<button class="btn btn-small" ng-click="proxy_addvalid($index)" ng-show="location.proxy.proxy_cache_valid.length==0"><i class="icon-plus"></i> 新增缓存过期配置</button>
+														<button class="btn btn-default btn-sm" ng-click="proxy_addvalid($index)" ng-show="location.proxy.proxy_cache_valid.length==0"><i class="icon-plus"></i> 新增缓存过期配置</button>
 														<div ng-repeat="valid in location.proxy.proxy_cache_valid">
 															状态码：
 															<select style="width:80px" ng-model="valid.code">
@@ -314,8 +314,8 @@
 																	<option value="d">天</option>
 																</select>
 															</div>
-															<button class="btn btn-small" title="删除该行" ng-click="proxy_deletevalid($parent.$index, $index)"><i class="icon-minus"></i></button>
-															<button class="btn btn-small" title="新增一行" ng-click="proxy_addvalid($parent.$index)" ng-show="$index==location.proxy.proxy_cache_valid.length-1"><i class="icon-plus"></i></button>
+															<button class="btn btn-default btn-sm" title="删除该行" ng-click="proxy_deletevalid($parent.$index, $index)"><i class="icon-minus"></i></button>
+															<button class="btn btn-default btn-sm" title="新增一行" ng-click="proxy_addvalid($parent.$index)" ng-show="$index==location.proxy.proxy_cache_valid.length-1"><i class="icon-plus"></i></button>
 														</div>
 													</div>
 												</div>
@@ -428,8 +428,8 @@
 		</div>
 
 		<div style="height:30px">
-			<button class="btn btn-mini" ng-show="showglobaladv" ng-click="showglobaladv=false"><i class="icon-chevron-up"></i> 隐藏高级设置</button>
-			<button class="btn btn-mini" ng-show="!showglobaladv" ng-click="showglobaladv=true"><i class="icon-chevron-down"></i> 显示高级设置</button>
+			<button class="btn btn-default btn-xs" ng-show="showglobaladv" ng-click="showglobaladv=false"><i class="icon-chevron-up"></i> 隐藏高级设置</button>
+			<button class="btn btn-default btn-xs" ng-show="!showglobaladv" ng-click="showglobaladv=true"><i class="icon-chevron-down"></i> 显示高级设置</button>
 		</div>
 
 		<div class="widget" style="margin-top:10px" ng-show="showglobaladv" style="display:none">
@@ -485,8 +485,8 @@
 							<td class="td-borderless">
 								<input ng-model="listen.ip" type="text" class="input-medium" placeholder="默认监听所有可用IP">:
 								<input ng-model="listen.port" type="text" class="input-mini" placeholder="端口">
-								<button class="btn btn-small" ng-click="deletelisten()" ng-show="setting.listens.length>1" title="删除这个监听地址"><i class="icon-minus"></i></button>
-								<button class="btn btn-small" ng-click="addlisten()" ng-show="$index==setting.listens.length-1" title="增加一个监听地址"><i class="icon-plus"></i></button>
+								<button class="btn btn-default btn-sm" ng-click="deletelisten()" ng-show="setting.listens.length>1" title="删除这个监听地址"><i class="icon-minus"></i></button>
+								<button class="btn btn-default btn-sm" ng-click="addlisten()" ng-show="$index==setting.listens.length-1" title="增加一个监听地址"><i class="icon-plus"></i></button>
 								<div class="control-group control-group-mini" style="margin-bottom:0">
 									<label class="control-label">监听选项</label>
 									<div class="controls">

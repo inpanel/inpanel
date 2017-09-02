@@ -26,7 +26,7 @@
                         <i class="icon-list-alt"></i>
                         <h3>网站列表</h3>
                         <div class="pull-right" style="margin-right:10px">
-                            <a class="btn btn-small" href="#/site/nginx/new"><i class="icon-plus"></i> 新建站点</a>
+                            <a class="btn btn-default btn-sm" href="#/site/nginx/new"><i class="icon-plus"></i> 新建站点</a>
                         </div>
                     </div>
                     <div class="widget-content">
@@ -67,16 +67,16 @@
                                     </td>
                                     <td>
                                         <div class="btn-group">
-                                            <a class="btn btn-small" href="#/site/nginx/edit_{{server.listens[0].ip}}_{{server.listens[0].port}}_{{server.server_names[0]}}" title="设置">
+                                            <a class="btn btn-default btn-sm" href="#/site/nginx/edit_{{server.listens[0].ip}}_{{server.listens[0].port}}_{{server.server_names[0]}}" title="设置">
                                                 <i class="icon-wrench"></i>
                                             </a>
-                                            <button class="btn btn-small" ng-show="server.status!='on'" title="启用该站点" ng-click="nginx_enableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+                                            <button class="btn btn-default btn-sm" ng-show="server.status!='on'" title="启用该站点" ng-click="nginx_enableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
 												<i class="icon-play"></i>
 											</button>
-                                            <button class="btn btn-small" ng-show="server.status=='on'" title="停用该站点" ng-click="nginx_disableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+                                            <button class="btn btn-default btn-sm" ng-show="server.status=='on'" title="停用该站点" ng-click="nginx_disableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
 												<i class="icon-stop"></i>
 											</button>
-                                            <button class="btn btn-small" title="删除该站点" ng-click="nginx_deleteserverconfirm(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+                                            <button class="btn btn-default btn-sm" title="删除该站点" ng-click="nginx_deleteserverconfirm(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
 												<i class="icon-remove"></i>
 											</button>
                                         </div>
@@ -118,7 +118,7 @@
                         <tr ng-repeat="package in cate.packages">
                             <td style="width:120px"><a href="{{package.official_site}}" target="_blank">{{package.name}}</a></td>
                             <td style="width:380px" class="muted">{{package.description}}</td>
-                            <td style="width:100px"><button class="btn btn-small" ng-click="package_install_setting(package)">开始安装</button></td>
+                            <td style="width:100px"><button class="btn btn-default btn-sm" ng-click="package_install_setting(package)">开始安装</button></td>
                         </tr>
                     </tbody>
                 </table>

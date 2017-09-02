@@ -17,7 +17,7 @@
 					<div class="widget-header">
 						<i class="icon-list-alt"></i><h3>用户管理</h3>
 						<div class="pull-right" style="margin-right:10px">
-							<button class="btn btn-small" ng-click="useraddconfirm()"><i class="icon-plus"></i> 添加新用户</button>
+							<button class="btn btn-default btn-sm" ng-click="useraddconfirm()"><i class="icon-plus"></i> 添加新用户</button>
 						</div>
 					</div>
 					<div class="widget-content">
@@ -44,8 +44,8 @@
 									<td>{{user.pw_dir}}</td>
 									<td>{{user.pw_shell}}</td>
 									<td>
-										<button class="btn btn-mini" ng-click="usermodconfirm($index)">修改用户</button>
-										<button class="btn btn-mini" ng-click="userdelconfirm($index)">删除用户</button>
+										<button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改用户</button>
+										<button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除用户</button>
 									</td>
 								</tr>
 							</tbody>
@@ -58,7 +58,7 @@
 					<div class="widget-header">
 						<i class="icon-list-alt"></i><h3>用户组管理</h3>
 						<div class="pull-right" style="margin-right:10px">
-							<button class="btn btn-small" ng-click="groupaddconfirm()"><i class="icon-plus"></i> 添加新用户组</button>
+							<button class="btn btn-default btn-sm" ng-click="groupaddconfirm()"><i class="icon-plus"></i> 添加新用户组</button>
 						</div>
 					</div>
 					<div class="widget-content">
@@ -77,10 +77,10 @@
 									<td>{{group.gr_name}}</td>
 									<td><span ng-repeat="member in group.gr_mem">{{member}}<span ng-show="$index<group.gr_mem.length-1">, </span></span></td>
 									<td>
-										<button class="btn btn-mini" ng-click="groupmodconfirm($index)">修改组</button>
-										<button class="btn btn-mini" ng-click="groupdelconfirm($index)">删除组</button>
-										<button class="btn btn-mini" ng-click="groupmemsaddconfirm($index)">添加组成员</button>
-										<button class="btn btn-mini" ng-click="groupmemsdelconfirm($index)" ng-disabled="group.gr_mem.length==0">删除组成员</button>
+										<button class="btn btn-default btn-xs" ng-click="groupmodconfirm($index)">修改组</button>
+										<button class="btn btn-default btn-xs" ng-click="groupdelconfirm($index)">删除组</button>
+										<button class="btn btn-default btn-xs" ng-click="groupmemsaddconfirm($index)">添加组成员</button>
+										<button class="btn btn-default btn-xs" ng-click="groupmemsdelconfirm($index)" ng-disabled="group.gr_mem.length==0">删除组成员</button>
 									</td>
 								</tr>
 							</tbody>

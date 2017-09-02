@@ -6,7 +6,7 @@
 		<h3>欢迎使用 VPSMate！</h3>
 		<p>
 			当前版本：v{{version.version}} b{{version.build}}&nbsp;&nbsp;
-			<button class="btn btn-mini" ng-click="checkUpdate()" style="display:none" ng-show="!detectVer">
+			<button class="btn btn-default btn-xs" ng-click="checkUpdate()" style="display:none" ng-show="!detectVer">
 				{{ '有新的可用版本，点此更新' | iftrue:hasNewver }}
 				{{ '检测新版本' | iftrue:!hasNewver }}
 			</button>

@@ -7,12 +7,16 @@
 	</div>
 	
 	<div ng-init="tlist()">
-		<div style="height:50px;">
-			<div class="pull-left">
-				<a class="btn" href="#/file"><i class="icon-chevron-left"></i> 返回文件管理</a>
+		<div class="row">
+			<div class="col-md-6">
+        <a class="btn btn-default" href="#/file">
+          <i class="glyphicon glyphicon-chevron-left"></i> 返回文件管理
+        </a>
 			</div>
-			<div class="pull-right" ng-show="items.length>0">
-				<button class="btn" ng-click="tcleanconfirm()"><i class="icon-trash"></i> 清空回收站</button>
+			<div class="col-md-6" ng-show="items.length>0">
+				<button class="btn btn-danger pull-right" ng-click="tcleanconfirm()">
+          <i class="glyphicon glyphicon-trash"></i> 清空回收站
+        </button>
 			</div>
 		</div>
 
@@ -37,17 +41,17 @@
 				<tbody>
 					<tr ng-repeat="item in items">
 						<td>
-							<i class="icon-folder-open" title="文件夹" ng-show="item.isdir"></i>
-							<i class="icon-file" title="文件" ng-show="item.isreg"></i>
-							<i class="icon-asterisk" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>
-							<i class="icon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>
+							<i class="glyphicon glyphicon-folder-open" title="文件夹" ng-show="item.isdir"></i>
+							<i class="glyphicon glyphicon-file" title="文件" ng-show="item.isreg"></i>
+							<i class="glyphicon glyphicon-asterisk" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>
+							<i class="glyphicon glyphicon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>
 							{{item.name}}
 						</td>
 						<td>{{item.path}}</td>
 						<td>{{item.time}}</td>
 						<td>
-							<button class="btn btn-mini" ng-click="restore(item.mount, item.uuid)">还原</button>
-							<button class="btn btn-mini" ng-click="tdeleteconfirm(item.name, item.mount, item.uuid)">删除</button>
+							<button class="btn btn-default btn-xs" ng-click="restore(item.mount, item.uuid)">还原</button>
+							<button class="btn btn-default btn-xs" ng-click="tdeleteconfirm(item.name, item.mount, item.uuid)">删除</button>
 						</td>
 					</tr>
 				</tbody>

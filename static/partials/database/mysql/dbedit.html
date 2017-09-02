@@ -36,7 +36,7 @@
 							<div class="widget-header">
 								<i class="icon-user"></i><h3>有权限访问该数据库的用户</h3>
 								<div class="pull-right" style="margin-right:10px">
-									<a class="btn btn-small" href="#/database/mysql/user/new?dbname={{dbname}}"><i class="icon-plus"></i> 添加新用户</a>
+									<a class="btn btn-default btn-sm" href="#/database/mysql/user/new?dbname={{dbname}}"><i class="icon-plus"></i> 添加新用户</a>
 								</div>
 							</div>
 							<div class="widget-content">
@@ -62,7 +62,7 @@
 											<td ng-bind-html-unsafe="user.Grant_priv | mysql.grant"></td>
 											<td>
 												<div class="btn-group">
-													<a class="btn btn-small" href="#/database/mysql/user/edit/{{user.User|urlencode|urlencode}}%40{{user.Host|urlencode|urlencode}}?dbname={{dbname}}&privtype={{user.Db|mysql.privtype_en:dbname}}">
+													<a class="btn btn-default btn-sm" href="#/database/mysql/user/edit/{{user.User|urlencode|urlencode}}%40{{user.Host|urlencode|urlencode}}?dbname={{dbname}}&privtype={{user.Db|mysql.privtype_en:dbname}}">
 														<i class="icon-edit"></i> 编辑权限
 													</a>
 												</div>

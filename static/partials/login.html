@@ -1,13 +1,23 @@
 <div ng-include src="'/xsrf'"></div>
 
-<div class="navbar" ng-init="$parent.navbar_loaded=true">
-	<div class="navbar-inner">
-		<a class="brand" href="/">VPSMate</a>
-		<ul class="nav">
-			<li class="active"><a href="/">登录</a></li>
-		</ul>
-	</div>
-</div>
+<nav class="navbar navbar-default" ng-init="$parent.navbar_loaded=true">
+	<div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">VPSMate</a>
+    </div>
+    <div id="navbar" class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="/">登录</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
 <div class="container" style="display:none;" ng-show="loginWarning">
 	<div class="alert alert-warning">
@@ -24,14 +34,14 @@
 			</ul>
 		</p>
 		<p style="margin-top:20px">
-			<a href="#/setting?s=authinfo" class="btn btn-small btn-primary">设置登录密码</a>&nbsp;&nbsp;
-			<a href="#/main" class="btn btn-small">直接进入主界面</a>
+			<a href="#/setting?s=authinfo" class="btn btn-default btn-sm btn-primary">设置登录密码</a>&nbsp;&nbsp;
+			<a href="#/main" class="btn btn-default btn-sm">直接进入主界面</a>
 		</p>
 	</div>
 </div>
 
 <div id="main">
-	<form class="form-horizontal form-horizontal-small" ng-submit="login()" onsubmit="return false" method="get" action="/">
+	<form class="form-horizontal" ng-submit="login()" onsubmit="return false" method="get" action="/">
 		<legend><span class="legend">登录</span></legend>
 		<div ng-show="showLoginForm">
 			<div class="alert alert-info" style="display:none" ng-show="showForgetPwdMsg">
@@ -42,24 +52,29 @@
 				* 重置密码：　
 					/usr/local/vpsmate/config.py password '密码'<br>
 			</div>
-			<div class="control-group">
-				<label class="control-label" for="username">用户名</label>
-				<div class="controls">
-					<input ng-model="username" ng-disabled="processing" type="text" id="username" placeholder="管理员用户名" autofocus>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label" for="password">密码</label>
-				<div class="controls">
-					<input ng-model="password" ng-disabled="processing" type="password" id="password" placeholder="管理员密码">
-				</div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-					<button type="submit" id="login" class="btn btn-primary" ng-disabled="processing"><i class="icon-user icon-white"></i> <span ng-bind-template="{{ loginText }}">登录</span></button>
-					<span class="help-inline" style="padding-left:20px"><a ng-click="showForgetPwdMsg=true" href="#" onclick="return false">忘记密码？</a></span>
-				</div>
-			</div>
+			<div class="form-group form-inline">
+        <label class="col-sm-2 control-label" for="username">用户名</label>
+        <div class="col-sm-10">
+          <input class="form-control" ng-model="username" ng-disabled="processing" type="text" id="username" placeholder="管理员用户名" autofocus>
+        </div>
+      </div>
+			<div class="form-group form-inline">
+        <label class="col-sm-2 control-label" for="password">密码</label>
+        <div class="col-sm-10">
+          <input class="form-control" ng-model="password" ng-disabled="processing" type="password" id="password" placeholder="管理员密码">
+        </div>
+      </div>
+			<div class="form-group form-inline">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-10">
+          <button type="submit" id="login" class="btn btn-primary" ng-disabled="processing">
+            <i class="glyphicon glyphicon-user"></i> <span ng-bind-template="{{ loginText }}">登录</span>
+          </button>
+          <span class="help-inline" style="padding-left:20px">
+            <a ng-click="showForgetPwdMsg=true" href="#" onclick="return false">忘记密码？</a>
+          </span>
+        </div>
+      </div>
 		</div>
 	</form>
 </div>

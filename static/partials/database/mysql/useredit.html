@@ -58,7 +58,7 @@
 											<td ng-bind-html-unsafe="dbpriv.Grant_priv | mysql.grant"></td>
 											<td>
 												<div class="btn-group">
-													<button class="btn btn-small" ng-click="editprivs(dbpriv)">
+													<button class="btn btn-default btn-sm" ng-click="editprivs(dbpriv)">
 														<i class="icon-edit"></i> 编辑权限
 													</button>
 												</div>
@@ -102,7 +102,7 @@
 											<td ng-bind-html-unsafe="privs.global.Grant_priv | mysql.grant"></td>
 											<td>
 												<div class="btn-group">
-													<button class="btn btn-small" ng-click="editprivs(privs.global)" ng-disabled="user=='root'&&host!='%'">
+													<button class="btn btn-default btn-sm" ng-click="editprivs(privs.global)" ng-disabled="user=='root'&&host!='%'">
 														<i class="icon-edit"></i> 编辑权限
 													</button>
 												</div>

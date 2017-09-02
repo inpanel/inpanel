@@ -79,7 +79,7 @@ filter('loadavg.overload', function(){
 			return '<span class="label label-success">'+Math.abs(overload)+'%空闲</span>';
 		} else {
 			if (overload>100) {
-				return '<span class="label label-important">'+overload+'%过载</span>';
+				return '<span class="label label-danger">'+overload+'%过载</span>';
 			} else {
 				return '<span class="label label-warning">'+overload+'%过载</span>';
 			}
@@ -91,7 +91,7 @@ filter('uptime.idlerate', function(){
 		if (!input) return '';
 		var rate = parseInt(input);
 		if (rate<10) {
-			return '<span class="label label-important">'+input+'空闲</span>';
+			return '<span class="label label-default">'+input+'空闲</span>';
 		} else if (rate<25) {
 			return '<span class="label label-warning">'+input+'空闲</span>';
 		} else {
@@ -104,7 +104,7 @@ filter('space.used', function(){
 		if (!input) return '';
 		var rate = parseInt(input);
 		if (rate>90) {
-			return '<span class="label label-important">'+input+'</span>';
+			return '<span class="label label-danger">'+input+'</span>';
 		} else if (rate>75) {
 			return '<span class="label label-warning">'+input+'</span>';
 		} else {
@@ -117,7 +117,7 @@ filter('space.free', function(){
 		if (!input) return '';
 		var rate = parseInt(input);
 		if (rate<10) {
-			return '<span class="label label-important">'+input+'</span>';
+			return '<span class="label label-default">'+input+'</span>';
 		} else if (rate<25) {
 			return '<span class="label label-warning">'+input+'</span>';
 		} else {
@@ -130,7 +130,7 @@ filter('service.status', function(){
 		if (!input) return '<span class="label">未安装</span>';
 		return input == 'running'
 			 ? '<span class="label label-success">运行中</span>'
-			 : '<span class="label label-important">已停止</span>';
+			 : '<span class="label label-default">已停止</span>';
 	};
 }).
 filter('user.lock', function(){
@@ -144,7 +144,7 @@ filter('site.status', function(){
 	return function(input) {
 		return input == 'on'
 			 ? '<span class="label label-success">启用</span>'
-			 : '<span class="label label-important">停用</span>';
+			 : '<span class="label label-default">停用</span>';
 	};
 }).
 filter('site.engine', function(){

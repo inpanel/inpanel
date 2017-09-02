@@ -153,7 +153,7 @@
 					<tbody>
 						<tr>
 							<td>
-								<button class="btn btn-small" ng-click="addcache($index)" ng-show="proxy_caches.length==0" style="display:none">
+								<button class="btn btn-default btn-sm" ng-click="addcache($index)" ng-show="proxy_caches.length==0" style="display:none">
 									<i class="icon-plus"></i> 添加缓存区
 								</button>
 								<div class="tabbable" ng-show="proxy_caches.length>0" style="display:none">
@@ -162,10 +162,10 @@
 											<a href="#cache_{{$index}}" data-toggle="tab">{{cache.name}}</a>
 										</li>
 										<li>
-											<button class="btn btn-small" ng-click="addcache()" style="margin-left:20px;margin-top:5px">
+											<button class="btn btn-default btn-sm" ng-click="addcache()" style="margin-left:20px;margin-top:5px">
 												<i class="icon-plus"></i> 添加缓存区
 											</button>
-											<button class="btn btn-small" ng-click="deletecache(curcache)" style="margin-left:10px;margin-top:5px">
+											<button class="btn btn-default btn-sm" ng-click="deletecache(curcache)" style="margin-left:10px;margin-top:5px">
 												<i class="icon-minus"></i> 删除缓存区
 											</button>
 										</li>

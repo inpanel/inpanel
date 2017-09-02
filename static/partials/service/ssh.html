@@ -79,7 +79,7 @@
 						<tr>
 							<td style="width:100px"></td>
 							<td>
-								<button class="btn btn-small" ng-click="gensshkey()">自动生成公钥和私钥</button>
+								<button class="btn btn-default btn-sm" ng-click="gensshkey()">自动生成公钥和私钥</button>
 							</td>
 						</tr>
 						<tr>
@@ -99,8 +99,8 @@
 						<tr>
 							<td></td>
 							<td>
-								<button class="btn btn-small" ng-show="setting.prvkey" ng-click="chpasswd()">修改私钥密码</button>
-								<a class="btn btn-small" href="/file{{setting.prvkey}}" ng-show="setting.prvkey">下载私钥</a>
+								<button class="btn btn-default btn-sm" ng-show="setting.prvkey" ng-click="chpasswd()">修改私钥密码</button>
+								<a class="btn btn-default btn-sm" href="/file{{setting.prvkey}}" ng-show="setting.prvkey">下载私钥</a>
 							</td>
 						</tr>
 						<tr>

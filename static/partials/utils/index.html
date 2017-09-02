@@ -16,22 +16,22 @@
 				<tr>
 					<td style="width:120px">用户管理</td>
 					<td style="width:380px" class="muted">管理系统用户、用户组、和用户密码。</td>
-					<td style="width:100px"><a class="btn btn-small" href="#/utils/user">进入管理</a></td>
+					<td style="width:100px"><a class="btn btn-default btn-sm" href="#/utils/user">进入管理</a></td>
 				</tr>
 				<tr>
 					<td style="width:120px">网络设置</td>
 					<td style="width:380px" class="muted">设置 IP 地址、网关、DNS服务器</td>
-					<td style="width:100px"><a class="btn btn-small" href="#/utils/network">进入设置</a></td>
+					<td style="width:100px"><a class="btn btn-default btn-sm" href="#/utils/network">进入设置</a></td>
 				</tr>
 				<tr>
 					<td>时间设置</td>
 					<td class="muted">设置服务器的时间和时区</td>
-					<td><a class="btn btn-small" href="#/utils/time">进入设置</a></td>
+					<td><a class="btn btn-default btn-sm" href="#/utils/time">进入设置</a></td>
 				</tr>
 				<tr style="display:none" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
 					<td>磁盘分区</td>
 					<td class="muted">对磁盘进行分区、格式化、挂载等操作</td>
-					<td><a class="btn btn-small" href="#/utils/partition">进入设置</a></td>
+					<td><a class="btn btn-default btn-sm" href="#/utils/partition">进入设置</a></td>
 				</tr>
 			</tbody>
 		</table>
@@ -45,12 +45,12 @@
 				<tr>
 					<td style="width:120px">SSH公钥验证</td>
 					<td style="width:380px" class="muted">防暴力破解，使用更安全的公钥验证替换密码验证</td>
-					<td style="width:100px"><a class="btn btn-small" href="#/service/ssh?s=pubkauth">进入设置</a></td>
+					<td style="width:100px"><a class="btn btn-default btn-sm" href="#/service/ssh?s=pubkauth">进入设置</a></td>
 				</tr>
 				<tr>
 					<td>网络端口开关</td>
 					<td class="muted">利用 Linux 防火墙实现网络端口的开关</td>
-					<td><a class="btn btn-small" ng-disabled="true" href="#/utils">即将发布</a></td>
+					<td><a class="btn btn-default btn-sm" ng-disabled="true" href="#/utils">即将发布</a></td>
 				</tr>
 			</tbody>
 		</table>
@@ -64,12 +64,12 @@
 				<tr style="display:none" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
 					<td style="width:120px">自动格式化挂载</td>
 					<td style="width:380px" class="muted">对未挂载的磁盘进行格式化并自动挂载</td>
-					<td style="width:100px"><a class="btn btn-small" href="#/utils/autofm">进入设置</a></td>
+					<td style="width:100px"><a class="btn btn-default btn-sm" href="#/utils/autofm">进入设置</a></td>
 				</tr>
 				<tr>
 					<td style="width:120px">数据移至数据盘</td>
 					<td style="width:380px" class="muted">将数据迁移至数据盘，并通过链接保持原路径</td>
-					<td style="width:100px"><a class="btn btn-small" href="#/utils/movedata">进入设置</a></td>
+					<td style="width:100px"><a class="btn btn-default btn-sm" href="#/utils/movedata">进入设置</a></td>
 				</tr>
 			</tbody>
 		</table>
@@ -83,7 +83,7 @@
 				<tr>
 					<td style="width:120px">重启服务器</td>
 					<td style="width:380px" class="muted">重启您的服务器</td>
-					<td style="width:100px"><button class="btn btn-small" ng-click="rebootconfirm()">立即重启</button></td>
+					<td style="width:100px"><button class="btn btn-default btn-sm" ng-click="rebootconfirm()">立即重启</button></td>
 				</tr>
 			</tbody>
 		</table>

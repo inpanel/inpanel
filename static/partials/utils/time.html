@@ -56,9 +56,9 @@
 					<div class="control-group">
 						<label class="control-label">快速选择：</label>
 						<div class="controls">
-							<a class="btn btn-small" ng-click="setTimezone('Asia', 'Shanghai')">北京时间</a>
-							<a class="btn btn-small" ng-click="setTimezone('America', 'Los_Angeles')">洛杉矶时间</a>
-							<a class="btn btn-small" ng-click="setTimezone('America', 'New_York')">纽约时间</a>
+							<a class="btn btn-default btn-sm" ng-click="setTimezone('Asia', 'Shanghai')">北京时间</a>
+							<a class="btn btn-default btn-sm" ng-click="setTimezone('America', 'Los_Angeles')">洛杉矶时间</a>
+							<a class="btn btn-default btn-sm" ng-click="setTimezone('America', 'New_York')">纽约时间</a>
 						</div>
 					</div>
 					<div class="control-group">
@@ -80,19 +80,19 @@
 					<div ng-show="!ntpdChecking&&(ntpdStatus==null)">
 						<p><span ng-bind-html-unsafe="installMessage"></span></p>
 						<p style="display:none;margin-top:20px" ng-show="showInstallBtn">
-							<button class="btn btn-small" ng-click="install()" ng-disabled="processing">确定并安装</button>
+							<button class="btn btn-default btn-sm" ng-click="install()" ng-disabled="processing">确定并安装</button>
 						</p>
 					</div>
 					<div ng-show="ntpdStatus=='stopped'">
 						<p><span ng-bind-html-unsafe="startMessage"></span></p>
 						<p style="display:none;margin-top:20px" ng-show="showStartBtn">
-							<button class="btn btn-small" ng-click="start()" ng-disabled="processing">确定并启用</button>
+							<button class="btn btn-default btn-sm" ng-click="start()" ng-disabled="processing">确定并启用</button>
 						</p>
 					</div>
 					<div ng-show="ntpdStatus=='running'">
 						<p><span ng-bind-html-unsafe="stopMessage"></span></p>
 						<p style="display:none;margin-top:20px" ng-show="showStopBtn">
-							<button class="btn btn-small" ng-click="stop()" ng-disabled="processing">确定并停止</button>
+							<button class="btn btn-default btn-sm" ng-click="stop()" ng-disabled="processing">确定并停止</button>
 						</p>
 					</div>
 				</div>
