@@ -28,7 +28,7 @@
 							<td style="width:100px">Nginx</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>
 							<td class="muted">高性能的 HTTP 服务器</td>
-							<td style="width:100px">
+							<td style="width:150px">
 								<div srvminiop ng-init="name='Nginx';service='nginx';urlname='nginx'"></div>
 							</td>
 						</tr>
@@ -55,7 +55,7 @@
 							<td style="width:100px">vsftpd</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.vsftpd']['status'] | service.status"></td>
 							<td class="muted">安全快速的FTP服务器</td>
-							<td style="width:100px">
+							<td style="width:150px">
 								<div srvminiop ng-init="name='vsftpd';service='vsftpd';urlname='vsftpd'"></div>
 							</td>
 						</tr>
@@ -74,41 +74,31 @@
               <td style="width:100px">MariaDB</td>
               <td style="width:60px" ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
               <td class="muted">MySQL的一个分支，主要由开源社区在维护</td>
-              <td style="width:100px">
-                  <div srvminiop ng-init="name='MariaDB';service='MariaDB';urlname='MariaDB'"></div>
-              </td>
+              <td style="width:150px"><div srvminiop ng-init="name='MariaDB';service='MariaDB';urlname='MariaDB'"></div></td>
             </tr>
             <tr>
-							<td style="width:100px">MySQL</td>
-							<td style="width:60px" ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
+							<td>MySQL</td>
+							<td ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
 							<td class="muted">最流行的开源关系型数据库服务器</td>
-							<td style="width:100px">
-								<div srvminiop ng-init="name='MySQL';service='mysqld';urlname='mysql'"></div>
-							</td>
+							<td><div srvminiop ng-init="name='MySQL';service='mysqld';urlname='mysql'"></div></td>
 						</tr>
 						<tr>
 							<td>Redis</td>
 							<td ng-bind-html-unsafe="info['service.redis']['status'] | service.status"></td>
 							<td class="muted">高性能内存数据库</td>
-							<td>
-								<div srvminiop ng-init="name='Redis';service='redis';urlname='redis'"></div>
-							</td>
+							<td><div srvminiop ng-init="name='Redis';service='redis';urlname='redis'"></div></td>
 						</tr>
 						<tr>
 							<td>Memcache</td>
 							<td ng-bind-html-unsafe="info['service.memcached']['status'] | service.status"></td>
 							<td class="muted">内存数据库</td>
-							<td>
-								<div srvminiop ng-init="name='Memcache';service='memcached';urlname='memcache'"></div>
-							</td>
+							<td><div srvminiop ng-init="name='Memcache';service='memcached';urlname='memcache'"></div></td>
 						</tr>
 						<tr>
 							<td>MongoDB</td>
 							<td ng-bind-html-unsafe="info['service.mongod']['status'] | service.status"></td>
 							<td class="muted">分布式高性能的数据库服务器</td>
-							<td>
-								<div srvminiop ng-init="name='MongoDB';service='mongod';urlname='mongodb'"></div>
-							</td>
+							<td><div srvminiop ng-init="name='MongoDB';service='mongod';urlname='mongodb'"></div></td>
 						</tr>
 					</tbody>
 				</table>
@@ -125,9 +115,7 @@
 							<td style="width:100px">PHP</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.php-fpm']['status'] | service.status"></td>
 							<td class="muted">PHP 脚本解析器</td>
-							<td style="width:100px">
-								<div srvminiop ng-init="name='PHP';service='php-fpm';urlname='php'"></div>
-							</td>
+							<td style="width:150px"><div srvminiop ng-init="name='PHP';service='php-fpm';urlname='php'"></div></td>
 						</tr>
 					</tbody>
 				</table>
@@ -144,9 +132,7 @@
 							<td style="width:100px">Sendmail</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.sendmail']['status'] | service.status"></td>
 							<td class="muted">邮件传输服务</td>
-							<td style="width:100px">
-								<div srvminiop ng-init="name='Sendmail';service='sendmail';urlname='sendmail'"></div>
-							</td>
+							<td style="width:150px"><div srvminiop ng-init="name='Sendmail';service='sendmail';urlname='sendmail'"></div></td>
 						</tr>
 					</tbody>
 				</table>
@@ -163,33 +149,25 @@
 							<td style="width:100px">SSH</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.sshd']['status'] | service.status"></td>
 							<td class="muted">远程连接服务器</td>
-							<td style="width:100px">
-								<div srvminiop ng-init="name='SSH';service='sshd';urlname='ssh'"></div>
-							</td>
+							<td style="width:150px"><div srvminiop ng-init="name='SSH';service='sshd';urlname='ssh'"></div></td>
 						</tr>
 						<tr>
 							<td>iptables</td>
 							<td ng-bind-html-unsafe="info['service.iptables']['status'] | service.status"></td>
 							<td class="muted">Linux 防火墙</td>
-							<td>
-								<div srvminiop ng-init="name='iptables';service='iptables';urlname='iptables'"></div>
-							</td>
+							<td><div srvminiop ng-init="name='iptables';service='iptables';urlname='iptables'"></div></td>
 						</tr>
 						<tr>
 							<td>Cron</td>
 							<td ng-bind-html-unsafe="info['service.crond']['status'] | service.status"></td>
 							<td class="muted">定时任务管理服务器</td>
-							<td>
-								<div srvminiop ng-init="name='Cron';service='crond';urlname='cron'"></div>
-							</td>
+							<td><div srvminiop ng-init="name='Cron';service='crond';urlname='cron'"></div></td>
 						</tr>
 						<tr style="display:none" ng-show="info['server.virt'] != 'Virtuozzo/OpenVZ'">
 							<td>NTP</td>
 							<td ng-bind-html-unsafe="info['service.ntpd']['status'] | service.status"></td>
 							<td class="muted">时间同步服务</td>
-							<td>
-								<div srvminiop ng-init="name='NTP';service='ntpd';urlname='ntp'"></div>
-							</td>
+							<td><div srvminiop ng-init="name='NTP';service='ntpd';urlname='ntp'"></div></td>
 						</tr>
 					</tbody>
 				</table>

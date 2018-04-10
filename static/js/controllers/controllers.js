@@ -263,7 +263,7 @@ function($scope, $routeParams, Module, Timeout, Message, Request, version){
 					if (data.msg) $scope.upverMessage = data.msg;
 					if (data.status == 'finish' && data.code == 0) {
 						// restart service
-						$scope.upverMessage = '正在重启 VPSMate...';
+						$scope.upverMessage = '正在重启 Intranet...';
 						Timeout(function(){
 							Request.post('/backend/service_restart', {
 								service: 'vpsmate'
@@ -292,7 +292,7 @@ function($scope, $routeParams, Module, Timeout, Message, Request, version){
 			Timeout(getUpdateStatus, 500, module);
 		});
 	};
-	$scope.restartMessage = '是否要重启 VPSMate？';
+	$scope.restartMessage = '是否要重启 Intranet ？';
 	$scope.restart = function(){
 		$scope.restartMessage = '正在重启，请稍候...'
 		$scope.showRestartBtn = false;
