@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>安装说明 - Intranet</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=10">
+	<link href="/static/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/global.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">Intranet</a>
+      </div>
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li><a href="index.html">首页</a></li>
+          <li><a href="features.html">功能特性</a></li>
+          <li class="active"><a href="install.html">安装说明</a></li>
+          <li><a href="manual.html">使用手册</a></li>
+          <li><a href="changelog.html">版本历史</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 0 20px 20px;">
+    <div style="margin-top:40px">
+      <h4>安装需求</h4>
+      <blockquote style="margin-top:20px">
+        <p>操作系统：CentOS/Redhat 5.4 或 5.4 以上版本，32位或64位均可，推荐使用 CentOS 6.2 64位。</p>
+        <p>内存大小：运行时占用约 20MB 左右的服务器内存。</p>
+        <p>请使用现代浏览器访问面板（IE8+、Firefox 14+、Chrome 21+），推荐使用 Chrome。</p>
+      </blockquote>
+    </div>
+    <div style="margin-top:40px">
+      <h4>在线安装步骤</h4>
+      <blockquote style="margin-top:20px">
+        <p>使用 SSH 连接工具，如 PuTTY、XShell、SecureCRT 等，连接到您的 Linux 服务器。</p>
+        <p style="margin-top:20px">
+          执行以下命令开始安装：<br>
+          <code># wget http://www.vpsmate.org/tools/install.py</code><br>
+          <code># python install.py</code><br>
+        </p>
+        <p style="margin-top:20px">
+          如下图所示：<br>
+          <img src="static/images/install/1.png"><br>
+        </p>
+        <p style="margin-top:20px">
+          安装完成后请设置管理员用户名和密码，如果直接回车，则使用默认的用户名 <code>admin</code> 和密码 <code>admin</code> 。<br>
+          设置完后，打开给定的链接地址即可访问您的 Intranet 面板。<br>
+        </p>
+        <p style="margin-top:20px">
+          如下图所示：<br>
+          <img src="static/images/install/2.png"><br>
+        </p>
+      </blockquote>
+    </div>
+    <div style="margin-top:40px">
+      <h4>后续操作</h4>
+      <blockquote style="margin-top:20px">
+        <p>请查看 <a href="manual">Intranet 使用手册</a>。</p>
+      </blockquote>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="container">
+      <p class="text-muted">Powered by <a href="//intranet.pub/">Intranet</a></p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
