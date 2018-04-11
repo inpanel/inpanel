@@ -19,22 +19,49 @@
 		注意：添加或更新站点配置后，需要 <a href="#/service/nginx"><strong>重启 Nginx</strong></a> 后配置才会生效。
 	</div>
 
+  <form class="form-horizontal" onsubmit="return false">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" ng-show="$index==0">站点域名：</label>
+        <div class="col-sm-3">
+            <input class="form-control" ng-model="server_name.name" type="text" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
+        </div>
+      <!-- <div class="col-sm-3 control-label">
+        <label class="control-label" ng-show="$index==0">站点域名：</label>
+      </div> -->
+      <div class="col-sm-6 control-label">
+        <button class="btn btn-default btn-sm" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="glyphicon glyphicon-minus"></i></button>
+        <button class="btn btn-default btn-sm" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="glyphicon glyphicon-plus"></i></button>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" ng-model="server_name.default_name" ng-click="server_name.name='_'">
+            设置为任意域名可访问
+          </label>
+        </div>
+      </div>
+    </div>
+  </form>
 	<div class="form-horizontal form-horizontal-small" ng-init="load()">
 		<div class="widget">
 			<div class="widget-header">
 				<i class="icon-cog"></i><h3>基本设置</h3>
-			</div>
+      </div>
+
 			<div class="widget-content">
 				<table class="table table-button">
 					<tbody>
 						<tr ng-repeat="server_name in setting.server_names">
 							<th class="td-borderless" style="width:80px;"><span ng-show="$index==0">站点域名</span></th>
 							<td class="td-borderless" colspan="2">
-								<input ng-model="server_name.name" type="text" class="input-large" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
-								<button class="btn btn-default btn-sm" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="icon-minus"></i></button>
-								<button class="btn btn-default btn-sm" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="icon-plus"></i></button>
-								<br><label class="checkbox inline" style="margin-top:5px">
-									<input ng-model="server_name.default_name" ng-click="server_name.name='_'" type="checkbox">
+								<input class="form-control input-sm" ng-model="server_name.name" type="text" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
+								<button class="btn btn-default btn-sm" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="glyphicon glyphicon-minus"></i></button>
+								<button class="btn btn-default btn-sm" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="glyphicon glyphicon-plus"></i></button>
+                <br>
+                <label class="checkbox inline" style="margin-top:5px">
+									<input class="form-control input-sm" ng-model="server_name.default_name" ng-click="server_name.name='_'" type="checkbox">
 									设置为任意域名可访问
 								</label>
 							</td>
@@ -570,14 +597,18 @@
 </div>
 
 <div id="selector" class="modal hide fade">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>{{selector_title}}</h3>
-  </div>
-  <div class="modal-body">
-	<div selector></div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>{{selector_title}}</h3>
+      </div>
+      <div class="modal-body">
+        <div selector></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+      </div>
+    </div>
   </div>
 </div>
