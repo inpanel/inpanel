@@ -43,11 +43,11 @@ from config import Config
 from async_process import call_subprocess, callbackable
 
 
-SERVER_NAME = 'VPSMate'
+SERVER_NAME = 'Intranet'
 VPSMATE_VERSION = '1.1'
 VPSMATE_BUILD = '11'
 
- 
+
 class Application(tornado.web.Application):
     def __init__(self, handlers=None, default_host="", transforms=None,
                  wsgi=False, **settings):
@@ -92,7 +92,7 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
-    
+
     def check_xsrf_cookie(self):
         token = (self.get_argument("_xsrf", None) or
                  self.request.headers.get("X-XSRF-TOKEN"))
