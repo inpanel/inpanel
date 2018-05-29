@@ -92,6 +92,9 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
+        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
     def check_xsrf_cookie(self):
         token = (self.get_argument("_xsrf", None) or
@@ -150,21 +153,33 @@ class RequestHandler(tornado.web.RequestHandler):
 class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
+        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
 
 class ErrorHandler(tornado.web.ErrorHandler):
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
+        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
 
 class FallbackHandler(tornado.web.FallbackHandler):
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
+        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
 
 class RedirectHandler(tornado.web.RedirectHandler):
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
+        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
         
 class FileDownloadHandler(StaticFileHandler):
@@ -173,6 +188,9 @@ class FileDownloadHandler(StaticFileHandler):
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-disposition', 'attachment; filename=%s' % os.path.basename(path))
         self.set_header('Content-Transfer-Encoding', 'binary')
+        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         StaticFileHandler.get(self, path)
 
     def authed(self):
