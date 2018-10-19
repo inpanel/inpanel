@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
@@ -14,78 +14,167 @@ yum_reporpms = {
     'base': {
         5: {
             'x86_64': (
-                'http://mirror.centos.org/centos/5/os/x86_64/CentOS/centos-release-notes-5.8-0.x86_64.rpm',
-                'http://mirror.centos.org/centos/5/os/x86_64/CentOS/centos-release-5-8.el5.centos.x86_64.rpm',
-            ),
+                # 'http://mirror.centos.org/centos/5/os/x86_64/CentOS/centos-release-notes-5.8-0.x86_64.rpm',
+                # 'http://mirror.centos.org/centos/5/os/x86_64/CentOS/centos-release-5-8.el5.centos.x86_64.rpm',
+                'http://mirror.neu.edu.cn/centos/5/os/x86_64/CentOS/centos-release-notes-5.11-0.x86_64.rpm',
+                'http://mirror.neu.edu.cn/centos/5/os/x86_64/CentOS/centos-release-5-11.el5.centos.x86_64.rpm'
+                ),
             'i386': (
-                'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-notes-5.8-0.i386.rpm',
-                'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-5-8.el5.centos.i386.rpm',
-            ),
+                # 'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-notes-5.8-0.i386.rpm',
+                # 'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-5-8.el5.centos.i386.rpm',
+                'http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-notes-5.11-0.i386.rpm',
+                'http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-5-11.el5.centos.i386.rpm'
+                ),
             'i686': (
-                'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-notes-5.8-0.i386.rpm',
-                'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-5-8.el5.centos.i386.rpm',
-            ),
-        },
+                # 'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-notes-5.8-0.i386.rpm',
+                # 'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-5-8.el5.centos.i386.rpm',
+                'http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-notes-5.11-0.i386.rpm',
+                'http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-5-11.el5.centos.i386.rpm'
+                ),
+            },
         6: {
-            'x86_64': ('http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-9.el6.12.3.x86_64.rpm.rpm', ),
-            'i386':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-9.el6.12.3.i686.rpm', ),
-            'i686':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-9.el6.12.3.i686.rpm', ),
-        },
+            # 'x86_64': ('http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-9.el6.12.3.x86_64.rpm.rpm', ),
+            # 'i386':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-9.el6.12.3.i686.rpm', ),
+            # 'i686':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-9.el6.12.3.i686.rpm', ),
+            'x86_64': ('http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-10.el6.centos.12.3.x86_64.rpm', ),
+            'i386':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm', ),
+            'i686':   ('http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm', ),
+            },
         7: {
-            'x86_64': ('http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-3.1611.el7.centos.x86_64.rpm',),
-        }
-    },
+            'x86_64': (
+                'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-5.1804.el7.centos.x86_64.rpm'
+                )
+            }
+        },
+    'updates': {
+        7: {
+            'x86_64': (
+                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.1.el7.centos.x86_64.rpm',
+                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.4.el7.centos.x86_64.rpm',
+                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.5.el7.centos.x86_64.rpm',
+                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.el7.centos.2.x86_64.rpm'
+                )
+            }
+        },
     'epel': {
         5: {
-            'x86_64': ('http://dl.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm', ),
-            'i386':   ('http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm', ),
-            'i686':   ('http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm', ),
-        },
+            'x86_64': (
+                # 'http://dl.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-8.noarch.rpm',
+                'http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm'
+                ),
+            'i386':   (
+                # 'http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm',
+                'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm'
+                ),
+            'i686':   (
+                # 'http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm',
+                'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm'
+                ),
+            },
         6: {
-            'x86_64': ('http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm', ),
-            'i386':   ('http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm', ),
-            'i686':   ('http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm', ),
+            'x86_64': (
+                'http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/epel-release-6-5.noarch.rpm'
+                ),
+            'i386':   (
+                'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/epel-release-6-5.noarch.rpm'
+                ),
+            'i686':   (
+                'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/epel-release-6-5.noarch.rpm'
+                ),
         },
         7: {
-            'x86_64': ('http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-10.noarch.rpm',),
+            'x86_64': ('http://centos.ustc.edu.cn/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm',),
+            },
         },
-    },
     'CentALT': {
         5: {
-            #'x86_64': ('http://centos.alt.ru/repository/centos/5/x86_64/centalt-release-5-3.noarch.rpm', ),
-            #'i386':   ('http://centos.alt.ru/repository/centos/5/i386/centalt-release-5-3.noarch.rpm', ),
-            #'i686':   ('http://centos.alt.ru/repository/centos/5/i386/centalt-release-5-3.noarch.rpm', ),
-            'x86_64': ('http://mirrors.vpsmate.org/CentALT/repository/centos/5/x86_64/centalt-release-5-3.noarch.rpm', ),
-            'i386':   ('http://mirrors.vpsmate.org/CentALT/repository/centos/5/i386/centalt-release-5-3.noarch.rpm', ),
-            'i686':   ('http://mirrors.vpsmate.org/CentALT/repository/centos/5/i386/centalt-release-5-3.noarch.rpm', ),
-        },
+            'x86_64': (
+                'http://mirror.neu.edu.cn/CentALT/5/x86_64/centalt-release-5-3.noarch.rpm'
+                ),
+            'i386':   (
+                'http://mirror.neu.edu.cn/CentALT/5/i386/centalt-release-5-3.noarch.rpm'
+                ),
+            'i686':   (
+                'http://mirror.neu.edu.cn/CentALT/5/i386/centalt-release-5-3.noarch.rpm'
+                ),
+            },
         6: {
-            #'x86_64': ('http://centos.alt.ru/pub/repository/centos/6/x86_64/centalt-release-6-1.noarch.rpm', ),
-            #'i386':   ('http://centos.alt.ru/pub/repository/centos/6/i386/centalt-release-6-1.noarch.rpm', ),
-            #'i686':   ('http://centos.alt.ru/pub/repository/centos/6/i386/centalt-release-6-1.noarch.rpm', ),
-            'x86_64': ('http://mirrors.vpsmate.org/CentALT/repository/centos/6/x86_64/centalt-release-6-1.noarch.rpm', ),
-            'i386':   ('http://mirrors.vpsmate.org/CentALT/repository/centos/6/i386/centalt-release-6-1.noarch.rpm', ),
-            'i686':   ('http://mirrors.vpsmate.org/CentALT/repository/centos/6/i386/centalt-release-6-1.noarch.rpm', ),
+            'x86_64': (
+                'http://mirror.neu.edu.cn/CentALT/6/x86_64/centalt-release-6-1.noarch.rpm',
+                'http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-10.el6.centos.12.3.x86_64.rpm'
+                ),
+            'i386':   (
+                'http://mirror.neu.edu.cn/CentALT/6/i386/centalt-release-6-1.noarch.rpm',
+                'http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm'
+                ),
+            'i686':   (
+                'http://mirror.neu.edu.cn/CentALT/6/i386/centalt-release-6-1.noarch.rpm',
+                'http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm'
+                )
+            }
         },
-    },
     'ius': {
-        5: {
-            'x86_64': ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/x86_64/ius-release-1.0-10.ius.el5.noarch.rpm', ),
-            'i386':   ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/i386/ius-release-1.0-10.ius.el5.noarch.rpm', ),
-            'i686':   ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/i386/ius-release-1.0-10.ius.el5.noarch.rpm', ),
-        },
+        # 5: {
+        #     'x86_64': ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/x86_64/ius-release-1.0-10.ius.el5.noarch.rpm', ),
+        #     'i386':   ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/i386/ius-release-1.0-10.ius.el5.noarch.rpm', ),
+        #     'i686':   ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/i386/ius-release-1.0-10.ius.el5.noarch.rpm', ),
+        # },
         6: {
-            'x86_64': ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-10.ius.el6.noarch.rpm', ),
-            'i386':   ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm', ),
-            'i686':   ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm', ),
-        },
-    },
-}
+            'x86_64': (
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-10.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-11.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-12.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-13.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-14.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-15.ius.el6.noarch.rpm'
+                ),
+            'i386':   (
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-11.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-12.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-13.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-14.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'
+                ),
+            'i686':   (
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-11.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-12.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-13.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-14.ius.el6.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'
+                ),
+            },
+        7: {
+            'x86_64': (
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-10.ius.el7.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-11.ius.el7.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-12.ius.el7.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-13.ius.el7.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-14.ius.el7.noarch.rpm',
+                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-15.ius.el7.noarch.rpm'
+                )
+            }
+        }
+    }
+
 yum_repoinstallcmds = {
     # REF: http://www.atomicorp.com/channels/atomic/
     'atomic': 'wget -q -O - http://www.atomicorp.com/installers/atomic | sed \'/check_input "Do you agree to these terms?/d\' | sh',
 }
 yum_repostr = {
+    #     'CentALT': {
+    #         6: {
+    #             'x86_64': '[CentALT]\n\
+    # name=CentALT Packages for Enterprise Linux 6 - $basearch\n\
+    # baseurl=http://mirror.neu.edu.cn/CentALT/6/x86_64/$basearch/\n\
+    # enabled=1\n\
+    # gpgcheck=0'
+    #         }
+    #     },
     '10gen': {
         'x86_64': '[10gen]\n\
 name=10gen Repository\n\
