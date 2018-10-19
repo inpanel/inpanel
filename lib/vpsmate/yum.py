@@ -124,37 +124,37 @@ yum_reporpms = {
         # },
         6: {
             'x86_64': (
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-10.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-11.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-12.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-13.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-14.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-10.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-11.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-12.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-13.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-14.ius.el6.noarch.rpm',
                 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-15.ius.el6.noarch.rpm'
                 ),
             'i386':   (
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-11.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-12.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-13.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-14.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-11.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-12.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-13.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-14.ius.el6.noarch.rpm',
                 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'
                 ),
             'i686':   (
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-11.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-12.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-13.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-14.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-11.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-12.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-13.ius.el6.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-14.ius.el6.noarch.rpm',
                 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'
                 ),
             },
         7: {
             'x86_64': (
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-10.ius.el7.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-11.ius.el7.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-12.ius.el7.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-13.ius.el7.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-14.ius.el7.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-10.ius.el7.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-11.ius.el7.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-12.ius.el7.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-13.ius.el7.noarch.rpm',
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-14.ius.el7.noarch.rpm',
                 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-15.ius.el7.noarch.rpm'
                 )
             }

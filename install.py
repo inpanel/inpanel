@@ -70,27 +70,27 @@ class Install(object):
     def check_git(self):
         supported = True
         try:
-            if self.distname == 'centos' or self.distname == 'redhat':
+            if self.distname in ('centos', 'redhat'):
                 self._run("yum install -y git")
         except:
             pass
 
-        # if self.distname == 'centos':
-        #     if float(self.version) < 5.4:
-        #         supported = False
-        # elif self.distname == 'redhat':
-        #     if float(self.version) < 5.4:
-        #         supported = False
-        # elif self.os == 'Darwin':
-        #     supported = True
-        # #elif self.distname == 'ubuntu':
-        # #    if float(self.version) < 10.10:
-        # #        supported = False
-        # #elif self.distname == 'debian':
-        # #    if float(self.version) < 6.0:
-        # #        supported = False
-        # else:
-        #     supported = False
+        if self.distname == 'centos':
+            if float(self.version) < 5.4:
+                supported = False
+        elif self.distname == 'redhat':
+            if float(self.version) < 5.4:
+                supported = False
+        elif self.os == 'Darwin':
+            supported = True
+        elif self.distname == 'ubuntu':
+           if float(self.version) < 10.10:
+               supported = False
+        elif self.distname == 'debian':
+           if float(self.version) < 6.0:
+               supported = False
+        else:
+            supported = False
         return supported
 
     def install_python(self):
@@ -100,32 +100,29 @@ class Install(object):
                 epelrpm = 'epel-release-5-4.noarch.rpm'
                 epelurl = 'http://download.fedoraproject.org/pub/epel/5/%s/%s' % (self.arch, epelrpm)
                 # install fastestmirror plugin for yum
-                fastestmirror = 'http://mirror.centos.org/centos/5/os/%s/CentOS/yum-fastestmirror-1.1.16-21.el5.centos.noarch.rpm' % (
-                    self.arch,)
+                fastestmirror = 'http://mirror.centos.org/centos/5/os/%s/CentOS/yum-fastestmirror-1.1.16-21.el5.centos.noarch.rpm' % (self.arch)
                 self._run('rpm -Uvh %s' % fastestmirror)
             elif int(float(self.version)) == 6:
-                epelrpm = 'epel-release-6-7.noarch.rpm'
-                epelurl = 'http://download.fedoraproject.org/pub/epel/6/%s/' % (self.arch, epelrpm)
-                fastestmirror = 'http://mirror.centos.org/centos/6/os/%s/Packages/yum-plugin-fastestmirror-1.1.30-14.el6.noarch.rpm' % (
-                    self.arch,)
+                epelrpm = 'epel-release-6-8.noarch.rpm'
+                epelurl = 'http://centos.ustc.edu.cn/epel/6/%s/Packages/e/' % (self.arch, epelrpm)
+                fastestmirror = 'http://mirror.centos.org/centos/6/os/%s/Packages/yum-plugin-fastestmirror-1.1.30-41.el6.noarch.rpm' % (self.arch)
                 self._run('rpm -Uvh %s' % fastestmirror)
             elif int(float(self.version)) == 7:
-                epelrpm = 'epel-release-7-6.noarch.rpm'
-                epelurl = 'http://dl.fedoraproject.org/pub/epel/7/%s/e/%s' % (self.arch, epelrpm)
-                fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/kabi-yum-plugins-1.0-3.el7.centos.noarch.rpm' % (
-                    self.arch,)
+                epelrpm = 'epel-release-7-11.noarch.rpm'
+                epelurl = 'http://centos.ustc.edu.cn/epel/7/%s/Packages/e/%s' % (self.arch, epelrpm)
+                fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 self._run('rpm -Uvh %s' % fastestmirror)
-
 
             self._run('wget -nv -c %s' % epelurl)
             self._run('rpm -Uvh %s' % epelrpm)
             self._run('yum -y install python26')
 
-        if self.distname == 'centos':
-            pass
-        elif self.distname == 'redhat':
-            pass
-        elif self.distname == 'ubuntu':
+        # if self.distname == 'centos':
+        #     pass
+        # elif self.distname == 'redhat':
+        #     pass
+        # el
+        if self.distname == 'ubuntu':
             pass
         elif self.distname == 'debian':
             pass
