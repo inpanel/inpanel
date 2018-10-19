@@ -74,7 +74,7 @@ value('version', {
 	'version': '1.0',
 	'build': '10',
 	'releasetime': releasetime,
-	'changelog': 'http://www.vpsmate.org/changelog'
+	'changelog': 'http://intranet.pub/changelog.html'
 });
 
 var Auth = {
