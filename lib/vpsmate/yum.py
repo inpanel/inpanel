@@ -196,7 +196,7 @@ yum_pkg_alias = {
     'redis'         : ('redis', ),
     'memcache'      : ('memcached', ),
     'mongodb'       : ('mongodb-org', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
-    'php'           : ('php-fpm', 'php56u-fpm', 'php70-fpm', 'php71-fpm', ),
+    'php'           : ('php-fpm', 'php56u-fpm', 'php70u-fpm', 'php71u-fpm', ),
     'sendmail'      : ('sendmail', ),
     'ssh'           : ('openssh-server', ),
     'iptables'      : ('iptables', ),
