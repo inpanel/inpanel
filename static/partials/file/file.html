@@ -9,21 +9,21 @@
 	<div ng-init="load()" id="list">
 		<div class="row padding-bottom">
 			<div class="col-md-8 col-sm-9 col-xs-9">
-        <form onsubmit="return false;" ng-submit="listdir()">
-          <div class="input-group input-group-sm">
-            <span class="input-group-addon">当前目录：</span>
-            <input class="form-control" type="text" ng-model="path">
-            <div class="input-group-btn">
-              <button class="btn btn-default btn-sm" type="submit" title="刷新"><span class="glyphicon glyphicon-refresh"></span>
-              <button class="btn btn-default btn-sm" type="submit" title="进入"><span class="glyphicon glyphicon-menu-right"></span></button>
-            </div>
-          </div>
-        </form>
+                <form onsubmit="return false;" ng-submit="listdir()">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">当前目录：</span>
+                        <input class="form-control" type="text" ng-model="path">
+                        <div class="input-group-btn">
+                        <button class="btn btn-default btn-sm" type="submit" title="刷新"><span class="glyphicon glyphicon-refresh"></span>
+                        <button class="btn btn-default btn-sm" type="submit" title="进入"><span class="glyphicon glyphicon-menu-right"></span></button>
+                        </div>
+                    </div>
+                </form>
 			</div>
 			<div class="col-md-4 col-sm-3 col-xs-3">
-        <a class="btn btn-danger btn-sm pull-right" href="#/file/trash">
-          <span class="glyphicon glyphicon-trash"></span> 回收站
-        </a>
+                <a class="btn btn-danger btn-sm pull-right" href="#/file/trash">
+                    <span class="glyphicon glyphicon-trash"></span> 回收站
+                </a>
 			</div>
 		</div>
     <div class="row">
@@ -39,15 +39,15 @@
     </div>
 		<div class="row">
 			<div class="col-md-9 pull-left">
-        <div class="btn-group btn-group-sm">
-          <button class="btn btn-default" ng-disabled="fileloading" ng-click="upandlist()"><i class="glyphicon glyphicon-level-up"></i> 返回上级</button>
-          <button class="btn btn-default" ng-disabled="fileloading" ng-click="newfolder()"><i class="glyphicon glyphicon-plus-sign"></i> 新建文件夹</button>
-          <button class="btn btn-default" ng-disabled="fileloading" ng-click="newfile()"><i class="glyphicon glyphicon-plus-sign"></i> 新建文件</button>
-          <button class="btn btn-default" ng-disabled="fileloading" ng-click="upload()"><i class="glyphicon glyphicon-upload"></i> 上传文件</button>
-          <button class="btn btn-default" ng-disabled="fileloading" ng-click="download()"><i class="glyphicon glyphicon-download"></i> 下载资源</button>
-          <button class="btn btn-default" ng-click="paste()" ng-disabled="clipboard.count==0||fileloading"><i class="glyphicon glyphicon-paste"></i> 粘贴/链接</button>
-        </div>
-      </div>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="upandlist()"><i class="glyphicon glyphicon-level-up"></i> 返回上级</button>
+                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="newfolder()"><i class="glyphicon glyphicon-plus-sign"></i> 新建文件夹</button>
+                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="newfile()"><i class="glyphicon glyphicon-plus-sign"></i> 新建文件</button>
+                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="upload()"><i class="glyphicon glyphicon-upload"></i> 上传文件</button>
+                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="download()"><i class="glyphicon glyphicon-download"></i> 下载资源</button>
+                    <button class="btn btn-default" ng-click="paste()" ng-disabled="clipboard.count==0||fileloading"><i class="glyphicon glyphicon-paste"></i> 粘贴/链接</button>
+                </div>
+            </div>
 			<div class="col-md-3">
 				<button class="btn btn-default btn-sm pull-right" data-toggle="button" ng-click="togglehidden()"><i class="glyphicon glyphicon-eye-open"></i> 显示隐藏文件和目录</button>
 			</div>
@@ -137,8 +137,8 @@
 		<div style="margin:15px 0;height:30px;">
 			<div class="pull-left">
 				<button class="btn btn-default btn-sm" ng-click="return2list()">
-          <span class="glyphicon glyphicon-chevron-left"></span> 返回文件列表
-        </button>
+                    <span class="glyphicon glyphicon-chevron-left"></span> 返回文件列表
+                </button>
 			</div>
 			<div class="pull-right">
 				字符编码：<select class="input-sm" ng-model="filecharset" style="width:120px;margin-bottom:0;margin-right:10px">
@@ -160,8 +160,8 @@
 		<div style="margin:15px 0;height:30px;">
 			<div class="pull-left">
 				<button class="btn btn-default btn-sm" ng-click="return2list()">
-          <span class="glyphicon glyphicon-chevron-left"></span> 返回文件列表
-        </button>
+                    <span class="glyphicon glyphicon-chevron-left"></span> 返回文件列表
+                </button>
 			</div>
 			<div class="pull-right">
 				字符编码：<select class="input-sm" ng-model="filecharset" style="width:120px;margin-bottom:0;margin-right:10px">
@@ -192,19 +192,17 @@
       <div class="modal-body">
       <p>{{overwrite_filename}} 已存在，如何处理？</p>
         <div class="form-group">
-          <div class="controls">
-            <label class="radio">
-              <input type="radio" ng-model="overwrite_option" value="overwrite">
-              覆盖该文件或目录
+          <div class="radio">
+            <label>
+                <input type="radio" ng-model="overwrite_option" value="overwrite">覆盖该文件或目录
             </label>
           </div>
         </div>
         <div class="form-group">
-          <div class="controls">
-            <label class="radio">
-              <input type="radio" ng-model="overwrite_option" value="rename">
-              重命名为<br />
-              <input style="margin-top:10px" type="text" ng-model="overwrite_newname" ng-disabled="overwrite_option=='overwrite'">
+          <div class="radio">
+            <label>
+              <input type="radio" ng-model="overwrite_option" value="rename">重命名为<br />
+              <input class="form-control" style="margin-top:10px" type="text" ng-model="overwrite_newname" ng-disabled="overwrite_option=='overwrite'">
             </label>
           </div>
         </div>
@@ -225,11 +223,11 @@
         <h3>{{newname_title}}</h3>
       </div>
       <div class="modal-body">
-        <form class="form-horizontal" onsubmit="return false">
+        <form class="" onsubmit="return false">
           <div class="form-group">
             <label class="control-label">{{newname_label}}：</label>
             <div class="controls">
-              <input type="text" ng-model="newname_name">
+              <input class="form-control" type="text" ng-model="newname_name">
             </div>
           </div>
         </form>

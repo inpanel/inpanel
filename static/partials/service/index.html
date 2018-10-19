@@ -19,26 +19,20 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='http'" id="http">
 				<table class="table table-button">
 					<thead>
-						<tr>
-							<th colspan="3">HTTP服务</th>
-						</tr>
+						<tr><th colspan="4">HTTP服务</th></tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td style="width:100px">Nginx</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>
 							<td class="muted">高性能的 HTTP 服务器</td>
-							<td style="width:150px">
-								<div srvminiop ng-init="name='Nginx';service='nginx';urlname='nginx'"></div>
-							</td>
+							<td style="width:150px"><div srvminiop ng-init="name='Nginx';service='nginx';urlname='nginx'"></div></td>
 						</tr>
 						<tr>
 							<td>Apache</td>
 							<td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
 							<td class="muted">老牌 HTTP 服务器</td>
-							<td>
-								<div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div>
-							</td>
+							<td><div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div></td>
 						</tr>
 					</tbody>
 				</table>
@@ -46,18 +40,14 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ftp'" id="ftp">
 				<table class="table table-button">
 					<thead>
-						<tr>
-							<th colspan="3">FTP服务</th>
-						</tr>
+						<tr><th colspan="4">FTP服务</th></tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td style="width:100px">vsftpd</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.vsftpd']['status'] | service.status"></td>
 							<td class="muted">安全快速的FTP服务器</td>
-							<td style="width:150px">
-								<div srvminiop ng-init="name='vsftpd';service='vsftpd';urlname='vsftpd'"></div>
-							</td>
+							<td style="width:150px"><div srvminiop ng-init="name='vsftpd';service='vsftpd';urlname='vsftpd'"></div></td>
 						</tr>
 					</tbody>
 				</table>
@@ -65,18 +55,16 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='database'" id="database">
 				<table class="table table-button">
 					<thead>
-						<tr>
-							<th colspan="3">数据库服务</th>
-						</tr>
+						<tr><th colspan="4">数据库服务</th></tr>
 					</thead>
 					<tbody>
 						<tr>
-              <td style="width:100px">MariaDB</td>
-              <td style="width:60px" ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
-              <td class="muted">MySQL的一个分支，主要由开源社区在维护</td>
-              <td style="width:150px"><div srvminiop ng-init="name='MariaDB';service='MariaDB';urlname='MariaDB'"></div></td>
-            </tr>
-            <tr>
+                            <td style="width:100px">MariaDB</td>
+                            <td style="width:60px" ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
+                            <td class="muted">MySQL的一个分支，主要由开源社区在维护</td>
+                            <td style="width:150px"><div srvminiop ng-init="name='MariaDB';service='MariaDB';urlname='MariaDB'"></div></td>
+                        </tr>
+                        <tr>
 							<td>MySQL</td>
 							<td ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
 							<td class="muted">最流行的开源关系型数据库服务器</td>
@@ -106,9 +94,7 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='appengine'" id="appengine">
 				<table class="table table-button">
 					<thead>
-						<tr>
-							<th colspan="3">应用/脚本引擎</th>
-						</tr>
+						<tr><th colspan="4">应用/脚本引擎</th></tr>
 					</thead>
 					<tbody>
 						<tr>
@@ -123,9 +109,7 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mail'" id="mail">
 				<table class="table table-button">
 					<thead>
-						<tr>
-							<th colspan="3">邮件服务</th>
-						</tr>
+						<tr><th colspan="4">邮件服务</th></tr>
 					</thead>
 					<tbody>
 						<tr>
@@ -140,9 +124,7 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
 				<table class="table table-button">
 					<thead>
-						<tr>
-							<th colspan="3">系统服务</th>
-						</tr>
+						<tr><th colspan="4">系统服务</th></tr>
 					</thead>
 					<tbody>
 						<tr>
