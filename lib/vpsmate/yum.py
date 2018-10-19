@@ -59,29 +59,26 @@ yum_reporpms = {
     'epel': {
         5: {
             'x86_64': (
-                # 'http://dl.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-8.noarch.rpm',
                 'http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm'
                 ),
             'i386':   (
-                # 'http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm',
                 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm'
                 ),
             'i686':   (
-                # 'http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm',
                 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm'
                 ),
             },
         6: {
             'x86_64': (
-                'http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm',
+                # 'http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm',
                 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/epel-release-6-5.noarch.rpm'
                 ),
             'i386':   (
-                'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
+                # 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
                 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/epel-release-6-5.noarch.rpm'
                 ),
             'i686':   (
-                'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
+                # 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
                 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/epel-release-6-5.noarch.rpm'
                 ),
         },
@@ -117,11 +114,11 @@ yum_reporpms = {
             }
         },
     'ius': {
-        # 5: {
-        #     'x86_64': ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/x86_64/ius-release-1.0-10.ius.el5.noarch.rpm', ),
-        #     'i386':   ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/i386/ius-release-1.0-10.ius.el5.noarch.rpm', ),
-        #     'i686':   ('http://dl.iuscommunity.org/pub/ius/stable/Redhat/5/i386/ius-release-1.0-10.ius.el5.noarch.rpm', ),
-        # },
+        5: {
+            'x86_64': ('https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/x86_64/ius-release-1.0-15.ius.centos5.noarch.rpm', ),
+            'i386':   ('https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/i386/ius-release-1.0-15.ius.centos5.noarch.rpm', ),
+            'i686':   ('https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/i386/ius-release-1.0-15.ius.centos5.noarch.rpm', ),
+        },
         6: {
             'x86_64': (
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-10.ius.el6.noarch.rpm',
@@ -129,7 +126,7 @@ yum_reporpms = {
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-12.ius.el6.noarch.rpm',
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-13.ius.el6.noarch.rpm',
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-14.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/ius-release-1.0-15.ius.el6.noarch.rpm'
+                'https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-15.ius.el6.noarch.rpm'
                 ),
             'i386':   (
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm',
@@ -137,7 +134,7 @@ yum_reporpms = {
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-12.ius.el6.noarch.rpm',
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-13.ius.el6.noarch.rpm',
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-14.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'
+                'https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'
                 ),
             'i686':   (
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-10.ius.el6.noarch.rpm',
@@ -145,7 +142,7 @@ yum_reporpms = {
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-12.ius.el6.noarch.rpm',
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-13.ius.el6.noarch.rpm',
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-14.ius.el6.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'
+                'https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'
                 ),
             },
         7: {
@@ -155,7 +152,7 @@ yum_reporpms = {
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-12.ius.el7.noarch.rpm',
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-13.ius.el7.noarch.rpm',
                 # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-14.ius.el7.noarch.rpm',
-                'https://dl.iuscommunity.org/pub/ius/stable/Redhat/7/x86_64/ius-release-1.0-15.ius.el7.noarch.rpm'
+                'https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-15.ius.el7.noarch.rpm'
                 )
             }
         }
@@ -178,12 +175,12 @@ yum_repostr = {
     '10gen': {
         'x86_64': '[10gen]\n\
 name=10gen Repository\n\
-baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n\
+baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/RPMS\n\
 gpgcheck=0\n\
 enabled=1',
-        'i386': '[10gen]\n\
+        'i686': '[10gen]\n\
 name=10gen Repository\n\
-baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/i686\n\
+baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/i686/RPMS\n\
 gpgcheck=0\n\
 enabled=1',
     },
@@ -198,8 +195,8 @@ yum_pkg_alias = {
     'mysql'         : ('mysql-server', 'mysql55-server', 'mariadb', ),
     'redis'         : ('redis', ),
     'memcache'      : ('memcached', ),
-    'mongodb'       : ('mongodb-server', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
-    'php'           : ('php-fpm', 'php53u-fpm', 'php54-fpm', ),
+    'mongodb'       : ('mongodb-org', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
+    'php'           : ('php-fpm', 'php56u-fpm', 'php70-fpm', 'php71-fpm', ),
     'sendmail'      : ('sendmail', ),
     'ssh'           : ('openssh-server', ),
     'iptables'      : ('iptables', ),
@@ -261,7 +258,7 @@ yum_pkg_relatives = {
         'mongo20-10gen'         : {'default': True, 'base': True, },
     },
     'php-fpm'       : {
-        'php'                   : {'default': True, 'base': True, 'conflicts': ('php53u', 'php54', ), },
+        'php'                   : {'default': True, 'base': True, 'conflicts': ('php56u', 'php70u','php71u', ), },
         'php-bcmath'            : {'default': True, 'isext': True, },
         'php-cli'               : {'default': True, },
         'php-common'            : {'default': True, 'base': True, },
@@ -306,101 +303,132 @@ yum_pkg_relatives = {
         'php-process'           : {'default': False, 'isext': True, },
         'php-pspell'            : {'default': False, 'isext': True, },
         'php-recode'            : {'default': False, 'isext': True, },
-        'php-simplepie'         : {'default': False, 'isext': True, },
         'php-snmp'              : {'default': False, 'isext': True, },
         'php-soap'              : {'default': True, 'isext': True, },
         'php-suhosin'           : {'default': False, 'isext': True, },
         'php-xml'               : {'default': True, 'isext': True, },
         'php-xmlrpc'            : {'default': False, 'isext': True, },
         'php-zipstream'         : {'default': False, 'isext': True, },
-        'php-zmq'               : {'default': False, 'isext': True, },
-        'php-zts'               : {'default': False, 'isext': True, },
-        'php-zend-guard-loader' : {'default': False, 'isext': True, },
+        'php-zmq'               : {'default': False, 'isext': True, }
     },
-    'php53u-fpm'        : {
-        'php53u'                : {'default': True, 'base': True, 'conflicts': ('php', 'php54', ), },
-        'php53u-bcmath'         : {'default': True, 'isext': True, },
-        'php53u-cli'            : {'default': True, },
-        'php53u-common'         : {'default': True, 'base': True, },
-        'php53u-dba'            : {'default': False, 'isext': True, },
-        'php53u-devel'          : {'default': False, 'isext': True, },
-        'php53u-eaccelerator'   : {'default': False, 'isext': True, },
-        'php53u-fpm'            : {'default': True, },
-        'php53u-gd'             : {'default': True, 'isext': True, },
-        'php53u-imap'           : {'default': False, 'isext': True, },
-        'php53u-interbase'      : {'default': False, 'isext': True, },
-        'php53u-intl'           : {'default': False, 'isext': True, },
-        'php53u-ioncube-loader' : {'default': False, 'isext': True, },
-        'php53u-ldap'           : {'default': False, 'isext': True, },
-        'php53u-mbstring'       : {'default': True, 'isext': True, },
-        'php53u-mcrypt'         : {'default': True, 'isext': True, },
-        'php53u-mssql'          : {'default': False, 'isext': True, },
-        'php53u-mysql'          : {'default': True, 'isext': True, },
-        'php53u-odbc'           : {'default': False, 'isext': True, },
-        'php53u-pdo'            : {'default': True, 'isext': True, },
-        'php53u-pear'           : {'default': False, },
-        'php53u-pecl-apc'       : {'default': False, 'isext': True, },
-        'php53u-pecl-geoip'     : {'default': False, 'isext': True, },
-        'php53u-pecl-imagick'   : {'default': False, 'isext': True, },
-        'php53u-pecl-memcache'  : {'default': False, 'isext': True, },
-        'php53u-pecl-memcached' : {'default': False, 'isext': True, },
-        'php53u-pecl-xdebug'    : {'default': False, 'isext': True, },
-        'php53u-pgsql'          : {'default': False, 'isext': True, },
-        'php53u-process'        : {'default': False, 'isext': True, },
-        'php53u-pspell'         : {'default': False, 'isext': True, },
-        'php53u-recode'         : {'default': False, 'isext': True, },
-        'php53u-simplepie'      : {'default': False, 'isext': True, },
-        'php53u-snmp'           : {'default': False, 'isext': True, },
-        'php53u-soap'           : {'default': True, 'isext': True, },
-        'php53u-suhosin'        : {'default': False, 'isext': True, },
-        'php53u-xcache'         : {'default': False, 'isext': True, },
-        'php53u-xml'            : {'default': True, 'isext': True, },
-        'php53u-xmlrpc'         : {'default': False, 'isext': True, },
-        'php53u-zts'            : {'default': False, 'isext': True, },
-        'php-zend-guard-loader' : {'default': False, 'isext': True, },
+    'php56u-fpm'        : {
+        'php56u'                : {'default': True, 'base': True, 'conflicts': ('php', 'php70u','php71u')},
+        'php56u-bcmath'         : {'default': True, 'isext': True, },
+        'php56u-cli'            : {'default': True, },
+        'php56u-common'         : {'default': True, 'base': True, },
+        'php56u-dba'            : {'default': False, 'isext': True, },
+        'php56u-devel'          : {'default': False, 'isext': True, },
+        'php56u-eaccelerator'   : {'default': False, 'isext': True, },
+        'php56u-fpm'            : {'default': True, },
+        'php56u-gd'             : {'default': True, 'isext': True, },
+        'php56u-imap'           : {'default': False, 'isext': True, },
+        'php56u-interbase'      : {'default': False, 'isext': True, },
+        'php56u-intl'           : {'default': False, 'isext': True, },
+        'php56u-ioncube-loader' : {'default': False, 'isext': True, },
+        'php56u-ldap'           : {'default': False, 'isext': True, },
+        'php56u-mbstring'       : {'default': True, 'isext': True, },
+        'php56u-mcrypt'         : {'default': True, 'isext': True, },
+        'php56u-mssql'          : {'default': False, 'isext': True, },
+        'php56u-mysql'          : {'default': True, 'isext': True, },
+        'php56u-odbc'           : {'default': False, 'isext': True, },
+        'php56u-pdo'            : {'default': True, 'isext': True, },
+        'php56u-pear'           : {'default': False, },
+        'php56u-pecl-apc'       : {'default': False, 'isext': True, },
+        'php56u-pecl-geoip'     : {'default': False, 'isext': True, },
+        'php56u-pecl-imagick'   : {'default': False, 'isext': True, },
+        'php56u-pecl-memcache'  : {'default': False, 'isext': True, },
+        'php56u-pecl-memcached' : {'default': False, 'isext': True, },
+        'php56u-pecl-xdebug'    : {'default': False, 'isext': True, },
+        'php56u-pgsql'          : {'default': False, 'isext': True, },
+        'php56u-process'        : {'default': False, 'isext': True, },
+        'php56u-pspell'         : {'default': False, 'isext': True, },
+        'php56u-recode'         : {'default': False, 'isext': True, },
+        'php56u-snmp'           : {'default': False, 'isext': True, },
+        'php56u-soap'           : {'default': True, 'isext': True, },
+        'php56u-suhosin'        : {'default': False, 'isext': True, },
+        'php56u-xcache'         : {'default': False, 'isext': True, },
+        'php56u-xml'            : {'default': True, 'isext': True, },
+        'php56u-xmlrpc'         : {'default': False, 'isext': True, }
     },
-    'php54-fpm'         : {
-        'php54'                 : {'default': True, 'base': True, 'conflicts': ('php', 'php53u', ), },
-        'php54-bcmath'          : {'default': True, 'isext': True, },
-        'php54-cli'             : {'default': True, },
-        'php54-common'          : {'default': True, 'base': True, },
-        'php54-dba'             : {'default': False, 'isext': True, },
-        'php54-devel'           : {'default': False, 'isext': True, },
-        'php54-fpm'             : {'default': True, },
-        'php54-gd'              : {'default': True, 'isext': True, },
-        'php54-imap'            : {'default': False, 'isext': True, },
-        'php54-interbase'       : {'default': False, 'isext': True, },
-        'php54-intl'            : {'default': False, 'isext': True, },
-        'php54-ldap'            : {'default': False, 'isext': True, },
-        'php54-ioncube-loader'  : {'default': False, 'isext': True, },
-        'php54-mbstring'        : {'default': True,'isext': True,  },
-        'php54-mcrypt'          : {'default': True, 'isext': True, },
-        'php54-mssql'           : {'default': False, 'isext': True, },
-        'php54-mysql'           : {'default': True, 'isext': True, 'conflicts': ('php54-mysqlnd', ), },
-        'php54-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ('php54-mysql', ), },
-        'php54-odbc'            : {'default': False, 'isext': True, },
-        'php54-pdo'             : {'default': True, 'isext': True, },
-        'php54-pear'            : {'default': False, },
-        'php54-pecl-apc'        : {'default': False, 'isext': True, },
-        'php54-pecl-geoip'      : {'default': False, 'isext': True, },
-        'php54-pecl-imagick'    : {'default': False, 'isext': True, },
-        'php54-pecl-memcache'   : {'default': False, 'isext': True, },
-        'php54-pecl-mysqlnd-ms' : {'default': False, 'isext': True, },
-        'php54-pecl-xdebug'     : {'default': False, 'isext': True, },
-        'php54-pgsql'           : {'default': False, 'isext': True, },
-        'php54-pgsql84'         : {'default': False, 'isext': True, },
-        'php54-process'         : {'default': False, 'isext': True, },
-        'php54-pspell'          : {'default': False, 'isext': True, },
-        'php54-recode'          : {'default': False, 'isext': True, },
-        'php54-simplepie'       : {'default': False, 'isext': True, },
-        'php54-snmp'            : {'default': False, 'isext': True, },
-        'php54-soap'            : {'default': True, 'isext': True, },
-        'php54-suhosin'         : {'default': False, 'isext': True, },
-        'php54-xcache'          : {'default': False, 'isext': True, },
-        'php54-xml'             : {'default': True, 'isext': True, },
-        'php54-xmlrpc'          : {'default': False, 'isext': True, },
-        'php54-zts'             : {'default': False, 'isext': True, },
-        'php-zend-guard-loader' : {'default': False, 'isext': True, },
+    'php70u-fpm'         : {
+        'php70u'                 : {'default': True, 'base': True, 'conflicts': ('php', 'php56u','php71u')},
+        'php70u-bcmath'          : {'default': True, 'isext': True, },
+        'php70u-cli'             : {'default': True, },
+        'php70u-common'          : {'default': True, 'base': True, },
+        'php70u-dba'             : {'default': False, 'isext': True, },
+        'php70u-devel'           : {'default': False, 'isext': True, },
+        'php70u-fpm'             : {'default': True, },
+        'php70u-gd'              : {'default': True, 'isext': True, },
+        'php70u-imap'            : {'default': False, 'isext': True, },
+        'php70u-interbase'       : {'default': False, 'isext': True, },
+        'php70u-intl'            : {'default': False, 'isext': True, },
+        'php70u-ldap'            : {'default': False, 'isext': True, },
+        'php70u-ioncube-loader'  : {'default': False, 'isext': True, },
+        'php70u-mbstring'        : {'default': True,'isext': True,  },
+        'php70u-mcrypt'          : {'default': True, 'isext': True, },
+        'php70u-mssql'           : {'default': False, 'isext': True, },
+        'php70u-mysql'           : {'default': True, 'isext': True, 'conflicts': ('php70u-mysqlnd')},
+        'php70u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ('php70u-mysql')},
+        'php70u-odbc'            : {'default': False, 'isext': True, },
+        'php70u-pdo'             : {'default': True, 'isext': True, },
+        'php70u-pear'            : {'default': False, },
+        'php70u-pecl-apc'        : {'default': False, 'isext': True, },
+        'php70u-pecl-geoip'      : {'default': False, 'isext': True, },
+        'php70u-pecl-imagick'    : {'default': False, 'isext': True, },
+        'php70u-pecl-memcache'   : {'default': False, 'isext': True, },
+        'php70u-pecl-mysqlnd-ms' : {'default': False, 'isext': True, },
+        'php70u-pecl-xdebug'     : {'default': False, 'isext': True, },
+        'php70u-pgsql'           : {'default': False, 'isext': True, },
+        'php70u-process'         : {'default': False, 'isext': True, },
+        'php70u-pspell'          : {'default': False, 'isext': True, },
+        'php70u-recode'          : {'default': False, 'isext': True, },
+        'php70u-snmp'            : {'default': False, 'isext': True, },
+        'php70u-soap'            : {'default': True, 'isext': True, },
+        'php70u-suhosin'         : {'default': False, 'isext': True, },
+        'php70u-xcache'          : {'default': False, 'isext': True, },
+        'php70u-xml'             : {'default': True, 'isext': True, },
+        'php70u-xmlrpc'          : {'default': False, 'isext': True, }
+    },
+    'php71u-fpm'         : {
+        'php71u'                 : {'default': True, 'base': True, 'conflicts': ('php', 'php56u', 'php70u')},
+        'php71u-bcmath'          : {'default': True, 'isext': True, },
+        'php71u-cli'             : {'default': True, },
+        'php71u-common'          : {'default': True, 'base': True, },
+        'php71u-dba'             : {'default': False, 'isext': True, },
+        'php71u-devel'           : {'default': False, 'isext': True, },
+        'php71u-fpm'             : {'default': True, },
+        'php71u-gd'              : {'default': True, 'isext': True, },
+        'php71u-imap'            : {'default': False, 'isext': True, },
+        'php71u-interbase'       : {'default': False, 'isext': True, },
+        'php71u-intl'            : {'default': False, 'isext': True, },
+        'php71u-ldap'            : {'default': False, 'isext': True, },
+        'php71u-json'             : {'default': False, 'isext': True, },
+        'php71u-ioncube-loader'  : {'default': False, 'isext': True, },
+        'php71u-mbstring'        : {'default': True,'isext': True,  },
+        'php71u-mcrypt'          : {'default': True, 'isext': True, },
+        'php71u-mssql'           : {'default': False, 'isext': True, },
+        'php71u-mysql'           : {'default': True, 'isext': True, 'conflicts': ('php71u-mysqlnd')},
+        'php71u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ('php71u-mysql')},
+        'php71u-odbc'            : {'default': False, 'isext': True, },
+        'php71u-pdo'             : {'default': True, 'isext': True, },
+        'php71u-pear'            : {'default': False, },
+        'php71u-pecl-apcu'       : {'default': False, 'isext': True, },
+        'php71u-pecl-geoip'      : {'default': False, 'isext': True, },
+        'php71u-pecl-igbinary'   : {'default': False, 'isext': True, },
+        'php71u-pecl-imagick'    : {'default': False, 'isext': True, },
+        'php71u-pecl-mongodb'    : {'default': False, 'isext': True, },
+        'php71u-pecl-redis'      : {'default': False, 'isext': True, },
+        'php71u-pecl-xdebug'     : {'default': False, 'isext': True, },
+        'php71u-pgsql'           : {'default': False, 'isext': True, },
+        'php71u-process'         : {'default': False, 'isext': True, },
+        'php71u-pspell'          : {'default': False, 'isext': True, },
+        'php71u-recode'          : {'default': False, 'isext': True, },
+        'php71u-snmp'            : {'default': False, 'isext': True, },
+        'php71u-soap'            : {'default': True, 'isext': True, },
+        'php71u-tidy'            : {'default': False, 'isext': True, },
+        # 'php71u-xcache'          : {'default': False, 'isext': True, },
+        'php71u-xml'             : {'default': True, 'isext': True, },
+        'php71u-xmlrpc'          : {'default': False, 'isext': True, }
     },
     'sendmail'      : {
         'sendmail'              : {'default': True, 'base': True, },
