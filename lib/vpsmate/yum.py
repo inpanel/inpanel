@@ -8,161 +8,146 @@
 
 
 # repository list that YUM support
-yum_repolist = ('base', 'updates', 'epel', 'CentALT', 'ius', 'atomic', '10gen')
+yum_repolist = ['base', 'updates', 'epel', 'CentALT', 'ius', 'atomic', '10gen']
 
 yum_reporpms = {
     'base': {
         5: {
-            'x86_64': (
+            'x86_64': [
                 # 'http://mirror.centos.org/centos/5/os/x86_64/CentOS/centos-release-notes-5.8-0.x86_64.rpm',
                 # 'http://mirror.centos.org/centos/5/os/x86_64/CentOS/centos-release-5-8.el5.centos.x86_64.rpm',
                 'http://mirror.neu.edu.cn/centos/5/os/x86_64/CentOS/centos-release-notes-5.11-0.x86_64.rpm',
                 'http://mirror.neu.edu.cn/centos/5/os/x86_64/CentOS/centos-release-5-11.el5.centos.x86_64.rpm'
-                ),
-            'i386': (
+                ],
+            'i386': [
                 # 'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-notes-5.8-0.i386.rpm',
                 # 'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-5-8.el5.centos.i386.rpm',
                 'http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-notes-5.11-0.i386.rpm',
                 'http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-5-11.el5.centos.i386.rpm'
-                ),
-            'i686': (
+                ],
+            'i686': [
                 # 'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-notes-5.8-0.i386.rpm',
                 # 'http://mirror.centos.org/centos/5/os/i386/CentOS/centos-release-5-8.el5.centos.i386.rpm',
                 'http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-notes-5.11-0.i386.rpm',
                 'http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-5-11.el5.centos.i386.rpm'
-                ),
+                ],
             },
         6: {
-            'x86_64': (
+            'x86_64': [
                 # 'http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-9.el6.12.3.x86_64.rpm.rpm',
                 # 'http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-10.el6.centos.12.3.x86_64.rpm',
                 'https://mirrors.aliyun.com/centos/6/os/x86_64/Packages/centos-release-6-10.el6.centos.12.3.x86_64.rpm'
-                ),
-            'i386':   (
+                ],
+            'i386':   [
                 # 'http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-9.el6.12.3.i686.rpm',
                 # 'http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm',
                 'https://mirrors.aliyun.com/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm'
-                ),
-            'i686':   (
+                ],
+            'i686':   [
                 # 'http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-9.el6.12.3.i686.rpm',
                 # 'http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm',
                 'https://mirrors.aliyun.com/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm'
-                )
+                ]
             },
         7: {
-            'x86_64': (
+            'x86_64': [
                 # 'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-5.1804.el7.centos.x86_64.rpm',
                 'https://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-5.1804.el7.centos.x86_64.rpm'
-                )
+                ]
             }
         },
     'updates': {
         7: {
-            'x86_64': (
+            'x86_64': [
                 'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.1.el7.centos.x86_64.rpm',
                 'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.4.el7.centos.x86_64.rpm',
                 'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.5.el7.centos.x86_64.rpm',
                 'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.el7.centos.2.x86_64.rpm'
-                )
+                ]
             }
         },
     'epel': {
         5: {
-            'x86_64': (
+            'x86_64': [
                 'http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm'
-                ),
-            'i386':   (
+                ],
+            'i386':   [
                 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm'
-                ),
-            'i686':   (
+                ],
+            'i686':   [
                 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm'
-                ),
+                ],
             },
         6: {
-            'x86_64': (
+            'x86_64': [
+                # 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
+                'https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm',
                 # 'http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm',
-                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/epel-release-6-5.noarch.rpm',
-                'https://mirrors.aliyun.com/epel/6/x86_64/epel-release-6-8.noarch.rpm'
-                ),
-            'i386':   (
+                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/epel-release-6-8.noarch.rpm',
+                # 'https://mirrors.aliyun.com/epel/6/x86_64/epel-release-6-8.noarch.rpm'
+                ],
+            'i386':   [
+                # 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
+                'https://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm',
                 # 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
-                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/epel-release-6-5.noarch.rpm',
-                'https://mirrors.aliyun.com/epel/6/i386/epel-release-6-8.noarch.rpm'
-                ),
-            'i686':   (
+                # 'https://mirrors.aliyun.com/epel/6/i386/epel-release-6-8.noarch.rpm'
+                ],
+            'i686':   [
+                # 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
+                'https://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm',
                 # 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
-                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/i386/epel-release-6-5.noarch.rpm',
-                'https://mirrors.aliyun.com/epel/6/i386/epel-release-6-8.noarch.rpm'
-                ),
+                # 'https://mirrors.aliyun.com/epel/6/i386/epel-release-6-8.noarch.rpm'
+                ],
         },
         7: {
-            'x86_64': (
+            'x86_64': [
+                # 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm'
+                'https://dl.fedoraproject.org/pub/epel/7/x86_64/epel-release-7-11.noarch.rpm'
                 # 'http://centos.ustc.edu.cn/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm',
-                'https://mirrors.aliyun.com/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm'
-                ),
+                # 'https://mirrors.aliyun.com/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm'
+                ],
             },
         },
     'CentALT': {
         5: {
-            'x86_64': (
+            'x86_64': [
                 'http://mirror.neu.edu.cn/CentALT/5/x86_64/centalt-release-5-3.noarch.rpm'
-                ),
-            'i386':   (
+                ],
+            'i386':   [
                 'http://mirror.neu.edu.cn/CentALT/5/i386/centalt-release-5-3.noarch.rpm'
-                ),
-            'i686':   (
+                ],
+            'i686':   [
                 'http://mirror.neu.edu.cn/CentALT/5/i386/centalt-release-5-3.noarch.rpm'
-                ),
+                ],
             },
         6: {
-            'x86_64': (
+            'x86_64': [
                 'http://mirror.neu.edu.cn/CentALT/6/x86_64/centalt-release-6-1.noarch.rpm',
                 'http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-10.el6.centos.12.3.x86_64.rpm'
-                ),
-            'i386':   (
+                ],
+            'i386':   [
                 'http://mirror.neu.edu.cn/CentALT/6/i386/centalt-release-6-1.noarch.rpm',
                 'http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm'
-                ),
-            'i686':   (
+                ],
+            'i686':   [
                 'http://mirror.neu.edu.cn/CentALT/6/i386/centalt-release-6-1.noarch.rpm',
                 'http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm'
-                )
+                ]
             }
         },
     'ius': {
         5: {
-            'x86_64': (
-                'https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/x86_64/ius-release-1.0-15.ius.centos5.noarch.rpm',
-                'https://mirrors.aliyun.com/ius/archive/CentOS/5/x86_64/ius-release-1.0-14.ius.el5.noarch.rpm'
-                ),
-            'i386':   (
-                # 'https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/i386/ius-release-1.0-15.ius.centos5.noarch.rpm',
-                'https://mirrors.aliyun.com/ius/archive/CentOS/5/i386/ius-release-1.0-14.ius.el5.noarch.rpm'
-                ),
-            'i686':   (
-                # 'https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/i386/ius-release-1.0-15.ius.centos5.noarch.rpm',
-                'https://mirrors.aliyun.com/ius/archive/CentOS/5/i386/ius-release-1.0-14.ius.el5.noarch.rpm'
-                )
+            'x86_64': ['https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/x86_64/ius-release-1.0-15.ius.centos5.noarch.rpm'],
+            'i386':   ['https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/i386/ius-release-1.0-15.ius.centos5.noarch.rpm'],
+            'i686':   ['https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/i386/ius-release-1.0-15.ius.centos5.noarch.rpm']
         },
         6: {
-            'x86_64': (
-                # 'https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-15.ius.el6.noarch.rpm',
-                'https://mirrors.aliyun.com/ius/stable/CentOS/6/x86_64/ius-release-1.0-15.ius.centos6.noarch.rpm'
-                ),
-            'i386':   (
-                # 'https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm',
-                'https://mirrors.aliyun.com/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.centos6.noarch.rpm'
-                ),
-            'i686':   (
-                # 'https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm',
-                'https://mirrors.aliyun.com/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.centos6.noarch.rpm'
-                ),
+            'x86_64': ['https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-15.ius.centos6.noarch.rpm'],
+            'i386':   ['https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm'],
+            'i686':   ['https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm']
             },
         7: {
-            'x86_64': (
-                # 'https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-15.ius.el7.noarch.rpm',
-                'https://mirrors.aliyun.com/ius/stable/CentOS/7/x86_64/ius-release-1.0-15.ius.centos7.noarch.rpm'
-                )
+            'x86_64': ['https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-15.ius.centos7.noarch.rpm']
             }
         }
     }
@@ -170,8 +155,9 @@ yum_reporpms = {
 yum_repoinstallcmds = {
     # REF: http://www.atomicorp.com/channels/atomic/
     'atomic': 'wget -q -O - http://www.atomicorp.com/installers/atomic | sed \'/check_input "Do you agree to these terms?/d\' | sh',
-    # 'ius': 'wget -q -O -  https://setup.ius.io | sh'
+    'ius': 'wget -q -O -  https://setup.ius.io | sh' # REF: https://ius.io/GettingStarted/#install-via-automation
 }
+
 yum_repostr = {
     #     'CentALT': {
     #         6: {
@@ -198,20 +184,20 @@ enabled=1',
 
 # Alias of package we use when get versions of it
 yum_pkg_alias = {
-    'nginx'         : ('nginx', 'nginx-stable', ),
-    'tomcat'        : ('tomcat', ),
-    'apache'        : ('httpd', ),
-    'vsftpd'        : ('vsftpd', ),
-    'mysql'         : ('mysql-server', 'mysql55-server', 'mariadb', ),
-    'redis'         : ('redis', ),
-    'memcache'      : ('memcached', ),
-    'mongodb'       : ('mongodb-org', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
-    'php'           : ('php-fpm', 'php56u-fpm', 'php70u-fpm', 'php71u-fpm', ),
-    'sendmail'      : ('sendmail', ),
-    'ssh'           : ('openssh-server', ),
-    'iptables'      : ('iptables', ),
-    'cron'          : ('cronie', 'vixie-cron', ),
-    'ntp'           : ('ntp', ),
+    'nginx'         : ['nginx', 'nginx-stable', ],
+    'tomcat'        : ['tomcat', ],
+    'apache'        : ['httpd', ],
+    'vsftpd'        : ['vsftpd', ],
+    'mysql'         : ['mysql-server', 'mysql55-server', 'mariadb', ],
+    'redis'         : ['redis', ],
+    'memcache'      : ['memcached', ],
+    'mongodb'       : ['mongodb-org', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'],
+    'php'           : ['php-fpm', 'php56u-fpm', 'php70u-fpm', 'php71u-fpm', ],
+    'sendmail'      : ['sendmail', ],
+    'ssh'           : ['openssh-server', ],
+    'iptables'      : ['iptables', ],
+    'cron'          : ['cronie', 'vixie-cron', ],
+    'ntp'           : ['ntp', ],
 }
 
 # Relative available packages.
@@ -268,7 +254,7 @@ yum_pkg_relatives = {
         'mongo20-10gen'         : {'default': True, 'base': True, },
     },
     'php-fpm'       : {
-        'php'                   : {'default': True, 'base': True, 'conflicts': ('php56u', 'php70u','php71u', ), },
+        'php'                   : {'default': True, 'base': True, 'conflicts': ['php56u', 'php70u','php71u', ], },
         'php-bcmath'            : {'default': True, 'isext': True, },
         'php-cli'               : {'default': True, },
         'php-common'            : {'default': True, 'base': True, },
@@ -286,8 +272,8 @@ yum_pkg_relatives = {
         'php-mbstring'          : {'default': True, 'isext': True, },
         'php-mcrypt'            : {'default': True, 'isext': True, },
         'php-mssql'             : {'default': False, 'isext': True, },
-        'php-mysql'             : {'default': True, 'isext': True, 'conflicts': ('php-mysqlnd', ), },
-        'php-mysqlnd'           : {'default': False, 'isext': True, 'conflicts': ('php-mysql', ), },
+        'php-mysql'             : {'default': True, 'isext': True, 'conflicts': ['php-mysqlnd', ], },
+        'php-mysqlnd'           : {'default': False, 'isext': True, 'conflicts': ['php-mysql', ], },
         'php-odbc'              : {'default': False, 'isext': True, },
         'php-pdo'               : {'default': True, 'isext': True, },
         'php-pear'              : {'default': False, },
@@ -322,7 +308,7 @@ yum_pkg_relatives = {
         'php-zmq'               : {'default': False, 'isext': True, }
     },
     'php56u-fpm'        : {
-        'php56u'                : {'default': True, 'base': True, 'conflicts': ('php', 'php70u','php71u')},
+        'php56u'                : {'default': True, 'base': True, 'conflicts': ['php', 'php70u','php71u']},
         'php56u-bcmath'         : {'default': True, 'isext': True, },
         'php56u-cli'            : {'default': True, },
         'php56u-common'         : {'default': True, 'base': True, },
@@ -361,7 +347,7 @@ yum_pkg_relatives = {
         'php56u-xmlrpc'         : {'default': False, 'isext': True, }
     },
     'php70u-fpm'         : {
-        'php70u'                 : {'default': True, 'base': True, 'conflicts': ('php', 'php56u','php71u')},
+        'php70u'                 : {'default': True, 'base': True, 'conflicts': ['php', 'php56u','php71u']},
         'php70u-bcmath'          : {'default': True, 'isext': True, },
         'php70u-cli'             : {'default': True, },
         'php70u-common'          : {'default': True, 'base': True, },
@@ -377,8 +363,8 @@ yum_pkg_relatives = {
         'php70u-mbstring'        : {'default': True,'isext': True,  },
         'php70u-mcrypt'          : {'default': True, 'isext': True, },
         'php70u-mssql'           : {'default': False, 'isext': True, },
-        'php70u-mysql'           : {'default': True, 'isext': True, 'conflicts': ('php70u-mysqlnd')},
-        'php70u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ('php70u-mysql')},
+        'php70u-mysql'           : {'default': True, 'isext': True, 'conflicts': ['php70u-mysqlnd']},
+        'php70u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ['php70u-mysql']},
         'php70u-odbc'            : {'default': False, 'isext': True, },
         'php70u-pdo'             : {'default': True, 'isext': True, },
         'php70u-pear'            : {'default': False, },
@@ -400,7 +386,7 @@ yum_pkg_relatives = {
         'php70u-xmlrpc'          : {'default': False, 'isext': True, }
     },
     'php71u-fpm'         : {
-        'php71u'                 : {'default': True, 'base': True, 'conflicts': ('php', 'php56u', 'php70u')},
+        'php71u'                 : {'default': True, 'base': True, 'conflicts': ['php', 'php56u', 'php70u']},
         'php71u-bcmath'          : {'default': True, 'isext': True, },
         'php71u-cli'             : {'default': True, },
         'php71u-common'          : {'default': True, 'base': True, },
@@ -417,8 +403,8 @@ yum_pkg_relatives = {
         'php71u-mbstring'        : {'default': True,'isext': True,  },
         'php71u-mcrypt'          : {'default': True, 'isext': True, },
         'php71u-mssql'           : {'default': False, 'isext': True, },
-        'php71u-mysql'           : {'default': True, 'isext': True, 'conflicts': ('php71u-mysqlnd')},
-        'php71u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ('php71u-mysql')},
+        'php71u-mysql'           : {'default': True, 'isext': True, 'conflicts': ['php71u-mysqlnd']},
+        'php71u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ['php71u-mysql']},
         'php71u-odbc'            : {'default': False, 'isext': True, },
         'php71u-pdo'             : {'default': True, 'isext': True, },
         'php71u-pear'            : {'default': False, },
@@ -464,3 +450,7 @@ yum_pkg_relatives = {
         'unzip'                 : {'default': True, 'base': True, },
     },
 }
+
+
+# for rpm in yum_reporpms['ius'][6]['x86_64']:
+#     print(rpm)

@@ -92,9 +92,9 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
-        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
-        self.set_header('Access-Control-Allow-Credentials', 'true')
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        # self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        # self.set_header('Access-Control-Allow-Credentials', 'true')
+        # self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
     def check_xsrf_cookie(self):
         token = (self.get_argument("_xsrf", None) or
@@ -153,33 +153,33 @@ class RequestHandler(tornado.web.RequestHandler):
 class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
-        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
-        self.set_header('Access-Control-Allow-Credentials', 'true')
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        # self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        # self.set_header('Access-Control-Allow-Credentials', 'true')
+        # self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
 
 class ErrorHandler(tornado.web.ErrorHandler):
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
-        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
-        self.set_header('Access-Control-Allow-Credentials', 'true')
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        # self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        # self.set_header('Access-Control-Allow-Credentials', 'true')
+        # self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
 
 class FallbackHandler(tornado.web.FallbackHandler):
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
-        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
-        self.set_header('Access-Control-Allow-Credentials', 'true')
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        # self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        # self.set_header('Access-Control-Allow-Credentials', 'true')
+        # self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
 
 class RedirectHandler(tornado.web.RedirectHandler):
     def set_default_headers(self):
         self.set_header('Server', SERVER_NAME)
-        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
-        self.set_header('Access-Control-Allow-Credentials', 'true')
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        # self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        # self.set_header('Access-Control-Allow-Credentials', 'true')
+        # self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
         
 class FileDownloadHandler(StaticFileHandler):
@@ -188,9 +188,9 @@ class FileDownloadHandler(StaticFileHandler):
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-disposition', 'attachment; filename=%s' % os.path.basename(path))
         self.set_header('Content-Transfer-Encoding', 'binary')
-        self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
-        self.set_header('Access-Control-Allow-Credentials', 'true')
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        # self.set_header('Access-Control-Allow-Origin', 'http://localhost:8085')
+        # self.set_header('Access-Control-Allow-Credentials', 'true')
+        # self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         StaticFileHandler.get(self, path)
 
     def authed(self):
@@ -2687,7 +2687,7 @@ class BackendHandler(RequestHandler):
             cmds.append('cp -f /etc/redhat-release.vpsmate /etc/redhat-release')
 
         elif repo == 'epel':
-            # CentALT and ius depends on epel
+            # epel
             for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
                 cmds.append('rpm -U %s' % rpm)
 
@@ -2696,6 +2696,10 @@ class BackendHandler(RequestHandler):
                 cmds.append('rpm -U %s' % rpm)
 
         elif repo == 'ius':
+            # Script to setup the IUS public repository on your EL server
+            # result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['ius'], shell=True)
+            # if result != 0: error = True
+
             for rpm in yum.yum_reporpms['ius'][dist_verint][arch]:
                 cmds.append('rpm -U %s' % rpm)
 
@@ -2704,7 +2708,7 @@ class BackendHandler(RequestHandler):
             with open('/etc/yum.repos.d/10gen.repo', 'w') as f:
                 f.write(yum.yum_repostr['10gen'][self.settings['arch']])
 
-        elif repo == 'atomic' and dist_verint < 7:
+        elif repo == 'atomic':
             # REF: http://www.atomicorp.com/channels/atomic/
             result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['atomic'], shell=True)
             if result != 0: error = True
@@ -2728,10 +2732,6 @@ class BackendHandler(RequestHandler):
                             baseurl_found = True
                             line = '#%s' % line
                             lines.append(line)
-                            # add a mirrorlist line
-                            # metalink = 'http://www.vpsmate.org/mirrorlist?'\
-                            #     'repo=centalt-%s&arch=$basearch' % self.settings['dist_verint']
-                            # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)
                 if baseurl_found:
                     with open(repofile, 'w') as f: f.writelines(lines)
@@ -2748,7 +2748,7 @@ class BackendHandler(RequestHandler):
     @tornado.gen.engine
     def yum_info(self, pkg, repo, option):
         """Get package info in repository.
-        
+
         Option can be 'install' or 'update'.
         """
         jobname = 'yum_info_%s' % pkg
@@ -2769,7 +2769,7 @@ class BackendHandler(RequestHandler):
         data = []
         matched = False
         for cmd in cmds:
-            print cmd
+            print(cmd)
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
                 matched = True
