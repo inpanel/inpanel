@@ -115,17 +115,14 @@ class Install(object):
                 # fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 self._run('rpm -Uvh %s' % fastestmirror)
 
-            return True
+            self._run('wget -nv -c %s' % epelurl)
+            self._run('rpm -Uvh %s' % epelrpm)
 
     def install_python(self):
         if self.distname == 'centos':
-            self._run('wget -nv -c %s' % epelurl)
-            self._run('rpm -Uvh %s' % epelrpm)
             self._run('yum -y install python26')
 
         elif self.distname == 'redhat':
-            self._run('wget -nv -c %s' % epelurl)
-            self._run('rpm -Uvh %s' % epelrpm)
             self._run('yum -y install python26')
 
         elif self.distname == 'ubuntu':
@@ -141,13 +138,13 @@ class Install(object):
         #     localpkg_found = True
         # else:
         #     # or else install online
-        #     print '* Downloading install package from www.vpsmate.org'
+        #     print('* Downloading install package from www.vpsmate.org')
         #     f = urllib2.urlopen('http://www.vpsmate.org/api/latest')
         #     data = f.read()
         #     f.close()
         #     downloadurl = re.search('"download":"([^"]+)"', data).group(1).replace('\/', '/')
         #     self._run('wget -nv -c "%s" -O vpsmate.tar.gz' % downloadurl)
-        #
+        
         # # uncompress and install it
         # self._run('mkdir vpsmate')
         # self._run('tar zxmf vpsmate.tar.gz -C vpsmate')
@@ -187,7 +184,6 @@ class Install(object):
         self._run('iptables -A INPUT -p tcp --dport 8888 -j ACCEPT')
         self._run('iptables -A OUTPUT -p tcp --sport 8888 -j ACCEPT')
 
-
     def config(self, username, password):
         self._run('%s/config.py username "%s"' % (self.installpath, username))
         self._run('%s/config.py password "%s"' % (self.installpath, password))
@@ -201,7 +197,7 @@ class Install(object):
 
     def install(self):
         # check platform environment
-        print('* Checking platform...')
+        print('* Checking platform...'),
         supported = self.check_platform()
 
         if not supported:
@@ -212,14 +208,14 @@ class Install(object):
             print(self.distname)
             print('...OK')
 
-        print('Install epel-release...')
-        if(self.install_epel_release()):
-            print('OK')
-        else:
-            print('FAILED')
+        print('* Install depend software ...')
+        self._run('yum install -y wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
+
+        print('Install epel-release...'),
+        self.install_epel_release()
 
         # check python version
-        print('* Current python version [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1]))
+        print('* Current Python version [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1])),
 
         if (sys.version_info[:2] == (2, 6) or sys.version_info[:2] == (2, 7)):
             print('OK')
@@ -227,23 +223,20 @@ class Install(object):
             print('FAILED')
 
             # install the right version
-            print '* Installing python 2.6 ...'
+            print('* Installing python 2.6 ...'),
             self.install_python()
 
         # check GIT version
-        print '* Checking GIT ...',
+        print('* Checking GIT ...'),
         if self.check_git():
-            print 'OK'
+            print('OK')
         else:
-            print 'FAILED'
-
-        print '* Install depend software ...'
-        self._run('yum install -y wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
+            print('FAILED')
 
         # if sys.version_info[:2] == (2, 6):
-        #     print 'OK'
+        #     print('OK')
         # else:
-        #     print 'FAILED'
+        #     print('FAILED')
         #
         #     # install the right version
 
@@ -256,14 +249,14 @@ class Install(object):
             self._run('/etc/init.d/iptables stop')
 
         # get the latest vpsmate version
-        print '* Installing VPSMate'
+        print('* Installing VPSMate')
         self.install_vpsmate()
 
         # set username and password
         print
-        print '============================'
-        print '*    INSTALL COMPLETED!    *'
-        print '============================'
+        print('============================')
+        print('*    INSTALL COMPLETED!    *')
+        print('============================')
         print
         username = raw_input('Admin username [default: admin]: ').strip()
         password = raw_input('Admin password [default: admin]: ').strip()
@@ -274,14 +267,14 @@ class Install(object):
         self.config(username, password)
 
         print
-        print '* Username and password set successfully!'
+        print('* Username and password set successfully!')
         print
 
-        print '* Config iptables'
+        print('* Config iptables')
         self.config_firewall()
 
-        print '* The URL of your VPSMate is:',
-        print 'http://%s:8888/' % self.detect_ip()
+        print('* The URL of your VPSMate is:'),
+        print('http://%s:8888/' % self.detect_ip())
         print
 
         pass
