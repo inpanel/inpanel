@@ -204,13 +204,13 @@ class Install(object):
             print('Unsupport platform %s %s %s' % self.dist)
             sys.exit()
         else:
-            print(self.distname)
+            print(self.distname),
             print('...OK')
 
         print('* Install depend software ...')
         self._run('yum install -y wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
 
-        print('Install epel-release...'),
+        print('* Install EPEL release...'),
         self.install_epel_release()
 
         # check python version

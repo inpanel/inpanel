@@ -8,7 +8,7 @@
 
 
 # repository list that YUM support
-yum_repolist = ['base', 'updates', 'epel', 'CentALT', 'ius', 'atomic', '10gen']
+yum_repolist = ('base', 'updates', 'epel', 'CentALT', 'ius', 'atomic', '10gen')
 
 yum_reporpms = {
     'base': {
@@ -184,20 +184,20 @@ enabled=1',
 
 # Alias of package we use when get versions of it
 yum_pkg_alias = {
-    'nginx'         : ['nginx', 'nginx-stable', ],
-    'tomcat'        : ['tomcat', ],
-    'apache'        : ['httpd', ],
-    'vsftpd'        : ['vsftpd', ],
-    'mysql'         : ['mysql-server', 'mysql55-server', 'mariadb', ],
-    'redis'         : ['redis', ],
-    'memcache'      : ['memcached', ],
-    'mongodb'       : ['mongodb-org', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'],
-    'php'           : ['php-fpm', 'php56u-fpm', 'php70u-fpm', 'php71u-fpm', ],
-    'sendmail'      : ['sendmail', ],
-    'ssh'           : ['openssh-server', ],
-    'iptables'      : ['iptables', ],
-    'cron'          : ['cronie', 'vixie-cron', ],
-    'ntp'           : ['ntp', ],
+    'nginx'         : ('nginx', 'nginx-stable', ),
+    'tomcat'        : ('tomcat', ),
+    'apache'        : ('httpd', ),
+    'vsftpd'        : ('vsftpd', ),
+    'mysql'         : ('mysql-server', 'mysql55-server', 'mariadb', ),
+    'redis'         : ('redis', ),
+    'memcache'      : ('memcached', ),
+    'mongodb'       : ('mongodb-org', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
+    'php'           : ('php-fpm', 'php56u-fpm', 'php70u-fpm', 'php71u-fpm', ),
+    'sendmail'      : ('sendmail', ),
+    'ssh'           : ('openssh-server', ),
+    'iptables'      : ('iptables', ),
+    'cron'          : ('cronie', 'vixie-cron', ),
+    'ntp'           : ('ntp', ),
 }
 
 # Relative available packages.
@@ -254,7 +254,7 @@ yum_pkg_relatives = {
         'mongo20-10gen'         : {'default': True, 'base': True, },
     },
     'php-fpm'       : {
-        'php'                   : {'default': True, 'base': True, 'conflicts': ['php56u', 'php70u','php71u', ], },
+        'php'                   : {'default': True, 'base': True, 'conflicts': ('php56u', 'php70u','php71u', ), },
         'php-bcmath'            : {'default': True, 'isext': True, },
         'php-cli'               : {'default': True, },
         'php-common'            : {'default': True, 'base': True, },
@@ -272,8 +272,8 @@ yum_pkg_relatives = {
         'php-mbstring'          : {'default': True, 'isext': True, },
         'php-mcrypt'            : {'default': True, 'isext': True, },
         'php-mssql'             : {'default': False, 'isext': True, },
-        'php-mysql'             : {'default': True, 'isext': True, 'conflicts': ['php-mysqlnd', ], },
-        'php-mysqlnd'           : {'default': False, 'isext': True, 'conflicts': ['php-mysql', ], },
+        'php-mysql'             : {'default': True, 'isext': True, 'conflicts': ('php-mysqlnd', ), },
+        'php-mysqlnd'           : {'default': False, 'isext': True, 'conflicts': ('php-mysql', ), },
         'php-odbc'              : {'default': False, 'isext': True, },
         'php-pdo'               : {'default': True, 'isext': True, },
         'php-pear'              : {'default': False, },
@@ -308,7 +308,7 @@ yum_pkg_relatives = {
         'php-zmq'               : {'default': False, 'isext': True, }
     },
     'php56u-fpm'        : {
-        'php56u'                : {'default': True, 'base': True, 'conflicts': ['php', 'php70u','php71u']},
+        'php56u'                : {'default': True, 'base': True, 'conflicts': ('php', 'php70u','php71u')},
         'php56u-bcmath'         : {'default': True, 'isext': True, },
         'php56u-cli'            : {'default': True, },
         'php56u-common'         : {'default': True, 'base': True, },
@@ -347,7 +347,7 @@ yum_pkg_relatives = {
         'php56u-xmlrpc'         : {'default': False, 'isext': True, }
     },
     'php70u-fpm'         : {
-        'php70u'                 : {'default': True, 'base': True, 'conflicts': ['php', 'php56u','php71u']},
+        'php70u'                 : {'default': True, 'base': True, 'conflicts': ('php', 'php56u','php71u')},
         'php70u-bcmath'          : {'default': True, 'isext': True, },
         'php70u-cli'             : {'default': True, },
         'php70u-common'          : {'default': True, 'base': True, },
@@ -363,8 +363,8 @@ yum_pkg_relatives = {
         'php70u-mbstring'        : {'default': True,'isext': True,  },
         'php70u-mcrypt'          : {'default': True, 'isext': True, },
         'php70u-mssql'           : {'default': False, 'isext': True, },
-        'php70u-mysql'           : {'default': True, 'isext': True, 'conflicts': ['php70u-mysqlnd']},
-        'php70u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ['php70u-mysql']},
+        'php70u-mysql'           : {'default': True, 'isext': True, 'conflicts': ('php70u-mysqlnd')},
+        'php70u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ('php70u-mysql')},
         'php70u-odbc'            : {'default': False, 'isext': True, },
         'php70u-pdo'             : {'default': True, 'isext': True, },
         'php70u-pear'            : {'default': False, },
@@ -386,7 +386,7 @@ yum_pkg_relatives = {
         'php70u-xmlrpc'          : {'default': False, 'isext': True, }
     },
     'php71u-fpm'         : {
-        'php71u'                 : {'default': True, 'base': True, 'conflicts': ['php', 'php56u', 'php70u']},
+        'php71u'                 : {'default': True, 'base': True, 'conflicts': ('php', 'php56u', 'php70u')},
         'php71u-bcmath'          : {'default': True, 'isext': True, },
         'php71u-cli'             : {'default': True, },
         'php71u-common'          : {'default': True, 'base': True, },
@@ -403,8 +403,8 @@ yum_pkg_relatives = {
         'php71u-mbstring'        : {'default': True,'isext': True,  },
         'php71u-mcrypt'          : {'default': True, 'isext': True, },
         'php71u-mssql'           : {'default': False, 'isext': True, },
-        'php71u-mysql'           : {'default': True, 'isext': True, 'conflicts': ['php71u-mysqlnd']},
-        'php71u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ['php71u-mysql']},
+        'php71u-mysql'           : {'default': True, 'isext': True, 'conflicts': ('php71u-mysqlnd')},
+        'php71u-mysqlnd'         : {'default': False, 'isext': True, 'conflicts': ('php71u-mysql')},
         'php71u-odbc'            : {'default': False, 'isext': True, },
         'php71u-pdo'             : {'default': True, 'isext': True, },
         'php71u-pear'            : {'default': False, },
@@ -454,3 +454,13 @@ yum_pkg_relatives = {
 
 # for rpm in yum_reporpms['ius'][6]['x86_64']:
 #     print(rpm)
+
+
+# print('abc' not in [v for k,vv in yum_pkg_alias for v in vv])
+# print('tomcat' not in yum_pkg_alias)
+# for (k,vv) in yum_pkg_alias:
+    # print(k,vv)
+
+
+# if 'updates' not in yum_repolist + ['installed', '*']:
+#     print({'code': -1, 'msg': u'未知的软件源 updates ！'})
