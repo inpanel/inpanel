@@ -93,22 +93,6 @@ class Install(object):
             supported = False
         return supported
 
-    def install_python(self):
-        if self.distname in ('centos', 'redhat'):
-            self._run('wget -nv -c %s' % epelurl)
-            self._run('rpm -Uvh %s' % epelrpm)
-            self._run('yum -y install python26')
-
-        # if self.distname == 'centos':
-        #     pass
-        # elif self.distname == 'redhat':
-        #     pass
-        # el
-        if self.distname == 'ubuntu':
-            pass
-        elif self.distname == 'debian':
-            pass
-
     def install_epel_release(self):
         if self.distname in ('centos', 'redhat'):
             # following this: http://fedoraproject.org/wiki/EPEL/FAQ
@@ -130,6 +114,25 @@ class Install(object):
                 fastestmirror = 'https://mirrors.aliyun.com/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 # fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 self._run('rpm -Uvh %s' % fastestmirror)
+
+            return True
+
+    def install_python(self):
+        if self.distname == 'centos':
+            self._run('wget -nv -c %s' % epelurl)
+            self._run('rpm -Uvh %s' % epelrpm)
+            self._run('yum -y install python26')
+
+        elif self.distname == 'redhat':
+            self._run('wget -nv -c %s' % epelurl)
+            self._run('rpm -Uvh %s' % epelrpm)
+            self._run('yum -y install python26')
+
+        elif self.distname == 'ubuntu':
+            self._run('apt-get -y install python')
+
+        elif self.distname == 'debian':
+            pass
 
     def install_vpsmate(self):
         # localpkg_found = False
@@ -206,15 +209,22 @@ class Install(object):
             print('Unsupport platform %s %s %s' % self.dist)
             sys.exit()
         else:
+            print(self.distname)
+            print('...OK')
+
+        print('Install epel-release...')
+        if(self.install_epel_release()):
             print('OK')
+        else:
+            print('FAILED')
 
         # check python version
-        print '* Current python version [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1]),
+        print('* Current python version [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1]))
 
         if (sys.version_info[:2] == (2, 6) or sys.version_info[:2] == (2, 7)):
-            print 'OK'
+            print('OK')
         else:
-            print 'FAILED'
+            print('FAILED')
 
             # install the right version
             print '* Installing python 2.6 ...'
