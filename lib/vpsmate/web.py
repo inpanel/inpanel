@@ -2652,7 +2652,7 @@ class BackendHandler(RequestHandler):
     @tornado.gen.engine
     def yum_installrepo(self, repo):
         """Install yum repository.
-        
+
         REFs:
         http://jyrxs.blogspot.com/2008/02/using-centos-5-repos-in-rhel5-server.html
         http://www.tuxradar.com/answers/440
@@ -2669,7 +2669,7 @@ class BackendHandler(RequestHandler):
 
         arch = self.settings['arch']
         dist_verint = self.settings['dist_verint']
-        
+
         cmds = []
         if repo == 'base':
             if dist_verint == 5:
@@ -2686,14 +2686,18 @@ class BackendHandler(RequestHandler):
             cmds.append('cp -f /etc/issue.vpsmate /etc/issue')
             cmds.append('cp -f /etc/redhat-release.vpsmate /etc/redhat-release')
 
-        elif repo in ('epel', 'CentALT', 'ius'):
+        elif repo == 'epel':
             # CentALT and ius depends on epel
-            # for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
-            #     cmds.append('rpm -U %s' % rpm)
-            if dist_verint < 7:
-                if repo in ('epel', 'ius'):
-                    for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
-                        cmds.append('rpm -U %s' % rpm)
+            for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
+                cmds.append('rpm -U %s' % rpm)
+
+        elif repo == 'CentALT':
+            for rpm in yum.yum_reporpms['CentALT'][dist_verint][arch]:
+                cmds.append('rpm -U %s' % rpm)
+
+        elif repo == 'ius':
+            for rpm in yum.yum_reporpms['ius'][dist_verint][arch]:
+                cmds.append('rpm -U %s' % rpm)
 
         elif repo == '10gen':
             # REF: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/
@@ -2713,7 +2717,7 @@ class BackendHandler(RequestHandler):
                 break
         
         # CentALT doesn't have any mirror, we have make a mirror for it
-        if repo == 'epel':
+        if repo == 'CentALT':
             repofile = '/etc/yum.repos.d/centalt.repo'
             if os.path.exists(repofile):
                 lines = []
