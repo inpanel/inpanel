@@ -39,7 +39,7 @@ class Install(object):
         self.version = self.dist[1]
         self.version = self.version[0:self.version.find('.', self.version.index('.') + 1)]
         self.os = platform.system()
-        print 'Platform %s %s [%s]' % (self.dist[0], self.dist[1], self.os)
+        print('Platform %s %s [%s]' % (self.dist[0], self.dist[1], self.os))
 
     def _run(self, cmd, shell=False):
         if shell:
@@ -95,6 +95,22 @@ class Install(object):
 
     def install_python(self):
         if self.distname in ('centos', 'redhat'):
+            self._run('wget -nv -c %s' % epelurl)
+            self._run('rpm -Uvh %s' % epelrpm)
+            self._run('yum -y install python26')
+
+        # if self.distname == 'centos':
+        #     pass
+        # elif self.distname == 'redhat':
+        #     pass
+        # el
+        if self.distname == 'ubuntu':
+            pass
+        elif self.distname == 'debian':
+            pass
+
+    def install_epel_release(self):
+        if self.distname in ('centos', 'redhat'):
             # following this: http://fedoraproject.org/wiki/EPEL/FAQ
             if int(float(self.version)) == 5:
                 epelrpm = 'epel-release-5-4.noarch.rpm'
@@ -114,20 +130,6 @@ class Install(object):
                 fastestmirror = 'https://mirrors.aliyun.com/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 # fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 self._run('rpm -Uvh %s' % fastestmirror)
-
-            self._run('wget -nv -c %s' % epelurl)
-            self._run('rpm -Uvh %s' % epelrpm)
-            self._run('yum -y install python26')
-
-        # if self.distname == 'centos':
-        #     pass
-        # elif self.distname == 'redhat':
-        #     pass
-        # el
-        if self.distname == 'ubuntu':
-            pass
-        elif self.distname == 'debian':
-            pass
 
     def install_vpsmate(self):
         # localpkg_found = False
@@ -196,15 +198,15 @@ class Install(object):
 
     def install(self):
         # check platform environment
-        print '* Checking platform...',
+        print('* Checking platform...')
         supported = self.check_platform()
 
         if not supported:
-            print 'FAILED'
-            print 'Unsupport platform %s %s %s' % self.dist
+            print('FAILED')
+            print('Unsupport platform %s %s %s' % self.dist)
             sys.exit()
         else:
-            print 'OK'
+            print('OK')
 
         # check python version
         print '* Current python version [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1]),

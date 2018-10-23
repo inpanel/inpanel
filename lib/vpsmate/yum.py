@@ -170,6 +170,7 @@ yum_reporpms = {
 yum_repoinstallcmds = {
     # REF: http://www.atomicorp.com/channels/atomic/
     'atomic': 'wget -q -O - http://www.atomicorp.com/installers/atomic | sed \'/check_input "Do you agree to these terms?/d\' | sh',
+    # 'ius': 'wget -q -O -  https://setup.ius.io | sh'
 }
 yum_repostr = {
     #     'CentALT': {
