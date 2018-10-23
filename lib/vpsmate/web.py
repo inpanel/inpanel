@@ -2686,29 +2686,22 @@ class BackendHandler(RequestHandler):
             cmds.append('cp -f /etc/issue.vpsmate /etc/issue')
             cmds.append('cp -f /etc/redhat-release.vpsmate /etc/redhat-release')
 
-        elif repo == 'epel':
-            # epel
+        elif repo in ('epel', 'CentALT', 'ius'):
+            # CentALT and ius depends on epel
             for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
                 cmds.append('rpm -U %s' % rpm)
 
-        elif repo == 'CentALT':
-            for rpm in yum.yum_reporpms['CentALT'][dist_verint][arch]:
-                cmds.append('rpm -U %s' % rpm)
-
-        elif repo == 'ius':
-            # Script to setup the IUS public repository on your EL server
-            # result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['ius'], shell=True)
-            # if result != 0: error = True
-
-            for rpm in yum.yum_reporpms['ius'][dist_verint][arch]:
-                cmds.append('rpm -U %s' % rpm)
+            # if dist_verint < 7:
+            #     if repo in ('CentALT', 'ius'):
+            #         for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
+            #             cmds.append('rpm -U %s' % rpm)
 
         elif repo == '10gen':
             # REF: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/
             with open('/etc/yum.repos.d/10gen.repo', 'w') as f:
                 f.write(yum.yum_repostr['10gen'][self.settings['arch']])
 
-        elif repo == 'atomic':
+        elif repo == 'atomic' and dist_verint < 7:
             # REF: http://www.atomicorp.com/channels/atomic/
             result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['atomic'], shell=True)
             if result != 0: error = True
@@ -2732,6 +2725,10 @@ class BackendHandler(RequestHandler):
                             baseurl_found = True
                             line = '#%s' % line
                             lines.append(line)
+                            # # add a mirrorlist line
+                            # metalink = 'http://www.vpsmate.org/mirrorlist?'\
+                            #     'repo=centalt-%s&arch=$basearch' % self.settings['dist_verint']
+                            # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)
                 if baseurl_found:
                     with open(repofile, 'w') as f: f.writelines(lines)
