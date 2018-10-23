@@ -127,7 +127,7 @@ filter('space.free', function(){
 }).
 filter('service.status', function(){
 	return function(input) {
-		if (!input) return '<span class="label">未安装</span>';
+		if (!input) return '<span class="label label-info">未安装</span>';
 		return input == 'running'
 			 ? '<span class="label label-success">运行中</span>'
 			 : '<span class="label label-default">已停止</span>';
@@ -136,7 +136,7 @@ filter('service.status', function(){
 filter('user.lock', function(){
 	return function(input) {
 		return input
-			? '<span class="label">锁定</span>'
+			? '<span class="label label-default">锁定</span>'
 			: '<span class="label label-success">正常</span>';
 	};
 }).

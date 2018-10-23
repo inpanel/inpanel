@@ -38,10 +38,6 @@ body {
     min-height: 20px;
 }
 
-#footer a.comment {
-    text-decoration: none;
-}
-
 .module-header {
     margin-bottom: 30px;
 }
@@ -70,11 +66,12 @@ button:focus {
     vertical-align: middle;
 }
 
-.table-bordered th {
-    background: #E9E9E9;
+.table-bordered thead tr th {
+    background-color: #f9f9f9;
     font-size: 12px;
     color: #444;
     text-transform: uppercase;
+    border-bottom-width: 1px;
 }
 
 .widget {

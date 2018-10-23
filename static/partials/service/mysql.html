@@ -22,7 +22,7 @@
 				<div srvbase ng-init="name='MySQL';pkg='mysql';service='mysqld';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='password'" id="password">
-				<table class="table table-button" ng-show="!forceupdate">
+				<table class="table table-hover table-bordered" ng-show="!forceupdate">
 					<thead>
 						<tr>
 							<th colspan="3">管理员密码设置</th>
@@ -64,7 +64,7 @@
 						</tr>
 					</tbody>
 				</table>
-				<table class="table table-button" ng-show="forceupdate">
+				<table class="table table-hover table-bordered" ng-show="forceupdate">
 					<thead>
 						<tr>
 							<th colspan="3">忘记原密码</th>

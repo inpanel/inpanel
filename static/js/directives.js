@@ -25,8 +25,8 @@ directive('navbar', function(){
               <li ng-class="\'active\' | ifmatch:[currentItem,\'file\']"><a href="#/file">文件管理</a></li>\
               <li ng-class="\'active\' | ifmatch:[currentItem,\'site(\..*)?\']"><a href="#/site">网站管理</a></li>\
               <li ng-class="\'active\' | ifmatch:[currentItem,\'database\']"><a href="#/database">数据库管理</a></li>\
-              <!--<li ng-class="\'active\' | ifmatch:[currentItem,\'ftp\']"><a href="#/ftp">FTP管理</a></li>-->\
-              <!--<li ng-class="\'active\' | ifmatch:[currentItem,\'secure\']"><a href="#/secure">安全管理</a></li>\
+              <li ng-class="\'active\' | ifmatch:[currentItem,\'ftp\']"><a href="#/ftp">FTP管理</a></li>\
+              <li ng-class="\'active\' | ifmatch:[currentItem,\'secure\']"><a href="#/secure">安全管理</a></li>\
               <li ng-class="\'active\' | ifmatch:[currentItem,\'backup\']"><a href="#/backup">备份管理</a></li>\
               <li ng-class="\'active\' | ifmatch:[currentItem,\'log\']"><a href="#/log">日志管理</a></li>-->\
               <li ng-class="\'active\' | ifmatch:[currentItem,\'task\']"><a href="#/task">计划任务</a></li>\
