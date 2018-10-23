@@ -2691,7 +2691,7 @@ class BackendHandler(RequestHandler):
             # for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
             #     cmds.append('rpm -U %s' % rpm)
             if dist_verint < 7:
-                if repo in ('CentALT', 'ius'):
+                if repo in ('epel', 'ius'):
                     for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
                         cmds.append('rpm -U %s' % rpm)
 
@@ -2713,7 +2713,7 @@ class BackendHandler(RequestHandler):
                 break
         
         # CentALT doesn't have any mirror, we have make a mirror for it
-        if repo == 'CentALT':
+        if repo == 'epel':
             repofile = '/etc/yum.repos.d/centalt.repo'
             if os.path.exists(repofile):
                 lines = []
@@ -2725,9 +2725,9 @@ class BackendHandler(RequestHandler):
                             line = '#%s' % line
                             lines.append(line)
                             # add a mirrorlist line
-                            metalink = 'http://www.vpsmate.org/mirrorlist?'\
-                                'repo=centalt-%s&arch=$basearch' % self.settings['dist_verint']
-                            line = 'mirrorlist=%s\n' % metalink
+                            # metalink = 'http://www.vpsmate.org/mirrorlist?'\
+                            #     'repo=centalt-%s&arch=$basearch' % self.settings['dist_verint']
+                            # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)
                 if baseurl_found:
                     with open(repofile, 'w') as f: f.writelines(lines)
