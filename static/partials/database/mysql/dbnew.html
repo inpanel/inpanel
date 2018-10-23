@@ -9,9 +9,7 @@
 	<div class="well" style="width:350px" ng-show="!$mysql.password_validated">
 		<form onsubmit="return false" method="get" action="/">
 			<div class="control-group" style="margin-bottom:10px;">
-				<label class="control-label" for="password">
-					请输入数据库管理员 root 的密码后继续操作：
-				</label>
+				<label class="control-label" for="password">请输入数据库管理员 root 的密码后继续操作：</label>
 				<input class="input" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" autofocus><br>
 				<button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">登录 MySQL</button>
 				<a href="#/service/mysql?s=password" class="btn">忘记密码？</a>

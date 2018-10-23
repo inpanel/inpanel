@@ -12,7 +12,7 @@
 		</ul>
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none" id="mysql">
-				<div class="well" style="width:350px" ng-show="!$mysql.password_validated">
+				<div class="well" ng-show="!$mysql.password_validated">
 					<form onsubmit="return false" method="get" action="/">
 						<div class="control-group" style="margin-bottom:10px;">
 							<label class="control-label" for="password">请输入数据库管理员 root 的密码后继续操作：</label>
