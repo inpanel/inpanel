@@ -101,18 +101,20 @@ class Install(object):
                 epelurl = 'http://download.fedoraproject.org/pub/epel/5/%s/%s' % (self.arch, epelrpm)
                 # install fastestmirror plugin for yum
                 fastestmirror = 'http://mirror.centos.org/centos/5/os/%s/CentOS/yum-fastestmirror-1.1.16-21.el5.centos.noarch.rpm' % (self.arch)
+                self._run('rpm -Uvh %s' % fastestmirror)
             elif int(float(self.version)) == 6:
                 epelrpm = 'epel-release-6-8.noarch.rpm'
                 epelurl = 'https://mirrors.aliyun.com/epel/6/%s/%s' % (self.arch, epelrpm)
                 fastestmirror = 'https://mirrors.aliyun.com/centos/6/os/%s/Packages/yum-plugin-fastestmirror-1.1.30-41.el6.noarch.rpm' % (self.arch)
                 # fastestmirror = 'http://mirror.centos.org/centos/6/os/%s/Packages/yum-plugin-fastestmirror-1.1.30-41.el6.noarch.rpm' % (self.arch)
+                self._run('rpm -Uvh %s' % fastestmirror)
             elif int(float(self.version)) == 7:
                 epelrpm = 'epel-release-7-11.noarch.rpm'
                 epelurl = 'https://mirrors.aliyun.com/epel/7/%s/Packages/e/%s' % (self.arch, epelrpm)
                 fastestmirror = 'https://mirrors.aliyun.com/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 # fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
+                self._run('rpm -Uvh %s' % fastestmirror)
 
-            self._run('rpm -Uvh %s' % fastestmirror)
             self._run('wget -nv -c %s' % epelurl)
             self._run('rpm -Uvh %s' % epelrpm)
             print('OK')
