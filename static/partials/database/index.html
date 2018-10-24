@@ -136,11 +136,15 @@
 		</div>
 	</div>
 
-	<div ng-show="!has_dbserver" value="install" style="display:none">
-		<div class="well">
-			<p>系统检测到您还未安装数据库服务器。</p>
-			<p>请先安装 MySQL 数据库服务后继续操作。</p>
+	<div class="panel panel-info" ng-show="!has_dbserver" value="install" style="display:none">
+		<div class="panel-heading">
+			<h3 class="panel-title">未检测到数据库</h3>
+		</div>
+		<div class="panel-body">
+			<p>系统检测到您还未安装数据库。</p>
+			<p>请先安装 MySQL 数据库服务再继续操作。</p>
 			<p style="padding-top:10px"><a class="btn btn-default" href="#/service?s=database">立即安装</a></p>
 		</div>
 	</div>
+
 </div>

@@ -34,59 +34,58 @@
 		</div>
 	</div>
 
-	<div class="row-fluid" ng-show="$mysql.password_validated">
-		<div class="span6">
-			<div class="widget">
-				<div class="widget-header">
-					<i class="icon-plus-sign"></i><h3>添加新用户<span style="display:none" ng-show="dbname">到数据库 {{dbname}}</span></h3>
+	<div class="panel panel-default" ng-show="$mysql.password_validated">
+		<div class="panel-heading">
+			<i class="icon-plus-sign"></i>
+			<h3 class="panel-title">添加新用户<span style="display:none" ng-show="dbname">到数据库 {{dbname}}</span></h3>
+		</div>
+		<div class="panel-body form-horizontal form-horizontal-small">
+			<div class="form-group form-inline">
+				<label class="col-sm-2 control-label">用户名</label>
+				<div class="col-sm-10">
+					<input class="form-control" type="text" ng-disabled="processing" ng-model="user" autofocus>
 				</div>
-				<div class="widget-content form-horizontal form-horizontal-small">
-					<div class="control-group control-group-mini">
-						<label class="control-label">用户名</label>
-						<div class="controls">
-							<input type="text" ng-disabled="processing" ng-model="user" autofocus>
-						</div>
-					</div>
-					<div class="control-group control-group-mini">
-						<label class="control-label">主机</label>
-						<div class="controls">
-							<input type="text" ng-disabled="processing" ng-model="host" ng-init="host='localhost'">
-							<select ng-disabled="processing" ng-model="hosttype" ng-change="host=hosttype" ng-init="hosttype='localhost'" style="width:150px">
-								<option value="%">任意（不推荐）</option>
-								<option value="localhost">本地（比较安全）</option>
-								<option value="">自定义</option>
-							</select>
-						</div>
-					</div>
-					<div class="control-group control-group-mini">
-						<label class="control-label">密码</label>
-						<div class="controls">
-							<input type="password" ng-disabled="processing||emptypassword" ng-model="password">
-							<label class="checkbox inline" style="margin-left:5px">
-								<input type="checkbox" ng-model="emptypassword"> 使用空密码
-							</label>
-						</div>
-					</div>
-					<div class="control-group control-group-mini">
-						<label class="control-label">确认密码</label>
-						<div class="controls">
-							<input type="password" ng-disabled="processing||emptypassword" ng-model="passwordc">
-						</div>
-					</div>
-					<div class="control-group control-group-mini">
-						<label class="control-label">随机密码</label>
-						<div class="controls">
-							<input type="text" ng-disabled="processing||emptypassword" ng-model="randpassword">
-							<button class="btn btn-default btn-sm" ng-disabled="processing||emptypassword" ng-click="genpassword()" style="margin-left:5px">随机生成</button>
-						</div>
-					</div>
-					<div class="control-group control-group-mini">
-						<div class="controls">
-							<button class="btn" ng-disabled="processing" ng-click="newuser()">添加新用户</button>
-						</div>
-					</div>
+			</div>
+			<div class="form-group form-inline">
+				<label class="col-sm-2 control-label">主机</label>
+				<div class="col-sm-10">
+					<input class="form-control" type="text" ng-disabled="processing" ng-model="host" ng-init="host='localhost'">
+					<select class="form-control" ng-disabled="processing" ng-model="hosttype" ng-change="host=hosttype" ng-init="hosttype='localhost'">
+						<option value="%">任意（不推荐）</option>
+						<option value="localhost">本地（比较安全）</option>
+						<option value="">自定义</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group form-inline">
+				<label class="col-sm-2 control-label">密码</label>
+				<div class="col-sm-10">
+					<input class="form-control" type="password" ng-disabled="processing||emptypassword" ng-model="password">
+					<label class="form-label">
+						<input type="checkbox" ng-model="emptypassword"> 使用空密码
+					</label>
+				</div>
+			</div>
+			<div class="form-group form-inline">
+				<label class="col-sm-2 control-label">确认密码</label>
+				<div class="col-sm-10">
+					<input class="form-control" type="password" ng-disabled="processing||emptypassword" ng-model="passwordc">
+				</div>
+			</div>
+			<div class="form-group form-inline">
+				<label class="col-sm-2 control-label">随机密码</label>
+				<div class="col-sm-10">
+					<input class="form-control" type="text" ng-disabled="processing||emptypassword" ng-model="randpassword">
+					<button class="btn btn-default" ng-disabled="processing||emptypassword" ng-click="genpassword()">随机生成</button>
+				</div>
+			</div>
+			<div class="form-group form-inline">
+				<div class="col-sm-2 control-label"></div>
+				<div class="col-sm-10">
+					<button class="btn btn-default" ng-disabled="processing" ng-click="newuser()">添加新用户</button>
 				</div>
 			</div>
 		</div>
 	</div>
+
 </div>
