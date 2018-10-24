@@ -6,17 +6,32 @@
 		<h3>管理用户 {{username}}</h3>
 	</div>
 	
-	<div class="well" style="width:350px" ng-show="!$mysql.password_validated">
-		<form onsubmit="return false" method="get" action="/">
-			<div class="control-group" style="margin-bottom:10px;">
-				<label class="control-label" for="password">
-					请输入数据库管理员 root 的密码后继续操作：
-				</label>
-				<input class="input" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" autofocus><br>
-				<button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">登录 MySQL</button>
-				<a href="#/service/mysql?s=password" class="btn">忘记密码？</a>
-			</div>
-		</form>
+	<!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
+	<div class="panel panel-warning" ng-show="!$mysql.password_validated">
+		<div class="panel-heading">
+			<h3 class="panel-title">请输入数据库管理员 root 的密码后继续操作：</h3>
+		</div>
+		<div class="panel-body">
+			<form class="form-horizontal" onsubmit="return false" method="get" action="/">
+				<div class="form-group form-inline">
+					<label class="col-sm-2 control-label" for="password">管理员密码</label>
+					<div class="col-sm-10">
+						<input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autofocus>
+					</div>
+				</div>
+				<div class="form-group form-inline">
+					<div class="col-sm-2 control-label"></div>
+					<div class="col-sm-10">
+						<button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">
+							<i class="glyphicon glyphicon-user"></i> <span>登录 MySQL</span>
+						</button>
+						<span style="padding-left:20px">
+							<a href="#/service/mysql?s=password">忘记密码？</a>
+						</span>
+					</div>
+				</div>
+			</form>
+		</div>
 	</div>
 
 	<div class="tabbable" ng-init="load()" ng-show="$mysql.password_validated">
