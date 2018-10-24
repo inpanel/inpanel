@@ -877,8 +877,8 @@ directive('srvfile', function(){
 					<tr ng-repeat="item in items">\
 						<td style="width:120px;">{{item.name}}</td>\
 						<td>\
-							<i class="icon-folder-open" ng-show="item.isdir"></i>\
-							<i class="icon-file" ng-show="item.isfile"></i>\
+							<i class="glyphicon glyphicon-folder-open" ng-show="item.isdir"></i>\
+							<i class="glyphicon glyphicon-file" ng-show="item.isfile"></i>\
 							{{item.path}}\
 						</td>\
 						<td style="width:100px">\
@@ -911,8 +911,8 @@ directive('srvlog', function(){
 					<tr ng-repeat="item in items">\
 						<td style="width:120px;">{{item.name}}</td>\
 						<td>\
-							<i class="icon-folder-open" ng-show="item.isdir"></i>\
-							<i class="icon-file" ng-show="item.isfile"></i>\
+							<i class="glyphicon glyphicon-folder-open" ng-show="item.isdir"></i>\
+							<i class="glyphicon glyphicon-file" ng-show="item.isfile"></i>\
 							{{item.path}}\
 						</td>\
 						<td style="width:100px">\
@@ -1008,7 +1008,7 @@ directive('selector', function(){
 				<li ng-repeat="pathinfo in pathinfos" ng-show="pathinfos.length>0"><a ng-click="listdir(pathinfo.path)">{{pathinfo.name}}</a> <span class="divider">/</span></li>\
 				<li><button class="btn btn-default btn-xs" ng-show="onlydir" ng-click="selecthandler(curpath)">选取该目录</button></li>\
 			</ul>\
-			<table class="table table-condensed table-hover">\
+			<table class="table table-hover">\
 				<thead>\
 					<tr>\
 						<th></th>\
@@ -1018,10 +1018,10 @@ directive('selector', function(){
 				<tbody>\
 					<tr ng-repeat="item in items">\
 						<td>\
-							<i class="icon-folder-open" title="文件夹" ng-show="item.isdir"></i>\
-							<i class="icon-file" title="文件" ng-show="item.isreg"></i>\
-							<i class="icon-asterisk" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>\
-							<i class="icon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>\
+							<i class="glyphicon glyphicon-folder-open" title="文件夹" ng-show="item.isdir"></i>\
+							<i class="glyphicon glyphicon-file" title="文件" ng-show="item.isreg"></i>\
+							<i class="glyphicon glyphicon-link" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>\
+							<i class="glyphicon glyphicon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>\
 							<a class="black" ng-click="listdir(curpath_pre+\'/\'+item.name)" ng-show="item.isdir||(item.islnk&&item.link_isdir)">{{item.name}}</a>\
 							<a class="black" ng-show="item.isreg||(item.islnk&&!item.link_isdir)">{{item.name}}</a>\
 							<span class="text-info" ng-show="item.islnk">-> {{item.linkto}}</span>\
