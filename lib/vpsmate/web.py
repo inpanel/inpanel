@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 # VPSMate is distributed under the terms of the (new) BSD License.
-# The full license can be found in 'LICENSE.txt'.
+# The full license can be found in 'LICENSE'.
 
 import os
 import re
@@ -668,7 +668,8 @@ class SettingHandler(RequestHandler):
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
                 http = tornado.httpclient.AsyncHTTPClient()
-                response = yield tornado.gen.Task(http.fetch, 'http://www.vpsmate.org/api/latest')
+                latest = self.config.get('info', 'latest')
+                response = yield tornado.gen.Task(http.fetch, latest)
                 if response.error:
                     self.write({'code': -1, 'msg': u'获取新版本信息失败！'})
                 else:
@@ -2294,7 +2295,7 @@ class BackendHandler(RequestHandler):
             password = _u(self.get_argument('password', ''))
             dbname = _u(self.get_argument('dbname', ''))
             path = _u(self.get_argument('path', ''))
-            
+
             if not path:
                 self.write({'code': -1, 'msg': u'请选择数据库导出目录！'})
                 return
@@ -2386,7 +2387,7 @@ class BackendHandler(RequestHandler):
     @tornado.gen.engine
     def update(self):
         if not self._start_job('update'): return
-        
+
         root_path = self.settings['root_path']
         data_path = self.settings['data_path']
         distname = self.settings['dist_name']
@@ -2395,10 +2396,11 @@ class BackendHandler(RequestHandler):
         if os.path.exists('%s/../.svn' % root_path):
             self._finish_job('update', 0, u'升级成功！')
             return
-        
+
         # install the latest version
         http = tornado.httpclient.AsyncHTTPClient()
-        response = yield tornado.gen.Task(http.fetch, 'http://www.vpsmate.org/api/latest')
+        latest = self.config.get('info', 'latest')
+        response = yield tornado.gen.Task(http.fetch, latest)
         if response.error:
             self._update_job('update', -1, u'获取版本信息失败！')
             return

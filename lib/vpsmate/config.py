@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 # VPSMate is distributed under the terms of the (new) BSD License.
-# The full license can be found in 'LICENSE.txt'.
+# The full license can be found in 'LICENSE'.
 
 import os
 
@@ -51,6 +51,10 @@ class Config(object):
                     'lastdir': '/root',
                     'lastfile': '',
                 },
+                'info': {
+                    'wetsite': 'http://intranet.pub',
+                    'latest': 'https://raw.githubusercontent.com/doudoudzj/vpsmate/master/api/latest'
+                }
             }
             needupdate = False
             for sec, secdata in default_configs.iteritems():
