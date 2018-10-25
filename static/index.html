@@ -28,17 +28,19 @@
 		<div ng-view></div>
 		<div id="_authconfirm" class="modal fade" role="dialog">
 			<div class="modal-dialog" role="document">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h3>登录即将超时</h3>
-				</div>
-				<div class="modal-body">
-					<p>您的登录即将超时，是否保持登陆状态 ？</p>
-				</div>
-				<div class="modal-footer">
-					<a class="btn btn-default" data-dismiss="modal" aria-hidden="true" href="#/logout">退出登录</a>
-					<button class="btn btn-primary" onclick="$('#_authconfirm').modal('hide')" ng-click="_authrenew()">继续访问</button>
-				</div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h3>登录即将超时</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>您的登录即将超时，是否保持登陆状态 ？</p>
+                    </div>
+                    <div class="modal-footer">
+                        <a class="btn btn-default" data-dismiss="modal" aria-hidden="true" href="#/logout">退出登录</a>
+                        <button class="btn btn-primary" onclick="$('#_authconfirm').modal('hide')" ng-click="_authrenew()">继续访问</button>
+                    </div>
+                </div>
 			</div>
 		</div>
 	</div>
