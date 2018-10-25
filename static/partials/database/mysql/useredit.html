@@ -141,8 +141,8 @@
                         <div class="form-horizontal form-horizontal-small">
                             <div class="form-group form-inline">
                                 <label class="col-sm-2 control-label"></label>
-                                <div class="col-sm-10">
-                                    <label class="checkbox">
+                                <div class="col-sm-10 checkbox">
+                                    <label>
                                         <input type="checkbox" ng-model="emptypassword"> 使用空密码
                                     </label>
                                 </div>
@@ -181,7 +181,6 @@
                         </div>
                     </div>
                 </div>
-
 			</div>
 		</div>
 	</div>
@@ -195,139 +194,189 @@
                 <h3>{{privsedit_title}}</h3>
             </div>
             <div class="modal-body">
-                <fieldset>
-                    <div class="row-fluid">
-                        <fieldset class="span3">
-                            <legend>数据权限</legend>
-                            <label class="checkbox" title="允许读取数据">
-                                <input type="checkbox" ng-model="curprivs.Select_priv" ng-true-value="Y" ng-false-value="N">
-                                SELECT
-                            </label>
-                            <label class="checkbox" title="允许插入和替换数据">
-                                <input type="checkbox" ng-model="curprivs.Insert_priv" ng-true-value="Y" ng-false-value="N">
-                                INSERT
-                            </label>
-                            <label class="checkbox" title="允许修改数据">
-                                <input type="checkbox" ng-model="curprivs.Update_priv" ng-true-value="Y" ng-false-value="N">
-                                UPDATE
-                            </label>
-                            <label class="checkbox" title="允许删除数据">
-                                <input type="checkbox" ng-model="curprivs.Delete_priv" ng-true-value="Y" ng-false-value="N">
-                                DELETE
-                            </label>
-                            <label class="checkbox" title="允许从文件中导入数据以及将数据导出至文件" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.File_priv" ng-true-value="Y" ng-false-value="N">
-                                FILE
-                            </label>
-                        </fieldset>
-                        <fieldset class="span5">
-                            <legend>结构权限</legend>
-                            <label class="checkbox" title="允许创建新数据库和数据表。">
-                                <input type="checkbox" ng-model="curprivs.Create_priv" ng-true-value="Y" ng-false-value="N">
-                                CREATE
-                            </label>
-                            <label class="checkbox" title="允许修改现有数据表的结构">
-                                <input type="checkbox" ng-model="curprivs.Alter_priv" ng-true-value="Y" ng-false-value="N">
-                                ALTER
-                            </label>
-                            <label class="checkbox" title="允许创建和删除索引">
-                                <input type="checkbox" ng-model="curprivs.Index_priv" ng-true-value="Y" ng-false-value="N">
-                                INDEX
-                            </label>
-                            <label class="checkbox" title="允许删除数据库和数据表">
-                                <input type="checkbox" ng-model="curprivs.Drop_priv" ng-true-value="Y" ng-false-value="N">
-                                DROP
-                            </label>
-                            <label class="checkbox" title="允许创建临时表">
-                                <input type="checkbox" ng-model="curprivs.Create_tmp_table_priv" ng-true-value="Y" ng-false-value="N">
-                                CREATE TEMPORARY TABLES
-                            </label>
-                            <label class="checkbox" title="允许执行 SHOW CREATE VIEW 查询">
-                                <input type="checkbox" ng-model="curprivs.Show_view_priv" ng-true-value="Y" ng-false-value="N">
-                                SHOW VIEW
-                            </label>
-                            <label class="checkbox" title="允许创建存储过程">
-                                <input type="checkbox" ng-model="curprivs.Create_routine_priv" ng-true-value="Y" ng-false-value="N">
-                                CREATE ROUTINE
-                            </label>
-                            <label class="checkbox" title="允许修改或删除储存过程">
-                                <input type="checkbox" ng-model="curprivs.Alter_routine_priv" ng-true-value="Y" ng-false-value="N">
-                                ALTER ROUTINE
-                            </label>
-                            <label class="checkbox" title="允许运行存储过程">
-                                <input type="checkbox" ng-model="curprivs.Execute_priv" ng-true-value="Y" ng-false-value="N">
-                                EXECUTE
-                            </label>
-                            <label class="checkbox" title="允许创建视图">
-                                <input type="checkbox" ng-model="curprivs.Create_view_priv" ng-true-value="Y" ng-false-value="N">
-                                CREATE VIEW
-                            </label>
-                            <label class="checkbox" title="允许为事件触发器设置事件">
-                                <input type="checkbox" ng-model="curprivs.Event_priv" ng-true-value="Y" ng-false-value="N">
-                                EVENT
-                            </label>
-                            <label class="checkbox" title="允许创建和删除触发器">
-                                <input type="checkbox" ng-model="curprivs.Trigger_priv" ng-true-value="Y" ng-false-value="N">
-                                TRIGGER
-                            </label>
-                        </fieldset>
-                        <fieldset class="span4">
-                            <legend>管理权限</legend>
-                            <label class="checkbox" title="允许添加用户和权限，而不允许重新载入权限表">
-                                <input type="checkbox" ng-model="curprivs.Grant_priv" ng-true-value="Y" ng-false-value="N">
-                                GRANT
-                            </label>
-                            <label class="checkbox" title="允许在达到最大连接数时连接，对于大多数像设置全局变量或杀死其它用户线程这样的管理操作是必需的" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.Super_priv" ng-true-value="Y" ng-false-value="N">
-                                SUPER
-                            </label>
-                            <label class="checkbox" title="允许查看所有用户的进程" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.Process_priv" ng-true-value="Y" ng-false-value="N">
-                                PROCESS
-                            </label>
-                            <label class="checkbox" title="允许重新载入服务器设置并刷新服务器的缓存" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.Reload_priv" ng-true-value="Y" ng-false-value="N">
-                                RELOAD
-                            </label>
-                            <label class="checkbox" title="允许关闭服务器" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.Shutdown_priv" ng-true-value="Y" ng-false-value="N">
-                                SHUTDOWN
-                            </label>
-                            <label class="checkbox" title="允许访问完整的数据库列表" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.Show_db_priv" ng-true-value="Y" ng-false-value="N">
-                                SHOW DATABASES
-                            </label>
-                            <label class="checkbox" title="允许锁定当前线程的表">
-                                <input type="checkbox" ng-model="curprivs.Lock_tables_priv" ng-true-value="Y" ng-false-value="N">
-                                LOCK TABLES
-                            </label>
-                            <label class="checkbox" title="允许创建外键约束">
-                                <input type="checkbox" ng-model="curprivs.References_priv" ng-true-value="Y" ng-false-value="N">
-                                REFERENCES
-                            </label>
-                            <label class="checkbox" title="用户有权询问附属者/控制者在哪里" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.Repl_client_priv" ng-true-value="Y" ng-false-value="N">
-                                REPLICATION CLIENT
-                            </label>
-                            <label class="checkbox" title="允许主从模式中的从复制" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.Repl_slave_priv" ng-true-value="Y" ng-false-value="N">
-                                REPLICATION SLAVE
-                            </label>
-                            <label class="checkbox" title="允许创建、删除和重命名用户账户" ng-show="!curprivs.Db" ng-disabled="curprivs.Db!=''">
-                                <input type="checkbox" ng-model="curprivs.Create_user_priv" ng-true-value="Y" ng-false-value="N">
-                                CREATE USER
-                            </label>
-                        </fieldset>
+                <div class="form-group">
+                    <legend>数据权限</legend>
+                    <div class="checkbox">
+                        <label title="允许读取数据">
+                            <input type="checkbox" ng-model="curprivs.Select_priv" ng-true-value="Y" ng-false-value="N">
+                            SELECT
+                        </label>
                     </div>
-                </fieldset>
+                    <div class="checkbox">
+                        <label title="允许插入和替换数据">
+                            <input type="checkbox" ng-model="curprivs.Insert_priv" ng-true-value="Y" ng-false-value="N">
+                            INSERT
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许修改数据">
+                            <input type="checkbox" ng-model="curprivs.Update_priv" ng-true-value="Y" ng-false-value="N">
+                            UPDATE
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许删除数据">
+                            <input type="checkbox" ng-model="curprivs.Delete_priv" ng-true-value="Y" ng-false-value="N">
+                            DELETE
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许从文件中导入数据以及将数据导出至文件" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.File_priv" ng-true-value="Y" ng-false-value="N">
+                            FILE
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <legend>结构权限</legend>
+                    <div class="checkbox">
+                        <label title="允许创建新数据库和数据表。">
+                            <input type="checkbox" ng-model="curprivs.Create_priv" ng-true-value="Y" ng-false-value="N">
+                            CREATE
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许修改现有数据表的结构">
+                            <input type="checkbox" ng-model="curprivs.Alter_priv" ng-true-value="Y" ng-false-value="N">
+                            ALTER
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许创建和删除索引">
+                            <input type="checkbox" ng-model="curprivs.Index_priv" ng-true-value="Y" ng-false-value="N">
+                            INDEX
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许删除数据库和数据表">
+                            <input type="checkbox" ng-model="curprivs.Drop_priv" ng-true-value="Y" ng-false-value="N">
+                            DROP
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许创建临时表">
+                            <input type="checkbox" ng-model="curprivs.Create_tmp_table_priv" ng-true-value="Y" ng-false-value="N">
+                            CREATE TEMPORARY TABLES
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许执行 SHOW CREATE VIEW 查询">
+                            <input type="checkbox" ng-model="curprivs.Show_view_priv" ng-true-value="Y" ng-false-value="N">
+                            SHOW VIEW
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许创建存储过程">
+                            <input type="checkbox" ng-model="curprivs.Create_routine_priv" ng-true-value="Y" ng-false-value="N">
+                            CREATE ROUTINE
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许修改或删除储存过程">
+                            <input type="checkbox" ng-model="curprivs.Alter_routine_priv" ng-true-value="Y" ng-false-value="N">
+                            ALTER ROUTINE
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许运行存储过程">
+                            <input type="checkbox" ng-model="curprivs.Execute_priv" ng-true-value="Y" ng-false-value="N">
+                            EXECUTE
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许创建视图">
+                            <input type="checkbox" ng-model="curprivs.Create_view_priv" ng-true-value="Y" ng-false-value="N">
+                            CREATE VIEW
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许为事件触发器设置事件">
+                            <input type="checkbox" ng-model="curprivs.Event_priv" ng-true-value="Y" ng-false-value="N">
+                            EVENT
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许创建和删除触发器">
+                            <input type="checkbox" ng-model="curprivs.Trigger_priv" ng-true-value="Y" ng-false-value="N">
+                            TRIGGER
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <legend>管理权限</legend>
+                    <div class="checkbox">
+                        <label title="允许添加用户和权限，而不允许重新载入权限表">
+                            <input type="checkbox" ng-model="curprivs.Grant_priv" ng-true-value="Y" ng-false-value="N">
+                            GRANT
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许在达到最大连接数时连接，对于大多数像设置全局变量或杀死其它用户线程这样的管理操作是必需的" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.Super_priv" ng-true-value="Y" ng-false-value="N">
+                            SUPER
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许查看所有用户的进程" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.Process_priv" ng-true-value="Y" ng-false-value="N">
+                            PROCESS
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许重新载入服务器设置并刷新服务器的缓存" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.Reload_priv" ng-true-value="Y" ng-false-value="N">
+                            RELOAD
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许关闭服务器" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.Shutdown_priv" ng-true-value="Y" ng-false-value="N">
+                            SHUTDOWN
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许访问完整的数据库列表" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.Show_db_priv" ng-true-value="Y" ng-false-value="N">
+                            SHOW DATABASES
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许锁定当前线程的表">
+                            <input type="checkbox" ng-model="curprivs.Lock_tables_priv" ng-true-value="Y" ng-false-value="N">
+                            LOCK TABLES
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label title="允许创建外键约束">
+                            <input type="checkbox" ng-model="curprivs.References_priv" ng-true-value="Y" ng-false-value="N">
+                            REFERENCES
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="用户有权询问附属者/控制者在哪里" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.Repl_client_priv" ng-true-value="Y" ng-false-value="N">
+                            REPLICATION CLIENT
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许主从模式中的从复制" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.Repl_slave_priv" ng-true-value="Y" ng-false-value="N">
+                            REPLICATION SLAVE
+                        </label>
+                    </div>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许创建、删除和重命名用户账户" ng-disabled="curprivs.Db!=''">
+                            <input type="checkbox" ng-model="curprivs.Create_user_priv" ng-true-value="Y" ng-false-value="N">
+                            CREATE USER
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <div class="pull-left">
-                    <label class="checkbox">
-                        <input type="checkbox" ng-model="selectall"> 全选/全不选
-                    </label>
+                <div class="pull-left checkbox">
+                    <label><input type="checkbox" ng-model="selectall"> 全选/全不选</label>
                 </div>
-                <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
                 <button class="btn btn-primary" onclick="$('#privsedit').modal('hide')" ng-click="updateprivs()">保存权限设置</button>
             </div>
         </div>
