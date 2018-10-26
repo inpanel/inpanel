@@ -363,7 +363,8 @@ class SitePackageHandler(RequestHandler):
         # fetch from api
         if not packages:
             http = tornado.httpclient.AsyncHTTPClient()
-            response = yield tornado.gen.Task(http.fetch, 'http://www.vpsmate.org/api/site_packages')
+            site_packages = self.config.get('info', 'site_packages')
+            response = yield tornado.gen.Task(http.fetch, site_packages)
             if response.error:
                 self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
                 self.finish()
@@ -380,11 +381,11 @@ class SitePackageHandler(RequestHandler):
     def getdownloadtask(self):
         name = self.get_argument('name', '')
         version = self.get_argument('version', '')
-        
+
         if not name or not version:
             self.write({'code': -1, 'msg': u'获取安装包下载地址失败！'})
             return
-        
+
         # fetch package list from cache
         packages_cachefile = os.path.join(self.settings['package_path'], '.meta')
         if not os.path.exists(packages_cachefile):
@@ -415,8 +416,9 @@ class SitePackageHandler(RequestHandler):
         filenameext = '%s%s' % (filename, package['ext'])
         filepath = os.path.join(self.settings['package_path'], filenameext)
 
+        site_packages = self.config.get('info', 'site_packages')
         self.write({'code': 0, 'msg': '', 'data': {
-            'url': 'http://www.vpsmate.org/api/site_packages/download?name=%s&version=%s' % (name, version),
+            'url': '%s/download?name=%s&version=%s' % (site_packages, name, version),
             'path': filepath,
             'temp': workpath,
         }})
