@@ -19,72 +19,75 @@
 						<tr class="warning">
 							<td class="text-info">修改IP设置后，需要重启网络，配置才会生效。</th>
 						</tr>
-						<tr>
-							<td>
-								<form class="form-horizontal form-horizontal-small" ng-submit="saveIfConfig()" onsubmit="return false">
-									<div class="control-group">
-										<label class="control-label">网络接口</label>
-										<div class="controls">
-											<div class="btn-group" data-toggle="buttons-radio" ng-init="loadIfNames()">
-											  <button type="button" class="btn" ng-class="'active'|iftrue:ifname==tifname" ng-click="loadIfConfig(tifname)" ng-repeat="tifname in ifnames">{{tifname}}</button>
-											</div>
-										</div>
-									</div>
-									<div class="control-group">
-										<label class="control-label" for="ip">IPv4地址</label>
-										<div class="controls">
-											<input ng-model="ip" ng-disabled="processing" type="text" id="ip" placeholder="IPv4地址">
-										</div>
-									</div>
-									<div class="control-group">
-										<label class="control-label" for="mask">子网掩码</label>
-										<div class="controls">
-											<input ng-model="mask" ng-disabled="processing" type="text" id="mask" placeholder="子网掩码">
-										</div>
-									</div>
-									<div class="control-group">
-										<label class="control-label" for="gw">默认网关</label>
-										<div class="controls">
-											<input ng-model="gw" ng-disabled="processing" type="text" id="gw" placeholder="默认网关">
-										</div>
-									</div>
-									<div class="control-group">
-										<div class="controls">
-											<button type="submit" class="btn" ng-disabled="processing">提交修改</button>
-										</div>
-									</div>
-								</form>
-							</td>
-						</tr>
 					</tbody>
 				</table>
+                <form class="form-horizontal" ng-submit="saveIfConfig()" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">网络接口</label>
+                        <div class="col-sm-10">
+                            <div class="btn-group" data-toggle="buttons-radio" ng-init="loadIfNames()">
+                                <button type="button" class="btn btn-default" ng-class="'active'|iftrue:ifname==tifname" ng-click="loadIfConfig(tifname)" ng-repeat="tifname in ifnames">{{tifname}}</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="ip">IPv4地址</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="ip" ng-disabled="processing" type="text" id="ip" placeholder="IPv4地址">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="mask">子网掩码</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="mask" ng-disabled="processing" type="text" id="mask" placeholder="子网掩码">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="gw">默认网关</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="gw" ng-disabled="processing" type="text" id="gw" placeholder="默认网关">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-default" ng-disabled="processing">提交修改</button>
+                        </div>
+                    </div>
+                </form>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='dns'" id="dns" ng-init="loadDNS()">
-				<form class="form-horizontal form-horizontal-small" ng-submit="saveNameservers()" onsubmit="return false" ng-init="loadNameservers()">
-					<div class="control-group">
-						<div class="controls">
-							<button type="button" class="btn btn-default btn-sm" ng-disabled="processing" ng-click="addNameserver()"><i class="icon-plus"></i> 增加一个名称服务器</button>
+				<form class="form-horizontal" ng-submit="saveNameservers()" onsubmit="return false" ng-init="loadNameservers()">
+					<div class="form-group form-inline" ng-repeat="nameserver in nameservers">
+						<label class="col-sm-2 control-label">DNS {{$index+1}}：</label>
+						<div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control nameserver" ng-disabled="processing" type="text" value="{{nameserver}}" placeholder="DNS服务器地址">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-default" ng-disabled="processing" ng-click="delNameserver($index)"><i class="glyphicon glyphicon-minus"></i></button>
+                                </div>
+                            </div>
 						</div>
 					</div>
-					<div class="control-group" ng-repeat="nameserver in nameservers">
-						<label class="control-label">DNS服务器{{$index+1}}：</label>
-						<div class="controls">
-							<input ng-disabled="processing" type="text" class="nameserver" value="{{nameserver}}" placeholder="DNS服务器地址">
-							<button type="button" class="btn btn-default btn-sm" ng-disabled="processing" ng-click="delNameserver($index)"><i class="icon-minus"></i></button>
+					<div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">DNS 服务器</label>
+						<div class="col-sm-10">
+							<button type="button" class="btn btn-default" ng-disabled="processing" ng-click="addNameserver()"><i class="glyphicon glyphicon-plus"></i> 增加一个名称服务器</button>
 						</div>
 					</div>
-					<div class="control-group">
-						<div class="controls">
-							<button type="submit" class="btn" ng-disabled="processing">提交修改</button>
+					<div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+						<div class="col-sm-10">
+							<button type="submit" class="btn btn-default" ng-disabled="processing">提交修改</button>
 						</div>
 					</div>
 				</form>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='restart'" id="restart" ng-init="restartService()">
-				<div class="well" style="width:350px;padding-bottom:10px">
+				<div class="well">
 					<p><span ng-bind-html-unsafe="restartMessage"></span></p>
 					<p style="display:none;margin-top:20px" ng-show="showRestartBtn">
-						<button class="btn btn-default btn-sm" ng-click="restart()" ng-disabled="processing">确定并重启网络</button>
+						<button class="btn btn-default" ng-click="restart()" ng-disabled="processing">确定并重启网络</button>
 					</p>
 				</div>
 			</div>
