@@ -112,7 +112,7 @@
 												<div class="controls">
 													<div class="input-append">
 														<input ng-model="location.static.root" type="text" class="input-large" placeholder="路径所访问的目录">
-														<button class="btn" ng-click="selectstaticfolder($index)"><i class="glyphicon glyphicon-folder-open"></i></button>
+														<button class="btn btn-default" ng-click="selectstaticfolder($index)"><i class="glyphicon glyphicon-folder-open"></i></button>
 														<br>
 														<label class="checkbox inline" style="margin-top:5px">
 															<input ng-model="location.static.autocreate" type="checkbox">
@@ -131,7 +131,7 @@
 												<div class="controls">
 													<div class="input-append">
 														<input ng-model="location.fastcgi.root" type="text" class="input-large" placeholder="路径所访问的目录">
-														<button class="btn" ng-click="selectfastcgifolder($index)"><i class="glyphicon glyphicon-folder-open"></i></button>
+														<button class="btn btn-default" ng-click="selectfastcgifolder($index)"><i class="glyphicon glyphicon-folder-open"></i></button>
 														<br>
 														<label class="checkbox inline" style="margin-top:5px">
 															<input ng-model="location.fastcgi.autocreate" type="checkbox">
@@ -543,7 +543,7 @@
 									<div class="controls">
 										<div class="input-append">
 											<input ng-model="setting.ssl_crt" type="text" class="input-large" placeholder="SSL证书文件">
-											<button class="btn" ng-click="selectsslcrt()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
+											<button class="btn btn-default" ng-click="selectsslcrt()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
 										</div>
 									</div>
 								</div>
@@ -552,7 +552,7 @@
 									<div class="controls">
 										<div class="input-append">
 											<input ng-model="setting.ssl_key" type="text" class="input-large" placeholder="SSL密钥文件">
-											<button class="btn" ng-click="selectsslkey()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
+											<button class="btn btn-default" ng-click="selectsslkey()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
 										</div>
 									</div>
 								</div>
@@ -591,12 +591,12 @@
 		<p>
 			<button ng-show="action=='new'" class="btn btn-primary" ng-click="addserver()">填写完毕，提交新站点</button>
 			<button ng-show="action=='edit'" class="btn btn-primary" ng-click="updateserver()">保存站点配置</button>
-			<button ng-show="action=='edit'" class="btn" ng-click="restore()">撤销修改</button>
+			<button ng-show="action=='edit'" class="btn btn-default" ng-click="restore()">撤销修改</button>
 		</p>
 	</div>
 </div>
 
-<div id="selector" class="modal hide fade">
+<div id="selector" class="modal fade">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -607,7 +607,7 @@
         <div selector></div>
       </div>
       <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
       </div>
     </div>
   </div>

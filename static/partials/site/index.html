@@ -184,7 +184,7 @@
       </div>
     </div>
     <div ng-show="!has_httpserver" value="install" style="display:none">
-      <div class="well" style="width:400px">
+      <div class="well">
         <p>系统检测到您还未安装 HTTP 服务器。</p>
         <p>请先安装任意一款 HTTP 服务器后继续操作。</p>
         <p class="text-info">（当前仅支持 Nginx 站点的管理配置，如需管理 Apache 站点，请留意 Intranet 的新版本。<a href="#/setting/upversion">检测新版本</a>）</p>
@@ -193,7 +193,7 @@
     </div>
   </div>
 
-  <div id="pkg_install_setting" class="modal hide fade">
+  <div id="pkg_install_setting" class="modal fade">
       <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h3>{{curpkg.name}} 安装设置</h3>
@@ -228,7 +228,7 @@
       </div>
   </div>
 
-  <div id="confirm" class="modal hide fade">
+  <div id="confirm" class="modal fade">
       <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h3>{{confirm_title}}</h3>
@@ -241,7 +241,7 @@
       </div>
   </div>
 
-  <div id="nginx_deleteserverconfirm" class="modal hide fade">
+  <div id="nginx_deleteserverconfirm" class="modal fade">
       <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h3>删除确认</h3>
@@ -256,7 +256,7 @@
       </div>
   </div>
 
-  <div id="selector" class="modal hide fade">
+  <div id="selector" class="modal fade">
       <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h3>{{selector_title}}</h3>
