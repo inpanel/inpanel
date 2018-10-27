@@ -235,9 +235,14 @@
                 <h3>删除分区 {{devname}}</h3>
             </div>
             <div class="modal-body">
-                <p class="text-error">分区删除后，该分区中的数据将丢失！</p>
-                <p>确定要删除分区 {{devname}} 吗？</p>
-                <p style="margin-top:25px">请输入大写的 OK 后继续重启：<input type="text" class="input-mini" max-length="2" ng-model="confirmok" placeholder="输入OK"></p>
+                <div class="alert alert-danger">
+                    <p>分区删除后，该分区中的数据将丢失！</p>
+                    <p>确定要删除分区 {{devname}} 吗？</p>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">请输入大写的 OK 后继续</span>
+                    <input type="text" class="form-control" max-length="2" ng-model="confirmok" placeholder="输入 OK">
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
