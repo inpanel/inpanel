@@ -52,8 +52,10 @@ class Config(object):
                     'lastfile': '',
                 },
                 'info': {
+                    'name': 'Intranet',
                     'wetsite': 'http://intranet.pub',
-                    'latest': 'https://raw.githubusercontent.com/doudoudzj/vpsmate/master/api/latest'
+                    'latest': 'https://raw.githubusercontent.com/doudoudzj/vpsmate/master/api/latest',
+                    'site_packages': 'https://raw.githubusercontent.com/doudoudzj/vpsmate/master/api/site_packages'
                 }
             }
             needupdate = False
