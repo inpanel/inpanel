@@ -37,7 +37,6 @@
 						</div>
 					</div>
 				</form>
-				
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='timezone'" id="timezone" ng-init="loadTimezone()">
 				<form class="form-horizontal form-horizontal-small" ng-submit="saveTimezone()" onsubmit="return false" method="get" action="/">
@@ -50,8 +49,8 @@
 					<div class="form-group form-inline">
 						<label class="col-sm-2 control-label">修改时区：</label>
 						<div class="col-sm-10">
-							<select style="width:100px" ng-init="loadTimezones()" ng-change="loadTimezones(timezone_region)" ng-model="timezone_region" ng-options="region for region in regions"></select>
-							<select style="width:120px" ng-model="timezone_city" ng-options="city for city in cities"></select>
+							<select class="form-control" ng-init="loadTimezones()" ng-change="loadTimezones(timezone_region)" ng-model="timezone_region" ng-options="region for region in regions"></select>
+							<select class="form-control" ng-model="timezone_city" ng-options="city for city in cities"></select>
 						</div>
 					</div>
 					<div class="form-group form-inline">
