@@ -431,7 +431,8 @@ function($scope, Module, $routeParams, $location, Request, Backend, Timeout){
 			'items': 'proxy_cache_path[]'
 		}, function(data){
 			if (data.code == 0) {
-				var proxy_caches = $.browser.msie ? [''] : [];	// temp patch for ie8
+				var proxy_caches = [];
+				if (/msie/.test(navigator.userAgent.toLowerCase())) proxy_caches = ['']; // temp patch for ie8
 				var ps = data.data.proxy_cache_path;
 				if (ps) {
 					for (var i=0; i<ps.length; i++) {

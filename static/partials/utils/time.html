@@ -18,8 +18,8 @@
 					<div class="control-group">
 						<label class="control-label">当前时间：</label>
 						<div class="controls">
-							<span class="btn">{{datetime.str + ' ' + datetime.tz}}</span>
-							<button ng-click="synctime()" class="btn" ng-disabled="processing" ng-show="ntpdStatus!='none'">同步时间</button>
+							<span class="btn btn-default">{{datetime.str + ' ' + datetime.tz}}</span>
+							<button ng-click="synctime()" class="btn btn-default" ng-disabled="processing" ng-show="ntpdStatus!='none'">同步时间</button>
 						</div>
 					</div>
 					<div class="control-group">
@@ -32,7 +32,7 @@
 					</div>
 					<div class="control-group">
 						<div class="controls">
-							<button type="submit" class="btn" ng-disabled="processing">提交修改</button>
+							<button type="submit" class="btn btn-default" ng-disabled="processing">提交修改</button>
 						</div>
 					</div>
 				</form>
@@ -43,7 +43,7 @@
 					<div class="control-group">
 						<label class="control-label">当前时区：</label>
 						<div class="controls">
-							<span class="btn">{{timezone}}</span>
+							<span class="btn btn-default">{{timezone}}</span>
 						</div>
 					</div>
 					<div class="control-group">
@@ -63,17 +63,17 @@
 					</div>
 					<div class="control-group">
 						<div class="controls">
-							<button type="submit" class="btn" ng-disabled="processing">提交修改</button>
+							<button type="submit" class="btn btn-default" ng-disabled="processing">提交修改</button>
 						</div>
 					</div>
 				</form>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='sync'" id="sync" ng-init="checkVirt(loadSync)">
-				<div class="well" style="width:400px;padding-bottom:10px;display:none" ng-show="virt=='Virtuozzo/OpenVZ'">
+				<div class="well" style="display:none" ng-show="virt=='Virtuozzo/OpenVZ'">
 					<p>时间同步在 Virtuozzo/OpenVZ 虚拟化平台下无法正常工作！</p>
 					<p>此功能被禁用！</p>
 				</div>
-				<div class="well" style="width:350px;padding-bottom:10px;display:none" ng-show="virt!='Virtuozzo/OpenVZ'">
+				<div class="well" style=display:none" ng-show="virt!='Virtuozzo/OpenVZ'">
 					<div ng-show="ntpdChecking">
 						<p>正在检测NTPD服务状态...</p>
 					</div>

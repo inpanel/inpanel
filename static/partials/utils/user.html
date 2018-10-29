@@ -26,7 +26,7 @@
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
-                                <th style="width:50px" class="td-right">ID</th>
+                                <th style="width:50px" class="text-right">ID</th>
                                 <th style="width:40px">状态</th>
                                 <th>用户名</th>
                                 <th>备注</th>
@@ -38,7 +38,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="user in users">
-                                <td class="td-right">{{user.pw_uid}}</td>
+                                <td class="text-right">{{user.pw_uid}}</td>
                                 <td ng-bind-html-unsafe="user.lock | user.lock"></td>
                                 <td>{{user.pw_name}}</td>
                                 <td>{{user.pw_gecos}}</td>
@@ -67,7 +67,7 @@
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
-                                <th style="width:50px" class="td-right">ID</th>
+                                <th style="width:50px" class="text-right">ID</th>
                                 <th>用户组</th>
                                 <th>组成员</th>
                                 <th style="width:260px">操作</th>
@@ -75,7 +75,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="group in groups">
-                                <td class="td-right">{{group.gr_gid}}</td>
+                                <td class="text-right">{{group.gr_gid}}</td>
                                 <td>{{group.gr_name}}</td>
                                 <td><span ng-repeat="member in group.gr_mem">{{member}}<span ng-show="$index<group.gr_mem.length-1">, </span></span></td>
                                 <td>

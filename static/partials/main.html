@@ -67,19 +67,19 @@
 								<table class="table table-condensed table-borderless table-layout" style="width:300px">
 									<tr>
 										<td style="width:130px">1 分钟进程数：</td>
-										<td style="width:30px" class="td-right">{{ info['server.loadavg']['1min'] }}</td>
+										<td style="width:30px" class="text-right">{{ info['server.loadavg']['1min'] }}</td>
 										<td style="width:20px"></td>
 										<td style="width:80px" ng-bind-html-unsafe="info['server.loadavg']['1min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']"></td>
 									</tr>
 									<tr>
 										<td>5 分钟进程数：</td>
-										<td class="td-right">{{ info['server.loadavg']['5min'] }}</td>
+										<td class="text-right">{{ info['server.loadavg']['5min'] }}</td>
 										<td></td>
 										<td ng-bind-html-unsafe="info['server.loadavg']['5min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']">
 									</tr>
 									<tr>
 										<td>15 分钟进程数：</td>
-										<td class="td-right">{{ info['server.loadavg']['15min'] }}</td>
+										<td class="text-right">{{ info['server.loadavg']['15min'] }}</td>
 										<td></td>
 										<td ng-bind-html-unsafe="info['server.loadavg']['15min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']">
 									</tr>
@@ -92,31 +92,31 @@
 								<table class="table table-condensed table-borderless table-layout" style="width:300px">
 									<tr>
 										<td style="width:80px">总大小：</td>
-										<td class="td-right" style="width:80px">{{ info['server.meminfo']['mem_total'] }}</td>
+										<td class="text-right" style="width:80px">{{ info['server.meminfo']['mem_total'] }}</td>
 										<td style="width:20px"></td>
 										<td style="width:80px"></td>
 									</tr>
 									<tr>
 										<td>已使用：</td>
-										<td class="td-right">{{ info['server.meminfo']['mem_used'] }}</td>
+										<td class="text-right">{{ info['server.meminfo']['mem_used'] }}</td>
 										<td></td>
 										<td ng-bind-html-unsafe="info['server.meminfo']['mem_used_rate'] | space.used"></td>
 									</tr>
 									<tr>
 										<td>剩余可用：</td>
-										<td class="td-right">{{ info['server.meminfo']['mem_free'] }}</td>
+										<td class="text-right">{{ info['server.meminfo']['mem_free'] }}</td>
 										<td></td>
 										<td ng-bind-html-unsafe="info['server.meminfo']['mem_free_rate'] | space.free"></td>
 									</tr>
 									<tr>
 										<td>Buffers：</td>
-										<td class="td-right">{{ info['server.meminfo']['mem_buffers'] }}</td>
+										<td class="text-right">{{ info['server.meminfo']['mem_buffers'] }}</td>
 										<td></td>
 										<td></td>
 									</tr>
 									<tr>
 										<td>Cached：</td>
-										<td class="td-right">{{ info['server.meminfo']['mem_cached'] }}</td>
+										<td class="text-right">{{ info['server.meminfo']['mem_cached'] }}</td>
 										<td></td>
 										<td></td>
 									</tr>
@@ -129,19 +129,19 @@
 								<table class="table table-condensed table-borderless table-layout" style="width:300px">
 									<tr>
 										<td style="width:80px">总大小：</td>
-										<td class="td-right" style="width:80px">{{ info['server.meminfo']['swap_total'] }}</td>
+										<td class="text-right" style="width:80px">{{ info['server.meminfo']['swap_total'] }}</td>
 										<td style="width:20px"></td>
 										<td style="width:80px"></td>
 									</tr>
 									<tr>
 										<td>已使用：</td>
-										<td class="td-right">{{ info['server.meminfo']['swap_used'] }}</td>
+										<td class="text-right">{{ info['server.meminfo']['swap_used'] }}</td>
 										<td></td>
 										<td ng-bind-html-unsafe="info['server.meminfo']['swap_used_rate'] | space.used"></td>
 									</tr>
 									<tr>
 										<td>剩余可用：</td>
-										<td class="td-right">{{ info['server.meminfo']['swap_free'] }}</td>
+										<td class="text-right">{{ info['server.meminfo']['swap_free'] }}</td>
 										<td></td>
 										<td ng-bind-html-unsafe="info['server.meminfo']['swap_free_rate'] | space.free"></td>
 									</tr>
@@ -154,17 +154,17 @@
 								<table class="table table-condensed table-borderless table-layout" style="width:350px">
 									<tr>
 										<th>挂载点</th>
-										<th class="td-right">总大小</th>
-										<th class="td-right">已使用</th>
-										<th class="td-right">剩余可用</th>
-										<th class="td-right">使用率</th>
+										<th class="text-right">总大小</th>
+										<th class="text-right">已使用</th>
+										<th class="text-right">剩余可用</th>
+										<th class="text-right">使用率</th>
 									</tr>
 									<tr ng-repeat="mount in info['server.mounts']">
 										<td>{{ mount['path'] }}</td>
-										<td class="td-right">{{ mount['total'] }}</td>
-										<td class="td-right">{{ mount['used'] }}</td>
-										<td class="td-right">{{ mount['free'] }}</td>
-										<td class="td-right" ng-bind-html-unsafe="mount['used_rate'] | space.used"></td>
+										<td class="text-right">{{ mount['total'] }}</td>
+										<td class="text-right">{{ mount['used'] }}</td>
+										<td class="text-right">{{ mount['free'] }}</td>
+										<td class="text-right" ng-bind-html-unsafe="mount['used_rate'] | space.used"></td>
 									</tr>
 								</table>
 							</td>
@@ -223,18 +223,18 @@
 												<table class="table table-condensed table-bordered table-layout" style="width:240px;">
 													<tr>
 														<th style="width:80px"></th>
-														<th style="width:80px" class="td-right">累计流量</th>
-														<th style="width:80px" class="td-right">实时速率</th>
+														<th style="width:80px" class="text-right">累计流量</th>
+														<th style="width:80px" class="text-right">实时速率</th>
 													</tr>
 													<tr>
 														<td>发送：</td>
-														<td class="td-right">{{ netiface['tx'] }}</td>
-														<td class="td-right">{{ netiface['tx_speed'] | bytes2human }}/s</td>
+														<td class="text-right">{{ netiface['tx'] }}</td>
+														<td class="text-right">{{ netiface['tx_speed'] | bytes2human }}/s</td>
 													</tr>
 													<tr>
 														<td>接收：</td>
-														<td class="td-right">{{ netiface['rx'] }}</td>
-														<td class="td-right">{{ netiface['rx_speed'] | bytes2human }}/s</td>
+														<td class="text-right">{{ netiface['rx'] }}</td>
+														<td class="text-right">{{ netiface['rx_speed'] | bytes2human }}/s</td>
 													</tr>
 												</table>
 											</div>

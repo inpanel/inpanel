@@ -25,7 +25,7 @@
 			<div class="controls">
 				<div class="input-append">
 					<input ng-model="srcpath" ng-disabled="waiting" type="text" class="input-large" placeholder="请选择要迁移的目录">
-					<button class="btn" ng-click="selectsrcpath()"><i class="glyphicon glyphicon-folder-open"></i></button>
+					<button class="btn btn-default" ng-click="selectsrcpath()"><i class="glyphicon glyphicon-folder-open"></i></button>
 				</div>
 			</div>
 		</div>
@@ -36,18 +36,18 @@
 					<tr>
 						<th></th>
 						<th>挂载点</th>
-						<th class="td-right">总大小</th>
-						<th class="td-right">已使用</th>
-						<th class="td-right">剩余可用</th>
-						<th class="td-right">使用率</th>
+						<th class="text-right">总大小</th>
+						<th class="text-right">已使用</th>
+						<th class="text-right">剩余可用</th>
+						<th class="text-right">使用率</th>
 					</tr>
 					<tr ng-repeat="mount in mounts">
 						<td><label class="radio"><input type="radio" name="mountpoint" ng-model="mountpoint" ng-click="setdespath(mount['path'])" value="{{ mount['path'] }}"></label></td>
 						<td>{{ mount['path'] }}</td>
-						<td class="td-right">{{ mount['total'] }}</td>
-						<td class="td-right">{{ mount['used'] }}</td>
-						<td class="td-right">{{ mount['free'] }}</td>
-						<td class="td-right" ng-bind-html-unsafe="mount['used_rate'] | space.used"></td>
+						<td class="text-right">{{ mount['total'] }}</td>
+						<td class="text-right">{{ mount['used'] }}</td>
+						<td class="text-right">{{ mount['free'] }}</td>
+						<td class="text-right" ng-bind-html-unsafe="mount['used_rate'] | space.used"></td>
 					</tr>
 				</table>
 			</div>
@@ -57,7 +57,7 @@
 			<div class="controls">
 				<div class="input-append">
 					<input ng-model="despath" ng-disabled="waiting" type="text" class="input-large" placeholder="请选择迁移到的目录">
-					<button class="btn" ng-click="selectdespath()"><i class="glyphicon glyphicon-folder-open"></i></button>
+					<button class="btn btn-default" ng-click="selectdespath()"><i class="glyphicon glyphicon-folder-open"></i></button>
 				</div>
 			</div>
 		</div>
@@ -78,6 +78,6 @@
 	<div selector></div>
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
   </div>
 </div>

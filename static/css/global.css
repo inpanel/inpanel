@@ -190,7 +190,6 @@ button:focus {
 }
 
 /* Widget Box */
-.widget-box {}
 
 .widget-box .widget-content {
     background: #E3E3E3;
@@ -215,16 +214,6 @@ button:focus {
 .table-nopadding td,
 .table-nopadding th {
     padding: 0;
-}
-
-.table td.td-right,
-.table th.td-right {
-    text-align: right;
-}
-
-.table td.td-center,
-.table th.td-center {
-    text-align: center;
 }
 
 .table td.td-borderless,

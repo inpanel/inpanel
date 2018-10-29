@@ -89,7 +89,7 @@
 							<span class="text-info" ng-show="item.islnk&&!item.link_broken">-> {{item.linkto}}</span>
 							<span class="text-error" ng-show="item.islnk&&item.link_broken">-> {{item.linkto}} (错误链接)</span>
 						</td>
-						<td class="td-right" style="padding-right:15px">{{item.size}}</td>
+						<td class="text-right" style="padding-right:15px">{{item.size}}</td>
 						<td><a class="black" ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.uname|iftrue:item.uname!=''}}{{item.uid|iftrue:item.uname==''}}</a></td>
 						<td><a class="black" ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.gname|iftrue:item.gname!=''}}{{item.gid|iftrue:item.gname==''}}</a></td>
 						<td><a class="black" ng-click="chmodconfirm(item.name, item.perms, item.isdir)">{{item.perms}}</a></td>

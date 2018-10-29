@@ -56,27 +56,27 @@
 					<table class="table table-hover table-bordered">
 						<thead>
 							<tr>
-								<th style="width:20px" class="td-right">#</th>
+								<th style="width:20px" class="text-right">#</th>
 								<th>数据库名</th>
 								<th>字符集</th>
 								<th>整理</th>
-								<th class="td-right">表数量</th>
-								<th class="td-right">数据大小</th>
-								<th class="td-right">索引大小</th>
-								<th class="td-right">总大小</th>
+								<th class="text-right">表数量</th>
+								<th class="text-right">数据大小</th>
+								<th class="text-right">索引大小</th>
+								<th class="text-right">总大小</th>
 								<th style="width:100px">操作</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr ng-repeat="db in dbs">
-								<td class="td-right">{{$index+1}}</td>
+								<td class="text-right">{{$index+1}}</td>
 								<td>{{db.name}}</td>
 								<td>{{db.charset}}</td>
 								<td>{{db.collation}}</td>
-								<td class="td-right">{{db.tables}}</td>
-								<td class="td-right" ng-bind-html-unsafe="db.datasize | bytes2human"></td>
-								<td class="td-right" ng-bind-html-unsafe="db.indexsize | bytes2human"></td>
-								<td class="td-right" ng-bind-html-unsafe="db.totalsize | bytes2human"></td>
+								<td class="text-right">{{db.tables}}</td>
+								<td class="text-right" ng-bind-html-unsafe="db.datasize | bytes2human"></td>
+								<td class="text-right" ng-bind-html-unsafe="db.indexsize | bytes2human"></td>
+								<td class="text-right" ng-bind-html-unsafe="db.totalsize | bytes2human"></td>
 								<td>
 									<div class="btn-group">
 										<a class="btn btn-default btn-xs" href="#/database/mysql/db/edit/{{db.name|urlencode|urlencode}}">
@@ -106,7 +106,7 @@
 					<table class="table table-hover table-bordered">
 						<thead>
 							<tr>
-								<th style="width:20px" class="td-right">#</th>
+								<th style="width:20px" class="text-right">#</th>
 								<th>用户名</th>
 								<th>主机</th>
 								<th>密码</th>
@@ -117,7 +117,7 @@
 						</thead>
 						<tbody>
 							<tr ng-repeat="user in users">
-								<td class="td-right">{{$index+1}}</td>
+								<td class="text-right">{{$index+1}}</td>
 								<td ng-bind-html-unsafe="user.User | mysql.user"></td>
 								<td>{{user.Host}}</td>
 								<td ng-bind-html-unsafe="user.Password | mysql.haspasswd"></td>

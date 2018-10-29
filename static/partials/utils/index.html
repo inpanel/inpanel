@@ -101,7 +101,7 @@
 	<p style="margin-top:25px">请输入大写的 OK 后继续重启：<input type="text" class="input-mini" max-length="2" ng-model="confirmok" placeholder="输入OK"></p>
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
     <button class="btn btn-danger" onclick="$('#rebootconfirm').modal('hide')" ng-disabled="confirmok!='OK'" ng-click="reboot()">确定重启</button>
   </div>
 </div>

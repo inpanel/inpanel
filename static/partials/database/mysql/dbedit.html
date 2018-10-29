@@ -41,7 +41,7 @@
 		</ul>
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='users'" id="users">
-				<div class="well" style="width:350px" ng-show="userloading">
+				<div class="well" ng-show="userloading">
 					<img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
 				</div>
 
@@ -68,7 +68,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="user in users">
-                                <td class="td-right">{{$index+1}}</td>
+                                <td class="text-right">{{$index+1}}</td>
                                 <td ng-bind-html-unsafe="user.User | mysql.user"></td>
                                 <td>{{user.Host}}</td>
                                 <td ng-bind-html-unsafe="user.Db | mysql.privtype:dbname"></td>
@@ -86,7 +86,7 @@
 			</div>
 
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='operation'" id="operation">
-				<div class="well" style="width:350px" ng-show="dbloading">
+				<div class="well" ng-show="dbloading">
 					<img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库信息，请稍候...
 				</div>
 
@@ -403,10 +403,14 @@
                     </div>
                     <div class="panel-body">
                         <div class="form-group form-inline">
-                            <input class="form-control" ng-model="exportpath" type="text" ng-disabled="processing" placeholder="导出的数据文件保存路径">
-                            <button class="btn btn-default" ng-disabled="processing" ng-click="selectexportfolder()">
-                                <i class="glyphicon glyphicon-folder-open"></i>
-                            </button>
+                            <div class="input-group">
+                                <input class="form-control" ng-model="exportpath" type="text" ng-disabled="processing" placeholder="导出的数据文件保存路径">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-default" ng-disabled="processing" ng-click="selectexportfolder()">
+                                        <i class="glyphicon glyphicon-folder-open"></i>
+                                    </button>
+                                </div>
+                            </div>
                             <button class="btn btn-default" ng-disabled="processing" ng-click="exportdb()">开始导出</button>
                         </div>
                     </div>
@@ -441,7 +445,7 @@
                 <div selector></div>
             </div>
             <div class="modal-footer">
-                <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
             </div>
         </div>
     </div>

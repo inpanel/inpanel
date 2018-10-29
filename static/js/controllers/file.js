@@ -813,7 +813,7 @@ function($scope, $routeParams, Module, Message, Request, Backend){
 			editor.setLineClass(hlLine, null, null);
 			hlLine = editor.setLineClass(editor.getCursor().line, null, 'activeline');
 			// disable match highlight in IE, or it will slow down the page
-			if (!$.browser.msie) editor.matchHighlight('CodeMirror-matchhighlight');
+			if (!/msie/.test(navigator.userAgent.toLowerCase())) editor.matchHighlight('CodeMirror-matchhighlight');
 		},
 		onChange: function() {
 			hasChange = true;

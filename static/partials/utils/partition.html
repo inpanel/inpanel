@@ -8,16 +8,16 @@
 
 	<div style="display:none" ng-init="loadDiskinfo()" ng-show="diskinfo['count'] > 0">
 		<h5>物理分区管理</h5>
-		<table class="table table-hover" ng-repeat="partition in diskinfo['partitions']">
-			<tbody>
+		<table class="table table-bordered table-hover">
+			<tbody ng-repeat="partition in diskinfo['partitions']">
 				<tr class="warning">
 					<td style="width:80px;">设备{{$index+1}}</td>
-					<td style="width:50px;">分区</td>
-					<td style="width:80px;">大小</td>
+					<td style="width:60px;">分区</td>
+					<td style="width:70px;">大小</td>
 					<td style="width:70px;">文件系统</td>
 					<td style="width:90px;">挂载点</td>
-					<td style="width:180px;">操作</td>
-				</tr>
+					<td style="width:200px;">操作</td>
+                </tr>
 				<tr>
 					<td>{{ partition['name'] | iftrue:partition['is_hw'] }}</td>
 					<td>{{ partition['name'] | iftrue:!partition['is_hw'] }}</td>
@@ -55,14 +55,14 @@
 
 	<div style="margin-top:40px;display:none" ng-show="diskinfo['lvscount'] > 0">
 		<h5>LVM逻辑卷（只读）</h5>
-		<table class="table table-hover">
+		<table class="table table-bordered table-hover">
 			<tbody>
 				<tr class="warning">
-					<td>设备</td>
+					<td style="width:100px;">设备</td>
 					<td>卷名</td>
-					<td>大小</td>
-					<td>文件系统</td>
-					<td>挂载点</td>
+					<td style="width:100px;">大小</td>
+					<td style="width:100px;">文件系统</td>
+					<td style="width:200px;">挂载点</td>
 				</tr>
 				<tr ng-repeat="partition in diskinfo['lvm']['partitions']">
 					<td>{{ partition['name'] }}</td>

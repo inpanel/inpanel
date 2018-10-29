@@ -28,7 +28,7 @@
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
-                                <th style="width:20px" class="td-right">#</th>
+                                <th style="width:20px" class="text-right">#</th>
                                 <th style="width:40px">状态</th>
                                 <th>域名</th>
                                 <th>绑定地址</th>
@@ -41,7 +41,7 @@
                                 <td colspan="6">尚未添加站点。</td>
                             </tr>
                             <tr ng-repeat="server in servers">
-                                <td class="td-right">{{$index+1}}</td>
+                                <td class="text-right">{{$index+1}}</td>
                                 <td ng-bind-html-unsafe="server.status | site.status"></td>
                                 <td>
                                     <span ng-repeat="server_name in server.server_names">
@@ -90,7 +90,7 @@
                 <table class="table table-hover table-bordered">
                     <thead>
                         <tr>
-                            <th style="width:20px;" class="td-right">#</th>
+                            <th style="width:20px;" class="text-right">#</th>
                             <th style="width:40px;">状态</th>
                             <th>域名</th>
                             <th>绑定地址</th>
@@ -106,7 +106,7 @@
                             <td colspan="6">尚未添加站点。</td>
                         </tr>
                         <tr ng-repeat="server in servers">
-                            <td class="td-right">{{$index+1}}</td>
+                            <td class="text-right">{{$index+1}}</td>
                             <td ng-bind-html-unsafe="server.status | site.status"></td>
                             <td>
                                 <span ng-repeat="server_name in server.server_names">
