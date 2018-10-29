@@ -19,26 +19,6 @@
 		注意：添加或更新站点配置后，需要 <a href="#/service/nginx"><strong>重启 Nginx</strong></a> 后配置才会生效。
 	</div>
 
-	<!-- <form class="form-horizontal" onsubmit="return false">
-			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label" ng-show="$index==0">站点域名：</label>
-				<div class="col-sm-10">
-					<input class="form-control" ng-model="server_name.name" type="text" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
-					<button class="btn btn-default btn-sm" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="glyphicon glyphicon-minus"></i></button>
-					<button class="btn btn-default btn-sm" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="glyphicon glyphicon-plus"></i></button>
-				</div>
-			</div>
-			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label" ng-show="$index==0">站点域名：</label>
-				<div class="colo-sm-10">
-					<div class="checkbox">
-						<label>
-							<input type="checkbox" ng-model="server_name.default_name" ng-click="server_name.name='_'"> 设置为任意域名可访问
-						</label>
-					</div>
-				</div>
-			</div>
-	</form> -->
 	<div class="form-horizontal" ng-init="load()">
 		<div class="panel panel-default">
 			<div class="panel-heading">
@@ -85,10 +65,10 @@
 								<div class="tab-content">
 									<div class="tab-pane" ng-repeat="location in setting.locations" ng-class="'active'|iftrue:$index==curloc" id="loc_{{$index}}">
 										
-										<div class="control-group control-group-mini">
+										<div class="form-inline">
 											<label class="control-label">URL路径</label>
 											<div class="controls">
-												<input ng-model="location.urlpath" ng-change="urlpathchange(location)" type="text" class="input-large" placeholder="URL路径">
+												<input class="form-control" ng-model="location.urlpath" ng-change="urlpathchange(location)" type="text" placeholder="URL路径">
 											</div>
 										</div>
 										<div class="control-group control-group-mini">
@@ -107,7 +87,7 @@
 											<label class="control-label">指定目录</label>
 											<div class="controls">
 												<div class="input-append">
-													<input ng-model="location.static.root" type="text" class="input-large" placeholder="路径所访问的目录">
+													<input ng-model="location.static.root" type="text" class="form-control" placeholder="路径所访问的目录">
 													<button class="btn btn-default" ng-click="selectstaticfolder($index)"><i class="glyphicon glyphicon-folder-open"></i></button>
 													<br>
 													<label class="checkbox inline" style="margin-top:5px">
@@ -126,7 +106,7 @@
 											<label class="control-label">指定目录</label>
 											<div class="controls">
 												<div class="input-append">
-													<input ng-model="location.fastcgi.root" type="text" class="input-large" placeholder="路径所访问的目录">
+													<input ng-model="location.fastcgi.root" type="text" class="form-control" placeholder="路径所访问的目录">
 													<button class="btn btn-default" ng-click="selectfastcgifolder($index)"><i class="glyphicon glyphicon-folder-open"></i></button>
 													<br>
 													<label class="checkbox inline" style="margin-top:5px">
@@ -140,14 +120,14 @@
 											<label class="control-label">FastCGI</label>
 											<div class="controls">
 												<div class="input-append">
-													<input ng-model="location.fastcgi.fastcgi_pass" type="text" class="input-large" placeholder="FastCGI服务器地址">
+													<input ng-model="location.fastcgi.fastcgi_pass" type="text" class="form-control" placeholder="FastCGI服务器地址">
 												</div>
 											</div>
 										</div>
 										<div class="control-group control-group-mini" ng-show="location.engine=='redirect'">
 											<label class="control-label">跳转地址</label>
 											<div class="controls">
-												<input ng-model="location.redirect.url" type="text" class="input-large" placeholder="要跳转到的URL地址">
+												<input ng-model="location.redirect.url" type="text" class="form-control" placeholder="要跳转到的URL地址">
 											</div>
 										</div>
 										<div class="control-group control-group-mini" ng-show="location.engine=='redirect'">
@@ -186,7 +166,7 @@
 										<div class="control-group control-group-mini" ng-show="location.engine=='proxy'">
 											<label class="control-label">主机域名</label>
 											<div class="controls">
-												<input ng-model="location.proxy.host" type="text" class="input-large" placeholder="后端的域名，如：www.baidu.com">
+												<input ng-model="location.proxy.host" type="text" class="form-control" placeholder="后端的域名，如：www.baidu.com">
 											</div>
 										</div>
 										<div class="control-group control-group-mini" ng-show="location.engine=='proxy'">
@@ -218,17 +198,17 @@
 											<div class="control-group control-group-mini">
 												<label class="control-label"><span ng-show="$index==0">代理后端</span></label>
 												<div class="controls">
-													<input ng-model="backend.server" type="text" class="input-large" placeholder="格式为：IP:端口 或 域名:端口">
-													<input ng-model="backend.weight" type="text" class="input-mini" placeholder="权重值" ng-show="location.proxy.backends.length>1&&location.proxy.balance=='weight'">
+													<input ng-model="backend.server" type="text" class="form-control" placeholder="格式为：IP:端口 或 域名:端口">
+													<input ng-model="backend.weight" type="text" class="form-control" placeholder="权重值" ng-show="location.proxy.backends.length>1&&location.proxy.balance=='weight'">
 													<button class="btn btn-default btn-sm" title="删除该后端" ng-click="proxy_deletebackend($parent.$index, $index)" ng-show="location.proxy.backends.length>1"><i class="icon-minus"></i></button>
 													<button class="btn btn-default btn-sm" title="增加一个后端" ng-click="proxy_addbackend($parent.$index)" ng-show="$index==location.proxy.backends.length-1"><i class="icon-plus"></i></button>
 												</div>
 											</div>
 											<div class="control-group control-group-mini" ng-show="location.proxy.backends.length>1">
 												<div class="controls">
-													失效条件：<input ng-model="backend.fail_timeout" type="text" class="input-mini">
+													失效条件：<input ng-model="backend.fail_timeout" type="text" class="form-control">
 													秒内失败
-													<input ng-model="backend.max_fails" type="text" class="input-mini">
+													<input ng-model="backend.max_fails" type="text" class="form-control">
 													次
 												</div>
 											</div>
@@ -250,7 +230,7 @@
 										<div class="control-group control-group-mini" ng-show="location.engine=='proxy'&&location.proxy.backends.length>1">
 											<label class="control-label">保持连接</label>
 											<div class="controls">
-												<input ng-model="location.proxy.keepalive" type="text" class="input-large" placeholder="到后端保持的连接数">
+												<input ng-model="location.proxy.keepalive" type="text" class="form-control" placeholder="到后端保持的连接数">
 												<span class="help-block">这里设置的是保持连接的最大数量，而不是允许连接的数量，最大连接数量不受限制。</span>
 											</div>
 										</div>
@@ -274,7 +254,7 @@
 											<div class="control-group control-group-mini">
 												<label class="control-label">缓存条件</label>
 												<div class="controls">
-													至少请求 <input type="text" class="input input-mini input-flat" ng-model="location.proxy.proxy_cache_min_uses"> 次后才缓存资源
+													至少请求 <input type="text" class="input form-control input-flat" ng-model="location.proxy.proxy_cache_min_uses"> 次后才缓存资源
 												</div>
 											</div>
 											<div class="control-group control-group-mini">
@@ -329,7 +309,7 @@
 														</select>
 														，过期时间：
 														<div class="input-append">
-															<input type="text" class="input input-mini" ng-model="valid.time">
+															<input type="text" class="input form-control" ng-model="valid.time">
 															<select style="width:80px" ng-model="valid.time_unit">
 																<option value="s">秒</option>
 																<option value="m">分钟</option>
@@ -382,7 +362,7 @@
 														<input type="checkbox" ng-model="location.proxy.proxy_cache_lock"> 启用并发锁定
 													</label><br>
 													<label class="inline">
-														锁定超时：<input type="text" class="input input-mini input-flat" ng-disabled="!location.proxy.proxy_cache_lock" ng-model="location.proxy.proxy_cache_lock_timeout"> 秒
+														锁定超时：<input type="text" class="input form-control input-flat" ng-disabled="!location.proxy.proxy_cache_lock" ng-model="location.proxy.proxy_cache_lock_timeout"> 秒
 													</label>
 													<span class="help-block">并发锁定可防止多个相同请求向后端请求同一资源。</span>
 												</div>
@@ -465,7 +445,7 @@
 							<th class="td-borderless">下载限制</th>
 							<td class="td-borderless">
 								<div class="input-append">
-									<input ng-model="setting.limit_rate" type="text" class="input-mini" placeholder="不限制">
+									<input ng-model="setting.limit_rate" type="text" class="form-control" placeholder="不限制">
 									<span class="add-on">KB/S</span>
 								</div>
 							</td>
@@ -474,7 +454,7 @@
 							<th class="td-borderless">连接限制</th>
 							<td class="td-borderless">
 								<div class="input-append">
-									<input ng-model="setting.limit_conn" type="text" class="input-mini" placeholder="不限制">
+									<input ng-model="setting.limit_conn" type="text" class="form-control" placeholder="不限制">
 									<span class="add-on">个/IP</span>
 								</div>
 							</td>
@@ -499,14 +479,14 @@
 						<tr>
 							<th class="td-borderless">首页文件</th>
 							<td class="td-borderless">
-								<input ng-model="setting.index" type="text" class="input-large">
+								<input ng-model="setting.index" type="text" class="form-control">
 							</td>
 						</tr>
 						<tr ng-repeat="listen in setting.listens">
 							<th class="td-borderless"><span ng-show="$index==0">监听地址</span></th>
 							<td class="td-borderless">
-								<input ng-model="listen.ip" type="text" class="input-medium" placeholder="默认监听所有可用IP">:
-								<input ng-model="listen.port" type="text" class="input-mini" placeholder="端口">
+								<input ng-model="listen.ip" type="text" class="form-control" placeholder="默认监听所有可用IP">:
+								<input ng-model="listen.port" type="text" class="form-control" placeholder="端口">
 								<button class="btn btn-default btn-sm" ng-click="deletelisten()" ng-show="setting.listens.length>1" title="删除这个监听地址"><i class="icon-minus"></i></button>
 								<button class="btn btn-default btn-sm" ng-click="addlisten()" ng-show="$index==setting.listens.length-1" title="增加一个监听地址"><i class="icon-plus"></i></button>
 								<div class="control-group control-group-mini" style="margin-bottom:0">
@@ -537,7 +517,7 @@
 									<label class="control-label">SSL证书</label>
 									<div class="controls">
 										<div class="input-append">
-											<input ng-model="setting.ssl_crt" type="text" class="input-large" placeholder="SSL证书文件">
+											<input ng-model="setting.ssl_crt" type="text" class="form-control" placeholder="SSL证书文件">
 											<button class="btn btn-default" ng-click="selectsslcrt()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
 										</div>
 									</div>
@@ -546,7 +526,7 @@
 									<label class="control-label">SSL密钥</label>
 									<div class="controls">
 										<div class="input-append">
-											<input ng-model="setting.ssl_key" type="text" class="input-large" placeholder="SSL密钥文件">
+											<input ng-model="setting.ssl_key" type="text" class="form-control" placeholder="SSL密钥文件">
 											<button class="btn btn-default" ng-click="selectsslkey()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
 										</div>
 									</div>

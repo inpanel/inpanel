@@ -20,19 +20,19 @@ directive('navbar', function(){
             <div id="navbar" class="navbar-collapse collapse">\
                 <ul class="nav navbar-nav">\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'main\']"><a href="#/main">首页</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'service(\..*)?\']"><a href="#/service">服务管理</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'file\']"><a href="#/file">文件管理</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'site(\..*)?\']"><a href="#/site">网站管理</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'database\']"><a href="#/database">数据库管理</a></li>\
+                    <li ng-class="\'active\' | ifmatch:[currentItem,\'service(\..*)?\']"><a href="#/service">服务</a></li>\
+                    <li ng-class="\'active\' | ifmatch:[currentItem,\'file\']"><a href="#/file">文件</a></li>\
+                    <li ng-class="\'active\' | ifmatch:[currentItem,\'site(\..*)?\']"><a href="#/site">网站</a></li>\
+                    <li ng-class="\'active\' | ifmatch:[currentItem,\'database\']"><a href="#/database">数据库</a></li>\
+                    <li ng-class="\'active\' | ifmatch:[currentItem,\'utils(\..*)?\']"><a href="#/utils">系统</a></li>\
                     <li class="dropdown">\
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">系统工具 <span class="caret"></span></a>\
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">工具 <span class="caret"></span></a>\
                         <ul class="dropdown-menu">\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'ftp\']"><a href="#/ftp">FTP管理</a></li>\
                             <li ng-class="\'active\' | ifmatch:[currentItem,\'task\']"><a href="#/task">计划任务</a></li>\
-                            <li role="separator" class="divider"></li>\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'utils(\..*)?\']"><a href="#/utils">系统工具</a></li>\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'secure\']"><a href="#/secure">安全管理</a></li>\
+                            <li ng-class="\'active\' | ifmatch:[currentItem,\'ftp\']"><a href="#/ftp">FTP管理</a></li>\
                             <li ng-class="\'active\' | ifmatch:[currentItem,\'backup\']"><a href="#/backup">备份管理</a></li>\
+                            <li ng-class="\'active\' | ifmatch:[currentItem,\'secure\']"><a href="#/secure">安全管理</a></li>\
+                            <li role="separator" class="divider"></li>\
                             <li ng-class="\'active\' | ifmatch:[currentItem,\'log\']"><a href="#/log">日志管理</a></li>\
                         </ul>\
                     </li>\
