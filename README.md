@@ -13,14 +13,15 @@ This is special edition (fork) of VPSMate with many features not existing on VPS
     rm -rf /usr/local/vpsmate
     rm -f /etc/init.d/vpsmate
 
-#### 忘记用户名或密码
+#### 重置用户名或密码
     /usr/local/vpsmate/config.py username '用户名'
     /usr/local/vpsmate/config.py password '密码'
 
 #### 功能
 
+* 免费，开源
 * 快速在线安装、小巧且节省资源
-* 当前支持 CentOS/Redhat 5.4+、6.x
+* 当前支持 CentOS/Redhat 5.4+、6.x、7.x
 * 基于发行版软件源的软件管理机制
 * 轻松构建 Linux + Nginx + MySQL + PHP 环境
 * 强大的在线文件管理和回收站机制
