@@ -23,7 +23,7 @@ lockfile=/var/lock/subsys/vpsmate
 
 start() {
     [ -x $vpsmate ] || exit 5
-    echo -n $"Starting Intranet Service: "
+    echo -n $"Starting Intranet: "
     daemon --pidfile="$pidfile" "$exec &"
     retval=$?
     echo
@@ -32,7 +32,7 @@ start() {
 }
 
 stop() {
-    echo -n $"Stopping Intranet Service: "
+    echo -n $"Stopping Intranet: "
     killproc -p "$pidfile" $exec
     #killproc $prog -TERM
     retval=$?

@@ -7,7 +7,7 @@
 # VPSMate is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-""" Install Script for Intranet Service """
+""" Install Script for Intranet """
 
 import getpass
 import os
@@ -185,7 +185,7 @@ class Install(object):
         self._run('iptables -A INPUT -p tcp --dport 8888 -j ACCEPT')
         self._run('iptables -A OUTPUT -p tcp --sport 8888 -j ACCEPT')
 
-    def config(self, username, password):
+    def config_account(self, username, password):
         self._run('%s/config.py username "%s"' % (self.installpath, username))
         self._run('%s/config.py password "%s"' % (self.installpath, password))
 
@@ -250,7 +250,7 @@ class Install(object):
             self._run('/etc/init.d/iptables stop')
 
         # get the latest Intranet version
-        print('* Installing Intranet Panel')
+        print('* Installing Intranet')
         self.install_vpsmate()
 
         # set username and password
@@ -265,7 +265,7 @@ class Install(object):
             username = 'admin'
         if len(password) == 0:
             password = 'admin'
-        self.config(username, password)
+        self.config_account(username, password)
 
         print
         print('* Username and password set successfully!')
@@ -274,7 +274,7 @@ class Install(object):
         print('* Config iptables')
         self.config_firewall()
 
-        print('* The URL of your Intranet Service is:'),
+        print('* The URL of your Intranet is:'),
         print('http://%s:8888/' % self.detect_ip())
         print
 
