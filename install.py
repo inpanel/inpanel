@@ -7,7 +7,7 @@
 # VPSMate is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-""" Install script for VPSMate """
+""" Install Script for Intranet Service """
 
 import getpass
 import os
@@ -139,8 +139,8 @@ class Install(object):
         #     localpkg_found = True
         # else:
         #     # or else install online
-        #     print('* Downloading install package from www.vpsmate.org')
-        #     f = urllib2.urlopen('http://www.vpsmate.org/api/latest')
+        #     print('* Downloading install package from intranet.pub')
+        #     f = urllib2.urlopen('http://api.intranet.pub/latest')
         #     data = f.read()
         #     f.close()
         #     downloadurl = re.search('"download":"([^"]+)"', data).group(1).replace('\/', '/')
@@ -249,8 +249,8 @@ class Install(object):
         if os.path.exists('/etc/init.d/iptables'):
             self._run('/etc/init.d/iptables stop')
 
-        # get the latest vpsmate version
-        print('* Installing VPSMate')
+        # get the latest Intranet version
+        print('* Installing Intranet Panel')
         self.install_vpsmate()
 
         # set username and password
@@ -274,7 +274,7 @@ class Install(object):
         print('* Config iptables')
         self.config_firewall()
 
-        print('* The URL of your VPSMate is:'),
+        print('* The URL of your Intranet Service is:'),
         print('http://%s:8888/' % self.detect_ip())
         print
 

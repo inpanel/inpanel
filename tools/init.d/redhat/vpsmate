@@ -3,7 +3,7 @@
 # vpsmate - this script starts and stops the vpsmate daemon
 #
 # chkconfig:   - 85 15
-# description: VPSMate is a web-based linux VPS management tools
+# description: Intranet is a web-based linux VPS management tools
 # processname: vpsmate
 # pidfile:     /var/run/vpsmate.pid
 
@@ -23,7 +23,7 @@ lockfile=/var/lock/subsys/vpsmate
 
 start() {
     [ -x $vpsmate ] || exit 5
-    echo -n $"Starting VPSMate: "
+    echo -n $"Starting Intranet Service: "
     daemon --pidfile="$pidfile" "$exec &"
     retval=$?
     echo
@@ -32,7 +32,7 @@ start() {
 }
 
 stop() {
-    echo -n $"Stopping VPSMate: "
+    echo -n $"Stopping Intranet Service: "
     killproc -p "$pidfile" $exec
     #killproc $prog -TERM
     retval=$?

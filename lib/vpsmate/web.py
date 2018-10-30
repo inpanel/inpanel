@@ -639,7 +639,7 @@ class UtilsTimeHandler(RequestHandler):
         
 
 class SettingHandler(RequestHandler):
-    """Settings for VPSMate
+    """Settings for Intranet
     """
     @tornado.web.asynchronous
     @tornado.gen.engine
@@ -2730,7 +2730,7 @@ class BackendHandler(RequestHandler):
                             line = '#%s' % line
                             lines.append(line)
                             # # add a mirrorlist line
-                            # metalink = 'http://www.vpsmate.org/mirrorlist?'\
+                            # metalink = 'http://intranet.pub/mirrorlist?'\
                             #     'repo=centalt-%s&arch=$basearch' % self.settings['dist_verint']
                             # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)
