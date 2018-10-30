@@ -16,19 +16,27 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         $scope.site_packages = [];
 
         $scope.load = function() {
-            Request.get('/query/service.nginx,service.httpd', function(data) {
+            Request.get('/query/service.nginx,service.httpd', function(res) {
                 $scope.loaded = true;
-                if (data['service.nginx'] && data['service.nginx'].status) $scope.nginx_supported = true;
-                if (data['service.httpd'] && data['service.httpd'].status) $scope.apache_supported = true;
+                if (res['service.nginx'] && res['service.nginx'].status) $scope.nginx_supported = true;
+                if (res['service.httpd'] && res['service.httpd'].status) $scope.apache_supported = true;
                 $scope.has_httpserver = $scope.nginx_supported || $scope.apache_supported;
                 if (!$scope.has_httpserver) {
                     return;
                 }
-                if (section && section == 'package') {
-                    $scope.loadpackage(1);
-                } else if (section && section == 'nginx') {
-                    $scope.loadnginx(1);
-                } else if (section && section == 'apache') {
+                if (section) {
+                    if (section == 'package') {
+                        $scope.loadpackage(1);
+                    } else if (section && section == 'apache') {
+                        $scope.loadapache(1);
+                    } else if (section && section == 'nginx') {
+                        $scope.loadnginx(1);
+                    }
+                } else {
+                    if (res['service.nginx'].status == 'running') {
+                        $scope.loadnginx(1);
+                        return;
+                    }
                     $scope.loadapache(1);
                 }
             });
@@ -46,9 +54,9 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             $scope.nginxloading = true;
             Request.post('/operation/nginx', {
                 'action': 'getservers'
-            }, function(data) {
-                if (data.code == 0) {
-                    $scope.nginxservers = data.data;
+            }, function(res) {
+                if (res.code == 0) {
+                    $scope.nginxservers = res.data;
                     $scope.nginxloading = false;
                 }
             });
@@ -79,10 +87,10 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 return;
             }
             $scope.packageloading = true;
-            Request.get('/sitepackage/getlist', function(data) {
+            Request.get('/sitepackage/getlist', function(res) {
                 $scope.packageloading = false;
-                if (data.code == 0) {
-                    $scope.site_packages = data.data;
+                if (res.code == 0) {
+                    $scope.site_packages = res.data;
                 }
             });
         };
@@ -117,10 +125,10 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'path': $scope.installpath,
                 'showhidden': true,
                 'remember': false
-            }, function(data) {
-                if (data.code == 0) {
+            }, function(res) {
+                if (res.code == 0) {
                     Message.setInfo('');
-                    if (data.data.length > 0) {
+                    if (res.data.length > 0) {
                         $scope.confirm_title = '安装确认';
                         $scope.confirm_body = '<p>系统检测到目录 ' + $scope.installpath + ' 下存在文件，继续安装将可能会覆盖原文件。</p><p>确认要继续安装吗？</p>';
                         $('#confirm').modal();
@@ -129,18 +137,20 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                         package_get_downloadurl();
                     }
                 } else {
-                    Message.setError('安装失败！' + data.msg);
+                    Message.setError('安装失败！' + res.msg);
                 }
             }, false, true);
         };
 
         function package_get_downloadurl() {
             Message.setInfo('正在请求安装文件...');
-            Request.get('/sitepackage/getdownloadtask?name=' + $scope.curpkg.code + '&version=' + $scope.pkgver, function(data) {
-                if (data.code == 0) {
-                    $scope.downloadurl = data.data.url;
-                    $scope.downloadpath = data.data.path;
-                    $scope.extractpath = data.data.temp;
+            Request.get(
+            '/sitepackage/getdownloadtask?name=' + $scope.curpkg.code + '&version=' + $scope.pkgver,
+            function(res) {
+                if (res.code == 0) {
+                    $scope.downloadurl = res.data.url;
+                    $scope.downloadpath = res.data.path;
+                    $scope.extractpath = res.data.temp;
 
                     Backend.call(
                         $scope,
@@ -217,7 +227,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                                     }
                                 );
                             },
-                            'error': function(data) {
+                            'error': function(error) {
                                 Message.setError('下载安装包过程中出现错误，安装取消！')
                             }
                         },
@@ -234,8 +244,8 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'ip': ip,
                 'port': port,
                 'server_name': server_name
-            }, function(data) {
-                if (data.code == 0) {
+            }, function(res) {
+                if (res.code == 0) {
                     $scope.loadnginx(0, 1);
                 }
             });
@@ -246,8 +256,8 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'ip': ip,
                 'port': port,
                 'server_name': server_name
-            }, function(data) {
-                if (data.code == 0) {
+            }, function(res) {
+                if (res.code == 0) {
                     $scope.loadnginx(0, 1);
                 }
             });
@@ -264,8 +274,8 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'ip': $scope.nginx_ip,
                 'port': $scope.nginx_port,
                 'server_name': $scope.nginx_server_name
-            }, function(data) {
-                if (data.code == 0) {
+            }, function(res) {
+                if (res.code == 0) {
                     $scope.loadnginx(0, 1);
                 }
             });
@@ -428,10 +438,10 @@ var SiteNginxCtrl = [
                     'pkg': 'nginx',
                     'repo': 'installed'
                 }, {
-                    'success': function(data) {
-                        $scope.nginx_version = data.data[0].version;
+                    'success': function(res) {
+                        $scope.nginx_version = res.data[0].version;
                     },
-                    'error': function(data) {
+                    'error': function(error) {
                         $scope.nginx_version = '';
                         //$scope.loaded = true;
                     }
@@ -448,11 +458,11 @@ var SiteNginxCtrl = [
             Request.post('/operation/nginx', {
                 'action': 'gethttpsettings',
                 'items': 'proxy_cache_path[]'
-            }, function(data) {
-                if (data.code == 0) {
+            }, function(res) {
+                if (res.code == 0) {
                     var proxy_caches = [];
                     if (/msie/.test(navigator.userAgent.toLowerCase())) proxy_caches = ['']; // temp patch for ie8
-                    var ps = data.data.proxy_cache_path;
+                    var ps = res.data.proxy_cache_path;
                     if (ps) {
                         for (var i = 0; i < ps.length; i++) {
                             proxy_caches.push(ps[i].name);
@@ -470,9 +480,9 @@ var SiteNginxCtrl = [
                 'ip': server_ip,
                 'port': server_port,
                 'server_name': server_name
-            }, function(data) {
-                if (data.code == 0) {
-                    var d = data.data;
+            }, function(res) {
+                if (res.code == 0) {
+                    var d = res.data;
                     // init setting
                     var s = $scope.setting;
                     $scope.gen_by_vpsmate = d._vpsmate;
@@ -750,8 +760,8 @@ var SiteNginxCtrl = [
                 'action': 'addserver',
                 'version': $scope.nginx_version,
                 'setting': angular.toJson($scope.setting)
-            }, function(data) {
-                if (data.code == 0) {
+            }, function(res) {
+                if (res.code == 0) {
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
@@ -769,8 +779,8 @@ var SiteNginxCtrl = [
                 'server_name': server_name,
                 'version': $scope.nginx_version,
                 'setting': angular.toJson($scope.setting)
-            }, function(data) {
-                if (data.code == 0) {
+            }, function(res) {
+                if (res.code == 0) {
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
