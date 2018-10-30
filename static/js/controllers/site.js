@@ -8,31 +8,79 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         $scope.has_httpserver = false;
         $scope.nginx_supported = false;
         $scope.apache_supported = false;
+        $scope.nginxloading = false;
+        $scope.apacheloading = false;
+        $scope.packageloading = false;
+        $scope.apacheservers = [];
+        $scope.nginxservers = [];
         $scope.site_packages = [];
 
         $scope.load = function() {
             Request.get('/query/service.nginx,service.httpd', function(data) {
+                $scope.loaded = true;
                 if (data['service.nginx'] && data['service.nginx'].status) $scope.nginx_supported = true;
                 if (data['service.httpd'] && data['service.httpd'].status) $scope.apache_supported = true;
                 $scope.has_httpserver = $scope.nginx_supported || $scope.apache_supported;
-                if ($scope.has_httpserver) {
-                    if (section) {
-                        if (section == 'nginx' && $scope.nginx_supported)
-                            Module.setSection('nginx');
-                        else if (section == 'apache' && $scope.apache_supported)
-                            Module.setSection('apache');
-                        else if (section == 'package')
-                            Module.setSection('package');
-                        else
-                            Module.setSection($scope.nginx_supported ? 'nginx' : 'apache');
-                    } else {
-                        Module.setSection($scope.nginx_supported ? 'nginx' : 'apache');
-                    }
+                if (!$scope.has_httpserver) {
+                    return;
                 }
-                $scope.loaded = true;
-                $scope.loadsites();
+                if (section && section == 'package') {
+                    $scope.loadpackage(1);
+                } else if (section && section == 'nginx') {
+                    $scope.loadnginx(1);
+                } else if (section && section == 'apache') {
+                    $scope.loadapache(1);
+                }
             });
+        };
+
+        $scope.loadnginx = function(init, reload) {
+            if (!init && Module.getSection() == 'nginx' && !reload) {
+                return;
+            }
+            $scope.sec('nginx');
+            Module.setSection('nginx');
+            if (!$scope.nginx_supported) {
+                return;
+            }
+            $scope.nginxloading = true;
+            Request.post('/operation/nginx', {
+                'action': 'getservers'
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.nginxservers = data.data;
+                    $scope.nginxloading = false;
+                }
+            });
+        };
+
+        $scope.loadapache = function(init, reload) {
+            if (!init && Module.getSection() == 'apache' && !reload) {
+                return;
+            }
+            $scope.sec('apache');
+            Module.setSection('apache');
+            if (!$scope.apache_supported) {
+                return;
+            }
+            $scope.apacheloading = true;
+            setTimeout(() => {
+                $scope.apacheloading = true;
+            }, 1000);
+        };
+
+        $scope.loadpackage = function(init, reload) {
+            if (!init && Module.getSection() == 'package' && !reload) {
+                return;
+            }
+            Module.setSection('package');
+            $scope.sec('package');
+            if (!$scope.has_httpserver) {
+                return;
+            }
+            $scope.packageloading = true;
             Request.get('/sitepackage/getlist', function(data) {
+                $scope.packageloading = false;
                 if (data.code == 0) {
                     $scope.site_packages = data.data;
                 }
@@ -180,26 +228,6 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
 
         }
 
-        $scope.loadsites = function() {
-            if ($scope.nginx_supported) $scope.loadnginx();
-            if ($scope.apache_supported) $scope.loadapache();
-        }
-
-        $scope.nginxloading = false;
-        $scope.loadnginx = function() {
-            $scope.nginxloading = true;
-            Request.post('/operation/nginx', {
-                'action': 'getservers'
-            }, function(data) {
-                if (data.code == 0) {
-                    $scope.servers = data.data;
-                    $scope.nginxloading = false;
-                }
-            });
-        };
-
-        $scope.loadapache = function() {};
-
         $scope.nginx_enableserver = function(ip, port, server_name) {
             Request.post('/operation/nginx', {
                 'action': 'enableserver',
@@ -208,7 +236,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'server_name': server_name
             }, function(data) {
                 if (data.code == 0) {
-                    $scope.loadnginx();
+                    $scope.loadnginx(0, 1);
                 }
             });
         };
@@ -220,7 +248,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'server_name': server_name
             }, function(data) {
                 if (data.code == 0) {
-                    $scope.loadnginx();
+                    $scope.loadnginx(0, 1);
                 }
             });
         };
@@ -238,7 +266,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'server_name': $scope.nginx_server_name
             }, function(data) {
                 if (data.code == 0) {
-                    $scope.loadnginx();
+                    $scope.loadnginx(0, 1);
                 }
             });
         };

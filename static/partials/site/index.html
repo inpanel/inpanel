@@ -1,6 +1,6 @@
 <div navbar ng-init="currentItem='site'"></div>
 <div ng-show="!loaded">
-  <div loading></div>
+    <div loading></div>
 </div>
 
 <div id="main" ng-show="loaded" style="display:none">
@@ -10,15 +10,15 @@
 
     <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none"><a href="#nginx" ng-click="sec('nginx')" data-toggle="tab">Nginx 网站列表</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none"><a href="#apache" ng-click="sec('apache')" data-toggle="tab">Apache 网站列表</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='package'"><a href="#package" ng-click="sec('package')" data-toggle="tab">快速安装网站系统</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='subDomain'" ng-show="false"><a href="#subDomain" ng-click="sec('subDomain')" data-toggle="tab">快速创建子站点</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none"><a href="#nginx" ng-click="loadnginx()" data-toggle="tab">Nginx 网站列表</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none"><a href="#apache" ng-click="loadapache()" data-toggle="tab">Apache 网站列表</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='package'" ng-show="has_httpserver" style="display:none"><a href="#package" ng-click="loadpackage()" data-toggle="tab">快速安装网站系统</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='subDomain'" ng-show="false" style="display:none"><a href="#subDomain" ng-click="sec('subDomain')" data-toggle="tab">快速创建子站点</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none" id="nginx">
                 <div class="well" ng-show="nginxloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载站点列表，请稍候...
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载站点列表，请稍候...
                 </div>
                 <div ng-show="!nginxloading">
                     <div class="pull-left"><h5>Nginx 网站列表</h5></div>
@@ -28,19 +28,19 @@
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
-                                <th style="width:20px" class="text-right">#</th>
-                                <th style="width:40px">状态</th>
+                                <th style="width: 20px;" class="text-right">#</th>
+                                <th style="width: 50px;">状态</th>
                                 <th>域名</th>
-                                <th>绑定地址</th>
-                                <th style="width:240px">站点引擎</th>
-                                <th style="width:100px">操作</th>
+                                <th style="width: 140px;">绑定地址</th>
+                                <th style="width: 210px;">站点引擎</th>
+                                <th style="width: 110px;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-show="servers.length==0">
+                            <tr ng-show="nginxservers.length==0">
                                 <td colspan="6">尚未添加站点。</td>
                             </tr>
-                            <tr ng-repeat="server in servers">
+                            <tr ng-repeat="server in nginxservers">
                                 <td class="text-right">{{$index+1}}</td>
                                 <td ng-bind-html-unsafe="server.status | site.status"></td>
                                 <td>
@@ -90,22 +90,19 @@
                 <table class="table table-hover table-bordered">
                     <thead>
                         <tr>
-                            <th style="width:20px;" class="text-right">#</th>
-                            <th style="width:40px;">状态</th>
+                            <th style="width: 20px;" class="text-right">#</th>
+                            <th style="width: 50px;">状态</th>
                             <th>域名</th>
-                            <th>绑定地址</th>
-                            <th style="width:150px;">站点类型</th>
-                            <th style="width:140px;">操作</th>
+                            <th style="width: 140px;">绑定地址</th>
+                            <th style="width: 210px;">站点类型</th>
+                            <th style="width: 110px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="warning">
-                            <td colspan="6" class="text-info">注意：此处网站配置修改后需要重启 Apache，您的修改才会生效。</td>
-                        </tr>
-                        <tr ng-show="servers.length==0">
+                        <tr ng-show="apacheservers.length==0">
                             <td colspan="6">尚未添加站点。</td>
                         </tr>
-                        <tr ng-repeat="server in servers">
+                        <tr ng-repeat="server in apacheservers">
                             <td class="text-right">{{$index+1}}</td>
                             <td ng-bind-html-unsafe="server.status | site.status"></td>
                             <td>
@@ -147,20 +144,30 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='package'" id="package">
-                <table class="table table-button" ng-repeat="cate in site_packages">
-                <thead>
-                    <tr>
-                        <th colspan="3">{{cate.name}}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="package in cate.packages">
-                    <td style="width:120px"><a href="{{package.official_site}}" target="_blank">{{package.name}}</a></td>
-                    <td style="width:380px" class="muted">{{package.description}}</td>
-                    <td style="width:100px"><button class="btn btn-default btn-sm" ng-click="package_install_setting(package)">开始安装</button></td>
-                    </tr>
-                </tbody>
-                </table>
+                <div class="well" ng-show="packageloading">
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载网站程序列表，请稍候...
+                </div>
+                <div ng-show="!packageloading">
+                    <div class="well" ng-show="site_packages.length==0">未找到网站程序。</div>
+                    <table class="table" ng-repeat="cate in site_packages">
+                        <thead>
+                            <tr>
+                                <th colspan="3">{{cate.name}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="package in cate.packages">
+                                <td style="width: 120px;">
+                                    <a href="{{package.official_site}}" target="_blank">{{package.name}}</a>
+                                </td>
+                                <td style="width: 380px;" class="muted">{{package.description}}</td>
+                                <td style="width: 100px;">
+                                    <button class="btn btn-default btn-sm" ng-click="package_install_setting(package)">开始安装</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='subDomain'" id="subDomain">
                 <div class="form-horizontal">
@@ -172,7 +179,7 @@
                         <table class="table table-button">
                             <tbody>
                                 <tr class="ng-scope">
-                                    <th class="td-borderless" style="width:80px">
+                                    <th class="td-borderless" style="width: 80px;">
                                         <span>站点域名</span>
                                     </th>
                                     <td class="td-borderless" colspan="2">
@@ -180,7 +187,7 @@
                                     </td>
                                 </tr>
                                 <tr class="ng-scope">
-                                    <th class="td-borderless" style="width:80px">
+                                    <th class="td-borderless" style="width: 80px;">
                                         <span>FTP 信息</span>
                                     </th>
                                     <td class="td-borderless" colspan="2">
@@ -201,7 +208,7 @@
                                     </td>
                                 </tr>
                                 <tr class="ng-scope">
-                                    <th class="td-borderless" style="width:80px">
+                                    <th class="td-borderless" style="width: 80px;">
                                         <span>SVN</span>
                                     </th>
                                     <td class="td-borderless" colspan="2">
@@ -209,7 +216,7 @@
                                     </td>
                                 </tr>
                                 <tr class="ng-scope">
-                                    <th class="td-borderless" style="width:80px">
+                                    <th class="td-borderless" style="width: 80px;">
                                         <span>数据库</span>
                                     </th>
                                     <td class="td-borderless" colspan="2">
@@ -227,7 +234,7 @@
             <p>系统检测到您还未安装 HTTP 服务器。</p>
             <p>请先安装任意一款 HTTP 服务器后继续操作。</p>
             <p class="text-info">（当前仅支持 Nginx 站点的管理配置，如需管理 Apache 站点，请留意 Intranet 的新版本。<a href="#/setting/upversion">检测新版本</a>）</p>
-            <p style="padding-top:10px"><a class="btn btn-default" href="#/service?s=http">立即安装</a></p>
+            <p style="padding-top: 10px;"><a class="btn btn-default" href="#/service?s=http">立即安装</a></p>
         </div>
     </div>
 </div>
@@ -241,7 +248,7 @@
             </div>
             <div class="modal-body">
                 <h5>请选择要安装的版本</h5>
-                <table class="table table-condensed" style="width:350px">
+                <table class="table table-condensed" style="width: 350px;">
                     <thead>
                         <tr>
                             <th>版本名称</th>
