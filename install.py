@@ -140,7 +140,7 @@ class Install(object):
         # else:
         #     # or else install online
         #     print('* Downloading install package from intranet.pub')
-        #     f = urllib2.urlopen('http://api.intranet.pub/latest')
+        #     f = urllib2.urlopen('http://api.intranet.pub/?s=latest')
         #     data = f.read()
         #     f.close()
         #     downloadurl = re.search('"download":"([^"]+)"', data).group(1).replace('\/', '/')

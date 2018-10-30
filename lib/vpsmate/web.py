@@ -6,42 +6,43 @@
 # VPSMate is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-import os
-import re
+import base64
 import binascii
-import uuid
-import json
+import datetime
+import functools
 import hashlib
 import hmac
-import time
-import datetime
+import json
+import os
 import platform
+import re
 import subprocess
-import functools
-import tornado
-import tornado.web
-import tornado.httpclient
-import tornado.gen
-import tornado.ioloop
-import si
-import sc
+import time
+# import urllib2
 import user
-import file
-import fdisk
-import chkconfig
-import yum
-import utils
-import nginx
-import mysql
-import php
-import ssh
-import base64
-import pyDes
-from tornado.escape import utf8 as _u
-from tornado.escape import to_unicode as _d
-from config import Config
-from async_process import call_subprocess, callbackable
+import uuid
 
+import chkconfig
+import fdisk
+import file
+import mysql
+import nginx
+import php
+import pyDes
+import sc
+import si
+import ssh
+import tornado
+import tornado.gen
+import tornado.httpclient
+import tornado.ioloop
+import tornado.web
+import utils
+import yum
+from async_process import call_subprocess, callbackable
+from config import Config
+from tornado.escape import to_unicode as _d
+from tornado.escape import utf8 as _u
 
 SERVER_NAME = 'Intranet'
 VPSMATE_VERSION = '1.1'
@@ -363,8 +364,7 @@ class SitePackageHandler(RequestHandler):
         # fetch from api
         if not packages:
             http = tornado.httpclient.AsyncHTTPClient()
-            site_packages = self.config.get('info', 'site_packages')
-            response = yield tornado.gen.Task(http.fetch, site_packages)
+            response = yield tornado.gen.Task(http.fetch, 'http://api.intranet.pub/?s=site_packages')
             if response.error:
                 self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
                 self.finish()
@@ -372,7 +372,23 @@ class SitePackageHandler(RequestHandler):
             else:
                 packages = response.body
                 with open(packages_cachefile, 'w') as f: f.write(packages)
-        
+
+            # response = {
+            #     body: {},
+            #     error: False
+            # }
+            # try:
+            #     # f = urllib2.urlopen('http://api.intranet.pub/?s=site_packages')
+            #     # response = f.read()
+            #     # f.close()
+            #     with open(packages_cachefile, 'w') as f: f.write(packages)
+            #     packages = tornado.escape.json_decode(response)
+            #     self.write({'code': 0, 'msg':'', 'data': response})
+            #     self.finish()
+            # except:
+            #     self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
+            #     self.finish()
+            #     return
         packages = tornado.escape.json_decode(packages)
         self.write({'code': 0, 'msg':'', 'data': packages})
 
@@ -416,9 +432,8 @@ class SitePackageHandler(RequestHandler):
         filenameext = '%s%s' % (filename, package['ext'])
         filepath = os.path.join(self.settings['package_path'], filenameext)
 
-        site_packages = self.config.get('info', 'site_packages')
         self.write({'code': 0, 'msg': '', 'data': {
-            'url': '%s/download?name=%s&version=%s' % (site_packages, name, version),
+            'url': 'http://api.intranet.pub/?s=site_packages&a=download?name=%s&version=%s' % (name, version),
             'path': filepath,
             'temp': workpath,
         }})
@@ -670,8 +685,7 @@ class SettingHandler(RequestHandler):
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
                 http = tornado.httpclient.AsyncHTTPClient()
-                latest = self.config.get('info', 'latest')
-                response = yield tornado.gen.Task(http.fetch, latest)
+                response = yield tornado.gen.Task(http.fetch, 'http://api.intranet.pub/?s=latest')
                 if response.error:
                     self.write({'code': -1, 'msg': u'获取新版本信息失败！'})
                 else:
@@ -2401,8 +2415,7 @@ class BackendHandler(RequestHandler):
 
         # install the latest version
         http = tornado.httpclient.AsyncHTTPClient()
-        latest = self.config.get('info', 'latest')
-        response = yield tornado.gen.Task(http.fetch, latest)
+        response = yield tornado.gen.Task(http.fetch, 'http://api.intranet.pub/?s=latest')
         if response.error:
             self._update_job('update', -1, u'获取版本信息失败！')
             return
