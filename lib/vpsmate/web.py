@@ -122,7 +122,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 return  # token auth ok
             except:
                 pass
-        
+
         # get the cookie within 30 mins
         if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
             # regenerate the cookie timestamp per 5 mins
@@ -130,7 +130,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 self.set_secure_cookie('authed', 'yes', None)
         else:
             raise tornado.web.HTTPError(403, "Please login first")
-    
+
     def getlastactive(self):
         # get last active from cookie
         cv = self.get_cookie('authed', False)
@@ -346,6 +346,7 @@ class SitePackageHandler(RequestHandler):
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
 
+
     @tornado.web.asynchronous
     @tornado.gen.engine
     def getlist(self):
@@ -362,33 +363,18 @@ class SitePackageHandler(RequestHandler):
                 with open(packages_cachefile) as f: packages = f.read()
 
         # fetch from api
-        if not packages:
-            http = tornado.httpclient.AsyncHTTPClient()
-            response = yield tornado.gen.Task(http.fetch, 'http://api.intranet.pub/?s=site_packages')
-            if response.error:
-                self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
-                self.finish()
-                return
-            else:
-                packages = response.body
-                with open(packages_cachefile, 'w') as f: f.write(packages)
-
-            # response = {
-            #     body: {},
-            #     error: False
-            # }
-            # try:
-            #     # f = urllib2.urlopen('http://api.intranet.pub/?s=site_packages')
-            #     # response = f.read()
-            #     # f.close()
-            #     with open(packages_cachefile, 'w') as f: f.write(packages)
-            #     packages = tornado.escape.json_decode(response)
-            #     self.write({'code': 0, 'msg':'', 'data': response})
-            #     self.finish()
-            # except:
+        # if not packages:
+            # http_client = tornado.httpclient.AsyncHTTPClient()
+            # response = yield tornado.gen.Task(http_client.fetch, 'http://api.intranet.pub/?s=site_packages')
+            response = [{"name":"系统应用","packages":[{"name":"phpMyAdmin","official_site":"http://www.phpmyadmin.net","description":"描述"},{"name":"Baidu","official_site":"http://www.baidu.com","description":"描述"},{"name":"SoSo","official_site":"http://www.SoSo.com","description":"描述"}]},{"name":"博客程序","packages":[{"name":"Wordpress","official_site":"http://www.wordpress.org","description":"描述"},{"name":"Baidu","official_site":"http://www.baidu.com","description":"描述"},{"name":"SoSo","official_site":"http://www.SoSo.com","description":"描述"}]}]
+            # if response.error:
             #     self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
             #     self.finish()
             #     return
+            # else:
+            packages = json.dumps(response)
+            with open(packages_cachefile, 'w') as f: f.write(packages)
+
         packages = tornado.escape.json_decode(packages)
         self.write({'code': 0, 'msg':'', 'data': packages})
 
@@ -1122,7 +1108,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'链接 %s 创建成功！' % despath})
             else:
                 self.write({'code': -1, 'msg': u'链接 %s 创建失败！' % despath})
-        
+
         elif action == 'delete':
             paths = self.get_argument('paths', '')
             paths = paths.split(',')
@@ -1321,7 +1307,7 @@ class OperationHandler(RequestHandler):
                 setting['allow'] = ''
             else:
                 setting['allow'] = setting['deny'] = ''
-            
+
             directives = ('gzip', 'limit_rate', 'limit_conn', 'limit_conn_zone', 'limit_zone',
                     'client_max_body_size', 'keepalive_timeout', 'allow', 'deny')
             for directive in directives:
@@ -1338,7 +1324,7 @@ class OperationHandler(RequestHandler):
 
         elif action == 'setproxycachesettings':
             proxy_caches = tornado.escape.json_decode(self.get_argument('proxy_caches', ''))
-            
+
             values = []
             for cache in proxy_caches:
                 fields = []
@@ -1373,7 +1359,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'缓存计数内存大小必须是数字！'})
                     return
                 fields.append('keys_zone=%s:%sm' % (cache['name'].strip(), cache['mem']))
-                
+
                 if not cache.has_key('inactive') or not cache['inactive'].isdigit():
                     self.write({'code': -1, 'msg': u'缓存过期时间必须是数字！'})
                     return
@@ -1389,9 +1375,9 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'缓存大小限制单位错误！'})
                     return
                 fields.append('max_size=%s%s' % (cache['max_size'], cache['max_size_unit']))
-                
+
                 values.append(' '.join(fields))
-            
+
             nginx.http_set('proxy_cache_path', values)            
             self.write({'code': 0, 'msg': u'设置保存成功！'})
 
@@ -1404,7 +1390,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'站点信息读取成功！', 'data': serverinfo})
             else:
                 self.write({'code': -1, 'msg': u'站点不存在！'})
-        
+
         elif action in ('addserver', 'updateserver'):
             if action == 'updateserver':
                 old_server_ip = self.get_argument('ip', '')
@@ -1417,7 +1403,7 @@ class OperationHandler(RequestHandler):
             #import pprint
             #pp = pprint.PrettyPrinter(indent=4)
             #pp.pprint(setting)
-            
+
             # validate server name
             server_names = None
             if setting.has_key('server_names'):
@@ -1727,7 +1713,7 @@ class OperationHandler(RequestHandler):
                                         self.write({'code': -1, 'msg': u'缓存锁定时间必须为数字！'})
                                         return
                                     location['proxy_cache_lock_timeout'] = locsetting['proxy_cache_lock_timeout']
-                        
+
                     elif loc['engine'] == 'error':
                         if not locsetting.has_key('code') or not locsetting['code']:
                             self.write({'code': -1, 'msg': u'请选择错误代码！'})
@@ -1776,7 +1762,7 @@ class OperationHandler(RequestHandler):
         if action == 'updatepwd':
             newpassword = self.get_argument('newpassword', '')
             newpasswordc = self.get_argument('newpasswordc', '')
-            
+
             if newpassword != newpasswordc:
                 self.write({'code': -1, 'msg': u'两次密码输入不一致！'})
                 return
@@ -1785,13 +1771,13 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'密码设置成功！'})
             else:
                 self.write({'code': -1, 'msg': u'密码设置失败！'})
-        
+
         elif action == 'checkpwd':
             if mysql.checkpwd(_u(password)):
                 self.write({'code': 0, 'msg': u'密码验证成功！'})
             else:
                 self.write({'code': -1, 'msg': u'密码验证失败！（密码不正确，或 MySQL 服务未启动）'})
-        
+
         elif action == 'alter_database':
             dbname = self.get_argument('dbname', '')
             collation = self.get_argument('collation', '')
@@ -1803,7 +1789,7 @@ class OperationHandler(RequestHandler):
 
     def php(self):
         action = self.get_argument('action', '')
-        
+
         if action == 'getphpsettings':
             settings = php.loadconfig('php')
             self.write({'code': 0, 'msg': '', 'data': settings})
@@ -1838,11 +1824,11 @@ class OperationHandler(RequestHandler):
             if not upload_max_filesize == '' and not upload_max_filesize.isdigit():
                 self.write({'code': -1, 'msg': u'upload_max_filesize 必须为数字！'})
                 return
-            
+
             memory_limit = '%sM' % memory_limit
             post_max_size = '%sM' % post_max_size
             upload_max_filesize = '%sM' % upload_max_filesize
-            
+
             php.ini_set('short_open_tag', short_open_tag, initype='php')
             php.ini_set('expose_php', expose_php, initype='php')
             php.ini_set('max_execution_time', max_execution_time, initype='php')
