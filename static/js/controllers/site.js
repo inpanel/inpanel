@@ -27,9 +27,9 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 if (section) {
                     if (section == 'package') {
                         $scope.loadpackage(1);
-                    } else if (section && section == 'apache') {
+                    } else if (section == 'apache') {
                         $scope.loadapache(1);
-                    } else if (section && section == 'nginx') {
+                    } else if (section == 'nginx') {
                         $scope.loadnginx(1);
                     }
                 } else {
@@ -307,6 +307,7 @@ var SiteNginxCtrl = [
         }
 
         var module = 'site.nginx';
+        var tabSection = Module.getSection();
         Module.init(module, action == 'new' ? '新建站点（Nginx）' : '编辑站点（Nginx）');
         $scope.loaded = false;
         $scope.showglobaladv = false;
@@ -422,13 +423,20 @@ var SiteNginxCtrl = [
             $scope.setting.rewrite_rules = value ? global_rewrite_templates[value] : '';
         });
 
+
         // check nginx version
         $scope.load = function() {
+            console.log(tabSection);
+            if (tabSection && tabSection == 'advanced-settings') {
+                $scope.sec('advanced-settings');
+                Module.setSection('advanced-settings');
+            } else {
+                $scope.sec('basic-settings');
+                Module.setSection('basic-settings');
+            }
             // nginx version check may take too long time, so we don't want to wait for it
-            if (action == 'new')
-                $scope.loaded = true;
-            else
-                $scope.getserver();
+            if (action == 'new') $scope.loaded = true;
+            else $scope.getserver();
 
             Backend.call(
                 $scope,
