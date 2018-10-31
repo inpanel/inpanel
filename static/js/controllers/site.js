@@ -426,7 +426,6 @@ var SiteNginxCtrl = [
 
         // check nginx version
         $scope.load = function() {
-            console.log(tabSection);
             if (tabSection && tabSection == 'advanced-settings') {
                 $scope.sec('advanced-settings');
                 Module.setSection('advanced-settings');

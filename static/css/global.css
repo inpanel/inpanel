@@ -259,10 +259,6 @@ button:focus {
     margin: 0;
 }
 
-input[type="text"].input-flat {
-    height: 16px;
-}
-
 .radio.inline,
 .checkbox.inline {
     padding-top: 0;
