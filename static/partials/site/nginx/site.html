@@ -26,7 +26,7 @@
 		</ul>
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='basic-settings'" id="basic-settings">
-				<table class="table table-bordered">
+				<table class="table">
 					<tbody>
 						<tr ng-repeat="server_name in setting.server_names">
 							<th class="td-borderless" style="width:80px;"><span ng-show="$index==0">站点域名</span></th>
@@ -90,15 +90,9 @@
 														<input ng-model="location.static.root" type="text" class="form-control" placeholder="路径所访问的目录">
 														<button class="btn btn-default" ng-click="selectstaticfolder($index)"><i class="glyphicon glyphicon-folder-open"></i></button>
 														<br>
-														<label class="checkbox inline" style="margin-top:5px">
-															<input ng-model="location.static.autocreate" type="checkbox">
-															目录不存在时，自动创建目录
-														</label>
+														<label><input ng-model="location.static.autocreate" type="checkbox"> 目录不存在时，自动创建目录</label>
 														<br>
-														<label class="checkbox inline">
-															<input ng-model="location.static.autoindex" type="checkbox">
-															开启目录自动索引
-														</label>
+														<label><input ng-model="location.static.autoindex" type="checkbox"> 开启目录自动索引</label>
 													</div>
 												</div>
 											</div>
@@ -109,10 +103,7 @@
 														<input ng-model="location.fastcgi.root" type="text" class="form-control" placeholder="路径所访问的目录">
 														<button class="btn btn-default" ng-click="selectfastcgifolder($index)"><i class="glyphicon glyphicon-folder-open"></i></button>
 														<br>
-														<label class="checkbox inline" style="margin-top:5px">
-															<input ng-model="location.fastcgi.autocreate" type="checkbox">
-															目录不存在时，自动创建目录
-														</label>
+														<label><input ng-model="location.fastcgi.autocreate" type="checkbox">目录不存在时，自动创建目录</label>
 													</div>
 												</div>
 											</div>

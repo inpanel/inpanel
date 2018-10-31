@@ -382,7 +382,7 @@
                     <div class="col-sm-9">
                         <div class="checkbox">
                         <label class="control-label">
-                            <input type="checkbox" ng-model="chown_recursively">同时修改所有子目录中的项目
+                            <input type="checkbox" ng-model="chown_recursively"> 同时修改所有子目录中的项目
                         </label>
                         </div>
                     </div>
@@ -408,38 +408,26 @@
                 <form class="form-horizontal" onsubmit="return false">
                     <div class="form-group">
                         <div class="col-sm-3 control-label">
-                        <label class="control-label">所有者权限：</label>
+                            <label class="control-label">所有者权限：</label>
                         </div>
                         <div class="col-sm-9">
-                        <div class="checkbox">
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[0][0]"> 读取
-                            </label>
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[0][1]"> 写入
-                            </label>
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[0][2]"> 可执行
-                            </label>
-                        </div>
+                            <div class="checkbox">
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[0][0]"> 读取</label>
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[0][1]"> 写入</label>
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[0][2]"> 可执行</label>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="col-sm-3 control-label">
-                        <label class="control-label">所属用户组权限：</label>
+                            <label class="control-label">所属用户组权限：</label>
                         </div>
                         <div class="col-sm-9">
-                        <div class="checkbox">
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[1][0]"> 读取
-                            </label>
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[1][1]"> 写入
-                            </label>
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[1][2]"> 可执行
-                            </label>
-                        </div>
+                            <div class="checkbox">
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[1][0]"> 读取</label>
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[1][1]"> 写入</label>
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[1][2]"> 可执行</label>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -447,29 +435,21 @@
                         <label class="control-label">其他用户组权限：</label>
                         </div>
                         <div class="col-sm-9">
-                        <div class="checkbox">
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[2][0]"> 读取
-                            </label>
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[2][1]"> 写入
-                            </label>
-                            <label class="control-label inline">
-                            <input type="checkbox" ng-model="chmod_permbits[2][2]"> 可执行
-                            </label>
-                        </div>
+                            <div class="checkbox">
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[2][0]"> 读取</label>
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[2][1]"> 写入</label>
+                                <label class="control-label inline"><input type="checkbox" ng-model="chmod_permbits[2][2]"> 可执行</label>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group" ng-show="chmod_hasdir">
                         <div class="col-sm-3 control-label">
-                        <label class="control-label">递归修改：</label>
+                            <label class="control-label">递归修改：</label>
                         </div>
                         <div class="col-sm-9">
-                        <div class="checkbox">
-                            <label class="control-label">
-                            <input type="checkbox" ng-model="chmod_recursively">同时修改所有子目录中的项目
-                            </label>
-                        </div>
+                            <div class="checkbox">
+                                <label class="control-label"><input type="checkbox" ng-model="chmod_recursively"> 同时修改所有子目录中的项目</label>
+                            </div>
                         </div>
                     </div>
                 </form>
