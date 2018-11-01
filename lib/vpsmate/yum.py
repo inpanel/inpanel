@@ -189,7 +189,7 @@ yum_pkg_alias = {
     'tomcat'        : ('tomcat', ),
     'apache'        : ('httpd', ),
     'vsftpd'        : ('vsftpd', ),
-    'mysql'         : ('mysql-server', 'mysql55-server', 'mariadb', ),
+    'mysql'         : ('mysql-server', 'mysql55-server', 'mysql56u-server', 'mysql57u-server'),
     'redis'         : ('redis', ),
     'memcache'      : ('memcached', ),
     'mongodb'       : ('mongodb-server', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
@@ -226,6 +226,14 @@ yum_pkg_relatives = {
     'mysql55-server'        : {
         'mysql55-server'        : {'default': True, 'base': True},
         'mysql55'               : {'default': True, 'base': True}
+    },
+    'mysql56u-server'       : {
+        'mysql56u-server'       : {'default': True, 'base': True},
+        'mysql56u'              : {'default': True, 'base': True}
+    },
+    'mysql57u-server'       : {
+        'mysql57u-server'       : {'default': True, 'base': True},
+        'mysql57u'              : {'default': True, 'base': True}
     },
     'mariadb'               : {
         'mariadb-server'        : {'default': True, 'base': True},

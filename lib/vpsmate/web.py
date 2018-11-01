@@ -2689,7 +2689,8 @@ class BackendHandler(RequestHandler):
             cmds.append('cp -f /etc/issue.vpsmate /etc/issue')
             cmds.append('cp -f /etc/redhat-release.vpsmate /etc/redhat-release')
 
-        elif repo in ('epel', 'CentALT', 'ius'):
+        elif repo in ('epel', 'CentALT'):
+            # elif repo in ('epel', 'CentALT', 'ius'):
             # CentALT and ius depends on epel
             for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
                 cmds.append('rpm -U %s' % rpm)
@@ -2698,6 +2699,11 @@ class BackendHandler(RequestHandler):
             #     if repo in ('CentALT', 'ius'):
             #         for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
             #             cmds.append('rpm -U %s' % rpm)
+
+        elif repo == 'ius':
+            # REF: https://ius.io/GettingStarted/#install-via-automation
+            result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['ius'], shell=True)
+            if result != 0: error = True
 
         elif repo == '10gen':
             # REF: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/
