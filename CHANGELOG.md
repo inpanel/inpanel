@@ -1,6 +1,16 @@
-#### 项目正式更名为Intranet
+#### 项目正式更名为intranet (2018-11-01)
 
->  项目转移到crogram组织
+>  - 项目名称改为 intranet，并转移到 crogram 组织，便于协同开发
+>
+>  - 新增 TODOLIST 任务列表
+
+#### 项目许可文件更新 (2018-10-25)
+
+>  许可文件更新，使用 The New BSD License 许可
+
+#### Intranet 启动更新 (2017-08-14)
+
+>  以 VPSMate 为基础，二次开发的项目 Intranet 正式启动，Intranet 将一如既往的保持原来 VPSMate 的简洁与快速，希望大家喜爱和关注。
 
 #### VPSMate 已暂停更新
 
@@ -10,17 +20,17 @@
 
 > **Bug 修复：**
 >
-> - [解决“Error: No matching Packages to list”的问题。](http://bbs.vpsmate.org/read.php?tid=307)
-> - [解决软件源版本更新导致安装失败的问题。](http://bbs.vpsmate.org/read.php?tid=380)
+> - 解决“Error: No matching Packages to list”的问题。
+> - 解决软件源版本更新导致安装失败的问题。
 
 #### VPSMate v1.0 b9 (2012-12-06)
 
 > **Bug 修复：**
 >
-> - [修复文件名中存在乱码时文件列表加载失败的问题。](http://bbs.vpsmate.org/read.php?tid=267)
-> - [修复系统类型为i686时获取软件版本失败的问题。](http://bbs.vpsmate.org/read.php?tid=215)
-> - [解决安装MySQL时提示软件冲突/安装失败的问题。](http://bbs.vpsmate.org/read.php?tid=274)
-> - [解决安装软件时总是提示已有一个YUM进程正在安装的问题。](http://bbs.vpsmate.org/read.php?tid=113)
+> - 修复文件名中存在乱码时文件列表加载失败的问题。
+> - 修复系统类型为 i686 时获取软件版本失败的问题。
+> - 解决安装 MySQL 时提示软件冲突/安装失败的问题。
+> - 解决安装软件时总是提示已有一个 YUM 进程正在安装的问题。
 
 #### VPSMate v1.0 b8 (2012-11-20)
 
@@ -30,32 +40,32 @@
 >
 > **Bug 修复：**
 >
-> - [解决远程控制设置保存失败的问题。](http://bbs.vpsmate.org/read.php?tid=131)
-> - [解决phpMyAdmin无法安装的问题。](http://bbs.vpsmate.org/read.php?tid=135)
-> - [解决部分系统因lvs版本不同导致500错误的问题。](http://bbs.vpsmate.org/read.php?tid=160)
-> - [解决数据库密码修改后进入数据库管理异常的问题。](http://bbs.vpsmate.org/read.php?tid=165)
-> - 解决在数据库管理中修改root@localhost用户密码后进入数据库管理异常的问题。
-> - [解决zip文件解压或压缩时安装zip命令无响应的问题。](http://bbs.vpsmate.org/read.php?tid=146)
+> - 解决远程控制设置保存失败的问题。
+> - 解决 phpMyAdmin 无法安装的问题。
+> - 解决部分系统因lvs版本不同导致500错误的问题。
+> - 解决数据库密码修改后进入数据库管理异常的问题。
+> - 解决在数据库管理中修改 root@localhost 用户密码后进入数据库管理异常的问题。
+> - 解决zip文件解压或压缩时安装 zip 命令无响应的问题。
 > - 解决文件管理中批量删除后，再次点击批量删除时提示文件不存在的问题。
-> - [解决强制修改mysql root密码时无响应的问题。](http://bbs.vpsmate.org/read.php?tid=201)
-> - [解决 centos 5.4 下强制修改 root 密码失败的问题。](http://bbs.vpsmate.org/read.php?tid=200)
+> - 解决强制修改 mysql root 密码时无响应的问题。
+> - 解决 centos 5.4 下强制修改 root 密码失败的问题。
 >
 > **功能改进：**
 >
-> - [网站管理和文件管理增加加载提示。](http://bbs.vpsmate.org/read.php?tid=108)
+> - 网站管理和文件管理增加加载提示。
 > - 增加对软件 release 的识别管理。
-> - 消除登录超时后重登录时URL后面的s=参数串。
+> - 消除登录超时后重登录时 URL 后面的 s= 参数串。
 
 #### VPSMate v1.0 b7 (2012-11-07)
 
 > **新功能：**
 >
 > - 增加对 ssh 服务的配置，支持公钥验证方式。
-> - 增加远程管理密钥功能，以支持 [ECSMate](http://www.ecsmate.org/) 的远程管理。
+> - 增加远程管理密钥功能，以支持 ECSMate 的远程管理。
 >
 > **Bug 修复：**
 >
-> - 解决部分使用了LVM的系统进入面板首页报未知错误的问题。
+> - 解决部分使用了 LVM 的系统进入面板首页报未知错误的问题。
 
 #### VPSMate v1.0 b6 (2012-11-04)
 
@@ -67,23 +77,23 @@
 >
 > - 解决中文文件内容读取出错的问题，添加对多种字符集的支持。
 > - 解决并发写入配置文件导致部分配置丢失的问题。
-> - [解决添加只返回错误的Nginx站点后站点列表无法加载的问题。](http://bbs.vpsmate.org/read.php?tid=60)
-> - [解决Nginx黑白名单网段保存后变乱的问题。](http://bbs.vpsmate.org/read.php?tid=73)
+> - 解决添加只返回错误的 Nginx 站点后站点列表无法加载的问题。
+> - 解决 Nginx 黑白名单网段保存后变乱的问题。
 > - 解决文件名中含有中文时许多操作无响应的问题。
-> - [解决Nginx反代网站中，添加多个域名保存后，代理后端配置丢失的问题。](http://bbs.vpsmate.org/read.php?tid=86)
+> - 解决 Nginx 反代网站中，添加多个域名保存后，代理后端配置丢失的问题。
 > - 解决首页在线更新按钮点击出现无法找到页面的问题。
 > - 解决自动创建缓存区目录报错的问题。
 >
 > **功能改进：**
 >
-> - [文件保存时自动生成备份文件。](http://bbs.vpsmate.org/read.php?tid=58)
-> - [增加对Nginx跳转地址格式的检测。](http://bbs.vpsmate.org/read.php?tid=57)
+> - 文件保存时自动生成备份文件。
+> - 增加对 Nginx 跳转地址格式的检测。
 > - 文件保存时支持选择指定字符集进行保存。
 > - 优化 VPSMate 的加载提示。
-> - 优化 Nginx 站点列表、创建Nginx、用户列表、用户组列表的界面。
-> - [文件管理增加批量复制、批量剪切功能。](http://bbs.vpsmate.org/read.php?tid=74)
+> - 优化 Nginx 站点列表、创建 Nginx、用户列表、用户组列表的界面。
+> - 文件管理增加批量复制、批量剪切功能。
 > - 删除文件时，同时删除备份文件。
-> - JS压缩并合并为一个文件，加快下载和加载速度。
+> - JS 压缩并合并为一个文件，加快下载和加载速度。
 
 #### VPSMate v1.0 b5 (2012-10-31)
 
@@ -91,18 +101,18 @@
 >
 > - 解决自动创建缓存区目录报错的问题。
 > - 解决中文文件名操作失败的问题。
-> - [解决自动创建缓存区目录报错的问题。](http://bbs.vpsmate.org/read.php?tid=42)
-> - [解决时区不可识别时显示为空的问题。](http://bbs.vpsmate.org/read.php?tid=45)
-> - [解决 Nginx 版本低于 v1.1.8 时连接限制配置出错的问题。](http://bbs.vpsmate.org/read.php?tid=43)
+> - 解决自动创建缓存区目录报错的问题。
+> - 解决时区不可识别时显示为空的问题。
+> - 解决 Nginx 版本低于 v1.1.8 时连接限制配置出错的问题。
 >
 > **功能改进：**
 >
-> - [时区设置时添加快速选择常用时区功能。](http://bbs.vpsmate.org/read.php?tid=45)
+> - 时区设置时添加快速选择常用时区功能。
 > - 增加对 OpenVZ simfs 文件系统的支持。
 > - 增加对操作系统虚拟平台的识别。
 > - 改进对网络接口类型的检测，支持 OpenVZ 的 venet0:0 格式的接口。
-> - [禁用 OpenVZ 平台下的 NTPD 服务。](http://bbs.vpsmate.org/read.php?tid=47)
-> - [禁用 OpenVZ 平台下的磁盘分区功能。](http://bbs.vpsmate.org/read.php?tid=46)
+> - 禁用 OpenVZ 平台下的 NTPD 服务。
+> - 禁用 OpenVZ 平台下的磁盘分区功能。
 
 #### VPSMate v1.0 b4 (2012-10-30)
 
@@ -110,17 +120,17 @@
 >
 > - 增加对 PHP 的常用配置的支持。
 > - 增加对 PHP-FPM 常用配置的支持。
-> - [Nginx Rewrite 配置时检测文件是否存在。](http://bbs.vpsmate.org/read.php?tid=19)
-> - [增加对 Nginx 反代模式时缓存的支持。](http://bbs.vpsmate.org/read.php?tid=8)
+> - Nginx Rewrite 配置时检测文件是否存在。
+> - 增加对 Nginx 反代模式时缓存的支持。
 > - 文件管理中增加文件上传功能。
 >
 > **Bug 修复：**
 >
 > - 解决文件管理功能中，同名目录覆盖时，原目录会写入为子目录的问题。
 > - 解决中文文件名操作失败的问题。
-> - [解决 Rewrite 格式检测出错的问题。](http://bbs.vpsmate.org/read.php?tid=17)
-> - [解决修改 Nginx 配置后，配置紊乱的问题。](http://bbs.vpsmate.org/read.php?tid=9)
-> - [解决 OpenVZ 虚拟机下进入面板出错的问题。](http://bbs.vpsmate.org/read.php?tid=22)
+> - 解决 Rewrite 格式检测出错的问题。
+> - 解决修改 Nginx 配置后，配置紊乱的问题。
+> - 解决 OpenVZ 虚拟机下进入面板出错的问题。
 >
 > **功能改进：**
 >
@@ -143,8 +153,8 @@
 > **功能改进：**
 >
 > - 改进多窗口登录过期的检测。
-> - 登录和修改密码时，将密码MD5后再提交，防止密码明文泄漏，同时改用JS进行密码安全性检测。
-> - 改进多标签页模块中的URL定位，刷新后仍可保留在原来的标签页。
+> - 登录和修改密码时，将密码 MD5 后再提交，防止密码明文泄漏，同时改用 JS 进行密码安全性检测。
+> - 改进多标签页模块中的 URL 定位，刷新后仍可保留在原来的标签页。
 > - CentALT 官方的源不稳定，改用 VPSMate 的镜像。
 
 #### VPSMate v1.0 b2 (2012-10-12)
@@ -160,7 +170,7 @@
 > - VPSMate 帐户密码修改时，需要确认新密码，并将原密码放前面。
 > - MYSQL 修改密码时，也需要确认新密码，并将原密码放前面。
 > - 改进文件和目录选择器。
-> - 同时只允许一个 YUM 操作，防止后台启动过多的YUM进程。
+> - 同时只允许一个 YUM 操作，防止后台启动过多的 YUM 进程。
 > - 增加 DEMO 演示模式。
 
 #### VPSMate v1.0 b1 (2012-10-10)
