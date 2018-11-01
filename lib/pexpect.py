@@ -612,7 +612,7 @@ class spawn (object):
         child_name = os.ttyname(tty_fd)
 
         # Disconnect from controlling tty if still connected.
-        fd = os.open("/dev/tty", os.O_RDWR | os.O_NOCTTY);
+        fd = os.open("/dev/tty", os.O_RDWR | os.O_NOCTTY)
         if fd >= 0:
             os.close(fd)
 
@@ -620,7 +620,7 @@ class spawn (object):
 
         # Verify we are disconnected from controlling tty
         try:
-            fd = os.open("/dev/tty", os.O_RDWR | os.O_NOCTTY);
+            fd = os.open("/dev/tty", os.O_RDWR | os.O_NOCTTY)
             if fd >= 0:
                 os.close(fd)
                 raise ExceptionPexpect, "Error! We are not disconnected from a controlling tty."
@@ -629,7 +629,7 @@ class spawn (object):
             pass
 
         # Verify we can open child pty.
-        fd = os.open(child_name, os.O_RDWR);
+        fd = os.open(child_name, os.O_RDWR)
         if fd < 0:
             raise ExceptionPexpect, "Error! Could not open child pty, " + child_name
         else:

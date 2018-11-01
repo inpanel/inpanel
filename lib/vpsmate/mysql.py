@@ -533,7 +533,7 @@ if __name__ == '__main__':
     #pp.pprint(alter_database('admin', 'abcd', 'latin1', 'latin1_swedish_ci'))
     #pp.pprint(drop_database('admin', 'abcd'))
     #pp.pprint(rename_database('admin', 'abcd', 'test'))
-    #pp.pprint(export_database('admin', 'abcd', '/root'));
+    #pp.pprint(export_database('admin', 'abcd', '/root'))
     #pp.pprint(show_users('admin', 'abcd'))
     #pp.pprint(show_users('admin'))
     #pp.pprint(show_user_globalprivs('admin', 'ddyh', 'localhost'))

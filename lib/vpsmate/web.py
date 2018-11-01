@@ -943,7 +943,7 @@ class OperationHandler(RequestHandler):
 
             gr_name = self.get_argument('gr_name', '')
             gr_newname = self.get_argument('gr_newname', '')
-            actionstr = {'groupadd': u'添加', 'groupmod': u'修改', 'groupdel': u'删除'};
+            actionstr = {'groupadd': u'添加', 'groupmod': u'修改', 'groupdel': u'删除'}
 
             if action == 'groupmod':
                 rt = user.groupmod(_u(gr_name), _u(gr_newname))
@@ -1666,7 +1666,7 @@ class OperationHandler(RequestHandler):
                             if not locsetting.has_key('proxy_cache') or locsetting['proxy_cache'] == '':
                                 self.write({'code': -1, 'msg': u'请选择缓存区域！'})
                                 return
-                            location['proxy_cache'] = locsetting['proxy_cache'];
+                            location['proxy_cache'] = locsetting['proxy_cache']
                             if locsetting.has_key('proxy_cache_min_uses') and locsetting['proxy_cache_min_uses'] != '':
                                 if not locsetting['proxy_cache_min_uses'].isdigit():
                                     self.write({'code': -1, 'msg': u'缓存条件的次数必须为数字！'})

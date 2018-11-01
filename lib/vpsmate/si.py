@@ -126,7 +126,8 @@ class Server(object):
                 if line.startswith('cpu'):
                     fields = line.strip().split()
                     name = fields[0]
-                    if not fullstat and name != 'cpu': continue;
+                    if not fullstat and name != 'cpu':
+                        continue
                     stat = fields[1:]
                     stat = [int(i) for i in stat]
                     statall = sum(stat)
@@ -157,7 +158,7 @@ class Server(object):
             for line in f:
                 if ':' not in line: continue
                 item, value = line.split(':')
-                value = int(value.split()[0]) * 1024;
+                value = int(value.split()[0]) * 1024
                 if item == 'MemTotal':
                     mem_total = value
                 elif item == 'MemFree':

@@ -628,7 +628,7 @@ def _context_getserver(ip, port, server_name, config=None, disabled=None, getlin
         else:
             server_names = ' '.join([v for v in s['server_name']]).split()
             listens = [v.split()[0] for v in s['listen']]
-        find_listen = ip and ['%s:%s' % (ip, port)] or [port, '*:%s' % port, '0.0.0.0:%s' % port];
+        find_listen = ip and ['%s:%s' % (ip, port)] or [port, '*:%s' % port, '0.0.0.0:%s' % port]
         if server_name in server_names and any([i in listens for i in find_listen]):
             return s
     return False
@@ -1557,11 +1557,11 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             for backend in backends:
                 weight = fail_timeout = max_fails = ''
                 if balance == 'weight' and backend.has_key('weight') and backend['weight']:
-                    weight = ' weight=%s' % backend['weight'];
+                    weight = ' weight=%s' % backend['weight']
                 if backend.has_key('fail_timeout') and backend['fail_timeout']:
-                    fail_timeout = ' fail_timeout=%ss' % backend['fail_timeout'];
+                    fail_timeout = ' fail_timeout=%ss' % backend['fail_timeout']
                 if backend.has_key('max_fails') and backend['max_fails']:
-                    max_fails = ' max_fails=%s' % backend['max_fails'];
+                    max_fails = ' max_fails=%s' % backend['max_fails']
                 servercfg.append('    server %s%s%s%s;' % (backend['server'],
                             weight, fail_timeout, max_fails))
         else:
