@@ -8,7 +8,7 @@ Intranet —— 基于 VPSMate v1.0 b10 二次开发的开源 VPS 管理面板
 #### 安装
 
 ```shell
-curl -O https://raw.githubusercontent.com/doudoudzj/vpsmate/master/install.py
+curl -O https://raw.githubusercontent.com/crogram/intranet/master/install.py
 python install.py
 ```
 
