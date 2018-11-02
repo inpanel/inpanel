@@ -5,7 +5,7 @@
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
-# VPSMate is distributed under the terms of the (new) BSD License.
+# Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
 """ Install Script for Intranet """
@@ -34,7 +34,8 @@ class Install(object):
         else:
             self.dist = platform.dist()
         self.arch = platform.machine()
-        if self.arch != 'x86_64': self.arch = 'i386'
+        if self.arch != 'x86_64':
+            self.arch = 'i386'
         self.installpath = '/usr/local/vpsmate'
         self.distname = self.dist[0].lower()
         self.version = self.dist[1]
@@ -133,7 +134,7 @@ class Install(object):
         elif self.distname == 'debian':
             pass
 
-    def install_vpsmate(self):
+    def install_panel(self):
         # localpkg_found = False
         # if os.path.exists(os.path.join(os.path.dirname(__file__), 'vpsmate.tar.gz')):
         #     # local install package found
@@ -252,7 +253,7 @@ class Install(object):
 
         # get the latest Intranet version
         print('* Installing Intranet')
-        self.install_vpsmate()
+        self.install_panel()
 
         # set username and password
         print

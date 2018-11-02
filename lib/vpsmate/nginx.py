@@ -1,9 +1,10 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
+# Copyright (c) 2018, doudoudzj
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
-# VPSMate is distributed under the terms of the (new) BSD License.
+# Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
 """Package for reading and writing nginx configuration.
@@ -28,7 +29,7 @@ DIRECTIVES = {
     'master_process':               ['_'],
     'pcre_jit':                     ['_'],
     'pid':                          ['_'],
-    'ssl_engine':                   ['_'],
+    # 'ssl_engine':                   ['_'],
     'timer_resolution':             ['_'],
     'user':                         ['_'],
     'worker_cpu_affinity':          ['_'],
@@ -435,6 +436,7 @@ DIRECTIVES = {
     # REF: http://wiki.nginx.org/X-accel
     # no directive
 }
+
 # module name : can has param if act as a context
 # if False then a module name with param would considered a directive
 MODULES = {
@@ -447,10 +449,12 @@ MODULES = {
     'if':           True,
     'limit_except': True,
 }
+
 DEFAULTVALS = {
     'client_max_body_size': '1m',
     'keepalive_timeout': '75s',
 }
+
 NGINXCONF = '/etc/nginx/nginx.conf'
 SERVERCONF = '/etc/nginx/conf.d/'
 COMMENTFLAG = '#v#'
@@ -462,7 +466,8 @@ def loadconfig(conf=None, getlineinfo=False):
     if not conf: conf = NGINXCONF
     if not os.path.exists(conf): return False
     return _loadconfig(conf, getlineinfo)
-    
+
+
 def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
     """Recursively load nginx config and return a dict.
     """
@@ -484,7 +489,7 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
         context = context_stack[-1]
 
     line_buffer = []
-    
+
     with open(conf) as f:
         for line_i, line in enumerate(f):
             line = line.strip()
@@ -633,6 +638,7 @@ def _context_getserver(ip, port, server_name, config=None, disabled=None, getlin
             return s
     return False
 
+
 def _context_getupstreams(server_name, config=None, disabled=None, getlineinfo=True):
     """Get upstream list related to a server.
     """
@@ -646,7 +652,7 @@ def _context_getupstreams(server_name, config=None, disabled=None, getlineinfo=T
     else:
         upstreams = [upstream for upstream in upstreams 
             if upstream['_param'].startswith('backend_of_%s_' % server_name)]
-        
+
     if disabled == None or not getlineinfo:
         return upstreams
     else:
@@ -681,7 +687,7 @@ def _uncomment(filepath, start, end):
 
 def _delete(filepath, start, end, delete_emptyfile=True):
     """Delete some lines in the file.
-    
+
     If delete_emptyfile is set to True, then the empty file will 
     be deleted from file system.
     """
@@ -698,7 +704,7 @@ def _delete(filepath, start, end, delete_emptyfile=True):
 
 def _getcontextrange(context, config):
     """Return the range of the input context, including the file path.
-    
+
     Return format:
     [filepath, line_start, line_end]
     """
@@ -826,7 +832,7 @@ def _context_http_init_limit_conn(config=None, version=None):
                 return True
             else:
                 return False
-        
+
 
 def _context_server_clear_default_server(ip, port, config=None):
     """Clear the default_server flag at specified ip:port.
@@ -848,7 +854,7 @@ def _context_server_clear_default_server(ip, port, config=None):
 
 def _replace(positions, lines):
     """Replace the lines specified in list positions to new lines.
-    
+
     Structure of positions:
     [
         (filepath, line_start, line_count),
@@ -965,12 +971,12 @@ def _detect_engines(context):
         else:
             engines = filter(lambda a: a != 'static_alias', engines)
     return engines
-        
+
 def _isredirect(values):
     """Check if rewrite values is redirect.
     """
     return [v.split().pop() in ('redirect', 'permanent') for v in values]
-    
+
 def getservers(config=None):
     """Get servers from nginx configuration files.
 
@@ -1002,7 +1008,7 @@ def getservers(config=None):
     for s in cnfservers:
         server = {}
         server['server_names'] = ' '.join(s['server_name']).split()
-        
+
         # parse server and port, and check if is default server
         server['listens'] = []
         for listen in s['listen']:
@@ -1023,7 +1029,7 @@ def getservers(config=None):
                         'port': fs[1],
                         'default_server': default_server
                     })
-        
+
         engines = _detect_engines(s)
         engine_orders = ['static', 'fastcgi', 'scgi', 'uwsgi', 'redirect', 'proxy', 'rewrite', 'return']
         engines = [(engine_orders.index(engine), engine) for engine in engines]
@@ -1032,16 +1038,16 @@ def getservers(config=None):
             server['engines'] = zip(*engines)[1]
         else:
             server['engines'] = []
-        
+
         # check the status of this server
         if s['_disabled']:
             server['status'] = 'off'
         else:
             server['status'] = 'on'
-        
+
         servers.append(server)
     return servers
-    
+
 def http_get(directive, config=None):
     """Get directive values in http context.
     """
@@ -1061,13 +1067,13 @@ def http_getfirst(directive, config=None):
     values = http_get(directive, config)
     if values: return values[0]
     return None
-    
+
 def http_set(directive, values, config=None):
     """Set a directive in http context.
-    
+
     If directive exists, the value will be replace in place.
     If directive not exists, new directive will be created at the beginning of http context.
-    
+
     Parameter values can be a list or a string.
     If values is set to empty list or None or empty string, then the directive will be deleted.
     """
@@ -1092,7 +1098,7 @@ def http_set(directive, values, config=None):
         # so we should insert it at the beginning
         begin = hcontext['_range']['begin']
         _insert(config['_files'][begin['file']], begin['line'][0]+begin['line'][1], values)
-    
+
     config['_isdirty'] = True
 
 def disableserver(ip, port, server_name):
@@ -1380,7 +1386,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                 ip = listen.has_key('ip') and listen['ip'] or ''
                 if servername_exists(ip, listen['port'], server_name):
                     return False
-    
+
     # start generate the config string
     servercfg = ['server { # %s' % GENBY]
 
@@ -1400,7 +1406,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             servercfg.append('    listen %s%s%s;' % (port, flag_ds, flag_ssl))
         # if set to default server, we should clear the default_server flag
         if flag_ds: _context_server_clear_default_server(ip, port)
-            
+
     servercfg.append('    server_name %s;' % (' '.join(server_names)))
 
     if charset: servercfg.append('    charset %s;' % charset)
@@ -1415,11 +1421,11 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
         servercfg.append('    ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;')
         servercfg.append('    ssl_prefer_server_ciphers on;')
         servercfg.append('')
-    
+
     if index:
         servercfg.append('    index %s;' % index)
         servercfg.append('')
-    
+
     upstreams = {}
     if locations:
         urlpaths = [] # use to detect if urlpath duplicates

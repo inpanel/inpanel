@@ -5,7 +5,7 @@
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
-# VPSMate is distributed under the terms of the (new) BSD License.
+# Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
 import os
@@ -74,5 +74,6 @@ def main():
     write_pid()
     tornado.ioloop.IOLoop.instance().start()
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()
