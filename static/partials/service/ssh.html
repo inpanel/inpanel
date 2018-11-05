@@ -23,8 +23,6 @@
 				<div srvbase ng-init="name='SSH';pkg='ssh';service='sshd';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
-                <h5>基本设置</h5>
-                <hr>
 				<div class="form-horizontal form-horizontal-small">
 					<div class="form-group form-inline">
 						<label class="col-sm-2 control-label">服务端口</label>
@@ -35,13 +33,17 @@
 					<div class="form-group form-inline">
 						<label class="col-sm-2 control-label" for="newpassword">密码验证</label>
 						<div class="col-sm-10">
-							<label class="checkbox"><input ng-model="setting.enable_pwdauth" type="checkbox"> 支持使用密码进行登录验证</label>
+							<div class="checkbox">
+								<label><input ng-model="setting.enable_pwdauth" type="checkbox"> 支持使用密码进行登录验证</label>
+							</div>
 						</div>
 					</div>
 					<div class="form-group form-inline">
 						<label class="col-sm-2 control-label" for="newpasswordc">启用SFTP</label>
 						<div class="col-sm-10">
-							<label class="checkbox"><input ng-model="setting.enable_sftp" type="checkbox"> 开启 SFTP 支持</label>
+							<div class="checkbox">
+								<label><input ng-model="setting.enable_sftp" type="checkbox"> 开启 SFTP 支持</label>
+							</div>
 							<span class="help-block">开启后可通过 SFTP 工具上传/下载文件。</span>
 						</div>
 					</div>
@@ -54,8 +56,6 @@
 				</div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pubkauth'" id="pubkauth">
-                <h5>公钥验证</h5>
-                <hr>
 				<div class="alert alert-info">使用公钥验证可以加强 SSH 的安全性，防止暴力破解。</div>
 				<div class="form-horizontal form-horizontal-small">
 					<div class="form-group form-inline">
@@ -88,13 +88,17 @@
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">启用公钥验证</label>
                         <div class="col-sm-10">
-                            <label class="checkbox"><input ng-model="setting.enable_pubkauth" type="checkbox"> 支持使用公钥进行登录验证</label>
+							<div class="checkbox">
+								<label><input ng-model="setting.enable_pubkauth" type="checkbox"> 支持使用公钥进行登录验证</label>
+							</div>
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">关闭密码验证</label>
                         <div class="col-sm-10">
-                            <label class="checkbox"><input ng-model="setting.disable_pwdauth" type="checkbox"> 禁止使用密码进行登录验证（可选）</label>
+							<div class="checkbox">
+								<label><input ng-model="setting.disable_pwdauth" type="checkbox"> 禁止使用密码进行登录验证（可选）</label>
+							</div>
                         </div>
                     </div>
                     <div class="form-group form-inline">
@@ -123,47 +127,54 @@
 </div>
 
 <div id="confirm" class="modal fade">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>{{confirm_title}}</h3>
-  </div>
-  <div class="modal-body" ng-bind-html-unsafe="confirm_body">
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
-    <button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">确定</button>
-  </div>
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3>{{confirm_title}}</h3>
+			</div>
+			<div class="modal-body" ng-bind-html-unsafe="confirm_body"></div>
+			<div class="modal-footer">
+				<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+				<button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">确定</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <div id="chpasswd" class="modal fade">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>修改私钥密码</h3>
-  </div>
-  <div class="modal-body">
-    <form class="form-horizontal" onsubmit="return false">
-		<div class="control-group">
-			<label class="control-label">原密码：</label>
-			<div class="controls">
-				<input type="password" ng-model="oldpassword" placeholder="无密码请留空" />
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3>修改私钥密码</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" onsubmit="return false">
+					<div class="form-group form-inline">
+						<label class="col-sm-2 control-label">原密码</label>
+						<div class="col-sm-10">
+							<input class="form-control" type="password" ng-model="oldpassword" placeholder="无密码请留空">
+						</div>
+					</div>
+					<div class="form-group form-inline">
+						<label class="col-sm-2 control-label">新密码</label>
+						<div class="col-sm-10">
+							<input class="form-control" type="password" ng-model="newpassword" placeholder="至少5位，留空表示删除密码" />
+						</div>
+					</div>
+					<div class="form-group form-inline">
+						<label class="col-sm-2 control-label">确认密码</label>
+						<div class="col-sm-10">
+							<input class="form-control" type="password" ng-model="newpasswordc" placeholder="至少5位，留空表示删除密码"/>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+				<button class="btn btn-primary" onclick="$('#chpasswd').modal('hide')" ng-click="dochpasswd()">修改密码</button>
 			</div>
 		</div>
-		<div class="control-group">
-			<label class="control-label">新密码：</label>
-			<div class="controls">
-				<input type="password" ng-model="newpassword" placeholder="至少5位，留空表示删除密码" />
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label">确认密码：</label>
-			<div class="controls">
-				<input type="password" ng-model="newpasswordc" placeholder="至少5位，留空表示删除密码" />
-			</div>
-		</div>
-	</form>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
-    <button class="btn btn-primary" onclick="$('#chpasswd').modal('hide')" ng-click="dochpasswd()">修改密码</button>
-  </div>
+	</div>
 </div>
