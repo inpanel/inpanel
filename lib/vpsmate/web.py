@@ -1,9 +1,10 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
+# Copyright (c) 2017 - 2018, doudoudzj
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
-# VPSMate is distributed under the terms of the (new) BSD License.
+# Intranet is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
 import base64
@@ -1895,8 +1896,8 @@ class OperationHandler(RequestHandler):
             enable_pubkauth = ssh.cfg_get('PubkeyAuthentication') == 'yes'
             subsystem = ssh.cfg_get('Subsystem')
             enable_sftp = subsystem and 'sftp' in subsystem
-            pubkey_path = '/root/.ssh/sshkey_vpsmate.pub'
-            prvkey_path = '/root/.ssh/sshkey_vpsmate'
+            pubkey_path = '/root/.ssh/sshkey_intranet.pub'
+            prvkey_path = '/root/.ssh/sshkey_intranet'
             self.write({'code': 0, 'msg': '获取 SSH 服务配置信息成功！', 'data': {
                'port': port,
                'enable_pwdauth': enable_pwdauth,
@@ -2372,13 +2373,13 @@ class BackendHandler(RequestHandler):
         elif jobname == 'ssh_genkey':
             path = _u(self.get_argument('path', ''))
             password = _u(self.get_argument('password', ''))
-            if not path: path = '/root/.ssh/sshkey_vpsmate'
+            if not path: path = '/root/.ssh/sshkey_intranet'
             self._call(functools.partial(self.ssh_genkey, path, password))
         elif jobname == 'ssh_chpasswd':
             path = _u(self.get_argument('path', ''))
             oldpassword = _u(self.get_argument('oldpassword', ''))
             newpassword = _u(self.get_argument('newpassword', ''))
-            if not path: path = '/root/.ssh/sshkey_vpsmate'
+            if not path: path = '/root/.ssh/sshkey_intranet'
             self._call(functools.partial(self.ssh_chpasswd, path, oldpassword, newpassword))
         else:   # undefined job
             self.write({'code': -1, 'msg': u'未定义的操作！'})
