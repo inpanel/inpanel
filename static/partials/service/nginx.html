@@ -253,7 +253,11 @@
 				<p><button class="btn btn-primary" ng-click="savecaches()">保存设置</button></p>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
-				<div srvfile ng-init="items=[{name:'主目录', path:'/etc/nginx', isdir:true}];"></div>
+				<div srvfile ng-init="items=[
+				{name: '主目录', path: '/etc/nginx', isdir: true},
+				{name: '主配置', path: '/etc/nginx/nginx.conf', isfile: true},
+				{name: 'MIME类型', path:'/etc/nginx/mime.types', isfile: true},
+				{name:'扩展配置', path:'/etc/nginx/conf.d', isdir: true}];"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
 				<div srvlog ng-init="items=[{name:'日志目录', path:'/var/log/nginx', isdir:true}];"></div>
