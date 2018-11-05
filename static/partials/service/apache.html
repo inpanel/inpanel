@@ -24,10 +24,25 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
 				<div>
 					Apache 设置
+					<ul>
+						https://blog.csdn.net/wos1002/article/details/53820570
+						<li>监听的端口:80, Listen 80</li>
+						<li>网络管理员的电子邮件地址, ServerAdmin root@localhost</li>
+						<li>服务器主机名称,ServerName www.example.com:80</li>
+						<li>服务器主目录,DocumentRoot "/var/www/html"</li>
+						<li>默认文档，DirectoryIndex index.html index.html.var</li>
+						<li>默认字符集,AddDefaultCharset UTF-8</li>
+						<li>.htaccess文件</li>
+						<li>SSL模块</li>
+					</ul>
 				</div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
-				<div srvfile ng-init="items=[{name:'主目录', path:'/etc/httpd', isdir:true}];"></div>
+				<div srvfile ng-init="items=[
+				{name:'主目录', path:'/etc/httpd', isdir:true},
+				{name:'主配置', path:'/etc/httpd/conf/httpd.conf', isfile:true},
+				{name: 'MIME类型', path:'/etc/httpd/conf/magic', isfile: true},
+				{name:'扩展配置', path:'/etc/httpd/conf.d', isdir: true}];"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
 				<div srvlog ng-init="items=[{name:'日志目录', path:'/var/log/httpd', isdir:true}];"></div>
