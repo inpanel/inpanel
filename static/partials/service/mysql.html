@@ -22,84 +22,76 @@
 				<div srvbase ng-init="name='MySQL';pkg='mysql';service='mysqld';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='password'" id="password">
-				<table class="table table-hover table-bordered" ng-show="!forceupdate">
-					<thead>
-						<tr>
-							<th colspan="3">管理员密码设置</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr class="warning">
-							<td colspan="3" class="text-info">MySQL的管理员用户名为 root，密码可在此修改，默认密码为空。</th>
-						</tr>
-						<tr>
-							<td>
-								<form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
-									<div class="control-group" style="margin-bottom:10px;">
-										<label class="control-label" for="password">原密码：</label>
-										<div class="controls">
-											<input class="input" ng-model="root_opasswd" type="password" id="password" ng-disable="processing">
-										</div>
-									</div>
-									<div class="control-group" style="margin-bottom:10px;margin-top:5px;">
-										<label class="control-label" for="newpassword">新密码：</label>
-										<div class="controls">
-											<input class="input" ng-model="root_passwd" type="password" id="newpassword" ng-disable="processing">
-										</div>
-									</div>
-									<div class="control-group" style="margin-bottom:10px;margin-top:5px;">
-										<label class="control-label" for="newpasswordc">确认新密码：</label>
-										<div class="controls">
-											<input class="input" ng-model="root_passwdc" type="password" id="newpasswordc" ng-disable="processing">
-										</div>
-									</div>
-									<div class="control-group">
-										<div class="controls">
-											<button class="btn btn-primary" ng-click="updatepwd()" ng-disable="processing">修改密码</button>
-											<button class="btn btn-default" ng-click="forceupdate=true" ng-disable="processing">忘记原密码</button>
-										</div>
-									</div>
-								</form>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-				<table class="table table-hover table-bordered" ng-show="forceupdate">
-					<thead>
-						<tr>
-							<th colspan="3">忘记原密码</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr class="warning">
-							<td colspan="3" class="text-error">此处操作会强制修改 root 密码，在修改过程中会停止 MySQL 服务。</th>
-						</tr>
-						<tr>
-							<td>
-								<form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
-									<div class="control-group" style="margin-bottom:10px;">
-										<label class="control-label" for="password">新密码：</label>
-										<div class="controls">
-											<input class="input" ng-model="root_passwd" type="password" id="password" ng-disable="processing">
-										</div>
-									</div>
-									<div class="control-group" style="margin-bottom:10px;margin-top:5px;">
-										<label class="control-label" for="passwordc">确认新密码：</label>
-										<div class="controls">
-											<input class="input" ng-model="root_passwdc" type="password" id="passwordc" ng-disable="processing">
-										</div>
-									</div>
-									<div class="control-group">
-										<div class="controls">
-											<button class="btn btn-primary" ng-click="fupdatepwd()" ng-disable="processing">修改密码</button>
-											<button class="btn btn-default" ng-click="forceupdate=false" ng-disable="processing">返回</button>
-										</div>
-									</div>
-								</form>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+				<div class="panel panel-default" ng-show="!forceupdate">
+					<div class="panel-heading">
+						<div class="panel-title">
+							<i class="glyphicon glyphicon-user"></i>
+							<span>管理员密码设置</span>
+						</div>
+					</div>
+					<div class="panel-body">
+						<p class="alert alert-warning">MySQL 的管理员用户名为 root，密码可在此修改，默认密码为空。</p>
+						<form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
+							<div class="form-group form-inline">
+								<label class="col-sm-2 control-label" for="password">原密码</label>
+								<div class="col-sm-10">
+									<input class="form-control" ng-model="root_opasswd" type="password" id="password" ng-disable="processing" placeholder="请输入原密码">
+								</div>
+							</div>
+							<div class="form-group form-inline">
+								<label class="col-sm-2 control-label" for="newpassword">新密码</label>
+								<div class="col-sm-10">
+									<input class="form-control" ng-model="root_passwd" type="password" id="newpassword" ng-disable="processing" placeholder="请输入新密码">
+								</div>
+							</div>
+							<div class="form-group form-inline">
+								<label class="col-sm-2 control-label" for="newpasswordc">确认新密码</label>
+								<div class="col-sm-10">
+									<input class="form-control" ng-model="root_passwdc" type="password" id="newpasswordc" ng-disable="processing" placeholder="请再次输入新密码">
+								</div>
+							</div>
+							<div class="form-group form-inline">
+								<label class="col-sm-2 control-label"></label>
+								<div class="col-sm-10">
+									<button class="btn btn-primary" ng-click="updatepwd()" ng-disable="processing">修改密码</button>
+									<button class="btn btn-default" ng-click="forceupdate=true" ng-disable="processing">忘记密码</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+				<div class="panel panel-default" ng-show="forceupdate">
+					<div class="panel-heading">
+						<div class="panel-title">
+							<i class="glyphicon glyphicon-user"></i>
+							<span>重置密码</span>
+						</div>
+					</div>
+					<div class="panel-body">
+						<p class="alert alert-warning">此处操作会强制修改 root 密码，在修改过程中会停止 MySQL 服务。</p>
+						<form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
+							<div class="form-group form-inline">
+								<label class="col-sm-2 control-label" for="password">新密码</label>
+								<div class="col-sm-10">
+									<input class="form-control" ng-model="root_passwd" type="password" id="password" ng-disable="processing" placeholder="请输入新密码">
+								</div>
+							</div>
+							<div class="form-group form-inline">
+								<label class="col-sm-2 control-label" for="passwordc">确认新密码</label>
+								<div class="col-sm-10">
+									<input class="form-control" ng-model="root_passwdc" type="password" id="passwordc" ng-disable="processing" placeholder="请再次输入新密码">
+								</div>
+							</div>
+							<div class="form-group form-inline">
+								<label class="col-sm-2 control-label"></label>
+								<div class="col-sm-10">
+									<button class="btn btn-primary" ng-click="fupdatepwd()" ng-disable="processing">确认重置</button>
+									<button class="btn btn-default" ng-click="forceupdate=false" ng-disable="processing">取 消</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
 				<div srvfile ng-init="items=[{name:'主配置', path:'/etc/my.cnf', isfile:true}];"></div>
