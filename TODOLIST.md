@@ -2,7 +2,7 @@
 
 > 不分先后顺序，依照休息时间，还有各功能上的关联进行开发
 
-- [ ] 优化：前端界面及JS、Bootstrap、jQuery等
+- [x] 优化：前端界面及JS、Bootstrap、jQuery等
 - [ ] 兼容：Python 2.x、3.x
 - [ ] 优化：升级、服务器名称
 - [ ] 新增：Apache 站点管理
