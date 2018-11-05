@@ -232,11 +232,7 @@ button:focus {
 }
 
 .form-horizontal-small .control-label {
-    width: 100px;
-}
-
-.form-horizontal-small .controls {
-    margin-left: 120px;
+    width: 116px;
 }
 
 .form-horizontal .control-group-mini {
@@ -245,10 +241,6 @@ button:focus {
 
 .control-group-mini .control-label {
     width: 60px;
-}
-
-.control-group-mini .controls {
-    margin-left: 75px;
 }
 
 .navbar {
@@ -261,11 +253,6 @@ button:focus {
 
 .radio.inline,
 .checkbox.inline {
-    padding-top: 0;
-}
-
-.controls>.radio:first-child,
-.controls>.checkbox:first-child {
     padding-top: 0;
 }
 

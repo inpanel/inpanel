@@ -1,9 +1,10 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
+# Copyright (c) 2017 - 2018, doudoudzj
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
-# VPSMate is distributed under the terms of the (new) BSD License.
+# Intranet is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
 """Package for ssh operations.
@@ -208,6 +209,6 @@ if __name__ == '__main__':
     #print cfg_set('Protocol', '2', commented=False)
     #print cfg_set('Subsystem', 'sftp\t/usr/libexec/openssh/sftp-server', commented=True)
     
-    #print genkey('/root/.ssh/sshkey_vpsmate')
-    #print chpasswd('/root/.ssh/sshkey_vpsmate', '', 'aaaaaa')
+    #print genkey('/root/.ssh/sshkey_intranet')
+    #print chpasswd('/root/.ssh/sshkey_intranet', '', 'aaaaaa')
     
