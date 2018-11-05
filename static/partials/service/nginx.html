@@ -23,7 +23,7 @@
 				<div srvbase ng-init="name='Nginx';pkg='nginx';service='nginx';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
-				<table class="table table-borderless table-hover" style="width: 400px;">
+				<table class="table table-borderless" style="width: 400px;">
 					<thead>
 						<tr>
 							<th colspan="2">连接/传输设置</th>
@@ -71,7 +71,7 @@
 							<td>
 								<div class="input-group">
 									<input class="form-control" type="text" ng-model="setting.keepalive_timeout" placeholder="不限制">
-									<span class="input-group-addon">MB</span>
+									<span class="input-group-addon">秒</span>
 								</div>
 							</td>
 						</tr>
