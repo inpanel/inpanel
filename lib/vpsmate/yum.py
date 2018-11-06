@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017 - 2018, doudoudzj
-# Copyright (c) 2012, VPSMate development team
+# Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
 # Intranet is distributed under the terms of The New BSD License.
@@ -9,7 +9,7 @@
 
 
 # repository list that YUM support
-yum_repolist = ('base', 'updates', 'epel', 'CentALT', 'ius', 'atomic', '10gen')
+yum_repolist = ('base', 'updates', 'epel', 'CentALT', 'ius', 'atomic', '10gen', 'mariadb')
 
 yum_reporpms = {
     'base': {
@@ -153,33 +153,41 @@ yum_reporpms = {
         }
     }
 
+# REF: http://www.atomicorp.com/channels/atomic
+# REF: https://ius.io/GettingStarted/#install-via-automation
 yum_repoinstallcmds = {
-    # REF: http://www.atomicorp.com/channels/atomic/
     'atomic': 'wget -q -O - http://www.atomicorp.com/installers/atomic | sed \'/check_input "Do you agree to these terms?/d\' | sh',
-    'ius': 'wget -q -O -  https://setup.ius.io | sh' # REF: https://ius.io/GettingStarted/#install-via-automation
+    'ius': 'wget -q -O -  https://setup.ius.io | sh'
 }
 
 yum_repostr = {
-    #     'CentALT': {
-    #         6: {
-    #             'x86_64': '[CentALT]\n\
-    # name=CentALT Packages for Enterprise Linux 6 - $basearch\n\
-    # baseurl=http://mirror.neu.edu.cn/CentALT/6/x86_64/$basearch/\n\
-    # enabled=1\n\
-    # gpgcheck=0'
-    #         }
-    #     },
     '10gen': {
         'x86_64': '[10gen]\n\
 name=10gen Repository\n\
-baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/RPMS\n\
+baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/\n\
 gpgcheck=0\n\
 enabled=1',
         'i686': '[10gen]\n\
 name=10gen Repository\n\
-baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/i686/RPMS\n\
+baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/i686/\n\
 gpgcheck=0\n\
 enabled=1',
+    },
+    'mariadb': {
+        'x86_64': '# MariaDB 10.3 CentOS repository list - created 2018-11-06 02:58 UTC\n\
+# http://downloads.mariadb.org/mariadb/repositories\n\
+[mariadb]\n\
+name=MariaDB\n\
+baseurl=http://yum.mariadb.org/10.3/centos6-amd64\n\
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB\n\
+gpgcheck=1',
+        'i686': '# MariaDB 10.3 CentOS repository list - created 2018-11-06 02:58 UTC\n\
+# http://downloads.mariadb.org/mariadb/repositories\n\
+[mariadb]\n\
+name=MariaDB\n\
+baseurl=http://yum.mariadb.org/10.3/centos6-x86\n\
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB\n\
+gpgcheck=1',
     },
 }
 
@@ -190,6 +198,7 @@ yum_pkg_alias = {
     'apache'        : ('httpd', ),
     'vsftpd'        : ('vsftpd', ),
     'mysql'         : ('mysql-server', 'mysql55-server', 'mysql56u-server', 'mysql57u-server'),
+    'mariadb'       : ('mariadb-server', 'mariadb-client'),
     'redis'         : ('redis', ),
     'memcache'      : ('memcached', ),
     'mongodb'       : ('mongodb-server', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
@@ -237,7 +246,14 @@ yum_pkg_relatives = {
     },
     'mariadb'               : {
         'mariadb-server'        : {'default': True, 'base': True},
-        'mariadb'               : {'default': True, 'base': True}
+        'mariadb-client'        : {'default': True, 'base': True},
+        'mariadb-common'        : {'default': True, 'base': True},
+        'mariadb-compat'        : {'default': True, 'base': True},
+        'mariadb-connect-engine': {'default': True, 'base': True},
+        'mariadb-devel'         : {'default': True, 'base': True},
+        'mariadb-gssapi-server' : {'default': True, 'base': True},
+        'mariadb-oqgraph-engine': {'default': True, 'base': True},
+        'mariadb-shared'        : {'default': True, 'base': True}
     },
     'redis'                 : {
         'redis'                 : {'default': True, 'base': True}

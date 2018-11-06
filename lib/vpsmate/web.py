@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017 - 2018, doudoudzj
-# Copyright (c) 2012, VPSMate development team
+# Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
 # Intranet is distributed under the terms of The New BSD License.
@@ -2711,6 +2711,11 @@ class BackendHandler(RequestHandler):
             with open('/etc/yum.repos.d/10gen.repo', 'w') as f:
                 f.write(yum.yum_repostr['10gen'][self.settings['arch']])
 
+        elif repo == 'mariadb':
+            # MariaDB Repositories REF: http://downloads.mariadb.org/mariadb/repositories
+            with open('/etc/yum.repos.d/mariadb.repo', 'w') as f:
+                f.write(yum.yum_repostr['mariadb'][self.settings['arch']])
+
         elif repo == 'atomic' and dist_verint < 7:
             # REF: http://www.atomicorp.com/channels/atomic/
             result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['atomic'], shell=True)
@@ -2722,7 +2727,7 @@ class BackendHandler(RequestHandler):
             if result !=0 and not 'already installed' in output:
                 error = True
                 break
-        
+
         # CentALT doesn't have any mirror, we have make a mirror for it
         if repo == 'CentALT':
             repofile = '/etc/yum.repos.d/centalt.repo'
@@ -2841,7 +2846,7 @@ class BackendHandler(RequestHandler):
                 pkgs = ['%s.%s' % (p, self.settings['arch'])
                     for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
         repos = [repo, ]
-        if repo in ('CentALT', 'ius', 'atomic', '10gen'):
+        if repo in ('CentALT', 'ius', 'atomic', '10gen', 'mariadb'):
             repos.extend(['base', 'updates', 'epel'])
         exclude_repos = [r for r in yum.yum_repolist if r not in repos]
 

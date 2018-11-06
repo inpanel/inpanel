@@ -355,6 +355,92 @@ var ServiceMySQLCtrl = [
     }
 ];
 
+var ServiceMariaDBCtrl = [
+    '$scope', '$rootScope', '$routeParams', 'Module', 'Message', 'Request', 'Backend',
+    function($scope, $rootScope, $routeParams, Module, Message, Request, Backend) {
+        var module = 'service.mariadb';
+        Module.init(module, 'MariaDB');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.processing = false;
+
+        $scope.checkInstalled = function() {
+            $scope.checking = true;
+            Request.get('/query/service.mariadb', function(data) {
+                var info = data['service.mariadb'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+
+        $scope.updatepwd = function() {
+            if ($scope.status != 'running') {
+                Message.setError('MariaDB 还未启动，无法修改密码！');
+                return;
+            }
+            $scope.processing = true;
+            Request.post('/operation/mariadb', {
+                'action': 'updatepwd',
+                'newpassword': $scope.root_passwd,
+                'newpasswordc': $scope.root_passwdc,
+                'password': $scope.root_opasswd
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.root_passwd = '';
+                    $scope.root_passwdc = '';
+                    $scope.root_opasswd = '';
+                    // reset cached mariadb password
+                    $rootScope.$mariadb = {
+                        'password': '',
+                        'password_validated': false
+                    };
+                }
+                $scope.processing = false;
+            });
+        };
+
+        $scope.fupdatepwd = function() {
+            $scope.processing = true;
+            Backend.call(
+                $scope,
+                module,
+                '/backend/mysql_fupdatepwd',
+                '/backend/mysql_fupdatepwd', {
+                    'password': $scope.root_passwd,
+                    'passwordc': $scope.root_passwdc
+                },
+                function(data) {
+                    if (data.code == 0) {
+                        $scope.root_passwd = '';
+                        $scope.root_passwdc = '';
+                        // reset cached mysql password
+                        $rootScope.$mariadb = {
+                            'password': '',
+                            'password_validated': false
+                        };
+                    }
+                    $scope.processing = false;
+                }
+            );
+        };
+    }
+];
+
 var ServiceRedisCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function($scope, $routeParams, Module, Request) {
