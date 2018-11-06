@@ -31,6 +31,7 @@ config(['$routeProvider', function($routeProvider) {
     when('/file/trash', _r('file/trash', FileTrashCtrl)).
     when('/site', _r('site/index', SiteCtrl)).
     when('/site/nginx/:section', _r('site/nginx/site', SiteNginxCtrl)).
+    when('/site/apache/:section', _r('site/apache/site', SiteApacheCtrl)).
     when('/database', _r('database/index', DatabaseCtrl)).
     when('/database/mysql/db/new', _r('database/mysql/dbnew', DatabaseMySQLNewDBCtrl)).
     when('/database/mysql/db/edit/:section', _r('database/mysql/dbedit', DatabaseMySQLEditDBCtrl)).

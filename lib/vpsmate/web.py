@@ -28,6 +28,7 @@ import fdisk
 import file
 import mysql
 import nginx
+import apache
 import php
 import pyDes
 import sc
@@ -1166,7 +1167,28 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'已删除 %s！' % _d(info['name'])})
             else:
                 self.write({'code': -1, 'msg': u'删除失败！'})
-    
+
+    def apache(self):
+        action = self.get_argument('action', '')
+        if action == 'getservers':
+            sites = apache.getservers()
+            self.write({'code': 0, 'msg': '', 'data': sites})
+
+        elif action in ('enableserver', 'disableserver', 'deleteserver'):
+            ip = self.get_argument('ip', '')
+            port = self.get_argument('port', '')
+            server_name = self.get_argument('server_name', '')
+            handler = getattr(apache, action)
+            opstr = {
+                'enableserver': u'启用',
+                'disableserver': u'停用',
+                'deleteserver': u'删除',
+            }
+            if handler(ip, port, server_name):
+                self.write({'code': 0, 'msg': u'站点 %s %s成功！' % (server_name, opstr[action])})
+            else:
+                self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (server_name, opstr[action])})
+
     def nginx(self):
         action = self.get_argument('action', '')
 

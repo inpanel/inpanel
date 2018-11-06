@@ -83,11 +83,14 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none" id="apache">
-                <div class="pull-left"><h5>Apache 网站列表</h5></div>
-                <div class="pull-right">
+                <div class="well" ng-show="apacheloading">
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载站点列表，请稍候...
+                </div>
+                <div class="pull-left" ng-show="!apacheloading"><h5>Apache 网站列表</h5></div>
+                <div class="pull-right" ng-show="!apacheloading">
                     <a class="btn btn-default btn-sm" href="#/site/apache/new"><i class="glyphicon glyphicon-plus"></i> 添加站点</a>
                 </div>
-                <table class="table table-hover table-bordered">
+                <table class="table table-hover table-bordered" ng-show="!apacheloading">
                     <thead>
                         <tr>
                             <th style="width: 20px;" class="text-right">#</th>
