@@ -1,10 +1,10 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017 - 2018, doudoudzj
 # Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
-# Intranet is distributed under the terms of the (new) BSD License.
+# Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
 import os
@@ -17,12 +17,13 @@ if __name__ == '__main__':
 from filelock import FileLock
 from ConfigParser import ConfigParser
 
+
 class Config(object):
-    
+
     def __init__(self, inifile='data/config.ini'):
         self.inifile = inifile
         self.cfg = ConfigParser()
-        
+
         with FileLock(self.inifile):
             if os.path.exists(inifile):
                 self.cfg.read(inifile)
@@ -62,43 +63,46 @@ class Config(object):
                     if not self.cfg.has_option(sec, opt):
                         self.cfg.set(sec, opt, val)
                         needupdate = True
-            
+
             # update ini file
-            if needupdate: self.update(False)
-    
+            if needupdate:
+                self.update(False)
+
     def update(self, lock=True):
         if lock:
             flock = FileLock(self.inifile)
             flock.acquire()
-        
+
         try:
             inifp = open(self.inifile, 'w')
             self.cfg.write(inifp)
             inifp.close()
-            if lock: flock.release()
+            if lock:
+                flock.release()
             return True
         except:
-            if lock: flock.release()
+            if lock:
+                flock.release()
             return False
-    
+
     def has_option(self, section, option):
         return self.cfg.has_option(section, option)
-    
+
     def get(self, section, option):
         return self.cfg.get(section, option)
-    
+
     def getboolean(self, section, option):
         return self.cfg.getboolean(section, option)
-    
+
     def getint(self, section, option):
         return self.cfg.getint(section, option)
-    
+
     def has_section(self, section):
         return self.cfg.has_section(section)
-    
+
     def add_section(self, section):
         return self.cfg.add_section(section)
-    
+
     def remove_option(self, section):
         return self.cfg.remove_option(section)
 
