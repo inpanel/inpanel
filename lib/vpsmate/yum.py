@@ -198,7 +198,7 @@ yum_pkg_alias = {
     'apache'        : ('httpd', ),
     'vsftpd'        : ('vsftpd', ),
     'mysql'         : ('mysql-server', 'mysql55-server', 'mysql56u-server', 'mysql57u-server'),
-    'mariadb'       : ('mariadb-server', 'mariadb-client'),
+    'mariadb'       : ('MariaDB-server'),
     'redis'         : ('redis', ),
     'memcache'      : ('memcached', ),
     'mongodb'       : ('mongodb-server', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
@@ -244,16 +244,16 @@ yum_pkg_relatives = {
         'mysql57u-server'       : {'default': True, 'base': True},
         'mysql57u'              : {'default': True, 'base': True}
     },
-    'mariadb'               : {
-        'mariadb-server'        : {'default': True, 'base': True},
-        'mariadb-client'        : {'default': True, 'base': True},
-        'mariadb-common'        : {'default': True, 'base': True},
-        'mariadb-compat'        : {'default': True, 'base': True},
-        'mariadb-connect-engine': {'default': True, 'base': True},
-        'mariadb-devel'         : {'default': True, 'base': True},
-        'mariadb-gssapi-server' : {'default': True, 'base': True},
-        'mariadb-oqgraph-engine': {'default': True, 'base': True},
-        'mariadb-shared'        : {'default': True, 'base': True}
+    'MariaDB-server'        : {
+        'MariaDB-server'        : {'default': True, 'base': True},
+        'MariaDB-client'        : {'default': True, 'base': True},
+        'MariaDB-common'        : {'default': True, 'base': True},
+        'MariaDB-compat'        : {'default': True, 'base': True},
+        'MariaDB-connect-engine': {'default': True, 'base': True},
+        'MariaDB-devel'         : {'default': True, 'base': True},
+        'MariaDB-gssapi-server' : {'default': True, 'base': True},
+        'MariaDB-oqgraph-engine': {'default': True, 'base': True},
+        'MariaDB-shared'        : {'default': True, 'base': True}
     },
     'redis'                 : {
         'redis'                 : {'default': True, 'base': True}
