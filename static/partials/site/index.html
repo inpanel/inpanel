@@ -109,19 +109,19 @@
                             <td class="text-right">{{$index+1}}</td>
                             <td ng-bind-html-unsafe="server.status | site.status"></td>
                             <td>
-                                <span ng-repeat="server_name in server.server_names">
-                                <a href="http{{'s' | iftrue:server.listens[0].port=='443'}}://{{server_name}}" target="_blank" ng-show="server_name!='_'">{{server_name}}</a>
-                                <span ng-show="server_name=='_'">任意域名</span>
-                                <br>
-                                </span>
+                                <!-- <span ng-repeat="server_name in server.IP"> -->
+                                <a href="http{{'s' | iftrue:server.Port=='443'}}://{{server.IP}}" target="_blank" ng-show="server_name!='_'">{{server.IP}}</a>
+                                <!-- <span ng-show="server_name=='_'">任意域名</span> -->
+                                <!-- <br>
+                                </span> -->
                             </td>
                             <td>
-                                <span ng-repeat="listen in server.listens">
-                                {{listen.ip}}:{{listen.port}}
-                                <span ng-show="listen.port==443||listen.port==80">({{listen.port | site.port}})</span>
+                                <!-- <span ng-repeat="listen in server.listens"> -->
+                                {{server.IP}}:{{server.Port}}
+                                <span ng-show="server.Port==443||server.Port==80">({{server.Port}})</span>
                                 <span ng-show="listen.default_server">(默认)</span>
-                                <br>
-                                </span>
+                                <!-- <br>
+                                </span> -->
                             </td>
                             <td>
                                 <span ng-repeat="engine in server.engines">{{engine | site.engine}}<span ng-show="$index<server.engines.length-1">+</span></span>
