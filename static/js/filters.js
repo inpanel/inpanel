@@ -138,6 +138,13 @@ filter('user.lock', function() {
             '<span class="label label-success">正常</span>';
     };
 }).
+filter('process.status', function() {
+    return function(input) {
+        return input ?
+            '<span class="label label-default">锁定</span>' :
+            '<span class="label label-success">运行中</span>';
+    };
+}).
 filter('site.status', function() {
     return function(input) {
         return input == 'on' ?

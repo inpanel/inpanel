@@ -47,6 +47,7 @@ def main():
         (r'/logout', vpsmate.web.LogoutHandler),
         (r'/query/(.+)', vpsmate.web.QueryHandler),
         (r'/utils/network/(.+?)(?:/(.+))?', vpsmate.web.UtilsNetworkHandler),
+        (r'/utils/process/(.+?)(?:/(.+))?', vpsmate.web.UtilsProcessHandler),
         (r'/utils/time/(.+?)(?:/(.+))?', vpsmate.web.UtilsTimeHandler),
         (r'/setting/(.+)', vpsmate.web.SettingHandler),
         (r'/operation/(.+)', vpsmate.web.OperationHandler),

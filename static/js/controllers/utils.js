@@ -185,6 +185,30 @@ var UtilsUserCtrl = [
     }
 ];
 
+var UtilsProcessCtrl = [
+    '$scope', '$routeParams', 'Module', 'Timeout', 'Request',
+    function ($scope, $routeParams, Module, Timeout, Request) {
+        var module = 'utils.process';
+        Module.init(module, '进程管理');
+        Module.initSection('list');
+        $scope.loaded = true;
+        $scope.process = null;
+        $scope.loaded = false;
+
+        $scope.loadInfo = function () {
+            Request.get('/utils/process/list', function (data) {
+                if ($scope.process == null) {
+                    $scope.process = data;
+                    if (!$scope.loaded) $scope.loaded = true;
+                } else {
+                    deepUpdate($scope.process, data);
+                }
+                Timeout($scope.loadInfo, 1000, module);
+            });
+        };
+    }
+]
+
 var UtilsNetworkCtrl = [
     '$scope', '$routeParams', 'Module', 'Timeout', 'Message', 'Request',
     function($scope, $routeParams, Module, Timeout, Message, Request) {

@@ -41,6 +41,7 @@ config(['$routeProvider', function($routeProvider) {
     when('/task', _r('task', TaskCtrl)).
     when('/utils', _r('utils/index', UtilsCtrl)).
     when('/utils/user', _r('utils/user', UtilsUserCtrl)).
+    when('/utils/process', _r('utils/process', UtilsProcessCtrl)).
     when('/utils/network', _r('utils/network', UtilsNetworkCtrl)).
     when('/utils/time', _r('utils/time', UtilsTimeCtrl)).
     when('/utils/partition', _r('utils/partition', UtilsPartitionCtrl)).

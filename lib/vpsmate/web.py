@@ -34,6 +34,7 @@ import pyDes
 import sc
 import si
 import ssh
+import proc
 import tornado
 import tornado.gen
 import tornado.httpclient
@@ -611,6 +612,14 @@ class UtilsNetworkHandler(RequestHandler):
             else:
                 self.write({'code': -1, 'msg': u'DNS设置保存失败！'})
 
+
+class UtilsProcessHandler(RequestHandler):
+    """Handler for load process list.
+    """
+    def get(self, sec, region=None):
+        self.authed()
+        if sec == 'list':
+            self.write(proc.get_process_list())
 
 class UtilsTimeHandler(RequestHandler):
     """Handler for system datetime setting.
