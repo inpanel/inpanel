@@ -1189,6 +1189,91 @@ class OperationHandler(RequestHandler):
             else:
                 self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (server_name, opstr[action])})
 
+
+        elif action == 'gethttpsettings':
+            items = self.get_argument('items', '')
+            items = items.split(',')
+
+            # if 'limit_conn_zone' in items:
+            #     items.append('limit_zone') # version < 1.1.8
+
+            # data = {}
+            config = apache.loadconfig()
+            # for item in items:
+                #     if item.endswith('[]'):
+                #         item = item[:-2]
+                #         returnlist = True
+                #         values = apache.http_get(_u(item), config)
+                #     else:
+                #         returnlist = False
+                #         values = [apache.http_getfirst(_u(item), config)]
+                    
+                #     if values:
+                #         if item == 'gzip':
+                #             # eg. gzip off
+                #             values = [v=='on' for v in values if v]
+                #         elif item == 'limit_rate':
+                #             # eg. limit_rate 100k
+                #             values = [v.replace('k', '') for v in values if v]
+                #         elif item == 'limit_conn':
+                #             # eg. limit_conn  one  1
+                #             values = [v.split()[-1] for v in values if v]
+                #         elif item == 'limit_conn_zone':
+                #             # eg. limit_conn_zone $binary_remote_addr  zone=addr:10m
+                #             values = [v.split(':')[-1].replace('m', '') for v in values if v]
+                #         elif item == 'limit_zone': # version < 1.1.8
+                #             # eg. limit_zone addr $binary_remote_addr 10m
+                #             values = [v.split()[-1].replace('m', '') for v in values if v]
+                #         elif item == 'client_max_body_size':
+                #             # eg. client_max_body_size 1m
+                #             values = [v.replace('m', '') for v in values if v]
+                #         elif item == 'keepalive_timeout':
+                #             # eg. keepalive_timeout 75s
+                #             values = [v.replace('s', '') for v in values if v]
+                #         elif item == 'allow':
+                #             # allow all
+                #             values = [v for v in values if v and v!='all']
+                #         elif item == 'deny':
+                #             # deny all
+                #             values = [v for v in values if v and v!='all']
+                #         elif item == 'proxy_cache_path':
+                #             # eg. levels=1:2 keys_zone=newcache:10m inactive=10m max_size=100m
+                #             result = []
+                #             for v in values:
+                #                 info = {}
+                #                 fields = v.split()
+                #                 info['path'] = fields[0]
+                #                 for field in fields[1:]:
+                #                     key, value = field.split('=', 1)
+                #                     if key == 'levels':
+                #                         levels = value.split(':')
+                #                         info['path_level_1'] = levels[0]
+                #                         if len(levels) > 1: info['path_level_2'] = levels[1]
+                #                         if len(levels) > 2: info['path_level_3'] = levels[2]
+                #                     elif key == 'keys_zone':
+                #                         t = value.split(':')
+                #                         info['name'] = t[0]
+                #                         if len(t) > 1: info['mem'] = t[1].replace('m', '')
+                #                     elif key == 'inactive':
+                #                         info['inactive'] = value[:-1]
+                #                         info['inactive_unit'] = value[-1]
+                #                     elif key == 'max_size':
+                #                         info['max_size'] = value[:-1]
+                #                         info['max_size_unit'] = value[-1]
+                #                 result.append(info)
+                #             values = result
+
+                #     if item == 'limit_zone':
+                #         item = 'limit_conn_zone' # version < 1.1.8
+
+                #     if returnlist:
+                #         data[item] = values
+                #     else:
+                #         data[item] = values and values[0] or ''
+            # data = config
+            self.write({'code': 0, 'msg': '', 'data': config})
+
+
     def nginx(self):
         action = self.get_argument('action', '')
 
