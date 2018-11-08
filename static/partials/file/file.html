@@ -6,12 +6,12 @@
 		<h3>文件管理</h3>
 	</div>
 
-	<div ng-init="load()" id="list">
+	<div ng-init="load()" id="list" class="file-list">
 		<div class="row padding-bottom">
 			<div class="col-md-8 col-sm-9 col-xs-9">
                 <form onsubmit="return false;" ng-submit="listdir()">
                     <div class="input-group input-group-sm">
-                        <span class="input-group-addon">当前目录：</span>
+                        <span class="input-group-addon">当前目录</span>
                         <input class="form-control" type="text" ng-model="path">
                         <div class="input-group-btn">
                         <button class="btn btn-default btn-sm" type="submit" title="刷新"><span class="glyphicon glyphicon-refresh"></span>
@@ -21,7 +21,7 @@
                 </form>
 			</div>
 			<div class="col-md-4 col-sm-3 col-xs-3">
-                <a class="btn btn-danger btn-sm pull-right" href="#/file/trash">
+                <a class="btn btn-default btn-sm pull-right" href="#/file/trash">
                     <span class="glyphicon glyphicon-trash"></span> 回收站
                 </a>
 			</div>

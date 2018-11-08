@@ -9,7 +9,10 @@
 	<!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
 	<div class="panel panel-warning" ng-show="!$mysql.password_validated">
 		<div class="panel-heading">
-			<h3 class="panel-title">请输入数据库管理员 root 的密码</h3>
+            <div class="panel-title">
+                <i class="glyphicon glyphicon-lock"></i>
+                <span> 请输入数据库管理员 root 的密码</span>
+            </div>
 		</div>
 		<div class="panel-body">
 			<form class="form-horizontal" onsubmit="return false" method="get" action="/">
@@ -48,7 +51,8 @@
                 <div class="panel panel-default" ng-show="!userloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-user"> 有权限访问该数据库的用户</span>
+                            <i class="glyphicon glyphicon-user"></i>
+                            <span> 有权限访问该数据库的用户</span>
                             <div class="pull-right">
                                 <a class="btn btn-default btn-xs" href="#/database/mysql/user/new?dbname={{dbname}}"><i class="icon-plus"></i> 添加新用户</a>
                             </div>
@@ -93,7 +97,8 @@
                 <div class="panel panel-default" ng-show="!dbloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-font"> 字符编码设置</span>
+                            <i class="glyphicon glyphicon-font"></i>
+                            <span> 字符编码设置</span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -384,7 +389,8 @@
                 <div class="panel panel-default" ng-show="!dbloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-edit"> 数据库改名</span>
+                            <i class="glyphicon glyphicon-edit"></i>
+                            <span> 数据库改名</span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -398,7 +404,8 @@
                 <div class="panel panel-default" ng-show="!dbloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-export"> 数据库导出</span>
+                            <i class="glyphicon glyphicon-export"></i>
+                            <span> 数据库导出</span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -419,7 +426,8 @@
                 <div class="panel panel-danger" ng-show="!dbloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-trash"> 删除数据库</span>
+                            <i class="glyphicon glyphicon-trash"></i>
+                            <span> 删除数据库</span>
                         </div>
                     </div>
                     <div class="panel-body">

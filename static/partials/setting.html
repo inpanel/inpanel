@@ -129,9 +129,13 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='restart'" id="restart" ng-init="restartService()">
 				<div class="panel panel-danger">
 					<div class="panel-heading">
-						<h3 class="panel-title" ng-bind-html-unsafe="restartMessage"></h3>
+						<div class="panel-title">
+							<i class="glyphicon glyphicon-refresh"></i>
+							<span> 重启服务</span>
+						</div>
 					</div>
 					<div class="panel-body">
+						<p ng-bind-html-unsafe="restartMessage"></p>
 						<button class="btn btn-default" ng-show="showRestartBtn" ng-click="restart()" ng-disabled="processing">确定并重启服务</button>
 					</div>
 				</div>

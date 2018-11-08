@@ -4,9 +4,19 @@ body {
     padding: 0;
 }
 
-/* #main {
-    padding: 0 15px;
-} */
+a.black,
+a.black:hover,
+a.black:active,
+a.black:visited {
+    color: black;
+}
+
+input,
+input:focus,
+select:focus,
+button:focus {
+    outline: none !important;
+}
 
 /* Sticky footer styles
   -------------------------------------------------- */
@@ -42,28 +52,24 @@ body {
     margin-bottom: 30px;
 }
 
-a.black,
-a.black:hover,
-a.black:active,
-a.black:visited {
-    color: black;
-}
-
-input,
-input:focus,
-select:focus,
-button:focus {
-    outline: none !important;
-}
-
 .padding-bottom {
     padding-bottom: 10px;
 }
 
-/* table & widget */
+.navbar {
+    margin-top: 20px;
+}
 
-.widget .table td {
-    vertical-align: middle;
+/* table */
+
+.tabbable .tab-pane {
+    margin-top: 10px;
+}
+
+.file-list .breadcrumb {
+    background: none;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
 }
 
 .table-bordered thead tr th {
@@ -72,128 +78,6 @@ button:focus {
     color: #444;
     text-transform: uppercase;
     border-bottom-width: 1px;
-}
-
-.widget {
-    position: relative;
-    clear: both;
-    width: auto;
-    margin-bottom: 2em;
-    overflow: hidden;
-}
-
-.widget-header {
-    position: relative;
-    height: 40px;
-    line-height: 40px;
-    background: #F9F9F9;
-    border: 1px solid #E5E5E5;
-    -webkit-border-top-left-radius: 4px;
-    -webkit-border-top-right-radius: 4px;
-    -moz-border-radius-topleft: 4px;
-    -moz-border-radius-topright: 4px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    -webkit-background-clip: padding-box;
-}
-
-.widget-header h3 {
-    position: relative;
-    top: 2px;
-    left: 10px;
-    display: inline-block;
-    margin-right: 3em;
-    font-size: 14px;
-    font-weight: 800;
-    color: #555;
-    line-height: 18px;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, .5);
-}
-
-.widget-header>[class^="icon-"],
-.widget-header>[class*=" icon-"] {
-    display: inline-block;
-    margin-left: 13px;
-    margin-right: -2px;
-    font-size: 16px;
-    color: #555;
-    vertical-align: middle;
-}
-
-.widget-content {
-    padding: 20px 15px 15px;
-    background: #FFF;
-    border: 1px solid #E5E5E5;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    border-radius: 5px;
-}
-
-.widget-header+.widget-content {
-    border-top: none;
-    -webkit-border-top-left-radius: 0;
-    -webkit-border-top-right-radius: 0;
-    -moz-border-radius-topleft: 0;
-    -moz-border-radius-topright: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-}
-
-.widget-nopad .widget-content {
-    padding: 0;
-}
-
-/* Widget Content Clearfix */
-.widget-content:before,
-.widget-content:after {
-    content: "";
-    display: table;
-}
-
-.widget-content:after {
-    clear: both;
-}
-
-/* For IE 6/7 (trigger hasLayout) */
-.widget-content {
-    zoom: 1;
-}
-
-/* Widget Table */
-.widget-table .widget-content {
-    padding: 0;
-}
-
-.widget-table .table {
-    margin-bottom: 0;
-    border: none;
-}
-
-.widget-table .table tr td:first-child {
-    border-left: none;
-}
-
-.widget-table .table tr th:first-child {
-    border-left: none;
-}
-
-/* Widget Plain */
-.widget-plain {
-    background: transparent;
-    border: none;
-}
-
-.widget-plain .widget-content {
-    padding: 0;
-    background: transparent;
-    border: none;
-}
-
-/* Widget Box */
-
-.widget-box .widget-content {
-    background: #E3E3E3;
-    background: #FFF;
 }
 
 /* bootstrap patch */
@@ -221,40 +105,10 @@ button:focus {
     border: 0;
 }
 
-.table-button td,
-.table-button th {
-    line-height: 26px;
-}
-
-.table-button td input,
-.table-button .input-append {
-    margin-bottom: 0;
-}
-
 .form-horizontal-small .control-label {
     width: 116px;
 }
 
-.form-horizontal .control-group-mini {
-    margin-bottom: 10px;
-}
-
-.control-group-mini .control-label {
-    width: 60px;
-}
-
-.navbar {
-    margin-top: 20px;
-}
-
-.navbar .divider-vertical {
-    margin: 0;
-}
-
-.radio.inline,
-.checkbox.inline {
-    padding-top: 0;
-}
 
 /* CodeMirror patch */
 .CodeMirror {
@@ -280,8 +134,4 @@ span.CodeMirror-matchhighlight {
 
 .CodeMirror-focused span.CodeMirror-matchhighlight {
     background: #e7e4ff !important;
-}
-
-.tabbable .tab-pane {
-    margin-top: 10px;
 }

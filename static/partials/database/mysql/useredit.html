@@ -9,7 +9,10 @@
 	<!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
 	<div class="panel panel-warning" ng-show="!$mysql.password_validated">
 		<div class="panel-heading">
-			<h3 class="panel-title">请输入数据库管理员 root 的密码</h3>
+            <div class="panel-title">
+                <i class="glyphicon glyphicon-lock"></i>
+                <span> 请输入数据库管理员 root 的密码</span>
+            </div>
 		</div>
 		<div class="panel-body">
 			<form class="form-horizontal" onsubmit="return false" method="get" action="/">
@@ -48,7 +51,8 @@
                 <div class="panel panel-default" ng-show="!privsloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-user"> 按数据库指定的权限</span>
+                            <i class="glyphicon glyphicon-user"></i>
+                            <span"> 按数据库指定的权限</span>
                         </div>
                     </div>
                     <table class="table table-hover table-bordered">
@@ -84,7 +88,8 @@
                 <div class="panel panel-default" ng-show="!privsloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-edit"> 设置数据库权限</span>
+                            <i class="glyphicon glyphicon-edit"></i>
+                            <span> 设置数据库权限</span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -98,7 +103,8 @@
                 <div class="panel panel-default" ng-show="!privsloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-user"> 全局权限</span>
+                            <i class="glyphicon glyphicon-user"></i>
+                            <span> 全局权限</span>
                         </div>
                     </div>
                     <table class="table table-hover table-bordered">
@@ -134,7 +140,8 @@
                 <div class="panel panel-default" ng-show="!privsloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-lock"> 密码设置</span>
+                            <i class="glyphicon glyphicon-lock"></i>
+                            <span> 密码设置</span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -171,7 +178,8 @@
                 <div class="panel panel-danger" ng-show="(user!='root'||host=='%') && !privsloading">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <span class="glyphicon glyphicon-trash"> 删除用户</span>
+                            <i class="glyphicon glyphicon-trash"></i>
+                            <span> 删除用户</span>
                         </div>
                     </div>
                     <div class="panel-body">

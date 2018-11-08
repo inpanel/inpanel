@@ -39,7 +39,6 @@ directive('navbar', function(){
                 </ul>\
                 <ul class="nav navbar-nav navbar-right">\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'setting(\..*)?\']"><a href="#/setting">设置</a></li>\
-                    <li class="divider-vertical"></li>\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'logout\']"><a href="#/logout">退出</a></li>\
                 </ul>\
             </div>\
@@ -193,7 +192,7 @@ directive('srvbase', function(){
 			$scope.stop = serviceop('stop');
 			$scope.restart = serviceop('restart');
 		}],
-		template: '<table class="table table-button">\
+		template: '<table class="table">\
 				<thead>\
 					<tr>\
 						<th colspan="2">{{name}} 服务操作</th>\
@@ -869,7 +868,7 @@ directive('srvfile', function(){
 		controller: ['$scope', function($scope){
 		}],
 		template: '\
-			<table class="table table-button">\
+			<table class="table">\
 				<tbody>\
 					<tr class="warning">\
 						<td colspan="3" class="text-error">注意：如果您没有配置文件修改经验，请勿随意修改，否则可能导致服务无法启动。</td>\
@@ -903,7 +902,7 @@ directive('srvlog', function(){
 		controller: ['$scope', function($scope){
 		}],
 		template: '\
-			<table class="table table-button">\
+			<table class="table">\
 				<tbody>\
 					<tr class="warning">\
 						<td colspan="3" class="text-error">注意：尽量不要对日志文件进行修改，否则可能导致新日志无法写入。</td>\

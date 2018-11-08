@@ -9,7 +9,10 @@
 	<!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
 	<div class="panel panel-warning" ng-show="!$mysql.password_validated">
 		<div class="panel-heading">
-			<h3 class="panel-title">请输入数据库管理员 root 的密码</h3>
+			<div class="panel-title">
+				<i class="glyphicon glyphicon-lock"></i>
+				<span> 请输入数据库管理员 root 的密码</span>
+			</div>
 		</div>
 		<div class="panel-body">
 			<form class="form-horizontal" onsubmit="return false" method="get" action="/">
@@ -36,8 +39,11 @@
 
 	<div class="panel panel-default" ng-show="$mysql.password_validated">
 		<div class="panel-heading">
-			<i class="icon-plus-sign"></i>
-			<h3 class="panel-title">添加新用户<span style="display:none" ng-show="dbname">到数据库 {{dbname}}</span></h3>
+			<div class="panel-title">
+				<i class="glyphicon glyphicon-user"></i>
+				<span> 添加新用户</span>
+				<span style="display:none" ng-show="dbname">到数据库 {{dbname}}</span>
+			</div>
 		</div>
 		<div class="panel-body form-horizontal form-horizontal-small">
 			<div class="form-group form-inline">

@@ -109,25 +109,22 @@
                             <td class="text-right">{{$index+1}}</td>
                             <td ng-bind-html-unsafe="server.status | site.status"></td>
                             <td>
-                                <!-- <span ng-repeat="server_name in server.IP"> -->
-                                <a href="http{{'s' | iftrue:server.Port=='443'}}://{{server.IP}}" target="_blank" ng-show="server_name!='_'">{{server.IP}}</a>
-                                <!-- <span ng-show="server_name=='_'">任意域名</span> -->
-                                <!-- <br>
-                                </span> -->
+                                <a href="http{{'s' | iftrue:server.Port=='443'}}://{{server.ServerName}}" target="_blank" ng-show="server.ServerName!='_'">{{server.ServerName}}</a>
+                                <span ng-show="server.ServerName=='_'">任意域名</span>
                             </td>
                             <td>
-                                <!-- <span ng-repeat="listen in server.listens"> -->
-                                {{server.IP}}:{{server.Port}}
+                                {{server.IP}} : {{server.Port}}
                                 <span ng-show="server.Port==443||server.Port==80">({{server.Port}})</span>
                                 <span ng-show="listen.default_server">(默认)</span>
-                                <!-- <br>
-                                </span> -->
                             </td>
                             <td>
                                 <span ng-repeat="engine in server.engines">{{engine | site.engine}}<span ng-show="$index<server.engines.length-1">+</span></span>
                             </td>
                             <td>
                                 <div class="btn-group">
+                                    <a class="btn btn-default btn-xs" title="管理站点文件" href="#/file?path=/{{server.DocumentRoot}}">
+                                        <i class="glyphicon glyphicon-folder-open"></i>
+                                    </a>
                                     <a class="btn btn-default btn-xs" title="设置站点" href="#/site/nginx/edit_{{server.listens[0].ip}}_{{server.listens[0].port}}_{{server.server_names[0]}}">
                                         <i class="glyphicon glyphicon-wrench"></i>
                                     </a>
@@ -173,61 +170,49 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='subDomain'" id="subDomain">
-                <div class="form-horizontal">
-                    <div class="widget-header">
-                        <i class="icon-cog"></i>
-                        <h3>创建子站点</h3>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-plus"></i>
+                            <span> 创建子站点</span>
+                        </div>
                     </div>
-                    <div class="widget-content">
-                        <table class="table table-button">
-                            <tbody>
-                                <tr class="ng-scope">
-                                    <th class="td-borderless" style="width: 80px;">
-                                        <span>站点域名</span>
-                                    </th>
-                                    <td class="td-borderless" colspan="2">
-                                        <input ng-model="site.domain" type="text" class="input-large ng-pristine ng-valid" placeholder="请输入域名">
-                                    </td>
-                                </tr>
-                                <tr class="ng-scope">
-                                    <th class="td-borderless" style="width: 80px;">
-                                        <span>FTP 信息</span>
-                                    </th>
-                                    <td class="td-borderless" colspan="2">
-                                        <div class="tab-content">
-                                            <div class="control-group control-group-mini">
-                                                <label class="control-label">用户名</label>
-                                                <div class="controls">
-                                                    <input ng-model="server_name.ftp_user" type="text" class="input-large ng-pristine ng-valid" placeholder="请输入FTP用户名">
-                                                </div>
-                                            </div>
-                                            <div class="control-group control-group-mini">
-                                                <label class="control-label">密码</label>
-                                                <div class="controls">
-                                                    <input ng-model="server_name.ftp_user" type="text" class="input-large ng-pristine ng-valid" placeholder="请输入FTP密码">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="ng-scope">
-                                    <th class="td-borderless" style="width: 80px;">
-                                        <span>SVN</span>
-                                    </th>
-                                    <td class="td-borderless" colspan="2">
-                                        <input ng-model="server_name.name" type="text" class="input-large ng-pristine ng-valid" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
-                                    </td>
-                                </tr>
-                                <tr class="ng-scope">
-                                    <th class="td-borderless" style="width: 80px;">
-                                        <span>数据库</span>
-                                    </th>
-                                    <td class="td-borderless" colspan="2">
-                                        <input ng-model="server_name.name" type="text" class="input-large ng-pristine ng-valid" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="panel-body form-horizontal form-horizontal-small">
+                        <div class="form-group form-inline">
+                            <label class="col-sm-2 control-label">站点域名</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" ng-disabled="processing" ng-model="site.domain" autofocus placeholder="请输入域名">
+                            </div>
+                        </div>
+                        <div class="form-group form-inline">
+                            <label class="col-sm-2 control-label">FTP 信息</label>
+                            <div class="col-sm-10">
+                                <div class="control-group">
+                                    <label class="control-label">用户名</label>
+                                    <div class="controls">
+                                        <input class="form-control" type="text" ng-disabled="processing" ng-model="server_name.ftp_user" placeholder="请输入FTP用户名">
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label">密码</label>
+                                    <div class="controls">
+                                        <input class="form-control" type="text" ng-disabled="processing" ng-model="server_name.ftp_user" placeholder="请输入FTP密码">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group form-inline">
+                            <label class="col-sm-2 control-label">SVN </label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" ng-disabled="processing" ng-model="server_name.name" autofocus placeholder="请输入域名">
+                            </div>
+                        </div>
+                        <div class="form-group form-inline">
+                            <label class="col-sm-2 control-label">数据库</label>
+                            <div class="col-sm-10">
+                                <input class="form-control" type="text" ng-disabled="processing" ng-model="server_name.name" autofocus placeholder="请输入域名">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

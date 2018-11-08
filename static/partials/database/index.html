@@ -15,7 +15,10 @@
 				<!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
 				<div class="panel panel-warning" ng-show="!$mysql.password_validated">
 					<div class="panel-heading">
-						<h3 class="panel-title">请输入数据库管理员 root 的密码</h3>
+						<div class="panel-title">
+							<i class="glyphicon glyphicon-lock"></i>
+							<span> 请输入数据库管理员 root 的密码</span>
+						</div>
 					</div>
 					<div class="panel-body">
 						<form class="form-horizontal" onsubmit="return false" method="get" action="/">
@@ -47,7 +50,7 @@
 					<div class="panel-heading">
 						<div class="panel-title">
 							<i class="glyphicon glyphicon-list-alt"></i>
-							<span>数据库列表</span>
+							<span> 数据库列表</span>
 							<div class="pull-right">
 								<a class="btn btn-default btn-xs" href="#/database/mysql/db/new"><i class="glyphicon glyphicon-plus"></i> 新建数据库</a>
 							</div>
@@ -97,7 +100,7 @@
 					<div class="panel-heading">
 						<div class="panel-title">
 							<i class="glyphicon glyphicon-list-alt"></i>
-							<span>用户列表</span>
+							<span> 用户列表</span>
 							<div class="pull-right">
 								<a class="btn btn-default btn-xs" href="#/database/mysql/user/new"><i class="glyphicon glyphicon-plus"></i> 添加新用户</a>
 							</div>
@@ -138,7 +141,10 @@
 
 	<div class="panel panel-info" ng-show="!has_dbserver" value="install" style="display:none">
 		<div class="panel-heading">
-			<h3 class="panel-title">未检测到数据库</h3>
+			<div class="panel-title">
+				<i class="glyphicon glyphicon-info-sign"></i>
+				<span> 未检测到数据库</span>
+			</div>
 		</div>
 		<div class="panel-body">
 			<p>系统检测到您还未安装数据库。</p>
