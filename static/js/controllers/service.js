@@ -224,12 +224,53 @@ var ServiceApacheCtrl = [
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
                     if ($scope.checkVersion) $scope.checkVersion();
+                    $scope.getsettings();
                 } else {
                     $scope.installed = false;
                 }
                 $scope.loaded = true;
                 $scope.waiting = false;
                 $scope.checking = false;
+            });
+        };
+
+ 
+        $scope.setting = {
+            'limit_rate': '',
+            'limit_conn': '',
+            'limit_conn_zone': '',
+            'client_max_body_size': '',
+            'keepalive_timeout': '',
+            'access_status': 'off',
+            'allow': '',
+            'deny': '',
+            'gzip': ''
+        };
+
+        $scope.getsettings = function() {
+            if (!$scope.installed) return;
+            Request.post('/operation/apache', {
+                'action': 'gethttpsettings',
+                'items': 'limit_rate,limit_conn,limit_conn_zone,client_max_body_size,keepalive_timeout,allow[],deny[],gzip'
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.setting = data.data;
+                    var s = $scope.setting;
+                    if (s.allow && s.allow.length > 0) s.access_status = 'white';
+                    else if (s.deny && s.deny.length > 0) s.access_status = 'black';
+                    else s.access_status = 'off';
+                    if (s.allow) s.allow = s.allow.join('\n');
+                    if (s.deny) s.deny = s.deny.join('\n');
+                }
+            }, false, true);
+        };
+
+        $scope.savesettings = function() {
+            var data = angular.copy($scope.setting);
+            data.action = 'sethttpsettings';
+            data.version = $scope.pkginfo.version;
+            Request.post('/operation/nginx', data, function(data) {
+                if (data.code == 0) $scope.getsettings();
             });
         };
     }
