@@ -404,7 +404,7 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
                 if server['_param']['disabled'] == disabled]
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # virtual_host_config('aaa.com', 'DocumentRoot', '/v/asfs34535')
     # virtual_host_config('aaa.com', 'ServerAdmin', '4567896543')
     # virtual_host_config('aaa.com', 'VirtualHost', 'bbb.com', 567)
