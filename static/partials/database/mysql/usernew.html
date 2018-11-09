@@ -19,7 +19,7 @@
 				<div class="form-group form-inline">
 					<label class="col-sm-2 control-label" for="password">管理员密码</label>
 					<div class="col-sm-10">
-						<input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autofocus>
+						<input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autocomplete="off" autofocus>
 					</div>
 				</div>
 				<div class="form-group form-inline">
@@ -64,16 +64,16 @@
 				</div>
 			</div>
 			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label">密码</label>
+				<label class="col-sm-2 control-label" for="passwordn">密码</label>
 				<div class="col-sm-10">
-					<input class="form-control" type="password" ng-disabled="processing||emptypassword" ng-model="password">
+					<input class="form-control" type="password" id="passwordn" ng-disabled="processing||emptypassword" ng-model="password" autocomplete="off">
 					<label><input type="checkbox" ng-model="emptypassword"> 使用空密码</label>
 				</div>
 			</div>
 			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label">确认密码</label>
+				<label class="col-sm-2 control-label" for="passwordc">确认密码</label>
 				<div class="col-sm-10">
-					<input class="form-control" type="password" ng-disabled="processing||emptypassword" ng-model="passwordc">
+					<input class="form-control" type="password" id="passwordc" ng-disabled="processing||emptypassword" ng-model="passwordc" autocomplete="off">
 				</div>
 			</div>
 			<div class="form-group form-inline">

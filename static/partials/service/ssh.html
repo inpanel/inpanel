@@ -152,21 +152,21 @@
 			<div class="modal-body">
 				<form class="form-horizontal" onsubmit="return false">
 					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">原密码</label>
+						<label class="col-sm-2 control-label" for="oldpassword">原密码</label>
 						<div class="col-sm-10">
-							<input class="form-control" type="password" ng-model="oldpassword" placeholder="无密码请留空">
+							<input class="form-control" type="password" id="oldpassword" ng-model="oldpassword" placeholder="无密码请留空" autocomplete="off"/>
 						</div>
 					</div>
 					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">新密码</label>
+						<label class="col-sm-2 control-label" for="newpassword">新密码</label>
 						<div class="col-sm-10">
-							<input class="form-control" type="password" ng-model="newpassword" placeholder="至少5位，留空表示删除密码" />
+							<input class="form-control" type="password" id="newpassword" ng-model="newpassword" placeholder="至少5位，留空表示删除密码" autocomplete="off"/>
 						</div>
 					</div>
 					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">确认密码</label>
+						<label class="col-sm-2 control-label" for="newpasswordc">确认密码</label>
 						<div class="col-sm-10">
-							<input class="form-control" type="password" ng-model="newpasswordc" placeholder="至少5位，留空表示删除密码"/>
+							<input class="form-control" type="password" id="newpasswordc" ng-model="newpasswordc" placeholder="至少5位，留空表示删除密码" autocomplete="off"/>
 						</div>
 					</div>
 				</form>

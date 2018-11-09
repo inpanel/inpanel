@@ -19,7 +19,7 @@
 				<div class="form-group form-inline">
 					<label class="col-sm-2 control-label" for="password">管理员密码</label>
 					<div class="col-sm-10">
-						<input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autofocus>
+						<input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autocomplete="off" autofocus>
 					</div>
 				</div>
 				<div class="form-group form-inline">
@@ -155,15 +155,15 @@
                                 </div>
                             </div>
                             <div class="form-group form-inline">
-                                <label class="col-sm-2 control-label">新密码</label>
+                                <label class="col-sm-2 control-label" for="newpassword">新密码</label>
                                 <div class="col-sm-10">
-                                    <input class="form-control" type="password" ng-disabled="processing||emptypassword" ng-model="newpassword" placeholder="不修改请留空">
+                                    <input class="form-control" type="password" id="newpassword" ng-disabled="processing||emptypassword" ng-model="newpassword" placeholder="不修改请留空" autocomplete="off">
                                 </div>
                             </div>
                             <div class="form-group form-inline">
-                                <label class="col-sm-2 control-label">确认密码</label>
+                                <label class="col-sm-2 control-label" for="newpasswordc">确认密码</label>
                                 <div class="col-sm-10">
-                                    <input class="form-control" type="password" ng-disabled="processing||emptypassword" ng-model="newpasswordc" placeholder="不修改请留空">
+                                    <input class="form-control" type="password" id="newpasswordc" ng-disabled="processing||emptypassword" ng-model="newpasswordc" placeholder="不修改请留空" autocomplete="off">
                                 </div>
                             </div>
                             <div class="form-group form-inline">
