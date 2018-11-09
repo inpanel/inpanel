@@ -23,16 +23,22 @@
 					</thead>
 					<tbody>
 						<tr>
+							<td>Apache</td>
+							<td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
+							<td class="muted">老牌 HTTP 服务器</td>
+							<td><div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div></td>
+						</tr>
+						<tr>
 							<td style="width:100px">Nginx</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>
 							<td class="muted">高性能的 HTTP 服务器</td>
 							<td style="width:150px"><div srvminiop ng-init="name='Nginx';service='nginx';urlname='nginx'"></div></td>
 						</tr>
 						<tr>
-							<td>Apache</td>
-							<td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
-							<td class="muted">老牌 HTTP 服务器</td>
-							<td><div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div></td>
+							<td style="width:100px">Tomcat</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.tomcat']['status'] | service.status"></td>
+							<td class="muted">小型的轻量级 JSP 引擎应用</td>
+							<td style="width:150px"><div srvminiop ng-init="name='Tomcat';service='tomcat';urlname='tomcat'"></div></td>
 						</tr>
 					</tbody>
 				</table>

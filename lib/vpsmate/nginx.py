@@ -504,7 +504,7 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
 
             if not line or line.startswith('#'): continue
             
-            # deal with comment and detect vpsmate flag in comment
+            # deal with comment and detect intranet flag in comment
             fields = line.split('#', 1)
             line = fields[0].strip()
             gen_by_vpsmate = False

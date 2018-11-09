@@ -2888,11 +2888,14 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, u'正在获取软件版本信息...')
 
         if repo == '*': repo = ''
+        arch = self.settings['arch']
+        if pkg in yum.yum_pkg_noarchitecture:
+            arch = 'noarch'
         if option == 'install':
             cmds = ['yum info %s %s.%s --showduplicates --disableplugin=fastestmirror'
-                    % (repo, alias, self.settings['arch']) for alias in yum.yum_pkg_alias[pkg]]
+                    % (repo, alias, arch) for alias in yum.yum_pkg_alias[pkg]]
         else:
-            cmds = ['yum info %s.%s --disableplugin=fastestmirror' % (pkg, self.settings['arch'])]
+            cmds = ['yum info %s.%s --disableplugin=fastestmirror' % (pkg, arch)]
 
         data = []
         matched = False
@@ -2905,7 +2908,7 @@ class BackendHandler(RequestHandler):
                 for line in lines:
                     if any(line.startswith(word)
                         for word in ('Name', 'Version', 'Release', 'Size',
-                                     'Repo', 'From repo')):
+                                     'Repo', 'From repo', 'Summary', 'URL', 'License')):
                         fields = line.strip().split(':', 1)
                         if len(fields) != 2: continue
                         field_name = fields[0].strip().lower().replace(' ', '_')
@@ -2941,25 +2944,29 @@ class BackendHandler(RequestHandler):
             self._update_job(jobname, 2, u'正在下载并安装扩展包，请耐心等候...')
         else:
             self._update_job(jobname, 2, u'正在下载并安装软件包，请耐心等候...')
-        
+
+        arch = self.settings['arch']
+        if pkg in yum.yum_pkg_noarchitecture:
+            arch = 'noarch'
+
         if ext: # install extension
             if version: 
                 if release:
-                    pkgs = ['%s-%s-%s.%s' % (ext, version, release, self.settings['arch'])]
+                    pkgs = ['%s-%s-%s.%s' % (ext, version, release, arch)]
                 else:
-                    pkgs = ['%s-%s.%s' % (ext, version, self.settings['arch'])]
+                    pkgs = ['%s-%s.%s' % (ext, version, arch)]
             else:
-                pkgs = ['%s.%s' % (ext, self.settings['arch'])]
+                pkgs = ['%s.%s' % (ext, arch)]
         else:   # install package
             if version: # install special version
                 if release:
-                    pkgs = ['%s-%s-%s.%s' % (p, version, release, self.settings['arch'])
+                    pkgs = ['%s-%s-%s.%s' % (p, version, release, arch)
                         for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
                 else:
-                    pkgs = ['%s-%s.%s' % (p, version, self.settings['arch'])
+                    pkgs = ['%s-%s.%s' % (p, version, arch)
                         for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
             else:   # or judge by the system
-                pkgs = ['%s.%s' % (p, self.settings['arch'])
+                pkgs = ['%s.%s' % (p, arch)
                     for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
         repos = [repo, ]
         if repo in ('CentALT', 'ius', 'atomic', '10gen', 'mariadb'):
@@ -2973,7 +2980,9 @@ class BackendHandler(RequestHandler):
             cmd = 'yum install -y %s --disablerepo=%s' % (' '.join(pkgs), ','.join(exclude_repos))
             #cmd = 'yum install -y %s' % (' '.join(pkgs), )
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
-            pkgstr = version and '%s v%s-%s' % (ext and ext or pkg, version, release) or (ext and ext or pkg)
+            pkg_ext = ext and ext or pkg
+
+            pkgstr = version and '%s v%s-%s' % (pkg_ext, version, release) or (pkg_ext)
             if result == 0:
                 if hasconflict:
                     # install the conflict packages we just remove
@@ -3038,11 +3047,15 @@ class BackendHandler(RequestHandler):
             self._update_job(jobname, 2, u'正在卸载扩展包...')
         else:
             self._update_job(jobname, 2, u'正在卸载软件包...')
-        
+
+        arch = self.settings['arch']
+        if pkg in yum.yum_pkg_noarchitecture:
+            arch = 'noarch'
+
         if ext:
-            pkgs = ['%s-%s-%s.%s' % (ext, version, release, self.settings['arch'])]
+            pkgs = ['%s-%s-%s.%s' % (ext, version, release, arch)]
         else:
-            pkgs = ['%s-%s-%s.%s' % (p, version, release, self.settings['arch'])
+            pkgs = ['%s-%s-%s.%s' % (p, version, release, arch)
                 for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems()
                 if pinfo.has_key('base') and pinfo['base']]
         ## also remove depends pkgs
@@ -3051,13 +3064,14 @@ class BackendHandler(RequestHandler):
         #        pkgs += pinfo['depends']
         cmd = 'yum erase -y %s' % (' '.join(pkgs), )
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        pkg_ext = ext and ext or pkg
         if result == 0:
             code = 0
-            msg = u'%s v%s-%s 卸载成功！' % (_d(ext and ext or pkg), _d(version), _d(release))
+            msg = u'%s v%s-%s 卸载成功！' % (_d(pkg_ext), _d(version), _d(release))
         else:
             code = -1
             msg = u'%s v%s-%s 卸载失败！<p style="margin:10px">%s</p>' % \
-                (_d(ext and ext or pkg), _d(version), _d(release), _d(output.strip().replace('\n', '<br>')))
+                (_d(pkg_ext), _d(version), _d(release), _d(output.strip().replace('\n', '<br>')))
 
         self._finish_job(jobname, code, msg)
         self._unlock_job('yum')
@@ -3080,15 +3094,21 @@ class BackendHandler(RequestHandler):
         else:
             self._update_job(jobname, 2, u'正在下载并升级软件包，请耐心等候...')
 
-        cmd = 'yum update -y %s-%s-%s.%s' % (ext and ext or pkg, version, release, self.settings['arch'])
+        pkg_ext = ext and ext or pkg
+
+        arch = self.settings['arch']
+        if pkg_ext in yum.yum_pkg_noarchitecture:
+            arch = 'noarch'
+
+        cmd = 'yum update -y %s-%s-%s.%s' % (pkg_ext, version, release, arch)
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             code = 0
-            msg = u'成功升级 %s 到版本 v%s-%s！' % (_d(ext and ext or pkg), _d(version), _d(release))
+            msg = u'成功升级 %s 到版本 v%s-%s！' % (_d(pkg_ext), _d(version), _d(release))
         else:
             code = -1
             msg = u'%s 升级到版本 v%s-%s 失败！<p style="margin:10px">%s</p>' % \
-                (_d(ext and ext or pkg), _d(version), _d(release), _d(output.strip().replace('\n', '<br>')))
+                (_d(pkg_ext), _d(version), _d(release), _d(output.strip().replace('\n', '<br>')))
 
         self._finish_job(jobname, code, msg)
         self._unlock_job('yum')

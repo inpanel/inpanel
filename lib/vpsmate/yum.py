@@ -194,7 +194,7 @@ gpgcheck=1',
 # Alias of package we use when get versions of it
 yum_pkg_alias = {
     'nginx'         : ('nginx', 'nginx-stable', ),
-    'tomcat'        : ('tomcat', ),
+    'tomcat'        : ('tomcat', 'tomcat6'),
     'apache'        : ('httpd', ),
     'vsftpd'        : ('vsftpd', ),
     'mysql'         : ('mysql-server', 'mysql55-server', 'mysql56u-server', 'mysql57u-server'),
@@ -214,6 +214,7 @@ yum_pkg_alias = {
 # Dictionary flag:
 #   default: should this pkg be installed by default
 #   base: is other pkg base on this pkg
+#   isext: is extend pkg
 #   conflicts: what pkg this pkg would conflict with
 yum_pkg_relatives = {
     'nginx'                 : {
@@ -224,6 +225,31 @@ yum_pkg_relatives = {
     },
     'httpd'                 : {
         'httpd'                 : {'default': True, 'base': True}
+    },
+    'tomcat'                : {
+        'tomcat'                : {'default': True, 'base': True},
+        'tomcat-admin-webapps'  : {'default': True, 'base': True},
+        'tomcat-docs-webapp'    : {'default': False, 'isext': True},
+        'tomcat-el'             : {'default': False, 'isext': True},
+        'tomcat-javadoc'        : {'default': False, 'isext': True},
+        'tomcat-jsp'            : {'default': False, 'isext': True},
+        'tomcat-jsvc'           : {'default': False, 'isext': True},
+        'tomcat-lib'            : {'default': False, 'isext': True},
+        'tomcat-servlet'        : {'default': False, 'isext': True},
+        'tomcat-webapps'        : {'default': True, 'base': True},
+        'tomcatjss'             : {'default': False, 'isext': True}
+    },
+    'tomcat6'                : {
+        'tomcat6'               : {'default': True, 'base': True},
+        'tomcat6-admin-webapps' : {'default': True, 'base': True},
+        'tomcat6-docs-webapp'   : {'default': False, 'isext': True},
+        'tomcat6-el'            : {'default': False, 'isext': True},
+        'tomcat6-javadoc'       : {'default': False, 'isext': True},
+        'tomcat6-jsp'           : {'default': False, 'isext': True},
+        'tomcat6-lib'           : {'default': False, 'isext': True},
+        'tomcat6-servlet'       : {'default': False, 'isext': True},
+        'tomcat6-webapps'       : {'default': True, 'base': True},
+        'tomcatjss'             : {'default': False, 'isext': True}
     },
     'vsftpd'                : {
         'vsftpd'                : {'default': True, 'base': True}
@@ -562,6 +588,10 @@ yum_pkg_relatives = {
     }
 }
 
+# no architecture packages
+yum_pkg_noarchitecture = [
+    'tomcat'
+]
 
 # for rpm in yum_reporpms['ius'][6]['x86_64']:
 #     print(rpm)

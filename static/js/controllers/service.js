@@ -276,6 +276,74 @@ var ServiceApacheCtrl = [
     }
 ];
 
+var ServiceTomcatCtrl = [
+    '$scope', '$routeParams', 'Module', 'Request', function($scope, $routeParams, Module, Request) {
+        var module = 'service.tomcat';
+        Module.init(module, 'Tomcat');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+
+        $scope.checkInstalled = function() {
+            $scope.checking = true;
+            Request.get('/query/service.tomcat', function(data) {
+                var info = data['service.tomcat'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                    $scope.getsettings();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+
+ 
+        $scope.setting = {
+            'limit_rate': '',
+            'limit_conn': '',
+            'limit_conn_zone': '',
+            'client_max_body_size': '',
+            'keepalive_timeout': '',
+            'access_status': 'off',
+            'allow': '',
+            'deny': '',
+            'gzip': ''
+        };
+
+        $scope.getsettings = function() {
+            if (!$scope.installed) return;
+            Request.post('/operation/apache', {
+                'action': 'gethttpsettings',
+                'items': 'limit_rate,limit_conn,limit_conn_zone,client_max_body_size,keepalive_timeout,allow[],deny[],gzip'
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.setting = data.data;
+                }
+            }, false, true);
+        };
+
+        $scope.savesettings = function() {
+            var data = angular.copy($scope.setting);
+            data.action = 'sethttpsettings';
+            data.version = $scope.pkginfo.version;
+            Request.post('/operation/nginx', data, function(data) {
+                if (data.code == 0) $scope.getsettings();
+            });
+        };
+    }
+];
+
 var ServiceVsftpdCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function($scope, $routeParams, Module, Request) {

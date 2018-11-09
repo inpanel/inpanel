@@ -13,6 +13,7 @@ config(['$routeProvider', function($routeProvider) {
     when('/main', _r('main', MainCtrl)).
     when('/service/nginx', _r('service/nginx', ServiceNginxCtrl)).
     when('/service/apache', _r('service/apache', ServiceApacheCtrl)).
+    when('/service/tomcat', _r('service/tomcat', ServiceTomcatCtrl)).
     when('/service/vsftpd', _r('service/vsftpd', ServiceVsftpdCtrl)).
     when('/service/mysql', _r('service/mysql', ServiceMySQLCtrl)).
     when('/service/mariadb', _r('service/mariadb', ServiceMariaDBCtrl)).

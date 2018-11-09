@@ -194,18 +194,32 @@ directive('srvbase', function(){
 		}],
 		template: '<table class="table">\
 				<thead>\
-					<tr>\
-						<th colspan="2">{{name}} 服务操作</th>\
-					</tr>\
+					<tr><th colspan="2">{{name}} 服务操作</th></tr>\
 				</thead>\
 				<tbody>\
 					<tr>\
-						<td style="width:120px;">当前软件版本：</td>\
+						<td style="width:120px;">软件安装版本：</td>\
 						<td>\
 							<span ng-show="!pkginfo">正在获取...</span>\
 							<span style="display:none" ng-show="pkginfo">\
 							{{pkginfo.name}} {{\'v\'+pkginfo.version+\'-\'+pkginfo.release | iftrue:pkginfo.version}} {{"("+pkginfo.from_repo+")" | iftrue:pkginfo.from_repo}}\
 							</span>\
+						</td>\
+					</tr>\
+					<tr>\
+						<td style="width:120px;">软件官方网站：</td>\
+						<td>\
+							<span ng-show="!pkginfo">正在获取...</span>\
+							<span style="display:none" ng-show="pkginfo">\
+							<a href="{{pkginfo.url}}" target="_blank" ng-show="pkginfo.url">{{pkginfo.url}}</a>\
+							</span>\
+						</td>\
+					</tr>\
+					<tr>\
+						<td style="width:120px;">软件授权协议：</td>\
+						<td>\
+							<span ng-show="!pkginfo">正在获取...</span>\
+							<span style="display:none" ng-show="pkginfo">{{pkginfo.license}}</span>\
 						</td>\
 					</tr>\
 					<tr>\
@@ -236,6 +250,13 @@ directive('srvbase', function(){
 								ng-click="restart()">\
 								<span class="glyphicon glyphicon-refresh"></span> 重启服务\
 							</button>\
+						</td>\
+					</tr>\
+					<tr>\
+						<td style="width:120px;">软件摘要信息：</td>\
+						<td>\
+							<span ng-show="!pkginfo">正在获取...</span>\
+							<span style="display:none" ng-show="pkginfo">{{pkginfo.summary}}</span>\
 						</td>\
 					</tr>\
 				</tbody>\

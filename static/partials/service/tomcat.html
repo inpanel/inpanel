@@ -1,12 +1,12 @@
-<div navbar ng-init="currentItem='service.apache'"></div>
+<div navbar ng-init="currentItem='service.tomcat'"></div>
 <div ng-show="Auth.processing||!loaded"><div loading></div></div>
 
 <div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
 	<div class="module-header">
-		<h3>Apache - 老牌 HTTP 服务器</h3>
+		<h3>Tomcat - 小型的轻量级应用服务器</h3>
 	</div>
 
-	<div srvinstall ng-init="name='Apache';pkg='apache';expected_repolist=['base','CentALT'];"></div>
+	<div srvinstall ng-init="name='Tomcat';pkg='tomcat';expected_repolist=['base', 'CentALT', 'epel'];"></div>
 
 	<div class="tabbable" ng-show="installed">
 		<ul class="nav nav-tabs">
@@ -20,11 +20,11 @@
 		</ul>
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
-				<div srvbase ng-init="name='Apache';pkg='apache';service='httpd';"></div>
+				<div srvbase ng-init="name='Tomcat';pkg='tomcat';service='tomcat';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
 				<div>
-					Apache 设置
+					Tomcat 设置
 					<ul>
 						https://blog.csdn.net/wos1002/article/details/53820570
 						<li>监听的端口:80, Listen 80</li>
@@ -39,23 +39,23 @@
 				</div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
-				<div srvext ng-init="name='Apache';pkg='apache';"></div>
+				<div srvext ng-init="name='Tomcat';pkg='tomcat';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
 				<div srvfile ng-init="items=[
-				{name:'主目录', path:'/etc/httpd', isdir:true},
-				{name:'主配置', path:'/etc/httpd/conf/httpd.conf', isfile:true},
-				{name: 'MIME类型', path:'/etc/httpd/conf/magic', isfile: true},
-				{name:'扩展配置', path:'/etc/httpd/conf.d', isdir: true}];"></div>
+				{name:'主目录', path:'//usr/share/tomcat/conf', isdir:true},
+				{name:'主配置', path:'//usr/share/tomcat/conf/tomcat.conf', isfile:true},
+				{name: 'MIME类型', path:'/etc/tomcat/conf/magic', isfile: true},
+				{name:'扩展配置', path:'/etc/tomcat/conf.d', isdir: true}];"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
-				<div srvlog ng-init="items=[{name:'日志目录', path:'/var/log/httpd', isdir:true}];"></div>
+				<div srvlog ng-init="items=[{name:'日志目录', path:'/var/log/tomcat', isdir:true}];"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
-				<div srvupdate ng-init="name='Apache';pkg='apache';"></div>
+				<div srvupdate ng-init="name='Tomcat';pkg='tomcat';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
-				<div srvuninstall ng-init="name='Apache';pkg='apache';"></div>
+				<div srvuninstall ng-init="name='Tomcat';pkg='tomcat';"></div>
 			</div>
 		</div>
 	</div>

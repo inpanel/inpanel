@@ -164,7 +164,7 @@ def _load_virtualhost(conf=''):
         if not out or out.startswith('#'):
             continue
 
-        # deal with comment and detect vpsmate flag in comment
+        # deal with comment and detect intranet flag in comment
         fields = out.split('#', 1)
         out = fields[0].strip()
         if len(fields) > 1 and fields[1].strip() == GENBY:
