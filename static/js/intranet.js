@@ -39,7 +39,9 @@ config(['$routeProvider', function($routeProvider) {
     when('/database/mysql/user/new', _r('database/mysql/usernew', DatabaseMySQLNewUserCtrl)).
     when('/database/mysql/user/edit/:section', _r('database/mysql/useredit', DatabaseMySQLEditUserCtrl)).
     when('/ftp', _r('ftp', FtpCtrl)).
-    when('/task', _r('task', TaskCtrl)).
+    when('/task', _r('task/index', TaskCtrl)).
+    when('/task/cron/list', _r('task/cron/list', TaskCronListCtrl)).
+    when('/task/cron/new', _r('task/cron/new', TaskCronNewCtrl)).
     when('/utils', _r('utils/index', UtilsCtrl)).
     when('/utils/user', _r('utils/user', UtilsUserCtrl)).
     when('/utils/process', _r('utils/process', UtilsProcessCtrl)).
