@@ -10,10 +10,11 @@
 
 import shlex
 import subprocess
+import os
 
 
 def listCron():
-    p = subprocess.Popen(['crontab'],
+    p = subprocess.Popen(['crontab', '-l'],
                         #  stdout=subprocess.PIPE,
                         #  stderr=subprocess.PIPE,
                          close_fds=True)
@@ -23,4 +24,5 @@ def listCron():
 
 
 if __name__ == "__main__":
-    print listCron()
+    # print listCron()
+    # os.system("top")
