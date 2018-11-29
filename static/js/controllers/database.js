@@ -274,7 +274,7 @@ var DatabaseMySQLEditDBCtrl = [
                 function(data) {
                     if (data.code == 0) {
                         $location.path('/database');
-                        $location.search('s', 'mysql');
+                        $scope.sec('mysql');
                     }
                     $scope.processing = false;
                 }
@@ -575,7 +575,7 @@ var DatabaseMySQLEditUserCtrl = [
                 function(data) {
                     if (data.code == 0) {
                         $location.path('/database');
-                        $location.search('s', 'mysql');
+                        $scope.sec('mysql');
                     }
                     $scope.processing = false;
                 }

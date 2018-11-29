@@ -4,25 +4,25 @@ var TaskCtrl = ['$scope', 'Module',
         Module.init(module, '计划任务');
         $scope.loaded = false;
 
-        // var section = Module.getSection();
+        var section = Module.getSection();
         $scope.load = function () {
             $scope.loaded = true;
-            // if (section) {
-            //     if (section == 'package') {
-            //         $scope.loadpackage(1);
-            //     } else if (section == 'apache') {
-            //         $scope.loadapache(1);
-            //     } else if (section == 'nginx') {
-            //         $scope.loadnginx(1);
-            //     }
-            // } else {
-            //     if (res['service.nginx'].status == 'running') {
-            //         $scope.loadnginx(1);
-            //         return;
-            //     }
-            //     $scope.loadapache(1);
-            // }
+            if (section && section == 'base') {
+                $scope.loadBase();
+            } else if (section && section == 'cron') {
+                $scope.loadCron();
+            } else {
+                $scope.loadBase();
+            }
         }
+        $scope.loadBase = function () {
+            $scope.sec('base');
+            Module.setSection('base');
+        };
+        $scope.loadCron = function () {
+            $scope.sec('cron');
+            Module.setSection('cron');
+        };
     }
 ];
 

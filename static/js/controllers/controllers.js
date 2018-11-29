@@ -36,7 +36,9 @@ var LoginCtrl = [
                     var section = $rootScope.loginto_section;
                     if (data.code == 0) {
                         $location.path(path);
-                        if (section) $location.search('s', section);
+                        if (section) {
+                            $scope.sec(section);
+                        }
                     } else {
                         // need to check the password strength
                         $scope.pwdStrength = password_strength($scope.password);
@@ -48,7 +50,9 @@ var LoginCtrl = [
                             $scope.loginWarning = true;
                         } else {
                             $location.path(path);
-                            if (section) $location.search('s', section);
+                            if (section) {
+                                $scope.sec(section);
+                            }
                         }
                     }
                 } else {
@@ -116,7 +120,7 @@ var MainCtrl = [
 
         $scope.checkUpdate = function() {
             $location.path('/setting');
-            $location.search('s', 'upversion');
+            $scope.sec('upversion');
         }
         $scope.loadInfo = function(items) {
             if (!items) items = '*';
@@ -165,16 +169,61 @@ var FtpCtrl = [
     function($scope, Module) {
         var module = 'ftp';
         Module.init(module, 'FTP管理');
-        $scope.loaded = true;
+        $scope.loaded = false;
+
+        var section = Module.getSection();
+        $scope.load = function () {
+            $scope.loaded = true;
+            if (section && section == 'users') {
+                $scope.loadUsers();
+            } else if (section && section == 'process') {
+                $scope.loadProcess();
+            } else {
+                $scope.loadUsers();
+            }
+        }
+        $scope.loadUsers = function () {
+            $scope.sec('users');
+            Module.setSection('users');
+        };
+        $scope.loadProcess = function () {
+            $scope.sec('process');
+            Module.setSection('process');
+        };
     }
 ];
 
-var BackupCtrl = [
-    '$scope', 'Module',
+var BackupCtrl = ['$scope', 'Module',
     function($scope, Module) {
         var module = 'backup';
         Module.init(module, '备份管理');
-        $scope.loaded = true;
+        $scope.loaded = false;
+
+        var section = Module.getSection();
+        $scope.load = function () {
+            $scope.loaded = true;
+            if (section && section == 'files') {
+                $scope.loadFiles();
+            } else if (section && section == 'database') {
+                $scope.loadDatabase();
+            } else if (section && section == 'remote') {
+                $scope.loadRemote();
+            } else {
+                $scope.loadFiles();
+            }
+        }
+        $scope.loadFiles = function () {
+            $scope.sec('files');
+            Module.setSection('files');
+        };
+        $scope.loadDatabase = function () {
+            $scope.sec('database');
+            Module.setSection('database');
+        };
+        $scope.loadRemote = function () {
+            $scope.sec('remote');
+            Module.setSection('remote');
+        };
     }
 ];
 

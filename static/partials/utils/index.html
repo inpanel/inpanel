@@ -1,11 +1,11 @@
 <div navbar ng-init="currentItem='utils'"></div>
 <div ng-show="!loaded"><div loading></div></div>
 
-<div id="main" ng-show="loaded" style="display:none" ng-init="checkVirt()">
+<div id="main" ng-show="loaded" style="display:none">
 	<div class="module-header">
 		<h3>系统管理</h3>
 	</div>
-	<div>
+	<div ng-init="checkVirt()">
 		<table class="table">
 			<thead>
 				<tr>

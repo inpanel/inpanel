@@ -5,7 +5,77 @@
 	<div class="module-header">
 		<h3>日志管理</h3>
 	</div>
-	
+
 	<p>日志管理功能即将推出，敬请留意 Intranet 的版本更新。<a href="#/setting?s=upversion">检测新版本</a></p>
 	<p>系统日志管理。</p>
+	<div class="tabbable">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='emerg'">
+				<a href="#emerg" ng-click="sec('emerg')" data-toggle="tab">紧急</a>
+			</li>
+			<li ng-class="'active' | iftrue:activeTabName=='alert'">
+				<a href="#alert" ng-click="sec('alert')" data-toggle="tab">alert</a>
+			</li>
+			<li ng-class="'active' | iftrue:activeTabName=='crit'">
+				<a href="#crit" ng-click="sec('crit')" data-toggle="tab">危险</a>
+			</li>
+			<li ng-class="'active' | iftrue:activeTabName=='err'">
+				<a href="#err" ng-click="sec('err')" data-toggle="tab">错误</a>
+			</li>
+			<li ng-class="'active' | iftrue:activeTabName=='warning'">
+				<a href="#warning" ng-click="sec('warning')" data-toggle="tab">警告</a>
+			</li>
+			<li ng-class="'active' | iftrue:activeTabName=='notice'">
+				<a href="#notice" ng-click="sec('notice')" data-toggle="tab">通知</a>
+			</li>
+			<li ng-class="'active' | iftrue:activeTabName=='info'">
+				<a href="#info" ng-click="sec('info')" data-toggle="tab">信息</a>
+			</li>
+			<li ng-class="'active' | iftrue:activeTabName=='debug'">
+				<a href="#debug" ng-click="sec('debug')" data-toggle="tab">调试</a>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='emerg'" id="emerg">
+				<div>
+					<p>紧急情况，系统不可用（例如系统崩溃），一般会通知所有用户。</p>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='alert'" id="alert">
+				<div>
+					<p>需要立即修复，例如系统数据库损坏。</p>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='crit'" id="crit">
+				<div>
+					<p>危险情况，例如硬盘错误，可能会阻碍程序的部分功能。</p>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='err'" id="err">
+				<div>
+					<p>一般错误消息。</p>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='warning'" id="warning">
+				<div>
+					<p>警告。</p>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='notice'" id="notice">
+				<div>
+					<p>不是错误，但是可能需要处理。</p>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='info'" id="info">
+				<div>
+					<p>通用性消息，一般用来提供有用信息。</p>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='debug'" id="debug">
+				<div>
+					<p>调试程序产生的信息。</p>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
