@@ -22,19 +22,18 @@ import time
 # import urllib2
 import user
 import uuid
+from config import Config
 
 import chkconfig
 import fdisk
 import file
 import mysql
 import nginx
-import apache
 import php
 import pyDes
 import sc
 import si
 import ssh
-import proc
 import tornado
 import tornado.gen
 import tornado.httpclient
@@ -43,7 +42,7 @@ import tornado.web
 import utils
 import yum
 from async_process import call_subprocess, callbackable
-from config import Config
+from core import apache, proc
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 

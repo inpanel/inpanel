@@ -9,19 +9,21 @@
 """Package for quering server info
 """
 
-import os
-import re
-import time
 import datetime
-import socket
 import fcntl
-import struct
-import platform
 import glob
-import shlex
-import subprocess
 import multiprocessing
+import os
+import platform
+import re
+import shlex
+import socket
+import struct
+import subprocess
+import time
 from xml.dom.minidom import parseString
+
+from utils import b2h
 
 
 def strfdelta(tdelta, fmt):
@@ -30,22 +32,6 @@ def strfdelta(tdelta, fmt):
     d['minutes'], d['seconds'] = divmod(rem, 60)
     return fmt.format(**d)
 
-def b2h(n):
-    # bypes to human
-    # http://code.activestate.com/recipes/578019
-    # >>> b2h(10000)
-    # '9.8K'
-    # >>> b2h(100001221)
-    # '95.4M'
-    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
-    prefix = {}
-    for i, s in enumerate(symbols):
-        prefix[s] = 1 << (i+1)*10
-    for s in reversed(symbols):
-        if n >= prefix[s]:
-            value = float(n) / prefix[s]
-            return '%.1f%s' % (value, s)
-    return "%sB" % n
 
 def div_percent(a, b):
     if b == 0: return '0%'

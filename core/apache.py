@@ -6,8 +6,7 @@
 # Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Package for reading and writing Apache configuration.
-"""
+"""Package for Apache configuration management."""
 
 import glob
 import os

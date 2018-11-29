@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2018, doudoudzj
+# Copyright (c) 2017 - 2018, doudoudzj
 # All rights reserved.
 #
 # Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
-"""Package for list of all process currently actived.
-"""
+
+"""Package for process management."""
 
 import os
 
