@@ -23,20 +23,78 @@
 				<div srvbase ng-init="name='Apache';pkg='apache';service='httpd';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
-				<div>
-					Apache 设置
-					<ul>
-						https://blog.csdn.net/wos1002/article/details/53820570
-						<li>监听的端口:80, Listen 80</li>
-						<li>网络管理员的电子邮件地址, ServerAdmin root@localhost</li>
-						<li>服务器主机名称,ServerName www.example.com:80</li>
-						<li>服务器主目录,DocumentRoot "/var/www/html"</li>
-						<li>默认文档，DirectoryIndex index.html index.html.var</li>
-						<li>默认字符集,AddDefaultCharset UTF-8</li>
-						<li>.htaccess文件</li>
-						<li>SSL模块</li>
-					</ul>
-				</div>
+                <form class="form-horizontal form-horizontal-small" ng-submit="updateSetting()" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_listen">监听端口</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="settings.Listen" ng-disabled="processing" type="text" id="setting_listen" placeholder="监听的端口">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_server_admin">管理员邮箱</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="settings.ServerAdmin" ng-disabled="processing" type="text" id="setting_server_admin" placeholder="网络管理员的电子邮件地址">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_server_name">主机名称</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="settings.ServerName" ng-disabled="processing" type="text" id="setting_server_name" placeholder="服务器主机名称">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_document_root">主目录</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control" ng-model="settings.DocumentRoot" ng-disabled="processing" type="text" id="setting_document_root" placeholder="服务器主目录">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" ng-click="selectstaticfolder($index)">
+                                        <i class="glyphicon glyphicon-folder-open"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_directory_index">默认文档</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="settings.DirectoryIndex" ng-disabled="processing" type="text" id="setting_directory_index" placeholder="默认文档">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_default_type">默认类型</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="settings.DefaultType" ng-disabled="processing" type="text" id="setting_default_type" placeholder="默认文件类型">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_default_charset">默认字符集</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="settings.AddDefaultCharset" ng-disabled="processing" type="text" id="setting_default_charset" placeholder="默认字符集">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_access_file_name">权限控制文件</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="settings.AccessFileName" ng-disabled="processing" type="text" id="setting_access_file_name" placeholder="AccessFileName">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="setting_timeout">连接超时</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control" ng-model="settings.Timeout" ng-disabled="processing" type="text" id="setting_timeout" placeholder="连接超时">
+                                <span class="input-group-addon">秒</span>
+                            </div>
+                        </div>
+                    </div>
+					<div class="form-group form-inline">
+						<label class="col-sm-2 control-label"></label>
+						<div class="col-sm-10">
+							<button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
+						</div>
+					</div>
+                </form>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
 				<div srvext ng-init="name='Apache';pkg='apache';"></div>

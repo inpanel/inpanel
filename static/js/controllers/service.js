@@ -230,7 +230,7 @@ var ServiceApacheCtrl = [
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
                     if ($scope.checkVersion) $scope.checkVersion();
-                    $scope.getsettings();
+                    $scope.getSettings();
                 } else {
                     $scope.installed = false;
                 }
@@ -240,7 +240,13 @@ var ServiceApacheCtrl = [
             });
         };
 
-        $scope.setting = {
+        $scope.settings = {
+            'listen': 80,
+            'server_admin': 'root@localhost',
+            'server_name': 'localhost:80',
+            'document_root': '/var/www/html',
+            'directory_index': 'index.html index.htm',
+            'default_charset': 'UTF-8',
             'limit_rate': '',
             'limit_conn': '',
             'limit_conn_zone': '',
@@ -252,15 +258,15 @@ var ServiceApacheCtrl = [
             'gzip': ''
         };
 
-        $scope.getsettings = function () {
+        $scope.getSettings = function () {
             if (!$scope.installed) return;
             Request.post('/operation/apache', {
-                'action': 'gethttpsettings',
+                'action': 'get_settings',
                 'items': 'limit_rate,limit_conn,limit_conn_zone,client_max_body_size,keepalive_timeout,allow[],deny[],gzip'
             }, function (res) {
                 if (res.code == 0) {
-                    $scope.setting = res.data;
-                    var s = $scope.setting;
+                    $scope.settings = res.data;
+                    var s = $scope.settings;
                     if (s.allow && s.allow.length > 0) s.access_status = 'white';
                     else if (s.deny && s.deny.length > 0) s.access_status = 'black';
                     else s.access_status = 'off';
@@ -270,15 +276,16 @@ var ServiceApacheCtrl = [
             }, false, true);
         };
 
-        $scope.savesettings = function () {
-            var data = angular.copy($scope.setting);
-            data.action = 'sethttpsettings';
-            data.version = $scope.pkginfo.version;
-            Request.post('/operation/nginx', data, function (res) {
-                if (res.code == 0) {
-                    $scope.getsettings();
-                }
-            });
+        $scope.updateSettings = function () {
+            console.log('updateSettings Apache')
+            // var data = angular.copy($scope.settings);
+            // data.action = 'sethttpsettings';
+            // data.version = $scope.pkginfo.version;
+            // Request.post('/operation/apache', data, function (res) {
+            //     if (res.code == 0) {
+            //         $scope.getSettings();
+            //     }
+            // });
         };
     }
 ];

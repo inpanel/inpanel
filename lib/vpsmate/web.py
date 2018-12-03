@@ -1198,7 +1198,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (server_name, opstr[action])})
 
 
-        elif action == 'gethttpsettings':
+        elif action == 'get_settings':
             items = self.get_argument('items', '')
             items = items.split(',')
 
