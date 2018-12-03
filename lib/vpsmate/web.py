@@ -42,7 +42,7 @@ import tornado.web
 import utils
 import yum
 from async_process import call_subprocess, callbackable
-from core import apache, proc
+from core import apache, cron, proc
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
@@ -795,7 +795,7 @@ class OperationHandler(RequestHandler):
             getattr(self, op)()
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
-    
+
     def reboot(self):
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': u'DEMO状态不允许重启服务器！'})
@@ -1280,7 +1280,6 @@ class OperationHandler(RequestHandler):
                 #         data[item] = values and values[0] or ''
             # data = config
             self.write({'code': 0, 'msg': '', 'data': config})
-
 
     def nginx(self):
         action = self.get_argument('action', '')
@@ -2045,6 +2044,18 @@ class OperationHandler(RequestHandler):
             if enable_sftp: ssh.cfg_set('Subsystem', 'sftp /usr/libexec/openssh/sftp-server', enable_sftp!='on')
             self.write({'code': 0, 'msg': 'SSH 服务配置保存成功！'})
 
+    def cron(self):
+        action = self.get_argument('action', '')
+
+        if action == 'get_settings':
+            self.write({'code': 0, 'msg': u'获取 CRON 服务配置信息成功！', 'data': cron.load_config()})
+        if action == 'save_settings':
+            mailto = self.get_argument('mailto', '')
+            rt = cron.update_config({'mailto': _u(mailto)})
+            if rt:
+                self.write({'code': 0, 'msg': u'设置保存成功！'})
+            else:
+                self.write({'code': -1, 'msg': u'设置保存失败！'})
 
 class PageHandler(RequestHandler):
     """Return some page.

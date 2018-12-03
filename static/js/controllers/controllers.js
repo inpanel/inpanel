@@ -255,7 +255,8 @@ var SettingCtrl = [
         $scope.showUpdateBtn = false;
         $scope.showRestartBtn = true;
         $scope.loaded = true;
-        $scope.password = $scope.passwordc = '';
+        $scope.password = '';
+        $scope.passwordc = '';
 
         $scope.loadAuthInfo = function() {
             Request.get('/setting/auth', function(data) {
