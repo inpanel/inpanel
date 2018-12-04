@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017 - 2018, doudoudzj
 # Copyright (c) 2012 - 2016, VPSMate development team
@@ -15,6 +15,7 @@ import time
 import re
 import string
 
+
 def randstr(length=32):
     """Generate a fixed-length random string.
     """
@@ -22,14 +23,17 @@ def randstr(length=32):
     pop = [chr(i) for i in table]
     return ''.join(random.sample(pop, length))
 
+
 def make_cookie_secret():
     return base64.b64encode(
-            uuid.uuid4().bytes + uuid.uuid4().bytes)
+        uuid.uuid4().bytes + uuid.uuid4().bytes)
+
 
 def is_valid_ip(ip):
     """Validates IP addresses.
     """
     return is_valid_ipv4(ip) or is_valid_ipv6(ip)
+
 
 def is_valid_ipv4(ip):
     """Validates IPv4 addresses.
@@ -40,6 +44,7 @@ def is_valid_ipv4(ip):
     except socket.error:
         return False
 
+
 def is_valid_ipv6(ip):
     """Validates IPv6 addresses.
     """
@@ -49,11 +54,13 @@ def is_valid_ipv6(ip):
     except socket.error:
         return False
 
+
 def is_valid_netmask(mask):
     """Validates IPv4 sub-network mask.
     """
-    return mask in map(lambda x: ipv4_cidr_to_netmask(x), range(0,33))
-    
+    return mask in map(lambda x: ipv4_cidr_to_netmask(x), range(0, 33))
+
+
 def ipv4_cidr_to_netmask(bits):
     """Convert CIDR bits to netmask """
     netmask = ''
@@ -67,6 +74,7 @@ def ipv4_cidr_to_netmask(bits):
             netmask += '%d' % (256-2**(8-bits))
             bits = 0
     return netmask
+
 
 def b2h(n):
     # bypes to human
@@ -85,9 +93,11 @@ def b2h(n):
             return '%.1f%s' % (value, s)
     return "%sB" % n
 
+
 def ftime(secs):
     return time.strftime('%Y-%m-%d %X', time.localtime(secs))
-    
+
+
 def is_valid_domain(name, allow_localname=True):
     name = name.lower()
     if allow_localname:
@@ -96,10 +106,12 @@ def is_valid_domain(name, allow_localname=True):
         pt = r'^(?:(?:(?:[a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z0-9])\.)+[a-z]{2,6}$'
     return re.match(pt, name) and True or False
 
+
 def version_get(v1, v2):
     """Check if version v1 is great or equal then version v2.
     """
     return [int(i) for i in v1.split('.') if i.isdigit()] > [int(i) for i in v2.split('.') if i.isdigit()]
+
 
 def valid_filename(filename):
     """Check if a filename is validate.

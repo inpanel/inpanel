@@ -1027,7 +1027,7 @@ var ServiceCronCtrl = [
                 'mailto': $scope.settings.mailto
             }, function (res) {
                 if (res.code == 0) {
-                    $scope.settings = res.data;
+                    $scope.tabSettings();
                 }
             }, false, true);
         };
