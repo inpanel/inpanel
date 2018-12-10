@@ -47,7 +47,7 @@ from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
 SERVER_NAME = 'Intranet'
-VPSMATE_VERSION = '1.1'
+VPSMATE_VERSION = '1.1.1'
 VPSMATE_BUILD = '11'
 
 
