@@ -1,4 +1,4 @@
-var releasetime = '2013-01-18 18:32:57 CST';
+var releasetime = '2018-12-10 18:38:13 CST';
 var _v = new Date(releasetime.replace(/-/g, '/')).getTime() / 1000;
 //if (1) _v += Math.random();	// ie test mode
 angular.module('vpsmate', ['vpsmate.services', 'vpsmate.directives', 'vpsmate.filters']).
@@ -87,8 +87,8 @@ run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Requ
     $rootScope.$proxyroot = location_path;
 }]).
 value('version', {
-    'version': '1.0',
-    'build': '10',
+    'version': '1.1.1',
+    'build': '11',
     'releasetime': releasetime,
     'changelog': 'http://intranet.pub/changelog.html'
 });
