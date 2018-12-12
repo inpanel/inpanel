@@ -5,9 +5,9 @@
 >  - 修复更新接口的报错信息
 
 
-#### 项目正式更名为intranet (2018-11-01)
+#### 项目正式更名为 Intranet (2018-11-01)
 
->  - 项目名称改为 intranet，并转移到 crogram 组织，便于协同开发
+>  - 项目名称改为 Intranet，并转移到 crogram 组织，便于协同开发
 >
 >  - 新增 TODOLIST 任务列表
 
@@ -15,11 +15,11 @@
 
 >  许可文件更新，使用 The New BSD License 许可
 
-#### Intranet 启动更新 (2017-08-14)
+#### Intranet 项目启动更新 (2017-08-14)
 
 >  以 VPSMate 为基础，二次开发的项目 Intranet 正式启动，Intranet 将一如既往的保持原来 VPSMate 的简洁与快速，希望大家喜爱和关注。
 
-#### VPSMate 已暂停更新
+#### VPSMate 项目已暂停更新
 
 >  感谢大家对 VPSMate 的喜爱和关注，VPSMate 目前已暂停更新。
 
