@@ -48,7 +48,7 @@ from tornado.escape import utf8 as _u
 
 SERVER_NAME = 'Intranet'
 VPSMATE_VERSION = '1.1.1'
-VPSMATE_BUILD = '11'
+VPSMATE_BUILD = '12'
 
 
 class Application(tornado.web.Application):
@@ -657,7 +657,8 @@ class SettingHandler(RequestHandler):
 
         elif section == 'upver':
             force = self.get_argument('force', '')
-            lastcheck = self.config.getint('server', 'lastcheckupdate')
+            lastcheck = self.config.get('server', 'lastcheckupdate')
+            lastcheck = 0 if lastcheck == '' else int(lastcheck)
 
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
