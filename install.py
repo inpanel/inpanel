@@ -136,7 +136,7 @@ class Install(object):
 
     def install_panel(self):
         # localpkg_found = False
-        # if os.path.exists(os.path.join(os.path.dirname(__file__), 'vpsmate.tar.gz')):
+        # if os.path.exists(os.path.join(os.path.dirname(__file__), 'intranet.tar.gz')):
         #     # local install package found
         #     localpkg_found = True
         # else:
@@ -146,12 +146,12 @@ class Install(object):
         #     data = f.read()
         #     f.close()
         #     downloadurl = re.search('"download":"([^"]+)"', data).group(1).replace('\/', '/')
-        #     self._run('wget -nv -c "%s" -O vpsmate.tar.gz' % downloadurl)
+        #     self._run('wget -nv -c "%s" -O intranet.tar.gz' % downloadurl)
         
         # # uncompress and install it
-        # self._run('mkdir vpsmate')
-        # self._run('tar zxmf vpsmate.tar.gz -C vpsmate')
-        # if not localpkg_found: os.remove('vpsmate.tar.gz')
+        # self._run('mkdir intranet')
+        # self._run('tar zxmf intranet.tar.gz -C intranet  --strip-components 1')
+        # if not localpkg_found: os.remove('intranet.tar.gz')
 
         # stop service
         print
@@ -163,10 +163,10 @@ class Install(object):
             self._run('mkdir /tmp/vpsmate_data', True)
             self._run('cp -r %s/data/* /tmp/vpsmate_data/' % self.installpath, True)
         self._run('rm -rf %s' % self.installpath)
-        self._run('git clone https://github.com/doudoudzj/vpsmate.git %s' % self.installpath)
+        self._run('git clone https://github.com/crogram/intranet.git %s' % self.installpath)
 
         # install new code
-        # self._run('mv vpsmate %s' % self.installpath)
+        # self._run('mv intranet %s' % self.installpath)
         self._run('chmod +x %s/config.py %s/server.py' % (self.installpath, self.installpath))
 
         # install service

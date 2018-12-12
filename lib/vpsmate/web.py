@@ -2503,7 +2503,7 @@ class BackendHandler(RequestHandler):
         distname = self.settings['dist_name']
 
         # don't do it in dev environment
-        if os.path.exists('%s/../.svn' % root_path):
+        if os.path.exists('%s/../.git' % root_path):
             self._finish_job('update', 0, u'升级成功！')
             return
 
@@ -2518,15 +2518,15 @@ class BackendHandler(RequestHandler):
         initscript = u'%s/tools/init.d/%s/vpsmate' % (root_path, distname)
         steps = [
             {'desc': u'正在下载安装包...',
-                'cmd': u'wget -q "%s" -O %s/vpsmate.tar.gz' % (downloadurl, data_path),
+                'cmd': u'wget -q "%s" -O %s/intranet.tar.gz' % (downloadurl, data_path),
             }, {'desc': u'正在创建解压目录...',
-                'cmd': u'mkdir %s/vpsmate' % data_path,
+                'cmd': u'mkdir %s/intranet' % data_path,
             }, {'desc': u'正在解压安装包...',
-                'cmd': u'tar zxmf %s/vpsmate.tar.gz -C %s/vpsmate' % (data_path, data_path),
+                'cmd': u'tar zxmf %s/intranet.tar.gz -C %s/intranet --strip-components 1' % (data_path, data_path),
             }, {'desc': u'正在删除旧版本...',
                 'cmd': u'find %s -mindepth 1 -maxdepth 1 -path %s -prune -o -exec rm -rf {} \;' % (root_path, data_path),
             }, {'desc': u'正在复制新版本...',
-                'cmd': u'find %s/vpsmate -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
+                'cmd': u'find %s/intranet -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
             }, {'desc': u'正在删除旧的服务脚本...',
                 'cmd': u'rm -f /etc/init.d/vpsmate',
             }, {'desc': u'正在安装新的服务脚本...',
@@ -2534,7 +2534,7 @@ class BackendHandler(RequestHandler):
             }, {'desc': u'正在更改脚本权限...',
                 'cmd': u'chmod +x /etc/init.d/vpsmate %s/config.py %s/server.py' % (root_path, root_path),
             }, {'desc': u'正在删除安装临时文件...',
-                'cmd': u'rm -rf %s/vpsmate %s/vpsmate.tar.gz' % (data_path, data_path),
+                'cmd': u'rm -rf %s/intranet %s/intranet.tar.gz' % (data_path, data_path),
             },
         ]
         for step in steps:
@@ -2545,7 +2545,7 @@ class BackendHandler(RequestHandler):
             if result != 0:
                 self._update_job('update', -1, desc+'失败！')
                 break
-            
+
         if result == 0:
             code = 0
             msg = u'升级成功！请刷新页面重新登录。'
