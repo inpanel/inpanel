@@ -1,9 +1,13 @@
+#### 项目更名为 Intranet Panel (2018-12-13)
+
+>  - 项目名称改为 Intranet Panel，并转移到 intranet-panel 组织
+>  - 相关项目：Intranet Site、Intranet API 和 Intranet Docs 也一并转移到 intranet-panel
+
 #### Intranet v1.1.1 b12 (2018-12-12)
 
 >  - 完善更新功能
 >
 >  - 修复更新接口的报错信息
-
 
 #### 项目正式更名为 Intranet (2018-11-01)
 

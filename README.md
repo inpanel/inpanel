@@ -8,7 +8,7 @@ Official Website: [intranet.pub](http://intranet.pub "Intranet")
 #### Installation
 
 ```shell
-curl -O https://raw.githubusercontent.com/crogram/intranet/master/install.py
+curl -O https://raw.githubusercontent.com/intranet-panel/intranet/master/install.py
 python install.py
 ```
 
