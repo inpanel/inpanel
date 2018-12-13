@@ -48,7 +48,7 @@ from tornado.escape import utf8 as _u
 
 SERVER_NAME = 'Intranet'
 VPSMATE_VERSION = '1.1.1'
-VPSMATE_BUILD = '12'
+VPSMATE_BUILD = '13'
 
 
 class Application(tornado.web.Application):
