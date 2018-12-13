@@ -48,7 +48,7 @@ from tornado.escape import utf8 as _u
 
 SERVER_NAME = 'Intranet'
 VPSMATE_VERSION = '1.1.1'
-VPSMATE_BUILD = '13'
+VPSMATE_BUILD = '12'
 
 
 class Application(tornado.web.Application):
@@ -2520,7 +2520,7 @@ class BackendHandler(RequestHandler):
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
-                'cmd': u'/bin/cp -rf %s/* /tmp/intranet_panel_data/' % data_path,
+                'cmd': u'/bin/cp -f %s/config.ini /tmp/intranet_panel_config.ini' % data_path,
             }, {
                 'desc': u'正在下载安装包...',
                 'cmd': u'wget -q "%s" -O %s/intranet.tar.gz' % (downloadurl, data_path),
@@ -2535,7 +2535,7 @@ class BackendHandler(RequestHandler):
                 'cmd': u'find %s -mindepth 1 -maxdepth 1 -path %s -prune -o -exec rm -rf {} \;' % (root_path, data_path),
             }, {
                 'desc': u'正在复制新版本...',
-                'cmd': u'find %s/intranet -mindepth 1 -maxdepth 1 -exec /bin/cp -rf {} %s \;' % (data_path, root_path),
+                'cmd': u'find %s/intranet -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
             }, {
                 'desc': u'正在删除旧的服务脚本...',
                 'cmd': u'rm -f /etc/init.d/vpsmate',
@@ -2550,10 +2550,10 @@ class BackendHandler(RequestHandler):
                 'cmd': u'rm -rf %s/intranet %s/intranet.tar.gz' % (data_path, data_path)
             }, {
                 'desc': u'正在恢复旧的配置文件...',
-                'cmd': u'/bin/cp -f /tmp/intranet_panel_data/config.ini %s/config.ini' % data_path
+                'cmd': u'/bin/cp -f /tmp/intranet_panel_config.ini %s/config.ini' % data_path
             }, {
                 'desc': u'正在删除旧的配置文件...',
-                'cmd': u'rm -rf /tmp/intranet_panel_data'
+                'cmd': u'rm -f /tmp/intranet_panel_config.ini'
             }
         ]
         for step in steps:
