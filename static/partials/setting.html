@@ -106,7 +106,7 @@
 					</thead>
 					<tbody>
 						<tr>
-							<td style="width: 200px;">版本名称：</td>
+							<td style="width: 200px;">版本信息：</td>
 							<td>v{{version.version}} b{{version.build}}</td>
 						</tr>
 						<tr>
@@ -119,12 +119,10 @@
 						</tr>
 					</tbody>
 				</table>
-				<div class="well">
-					<p ng-bind-html-unsafe="upverMessage"></p>
-					<p style="display:none" ng-show="showUpdateBtn">
-						<button class="btn btn-default" ng-click="update()" ng-disabled="processing">{{updateBtnText}}</button>
-					</p>
-				</div>
+				<div ng-bind-html-unsafe="upverMessage"></div>
+				<p style="display:none" ng-show="showUpdateBtn">
+					<button class="btn btn-default" ng-click="update()" ng-disabled="processing">{{updateBtnText}}</button>
+				</p>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='restart'" id="restart" ng-init="restartService()">
 				<div class="panel panel-danger">

@@ -1,6 +1,6 @@
 var LoginCtrl = [
     '$scope', '$rootScope', '$location', 'Module', 'Message', 'Request',
-    function($scope, $rootScope, $location, Module, Message, Request) {
+    function ($scope, $rootScope, $location, Module, Message, Request) {
         var module = 'login';
         Module.init(module, '登录');
         $scope.loginText = '登录';
@@ -9,7 +9,7 @@ var LoginCtrl = [
         $scope.username = '';
         $scope.password = '';
 
-        var password_strength = function(pwd) {
+        var password_strength = function (pwd) {
             var strongRegex = new RegExp("^(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\\W).*$", "g");
             var mediumRegex = new RegExp("^(?=.{7,})(((?=.*[A-Z])(?=.*[a-z]))|((?=.*[A-Z])(?=.*[0-9]))|((?=.*[a-z])(?=.*[0-9]))).*$", "g");
             var enoughRegex = new RegExp("(?=.{6,}).*", "g");
@@ -24,12 +24,12 @@ var LoginCtrl = [
             }
         };
 
-        $scope.login = function(rawpwd) {
+        $scope.login = function (rawpwd) {
             $scope.loginText = '登录中...';
             Request.post('/login', {
                 username: $scope.username,
                 password: rawpwd ? $scope.password : hex_md5($scope.password)
-            }, function(data) {
+            }, function (data) {
                 if (data.code >= 0) {
                     $scope.showLoginForm = false;
                     var path = $rootScope.loginto ? $rootScope.loginto : '/main';
@@ -65,24 +65,26 @@ var LoginCtrl = [
 
 var LogoutCtrl = [
     '$scope', '$location', 'Module', 'Request', 'Timeout',
-    function($scope, $location, Module, Request, Timeout) {
+    function ($scope, $location, Module, Request, Timeout) {
         var module = 'logout';
         Module.init(module, '退出登录');
         $scope.loaded = false;
-        Timeout(function() {
+        Timeout(function () {
             $scope.loaded = true;
-            Request.get('/xsrf', function() {
-                Request.post('/logout', {}, function(data) {
-                    Timeout(function() { $location.path('/'); }, 3000, module);
+            Request.get('/xsrf', function () {
+                Request.post('/logout', {}, function (data) {
+                    Timeout(function () {
+                        $location.path('/');
+                    }, 3000, module);
                 });
             });
         }, 1000, module);
     }
 ];
 
-var deepUpdate = function(orgObj, newObj) {
+var deepUpdate = function (orgObj, newObj) {
     for (i in newObj) {
-        if (typeof(newObj[i]) == 'object') {
+        if (typeof (newObj[i]) == 'object') {
             deepUpdate(orgObj[i], newObj[i]);
         } else {
             if (orgObj[i] != newObj[i]) {
@@ -94,7 +96,7 @@ var deepUpdate = function(orgObj, newObj) {
 
 var MainCtrl = [
     '$scope', '$routeParams', '$location', 'Module', 'Timeout', 'Request', 'version',
-    function($scope, $routeParams, $location, Module, Timeout, Request, version) {
+    function ($scope, $routeParams, $location, Module, Timeout, Request, version) {
         var module = 'main';
         Module.init(module, '首页');
         Module.initSection('server');
@@ -104,7 +106,7 @@ var MainCtrl = [
 
         $scope.detectVer = true;
         $scope.hasNewver = false;
-        Request.get('/setting/upver', function(data) {
+        Request.get('/setting/upver', function (data) {
             if (data.code == -1) {
                 $scope.upverMessage = data.msg;
             } else if (data.code == 0) {
@@ -118,13 +120,13 @@ var MainCtrl = [
             }
         });
 
-        $scope.checkUpdate = function() {
+        $scope.checkUpdate = function () {
             $location.path('/setting');
             $scope.sec('upversion');
         }
-        $scope.loadInfo = function(items) {
+        $scope.loadInfo = function (items) {
             if (!items) items = '*';
-            Request.get('/query/' + items, function(data) {
+            Request.get('/query/' + items, function (data) {
                 if ($scope.info == null) {
                     $scope.info = data;
                     $scope.info['server.cpustat']['total']['used_rate'] = '获取中...';
@@ -166,7 +168,7 @@ var MainCtrl = [
 
 var FtpCtrl = [
     '$scope', 'Module',
-    function($scope, Module) {
+    function ($scope, Module) {
         var module = 'ftp';
         Module.init(module, 'FTP管理');
         $scope.loaded = false;
@@ -194,7 +196,7 @@ var FtpCtrl = [
 ];
 
 var BackupCtrl = ['$scope', 'Module',
-    function($scope, Module) {
+    function ($scope, Module) {
         var module = 'backup';
         Module.init(module, '备份管理');
         $scope.loaded = false;
@@ -229,7 +231,7 @@ var BackupCtrl = ['$scope', 'Module',
 
 var SecureCtrl = [
     '$scope', 'Module',
-    function($scope, Module) {
+    function ($scope, Module) {
         var module = 'secure';
         Module.init(module, '安全管理');
         $scope.loaded = true;
@@ -238,7 +240,7 @@ var SecureCtrl = [
 
 var LogCtrl = [
     '$scope', 'Module',
-    function($scope, Module) {
+    function ($scope, Module) {
         var module = 'log';
         Module.init(module, '日志管理');
         $scope.loaded = true;
@@ -247,64 +249,67 @@ var LogCtrl = [
 
 var SettingCtrl = [
     '$scope', '$routeParams', 'Module', 'Timeout', 'Message', 'Request', 'version',
-    function($scope, $routeParams, Module, Timeout, Message, Request, version) {
+    function ($scope, $routeParams, Module, Timeout, Message, Request, version) {
         var module = 'setting';
         Module.init(module, '系统设置');
         Module.initSection('authinfo');
         $scope.version = version;
+        $scope.newVersion = '';
+        $scope.newReleasetime = '';
+        $scope.newBuild = '';
         $scope.showUpdateBtn = false;
         $scope.showRestartBtn = true;
         $scope.loaded = true;
         $scope.password = '';
         $scope.passwordc = '';
 
-        $scope.loadAuthInfo = function() {
-            Request.get('/setting/auth', function(data) {
+        $scope.loadAuthInfo = function () {
+            Request.get('/setting/auth', function (data) {
                 $scope.username = data.username;
                 $scope.passwordcheck = data.passwordcheck;
             });
         }
-        $scope.loadServerInfo = function() {
-            Request.get('/setting/server', function(data) {
+        $scope.loadServerInfo = function () {
+            Request.get('/setting/server', function (data) {
                 $scope.ip = data.ip;
                 $scope.port = data.port;
             });
         }
-        $scope.loadAccessKey = function() {
-            Request.get('/setting/accesskey', function(data) {
+        $scope.loadAccessKey = function () {
+            Request.get('/setting/accesskey', function (data) {
                 $scope.accesskey = data.accesskey;
                 $scope.accesskeyenable = data.accesskeyenable;
             });
         }
-        $scope.updateAuthInfo = function() {
+        $scope.updateAuthInfo = function () {
             Request.post('/setting/auth', {
                 username: $scope.username,
                 password: $scope.password ? hex_md5($scope.password) : '',
                 passwordc: $scope.passwordc ? hex_md5($scope.passwordc) : '',
                 passwordcheck: $scope.passwordcheck
-            }, function(data) {
+            }, function (data) {
                 if (data.code == 0) $scope.loadAuthInfo();
             });
         };
-        $scope.updateServerInfo = function() {
+        $scope.updateServerInfo = function () {
             Request.post('/setting/server', {
                 port: $scope.port,
                 ip: $scope.ip
-            }, function() {
+            }, function () {
                 if (data.code == 0) $scope.loadServerInfo();
             });
         };
-        $scope.updateAccessKey = function() {
+        $scope.updateAccessKey = function () {
             Request.post('/setting/accesskey', {
                 accesskey: $scope.accesskey,
                 accesskeyenable: $scope.accesskeyenable
-            }, function(data) {
+            }, function (data) {
                 if (data.code == 0) $scope.loadAccessKey();
             });
         };
-        $scope.checkUpVersion = function() {
+        $scope.checkUpVersion = function () {
             $scope.upverMessage = '正在检测新版本...';
-            Request.get('/setting/upver?force=1', function(data) {
+            Request.get('/setting/upver?force=1', function (data) {
                 if (data.code == -1) {
                     $scope.upverMessage = data.msg;
                 } else if (data.code == 0) {
@@ -312,43 +317,49 @@ var SettingCtrl = [
                     if (parseFloat(v.version) > parseFloat(version.version) ||
                         (parseFloat(v.version) == parseFloat(version.version) &&
                             parseInt(v.build) > parseInt(version.build))) {
-                        $scope.upverMessage = '<table class="table table-condensed">' +
+                        $scope.upverMessage = '<table class="table table-hover table-bordered">' +
                             '<thead><tr><th colspan="2">有可用的新版本</th></tr></thead>' +
-                            '<tbody><tr><td>版本信息：</td><td>v' + v.version + ' b' + v.build + '</td></tr>' +
+                            '<tbody><tr><td style="width: 200px;">版本信息：</td><td>v' + v.version + ' b' + v.build + '</td></tr>' +
                             '<tr><td>发布时间：</td><td>' + v.releasetime + '</td></tr>' +
                             '<tr><td>变更记录：</td><td><a href="' + v.changelog + '" target="_blank">' +
                             '查看版本变更记录</a></td></tr></tbody></table>';
                         $scope.updateBtnText = '开始在线升级';
                         $scope.showUpdateBtn = true;
+                        $scope.newVersion = v.version;
+                        $scope.newBuild = v.build;
+                        $scope.newReleasetime = v.releasetime;
                     } else {
                         $scope.upverMessage = '当前已是最新版本！';
                     }
                 }
             });
         };
-        $scope.update = function() {
+        $scope.update = function () {
             $scope.upverMessage = '正在升级，请稍候...'
             $scope.showUpdateBtn = false;
-            Request.post('/backend/update', {}, function(data) {
-                var getUpdateStatus = function() {
-                    Request.get('backend/update', function(data) {
+            Request.post('/backend/update', {}, function (data) {
+                var getUpdateStatus = function () {
+                    Request.get('backend/update', function (data) {
                         Message.setInfo('')
                         if (data.msg) $scope.upverMessage = data.msg;
-                        if (data.status == 'finish' && data.code == 0) {
+                        if (data.code == -1) {
+                            return false;
+                        } else if (data.status == 'finish' && data.code == 0) {
                             // restart service
                             $scope.upverMessage = '正在重启 Intranet...';
-                            Timeout(function() {
+                            Timeout(function () {
                                 Request.post('/backend/service_restart', {
                                     service: 'vpsmate'
-                                }, function(data) {
-                                    var getRestartStatus = function() {
-                                        Request.get('backend/service_restart_vpsmate', function(data) {
+                                }, function (data) {
+                                    var getRestartStatus = function () {
+                                        Request.get('backend/service_restart_vpsmate', function (data) {
                                             Message.setInfo('')
                                             if (data.msg) $scope.upverMessage = data.msg;
                                             Timeout(getRestartStatus, 500, module);
-                                        }, function(data, status) { // error occur because server is terminate
+                                        }, function (data, status) { // error occur because server is terminate
                                             if (status == 403 || status == 0) {
                                                 $scope.upverMessage = '升级成功！请刷新页面重新登录。';
+                                                $scope.forceUpdateStatic();
                                                 return false;
                                             }
                                             return true;
@@ -366,18 +377,18 @@ var SettingCtrl = [
             });
         };
         $scope.restartMessage = '是否要重启 Intranet ？';
-        $scope.restart = function() {
+        $scope.restart = function () {
             $scope.restartMessage = '正在重启，请稍候...'
             $scope.showRestartBtn = false;
-            Timeout(function() {
+            Timeout(function () {
                 Request.post('/backend/service_restart', {
                     service: 'vpsmate'
-                }, function(data) {
-                    var getRestartStatus = function() {
-                        Request.get('backend/service_restart_vpsmate', function(data) {
+                }, function (data) {
+                    var getRestartStatus = function () {
+                        Request.get('backend/service_restart_vpsmate', function (data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             Timeout(getRestartStatus, 500, module);
-                        }, function(data, status) { // error occur because server is terminate
+                        }, function (data, status) { // error occur because server is terminate
                             if (status == 403 || status == 0) {
                                 $scope.restartMessage = '重启成功！请刷新页面重新登录。';
                                 return false;
@@ -390,14 +401,14 @@ var SettingCtrl = [
             }, 1000, module);
         };
 
-        $scope.genaccesskey = function() {
+        $scope.genaccesskey = function () {
             var randstring = '';
             for (var i = 0; i < 32; i++) {
                 randstring += String.fromCharCode(Math.floor(256 * Math.random()));
             }
 
             // JS base64 REF: http://stackoverflow.com/questions/246801/how-can-you-encode-to-base64-using-javascript
-            var b64encode = function(input) {
+            var b64encode = function (input) {
                 var b64keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
                 var output = "";
                 var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
@@ -430,12 +441,32 @@ var SettingCtrl = [
 
             $scope.accesskey = b64encode(randstring);
         };
+
+        $scope.forceUpdateStatic = function () {
+            // 前端静态资源重新加载
+            $scope.version['version'] = $scope.newVersion;
+            $scope.version['build'] = $scope.newBuild;
+            $scope.version['releasetime'] = $scope.newReleasetime;
+            releasetime = $scope.newReleasetime;
+            _v = new Date($scope.newReleasetime.replace(/-/g, '/')).getTime() / 1000;
+            $.getScript('/js/intranet.js');
+            $.getScript('/js/services.js');
+            $.getScript('/js/controllers/controllers.js');
+            $.getScript('/js/controllers/service.js');
+            $.getScript('/js/controllers/file.js');
+            $.getScript('/js/controllers/site.js');
+            $.getScript('/js/controllers/task.js');
+            $.getScript('/js/controllers/database.js');
+            $.getScript('/js/controllers/utils.js');
+            $.getScript('/js/directives.js');
+            $.getScript('/js/filters.js');
+        };
     }
 ];
 
 var SorryCtrl = [
     '$scope', 'Module', '$timeout',
-    function($scope, Module, $timeout) {
+    function ($scope, Module, $timeout) {
         var module = 'sorry';
         Module.init(module, '页面不存在');
         $scope.loaded = true;
