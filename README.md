@@ -1,18 +1,18 @@
-# Intranet
+# Intranet Panel
 
 
-Intranet —— 基于 VPSMate v1.0 b10 二次开发的开源 VPS 管理面板
+> The goal of this project is to make the easiest, fastest, and most painless way of Linux VPS management. This project has been forked from VPSMate since 11 Jan 2017 but changed a lot.
 
-官方网站：[intranet.pub](http://intranet.pub "Intranet")
+Official Website: [intranet.pub](http://intranet.pub "Intranet")
 
-#### 安装
+#### Installation
 
 ```shell
 curl -O https://raw.githubusercontent.com/crogram/intranet/master/install.py
 python install.py
 ```
 
-#### 卸载
+#### Uninstall
 
 ```shell
 service vpsmate stop
@@ -20,14 +20,14 @@ rm -rf /usr/local/vpsmate
 rm -f /etc/init.d/vpsmate
 ```
 
-#### 重置用户名或密码
+#### Username and Password
 
 ```shell
-/usr/local/vpsmate/config.py username '用户名'
-/usr/local/vpsmate/config.py password '密码'
+/usr/local/vpsmate/config.py username 'your-username'
+/usr/local/vpsmate/config.py password 'your-password'
 ```
 
-#### 功能
+#### Features
 
 - 免费、简洁、开源
 - 快速在线安装、小巧且节省资源
@@ -38,11 +38,10 @@ rm -f /etc/init.d/vpsmate
 - 快速创建和安装多种站点
 - 丰富实用的系统工具
 
-#### 从 VPSMate 到 Intranet
+#### from VPSMate to Intranet
 
 本管理面板只是在 UI 层面对系统服务及功能进行管理配置，并不会在系统中生成多余的依赖及配置文件，不管VPSMate 还是 Intranet，只是工具而已，卸载或安装，对系统已配置好的服务是没有影响的。
 
 现阶段两者使用同一个进程服务文件，所以**只需要卸载 VPSMate ，再安装 Intranet 即可**。
 
 > 希望你用得愉快 ！
-
