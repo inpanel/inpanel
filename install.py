@@ -160,10 +160,10 @@ class Install(object):
 
         # backup data and remove old code
         if os.path.exists('%s/data/' % self.installpath):
-            self._run('mkdir /tmp/vpsmate_data', True)
-            self._run('cp -r %s/data/* /tmp/vpsmate_data/' % self.installpath, True)
+            self._run('mkdir /tmp/intranet_panel_data', True)
+            self._run('/bin/cp -rf %s/data/* /tmp/intranet_panel_data/' % self.installpath, True)
         self._run('rm -rf %s' % self.installpath)
-        self._run('git clone https://github.com/crogram/intranet.git %s' % self.installpath)
+        self._run('git clone https://github.com/intranet-panel/intranet.git %s' % self.installpath)
 
         # install new code
         # self._run('mv intranet %s' % self.installpath)
@@ -276,7 +276,7 @@ class Install(object):
         print('* Config iptables')
         self.config_firewall()
 
-        print('* The URL of your Intranet is:'),
+        print('* The URL of your Intranet Panel is:'),
         print('http://%s:8888/' % self.detect_ip())
         print
 

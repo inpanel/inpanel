@@ -48,7 +48,7 @@ from tornado.escape import utf8 as _u
 
 SERVER_NAME = 'Intranet'
 VPSMATE_VERSION = '1.1.1'
-VPSMATE_BUILD = '12'
+VPSMATE_BUILD = '13'
 
 
 class Application(tornado.web.Application):
@@ -2030,7 +2030,7 @@ class OperationHandler(RequestHandler):
         action = self.get_argument('action', '')
 
         if action == 'get_settings':
-            self.write({'code': 0, 'msg': u'获取 CRON 服务配置信息成功！', 'data': cron.load_config()})
+            self.write({'code': 0, 'msg': u'获取 Cron 服务配置信息成功！', 'data': cron.load_config()})
         if action == 'save_settings':
             mailto = self.get_argument('mailto', '')
             rt = cron.update_config({'mailto': _u(mailto)})
@@ -2518,25 +2518,43 @@ class BackendHandler(RequestHandler):
         downloadurl = versioninfo['download']
         initscript = u'%s/tools/init.d/%s/vpsmate' % (root_path, distname)
         steps = [
-            {'desc': u'正在下载安装包...',
+            {
+                'desc': u'正在备份当前配置文件...',
+                'cmd': u'/bin/cp -rf %s/* /tmp/intranet_panel_data/' % data_path,
+            }, {
+                'desc': u'正在下载安装包...',
                 'cmd': u'wget -q "%s" -O %s/intranet.tar.gz' % (downloadurl, data_path),
-            }, {'desc': u'正在创建解压目录...',
+            }, {
+                'desc': u'正在创建解压目录...',
                 'cmd': u'mkdir %s/intranet' % data_path,
-            }, {'desc': u'正在解压安装包...',
+            }, {
+                'desc': u'正在解压安装包...',
                 'cmd': u'tar zxmf %s/intranet.tar.gz -C %s/intranet --strip-components 1' % (data_path, data_path),
-            }, {'desc': u'正在删除旧版本...',
+            }, {
+                'desc': u'正在删除旧版本...',
                 'cmd': u'find %s -mindepth 1 -maxdepth 1 -path %s -prune -o -exec rm -rf {} \;' % (root_path, data_path),
-            }, {'desc': u'正在复制新版本...',
-                'cmd': u'find %s/intranet -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
-            }, {'desc': u'正在删除旧的服务脚本...',
+            }, {
+                'desc': u'正在复制新版本...',
+                'cmd': u'find %s/intranet -mindepth 1 -maxdepth 1 -exec /bin/cp -rf {} %s \;' % (data_path, root_path),
+            }, {
+                'desc': u'正在删除旧的服务脚本...',
                 'cmd': u'rm -f /etc/init.d/vpsmate',
-            }, {'desc': u'正在安装新的服务脚本...',
-                'cmd': u'cp %s /etc/init.d/vpsmate' % initscript,
-            }, {'desc': u'正在更改脚本权限...',
+            }, {
+                'desc': u'正在安装新的服务脚本...',
+                'cmd': u'cp %s /etc/init.d/vpsmate' % initscript
+            }, {
+                'desc': u'正在更改脚本权限...',
                 'cmd': u'chmod +x /etc/init.d/vpsmate %s/config.py %s/server.py' % (root_path, root_path),
-            }, {'desc': u'正在删除安装临时文件...',
-                'cmd': u'rm -rf %s/intranet %s/intranet.tar.gz' % (data_path, data_path),
-            },
+            }, {
+                'desc': u'正在删除安装临时文件...',
+                'cmd': u'rm -rf %s/intranet %s/intranet.tar.gz' % (data_path, data_path)
+            }, {
+                'desc': u'正在恢复旧的配置文件...',
+                'cmd': u'/bin/cp -f /tmp/intranet_panel_data/config.ini %s/config.ini' % data_path
+            }, {
+                'desc': u'正在删除旧的配置文件...',
+                'cmd': u'rm -rf /tmp/intranet_panel_data'
+            }
         ]
         for step in steps:
             desc = _u(step['desc'])
