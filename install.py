@@ -138,6 +138,8 @@ class Install(object):
 
     def handle_intranet(self):
         # handle Intranet
+        # get the latest Intranet version
+        print('* Installing Intranet')
         # localpkg_found = False
         # if os.path.exists(os.path.join(os.path.dirname(__file__), 'intranet.tar.gz')):
         #     # local install package found
@@ -157,7 +159,6 @@ class Install(object):
         # if not localpkg_found: os.remove('intranet.tar.gz')
 
         # stop service
-        print
         if os.path.exists('/etc/init.d/intranet'):
             self._run('/etc/init.d/intranet stop')
 
@@ -202,9 +203,7 @@ class Install(object):
         self._run('%s/config.py username "%s"' % (self.installpath, username))
         self._run('%s/config.py password "%s"' % (self.installpath, password))
 
-        print
         print('* Username and password set successfully!')
-        print
 
     def detect_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -217,7 +216,7 @@ class Install(object):
         # handle VPSMate
 
         if os.path.exists('/etc/init.d/vpsmate'):
-            print('* Config VPSMate')
+            print('* Checking VPSMate')
             isdel = raw_input('Delete VPSMate ? [yes or no, default: yes]: ').strip()
             if len(isdel) == 0:
                 isdel = 'yes'
@@ -225,15 +224,12 @@ class Install(object):
                 self._run('/etc/init.d/vpsmate stop')
                 self._run('rm -f /etc/init.d/vpsmate')
                 self._run('rm -rf /usr/local/vpsmate')
-                print
                 print('* VPSMate has been deleted')
             else:
                 if not isdel == 'no':
-                    print
                     print('* The command you entered is incorrect !')
                 self.intranet_port = 8899
                 self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
-                print
                 print('* Intranet and VPSMate now can run simultaneously !')
 
     def start_service(self):
@@ -295,8 +291,6 @@ class Install(object):
         #     print '* Installing python 2.6 ...'
         #     self.install_python()
 
-        # get the latest Intranet version
-        print('* Installing Intranet')
         self.handle_intranet()
         self.handle_vpsmate()
         self.config_account()
@@ -304,13 +298,16 @@ class Install(object):
         self.start_service()
 
         print
+        print
         print('============================')
         print('*    INSTALL COMPLETED!    *')
         print('============================')
         print
+        print
 
         print('* The URL of your Intranet Panel is:'),
         print('http://%s:%s/' % (self.detect_ip(), self.intranet_port))
+        print
         print
 
         pass
