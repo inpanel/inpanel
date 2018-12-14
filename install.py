@@ -217,14 +217,14 @@ class Install(object):
 
         if os.path.exists('/etc/init.d/vpsmate'):
             print('* Checking VPSMate')
-            isdel = raw_input('Delete VPSMate ? [yes or no, default: yes]: ').strip()
+            isdel = raw_input('do delete VPSMate ? [yes or no, default: yes]: ').strip()
             if len(isdel) == 0:
                 isdel = 'yes'
             if isdel == 'yes':
                 self._run('/etc/init.d/vpsmate stop')
                 self._run('rm -f /etc/init.d/vpsmate')
-                self._run('rm -rf /usr/local/vpsmate')
                 print('* VPSMate has been deleted')
+                self._run('rm -rf /usr/local/vpsmate')
             else:
                 if not isdel == 'no':
                     print('* The command you entered is incorrect !')
