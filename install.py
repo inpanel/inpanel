@@ -38,6 +38,7 @@ class Install(object):
             self.arch = 'i386'
         self.installpath = '/usr/local/intranet'
         self.intranet_port = 8888
+        self.repository = 'https://github.com/intranet-panel/intranet.git'
         self.distname = self.dist[0].lower()
         self.version = self.dist[1]
         self.version = self.version[0:self.version.find('.', self.version.index('.') + 1)]
@@ -161,12 +162,15 @@ class Install(object):
             self._run('/etc/init.d/intranet stop')
 
         # backup data and remove old code
-        if os.path.exists('%s/data/' % self.installpath):
-            self._run('mkdir /tmp/intranet_panel_data', True)
-            self._run('/bin/cp -rf %s/data/* /tmp/intranet_panel_data/' % self.installpath, True)
+        # if os.path.exists('%s/data/' % self.installpath):
+        #     self._run('mkdir /tmp/intranet_panel_data', True)
+        #     self._run('/bin/cp -rf %s/data/* /tmp/intranet_panel_data/' % self.installpath, True)
 
         self._run('rm -rf %s' % self.installpath)
-        self._run('git clone https://github.com/intranet-panel/intranet.git %s' % self.installpath)
+        branch = 'master'
+        if len(sys.argv) == 2 and sys.argv[1] == '--dev':
+            branch = 'dev'
+        self._run('git clone -b %s %s %s' % (branch, self.repository, self.installpath))
 
         # install new code
         # self._run('mv intranet %s' % self.installpath)
@@ -231,7 +235,6 @@ class Install(object):
                 self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
                 print
                 print('* Intranet and VPSMate now can run simultaneously !')
-            
 
     def start_service(self):
         # start service
@@ -311,8 +314,6 @@ class Install(object):
         print
 
         pass
-
-
 
 
 def main():
