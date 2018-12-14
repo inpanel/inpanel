@@ -228,7 +228,7 @@ class Install(object):
                 print
                 print('* VPSMate has been deleted')
             else:
-                if isdel is not 'no':
+                if not isdel == 'no':
                     print
                     print('* The command you entered is incorrect !')
                 self.intranet_port = 8899
