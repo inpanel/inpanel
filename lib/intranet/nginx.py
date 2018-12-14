@@ -507,9 +507,9 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
             # deal with comment and detect intranet flag in comment
             fields = line.split('#', 1)
             line = fields[0].strip()
-            gen_by_vpsmate = False
+            gen_by_intranet = False
             if len(fields) > 1 and fields[1].strip() == GENBY:
-                gen_by_vpsmate = True
+                gen_by_intranet = True
 
             # context up
             if line == '}':
@@ -586,11 +586,11 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
                         cconfig['_param'] =  {'file': file_i, 'line': [line_i-line_count+1, line_count], 'disabled': line_disabled, 'value': value}
                         # record the context range
                         cconfig['_range'] = {'begin': {'file': file_i, 'line': [line_i-line_count+1, line_count]}}
-                        cconfig['_vpsmate'] = gen_by_vpsmate
+                        cconfig['_intranet'] = gen_by_intranet
                     else:
                         cconfig['_param'] =  value
                         cconfig['_disabled'] = line_disabled
-                        cconfig['_vpsmate'] = gen_by_vpsmate
+                        cconfig['_intranet'] = gen_by_intranet
 
     return config
 
@@ -1135,7 +1135,7 @@ def getserver(ip, port, server_name, config=None):
     if not scontext: return False
 
     server = {}
-    server['_vpsmate'] = scontext['_vpsmate']
+    server['_intranet'] = scontext['_intranet']
     server['server_names'] = []
     if scontext.has_key('server_name'):
         for name in scontext['server_name']:

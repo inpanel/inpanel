@@ -1,4 +1,4 @@
-angular.module('vpsmate.directives', []).
+angular.module('intranet.directives', []).
 directive('navbar', function(){
 	return {
 		restrict: 'A',

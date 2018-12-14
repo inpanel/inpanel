@@ -15,16 +15,16 @@ python install.py
 #### Uninstall
 
 ```shell
-service vpsmate stop
-rm -rf /usr/local/vpsmate
-rm -f /etc/init.d/vpsmate
+service intranet stop
+rm -rf /usr/local/intranet
+rm -f /etc/init.d/intranet
 ```
 
 #### Username and Password
 
 ```shell
-/usr/local/vpsmate/config.py username 'your-username'
-/usr/local/vpsmate/config.py password 'your-password'
+/usr/local/intranet/config.py username 'your-username'
+/usr/local/intranet/config.py password 'your-password'
 ```
 
 #### Features

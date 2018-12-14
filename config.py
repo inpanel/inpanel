@@ -18,8 +18,8 @@ import hmac
 import time
 import datetime
 import base64
-from vpsmate.config import Config
-from vpsmate.utils import randstr, is_valid_ip
+from intranet.config import Config
+from intranet.utils import randstr, is_valid_ip
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

@@ -349,10 +349,10 @@ var SettingCtrl = [
                             $scope.upverMessage = '正在重启 Intranet...';
                             Timeout(function () {
                                 Request.post('/backend/service_restart', {
-                                    service: 'vpsmate'
+                                    service: 'intranet'
                                 }, function (data) {
                                     var getRestartStatus = function () {
-                                        Request.get('backend/service_restart_vpsmate', function (data) {
+                                        Request.get('backend/service_restart_intranet', function (data) {
                                             Message.setInfo('')
                                             if (data.msg) $scope.upverMessage = data.msg;
                                             Timeout(getRestartStatus, 500, module);
@@ -382,10 +382,10 @@ var SettingCtrl = [
             $scope.showRestartBtn = false;
             Timeout(function () {
                 Request.post('/backend/service_restart', {
-                    service: 'vpsmate'
+                    service: 'intranet'
                 }, function (data) {
                     var getRestartStatus = function () {
-                        Request.get('backend/service_restart_vpsmate', function (data) {
+                        Request.get('backend/service_restart_intranet', function (data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             Timeout(getRestartStatus, 500, module);
                         }, function (data, status) { // error occur because server is terminate

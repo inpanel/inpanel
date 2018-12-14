@@ -419,7 +419,7 @@ var SiteNginxCtrl = [
             time_unit: 'h'
         };
         $scope.setting = angular.copy(server_tmpl);
-        $scope.gen_by_vpsmate = action == 'new' ? true : false;
+        $scope.gen_by_intranet = action == 'new' ? true : false;
 
         var global_rewrite_templates = {
             '301_1': 'rewrite ^ http://example.com$request_uri? permanent',
@@ -500,7 +500,7 @@ var SiteNginxCtrl = [
                     var d = res.data;
                     // init setting
                     var s = $scope.setting;
-                    $scope.gen_by_vpsmate = d._vpsmate;
+                    $scope.gen_by_intranet = d._intranet;
                     for (i in d.server_names) {
                         var name = d.server_names[i];
                         s.server_names.push({ 'name': name, 'default_name': name == '_' });
@@ -950,7 +950,7 @@ var SiteApacheCtrl = [
             time_unit: 'h'
         };
         $scope.setting = angular.copy(server_tmpl);
-        $scope.gen_by_vpsmate = action == 'new' ? true : false;
+        $scope.gen_by_intranet = action == 'new' ? true : false;
 
         var global_rewrite_templates = {
             '301_1': 'rewrite ^ http://example.com$request_uri? permanent',
@@ -1031,7 +1031,7 @@ var SiteApacheCtrl = [
                     var d = res.data;
                     // init setting
                     var s = $scope.setting;
-                    $scope.gen_by_vpsmate = d._vpsmate;
+                    $scope.gen_by_intranet = d._intranet;
                     for (i in d.server_names) {
                         var name = d.server_names[i];
                         s.server_names.push({ 'name': name, 'default_name': name == '_' });

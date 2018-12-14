@@ -1,4 +1,4 @@
-angular.module('vpsmate.services', []).
+angular.module('intranet.services', []).
 factory('Auth', ['$rootScope', '$http', '$location', function ($scope, $http, $location) {
 	var Auth = {};
 	Auth.required = function (callback, errCallback) {

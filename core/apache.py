@@ -21,8 +21,8 @@ from cStringIO import StringIO
 
 DEBUG = False
 
-# HTTPD_CONF_DIR = '/etc/httpd/'
-HTTPD_CONF_DIR = '/Users/douzhenjiang/Projects/intranet-panel/lib/vpsmate/'
+HTTPD_CONF_DIR = '/etc/httpd/'
+# HTTPD_CONF_DIR = '/Users/douzhenjiang/Projects/intranet-panel/lib/intranet/'
 HTTPD_CONF = '/etc/httpd/conf/httpd.conf'
 SERVERCONF = '/etc/httpd/conf.d/'
 COMMENTFLAG = '#v#'
@@ -145,7 +145,7 @@ def _load_virtualhost(conf=''):
     result_d = {}
     directorys = {}  # 附加信息
     line_disabled = False
-    gen_by_vpsmate = False
+    gen_by_intranet = False
     match_start = re.compile(r'<VirtualHost(\s+)(\S+)>')
     match_end = re.compile(r'</VirtualHost>')
     match_start_d = re.compile(r'<Directory(\s+)(\S+)>')
@@ -167,7 +167,7 @@ def _load_virtualhost(conf=''):
         fields = out.split('#', 1)
         out = fields[0].strip()
         if len(fields) > 1 and fields[1].strip() == GENBY:
-            gen_by_vpsmate = True
+            gen_by_intranet = True
 
         # start of VirtualHost
         match = match_start.search(out)
@@ -419,4 +419,4 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
     # print getservers()
 
     # path = os.path.join(SERVERCONF, clist[i])
-    # print os.path.splitext('/Users/douzhenjiang/Projects/intranet-panel/lib/vpsmate/test/aaa.com')
+    # print os.path.splitext('/Users/douzhenjiang/Projects/intranet-panel/lib/intranet/test/aaa.com')

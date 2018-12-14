@@ -608,7 +608,7 @@ class Server(object):
 
 class Service(object):
 
-    support_services = ['vpsmate', 'nginx', 'httpd',
+    support_services = ['intranet', 'nginx', 'httpd',
                         'vsftpd', 'mysqld', 'redis', 'memcached', 'mongod', 'php-fpm',
                         'postfix',
                         'sendmail', 'sshd', 'iptables', 'crond', 'ntpd']
