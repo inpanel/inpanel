@@ -61,12 +61,12 @@ class Install(object):
                 supported = False
         elif self.os == 'Darwin':
             supported = True
-        # elif self.distname == 'ubuntu':
-        #    if float(self.version) < 10.10:
-        #        supported = False
-        # elif self.distname == 'debian':
-        #    if float(self.version) < 6.0:
-        #        supported = False
+        elif self.distname == 'ubuntu':
+           if float(self.version) < 10.10:
+               supported = False
+        elif self.distname == 'debian':
+           if float(self.version) < 6.0:
+               supported = False
         else:
             supported = False
         return supported
@@ -76,6 +76,8 @@ class Install(object):
         try:
             if self.distname in ('centos', 'redhat'):
                 self._run("yum install -y git")
+            if self.distname in ('ubuntu', 'debian'):
+                self._run("apt-get -y install git")
         except:
             pass
 
@@ -85,14 +87,14 @@ class Install(object):
         elif self.distname == 'redhat':
             if float(self.version) < 5.4:
                 supported = False
-        elif self.os == 'Darwin':
-            supported = True
         elif self.distname == 'ubuntu':
            if float(self.version) < 10.10:
                supported = False
         elif self.distname == 'debian':
            if float(self.version) < 6.0:
                supported = False
+        elif self.os == 'Darwin':
+            supported = False
         else:
             supported = False
         return supported
@@ -121,7 +123,7 @@ class Install(object):
 
             self._run('wget -nv -c %s' % epelurl)
             self._run('rpm -Uvh %s' % epelrpm)
-            print('OK')
+            print('...OK')
 
     def install_python(self):
         if self.distname == 'centos':
@@ -131,10 +133,12 @@ class Install(object):
             self._run('yum -y install python26')
 
         elif self.distname == 'ubuntu':
-            pass
+            self._run('apt-get -y install python')
+            # pass
 
         elif self.distname == 'debian':
-            pass
+            self._run('apt-get -y install python')
+            # pass
 
     def handle_intranet(self):
         # handle Intranet
