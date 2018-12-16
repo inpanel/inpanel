@@ -20,6 +20,7 @@ import subprocess
 import sys
 # import re
 
+
 class Install(object):
     def __init__(self):
 
@@ -216,25 +217,68 @@ class Install(object):
         s.close()
         return ip
 
+    def handle_port(self):
+        # config listen port
+        start_port = int(self.intranet_port)
+        # 2^16-1 = 65535
+        while (start_port < 65536):
+            res = self.find_free_port(start_port)
+            if res:
+                break
+            else:
+                start_port = start_port + 1
+        self.intranet_port = start_port
+        # self.intranet_port = 8899
+        self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
+        print('* Intranet will work on port %s' % self.intranet_port)
+
+    def find_free_port(self, port_number):
+        # find an unuse port
+        enabled = False
+        local_ip = socket.gethostbyname(socket.gethostname())
+        skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ip_list = tuple(set(('127.0.0.1', '0.0.0.0', local_ip)))
+        print(ip_list)
+        for ip in ip_list:
+            print(ip)
+            try:
+                res = skt.connect_ex((str(ip), int(port_number)))
+                # res = skt.connect_ex(('127.0.0.1', port_number))
+                if res == 0:
+                    # print("Port %d is open" % port_number)
+                    enabled = True
+                else:
+                    # print("Port %d is not open" % port_number)
+                    enabled = False
+                skt.close()
+            except:
+                enabled = False
+            
+        return enabled
+
     def handle_vpsmate(self):
         # handle VPSMate
+        v_script = '/etc/init.d/vpsmate'
+        if not os.path.exists(v_script):
+            return False
 
-        if os.path.exists('/etc/init.d/vpsmate'):
-            print('* Checking VPSMate')
-            isdel = raw_input('do delete VPSMate ? [yes or no, default: yes]: ').strip()
-            if len(isdel) == 0:
-                isdel = 'yes'
-            if isdel == 'yes':
-                self._run('/etc/init.d/vpsmate stop')
-                self._run('rm -f /etc/init.d/vpsmate')
-                print('* VPSMate has been deleted')
-                self._run('rm -rf /usr/local/vpsmate')
-            else:
-                if not isdel == 'no':
-                    print('* The command you entered is incorrect !')
-                self.intranet_port = 8899
-                self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
-                print('* Intranet and VPSMate now can run simultaneously !')
+        print('* Checking VPSMate')
+        v_path = '/usr/local/vpsmate'
+        isdel = raw_input('Need to delete VPSMate ? [yes or no, default: yes]: ').strip()
+        if len(isdel) == 0:
+            isdel = 'yes'
+        if isdel == 'yes':
+            self._run('%s stop' % v_script)
+            self._run('rm -f %s' % v_script)
+            print('* VPSMate has been deleted')
+            self._run('rm -rf %s' % v_path)
+        else:
+            if not isdel == 'no':
+                print('* The command you entered is incorrect !')
+            print('* VPSMate will continue to work !')
+            self.intranet_port = 8899
+            self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
+            print('* Intranet will work on port %s' % self.intranet_port)
 
     def start_service(self):
         # start service
@@ -297,6 +341,7 @@ class Install(object):
 
         self.handle_intranet()
         self.handle_vpsmate()
+        # self.handle_port()
         self.config_account()
         self.config_firewall()
         self.start_service()
