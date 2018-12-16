@@ -42,6 +42,8 @@ rm -f /etc/init.d/intranet
 
 本管理面板只是在 UI 层面对系统服务及功能进行管理配置，并不会在系统中生成多余的依赖及配置文件，不管VPSMate 还是 Intranet，只是工具而已，卸载或安装，对系统已配置好的服务是没有影响的。
 
-现阶段两者使用同一个进程服务文件，所以**只需要卸载 VPSMate ，再安装 Intranet 即可**。
+~~现阶段两者使用同一个进程服务文件，所以**只需要卸载 VPSMate ，再安装 Intranet 即可**。~~
+
+从版本 Intranet v1.1.1b16 开始，不再使用 vpsmate 进程名，改用进程名为 intranet，在全新安装 Intranet 面板时，可以对已安装的 VPSMate 进行保留（或者删除）操作。
 
 > 希望你用得愉快 ！
