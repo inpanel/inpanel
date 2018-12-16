@@ -1,3 +1,11 @@
+#### Intranet Panel v1.1.1b16 (2018-12-17)
+
+> **版本更新：**
+>
+> - 后端服务脚本及前端页面程序重命名为 intranet
+> - 全新安装 Intarnet 时，加入对 VPSMate 的检测，可以选择保留 VPSMate，暂时和 Intranet 不能同时运行
+>
+
 #### Intranet Panel v1.1.1b15 (2018-12-13)
 
 > **Bug 修复：**

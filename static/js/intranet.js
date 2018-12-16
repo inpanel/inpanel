@@ -1,4 +1,4 @@
-var releasetime = '2018-12-14 17:16:33 CST';
+var releasetime = '2018-12-17 06:05:12 CST';
 var _v = new Date(releasetime.replace(/-/g, '/')).getTime() / 1000;
 //if (1) _v += Math.random();	// ie test mode
 angular.module('intranet', ['intranet.services', 'intranet.directives', 'intranet.filters']).
