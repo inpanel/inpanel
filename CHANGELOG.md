@@ -1,26 +1,55 @@
+#### Intranet Panel v1.1.1b15 (2018-12-13)
+
+> **Bug 修复：**
+>
+> - 修复版本更新完成时页面显示的版本信息与当前实际版本信息不一致的问题
+
+#### Intranet Panel v1.1.1b14 (2018-12-13)
+
+> **版本更新：**
+>
+> - 更新版本到 v1.1.1b14，用于测试版本更新
+
+#### Intranet Panel v1.1.1b13 (2018-12-13)
+
+> **Bug 修复：**
+>
+> - 修复版本更新时配置文件丢失的问题
+
 #### 项目更名为 Intranet Panel (2018-12-13)
 
+> **项目调整：**
+>
 >  - 项目名称改为 Intranet Panel，并转移到 intranet-panel 组织
 >  - 相关项目：Intranet Site、Intranet API 和 Intranet Docs 也一并转移到 intranet-panel
 
 #### Intranet v1.1.1 b12 (2018-12-12)
 
+> **功能改进：**
+>
 >  - 完善更新功能
+>
+> **Bug 修复：**
 >
 >  - 修复更新接口的报错信息
 
 #### 项目正式更名为 Intranet (2018-11-01)
 
->  - 项目名称改为 Intranet，并转移到 crogram 组织，便于协同开发
+> **项目调整：**
 >
+>  - 项目名称改为 Intranet，并转移到 crogram 组织，便于协同开发
 >  - 新增 TODOLIST 任务列表
 
 #### 项目许可文件更新 (2018-10-25)
 
+> **项目调整：**
+>
 >  许可文件更新，使用 The New BSD License 许可
 
 #### Intranet 项目启动更新 (2017-08-14)
 
+> **项目启动：**
+>
 >  以 VPSMate 为基础，二次开发的项目 Intranet 正式启动，Intranet 将一如既往的保持原来 VPSMate 的简洁与快速，希望大家喜爱和关注。
 
 #### VPSMate 项目已暂停更新
