@@ -46,9 +46,9 @@ from core import apache, cron, proc
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
-SERVER_NAME = 'Intranet'
-VPSMATE_VERSION = '1.1.1'
-VPSMATE_BUILD = '15'
+APP_NAME = 'Intranet'
+APP_VERSION = '1.1.1'
+APP_BUILD = '16'
 
 
 class Application(tornado.web.Application):
@@ -94,7 +94,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 pass
 
     def set_default_headers(self):
-        self.set_header('Server', SERVER_NAME)
+        self.set_header('Server', APP_NAME)
 
     def check_xsrf_cookie(self):
         token = (self.get_argument("_xsrf", None) or
@@ -152,24 +152,24 @@ class RequestHandler(tornado.web.RequestHandler):
 
 class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
-        self.set_header('Server', SERVER_NAME)
+        self.set_header('Server', APP_NAME)
 
 
 class ErrorHandler(tornado.web.ErrorHandler):
     def set_default_headers(self):
-        self.set_header('Server', SERVER_NAME)
+        self.set_header('Server', APP_NAME)
 
 
 class FallbackHandler(tornado.web.FallbackHandler):
     def set_default_headers(self):
-        self.set_header('Server', SERVER_NAME)
+        self.set_header('Server', APP_NAME)
 
 
 class RedirectHandler(tornado.web.RedirectHandler):
     def set_default_headers(self):
-        self.set_header('Server', SERVER_NAME)
+        self.set_header('Server', APP_NAME)
 
-        
+
 class FileDownloadHandler(StaticFileHandler):
     def get(self, path):
         self.authed()
@@ -212,8 +212,8 @@ class VersionHandler(RequestHandler):
     def get(self):
         self.authed()
         version_info = {
-            'version': VPSMATE_VERSION,
-            'build': VPSMATE_BUILD,
+            'version': APP_VERSION,
+            'build': APP_BUILD,
         }
         self.write(version_info)
 
@@ -265,7 +265,7 @@ class LoginHandler(RequestHandler):
                 self.write({'code': -1,
                     'msg': u'登录已被锁定，请在 %s 后重试登录。<br>'\
                         u'如需立即解除锁定，请在服务器上执行以下命令：<br>'\
-                        u'/usr/local/vpsmate/config.py loginlock off' %
+                        u'/usr/local/intranet/config.py loginlock off' %
                         datetime.datetime.fromtimestamp(loginlockexpire)
                             .strftime('%Y-%m-%d %H:%M:%S')})
                 return
@@ -279,7 +279,7 @@ class LoginHandler(RequestHandler):
         if cfg_password == '':
             self.write({'code': -1,
                 'msg': u'登录密码还未设置，请在服务器上执行以下命令进行设置：<br>'\
-                    u'/usr/local/vpsmate/config.py password \'您的密码\''})
+                    u'/usr/local/intranet/config.py password \'您的密码\''})
         elif username != cfg_username:  # wrong with username
             self.write({'code': -1, 'msg': u'用户不存在！'})
         else:   # username is corret
@@ -464,7 +464,7 @@ class QueryHandler(RequestHandler):
             'virt'         : False,
         }
         service_items = {
-            'vpsmate'      : False,
+            'intranet'      : False,
             'nginx'        : False,
             'httpd'        : False,
             'vsftpd'       : False,
@@ -2145,7 +2145,7 @@ class BackendHandler(RequestHandler):
             service = self.get_argument('service', '')
 
             if self.config.get('runtime', 'mode') == 'demo':
-                if service in ('network', 'sshd', 'vpsmate', 'iptables'):
+                if service in ('network', 'sshd', 'intranet', 'iptables'):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
                     return
 
@@ -2516,7 +2516,7 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = u'%s/tools/init.d/%s/vpsmate' % (root_path, distname)
+        initscript = u'%s/tools/init.d/%s/intranet' % (root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
@@ -2538,13 +2538,13 @@ class BackendHandler(RequestHandler):
                 'cmd': u'find %s/intranet -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
             }, {
                 'desc': u'正在删除旧的服务脚本...',
-                'cmd': u'rm -f /etc/init.d/vpsmate',
+                'cmd': u'rm -f /etc/init.d/intranet',
             }, {
                 'desc': u'正在安装新的服务脚本...',
-                'cmd': u'cp %s /etc/init.d/vpsmate' % initscript
+                'cmd': u'cp %s /etc/init.d/intranet' % initscript
             }, {
                 'desc': u'正在更改脚本权限...',
-                'cmd': u'chmod +x /etc/init.d/vpsmate %s/config.py %s/server.py' % (root_path, root_path),
+                'cmd': u'chmod +x /etc/init.d/intranet %s/config.py %s/server.py' % (root_path, root_path),
             }, {
                 'desc': u'正在删除安装临时文件...',
                 'cmd': u'rm -rf %s/intranet %s/intranet.tar.gz' % (data_path, data_path)
@@ -2805,16 +2805,16 @@ class BackendHandler(RequestHandler):
             if dist_verint == 5:
                 if self.settings['dist_name'] == 'redhat':
                     # backup system version info
-                    cmds.append('cp -f /etc/redhat-release /etc/redhat-release.vpsmate')
-                    cmds.append('cp -f /etc/issue /etc/issue.vpsmate')
+                    cmds.append('cp -f /etc/redhat-release /etc/redhat-release.intranet')
+                    cmds.append('cp -f /etc/issue /etc/issue.intranet')
                     #cmds.append('rpm -e redhat-release-notes-5Server --nodeps')
                     cmds.append('rpm -e redhat-release-5Server --nodeps')
 
             for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
                 cmds.append('rpm -U %s' % rpm)
 
-            cmds.append('cp -f /etc/issue.vpsmate /etc/issue')
-            cmds.append('cp -f /etc/redhat-release.vpsmate /etc/redhat-release')
+            cmds.append('cp -f /etc/issue.intranet /etc/issue')
+            cmds.append('cp -f /etc/redhat-release.intranet /etc/redhat-release')
 
         elif repo in ('epel', 'CentALT'):
             # elif repo in ('epel', 'CentALT', 'ius'):

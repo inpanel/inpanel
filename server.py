@@ -19,13 +19,13 @@ sys.path.insert(0, os.path.join(root_path, 'lib'))
 import ssl
 import tornado.ioloop
 import tornado.httpserver
-import vpsmate.web
-import vpsmate.config
-from vpsmate.utils import make_cookie_secret
+import intranet.web
+import intranet.config
+from intranet.utils import make_cookie_secret
 
 
 def write_pid():
-    pidfile = '/var/run/vpsmate.pid'
+    pidfile = '/var/run/intranet.pid'
     pidfp = open(pidfile, 'w')
     pidfp.write(str(os.getpid()))
     pidfp.close()
@@ -40,33 +40,33 @@ def main():
         'cookie_secret': make_cookie_secret(),
     }
 
-    application = vpsmate.web.Application([
-        (r'/xsrf', vpsmate.web.XsrfHandler),
-        (r'/authstatus', vpsmate.web.AuthStatusHandler),
-        (r'/login', vpsmate.web.LoginHandler),
-        (r'/logout', vpsmate.web.LogoutHandler),
-        (r'/query/(.+)', vpsmate.web.QueryHandler),
-        (r'/utils/network/(.+?)(?:/(.+))?', vpsmate.web.UtilsNetworkHandler),
-        (r'/utils/process/(.+?)(?:/(.+))?', vpsmate.web.UtilsProcessHandler),
-        (r'/utils/time/(.+?)(?:/(.+))?', vpsmate.web.UtilsTimeHandler),
-        (r'/setting/(.+)', vpsmate.web.SettingHandler),
-        (r'/operation/(.+)', vpsmate.web.OperationHandler),
-        (r'/page/(.+)/(.+)', vpsmate.web.PageHandler),
-        (r'/backend/(.+)', vpsmate.web.BackendHandler),
-        (r'/sitepackage/(.+)', vpsmate.web.SitePackageHandler),
-        (r'/client/(.+)', vpsmate.web.ClientHandler),
+    application = intranet.web.Application([
+        (r'/xsrf', intranet.web.XsrfHandler),
+        (r'/authstatus', intranet.web.AuthStatusHandler),
+        (r'/login', intranet.web.LoginHandler),
+        (r'/logout', intranet.web.LogoutHandler),
+        (r'/query/(.+)', intranet.web.QueryHandler),
+        (r'/utils/network/(.+?)(?:/(.+))?', intranet.web.UtilsNetworkHandler),
+        (r'/utils/process/(.+?)(?:/(.+))?', intranet.web.UtilsProcessHandler),
+        (r'/utils/time/(.+?)(?:/(.+))?', intranet.web.UtilsTimeHandler),
+        (r'/setting/(.+)', intranet.web.SettingHandler),
+        (r'/operation/(.+)', intranet.web.OperationHandler),
+        (r'/page/(.+)/(.+)', intranet.web.PageHandler),
+        (r'/backend/(.+)', intranet.web.BackendHandler),
+        (r'/sitepackage/(.+)', intranet.web.SitePackageHandler),
+        (r'/client/(.+)', intranet.web.ClientHandler),
         (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)',
-         vpsmate.web.StaticFileHandler, {'path': settings['static_path']}),
-        (r'/($)', vpsmate.web.StaticFileHandler,
+         intranet.web.StaticFileHandler, {'path': settings['static_path']}),
+        (r'/($)', intranet.web.StaticFileHandler,
          {'path': settings['static_path'] + '/index.html'}),
-        (r'/file/(.+)', vpsmate.web.FileDownloadHandler, {'path': '/'}),
-        (r'/fileupload', vpsmate.web.FileUploadHandler),
-        (r'/version', vpsmate.web.VersionHandler),
-        (r'/.*', vpsmate.web.ErrorHandler, {'status_code': 404}),
+        (r'/file/(.+)', intranet.web.FileDownloadHandler, {'path': '/'}),
+        (r'/fileupload', intranet.web.FileUploadHandler),
+        (r'/version', intranet.web.VersionHandler),
+        (r'/.*', intranet.web.ErrorHandler, {'status_code': 404}),
     ], **settings)
 
     # read configuration from config.ini
-    cfg = vpsmate.config.Config(settings['data_path'] + '/config.ini')
+    cfg = intranet.config.Config(settings['data_path'] + '/config.ini')
     server_ip = cfg.get('server', 'ip')
     server_port = cfg.get('server', 'port')
 

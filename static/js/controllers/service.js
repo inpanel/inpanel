@@ -975,8 +975,8 @@ var ServiceIPTablesCtrl = [
 ];
 
 var ServiceCronCtrl = [
-    '$scope', '$routeParams', 'Module', 'Request',
-    function ($scope, $routeParams, Module, Request) {
+    '$scope', '$routeParams', 'Module', 'Request', 'Message',
+    function ($scope, $routeParams, Module, Request, Message) {
         var module = 'service.cron';
         Module.init(module, 'Cron');
         Module.initSection('base');
@@ -1017,6 +1017,7 @@ var ServiceCronCtrl = [
             }, function (res) {
                 if (res.code == 0) {
                     $scope.settings = res.data;
+                    Message.setSuccess(res.msg);
                 }
             }, false, true);
         };
@@ -1028,7 +1029,10 @@ var ServiceCronCtrl = [
             }, function (res) {
                 if (res.code == 0) {
                     $scope.tabSettings();
-                }
+                    Message.setSuccess(res.msg);
+                } else if (res.code == -1) {
+					Message.setError(res.msg);
+				}
             }, false, true);
         };
         $scope.tabSettings = function () {

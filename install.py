@@ -20,6 +20,7 @@ import subprocess
 import sys
 # import re
 
+
 class Install(object):
     def __init__(self):
 
@@ -36,7 +37,9 @@ class Install(object):
         self.arch = platform.machine()
         if self.arch != 'x86_64':
             self.arch = 'i386'
-        self.installpath = '/usr/local/vpsmate'
+        self.installpath = '/usr/local/intranet'
+        self.intranet_port = 8888
+        self.repository = 'https://github.com/intranet-panel/intranet.git'
         self.distname = self.dist[0].lower()
         self.version = self.dist[1]
         self.version = self.version[0:self.version.find('.', self.version.index('.') + 1)]
@@ -59,12 +62,12 @@ class Install(object):
                 supported = False
         elif self.os == 'Darwin':
             supported = True
-        # elif self.distname == 'ubuntu':
-        #    if float(self.version) < 10.10:
-        #        supported = False
-        # elif self.distname == 'debian':
-        #    if float(self.version) < 6.0:
-        #        supported = False
+        elif self.distname == 'ubuntu':
+           if float(self.version) < 10.10:
+               supported = False
+        elif self.distname == 'debian':
+           if float(self.version) < 6.0:
+               supported = False
         else:
             supported = False
         return supported
@@ -74,6 +77,8 @@ class Install(object):
         try:
             if self.distname in ('centos', 'redhat'):
                 self._run("yum install -y git")
+            if self.distname in ('ubuntu', 'debian'):
+                self._run("apt-get -y install git")
         except:
             pass
 
@@ -83,14 +88,14 @@ class Install(object):
         elif self.distname == 'redhat':
             if float(self.version) < 5.4:
                 supported = False
-        elif self.os == 'Darwin':
-            supported = True
         elif self.distname == 'ubuntu':
            if float(self.version) < 10.10:
                supported = False
         elif self.distname == 'debian':
            if float(self.version) < 6.0:
                supported = False
+        elif self.os == 'Darwin':
+            supported = False
         else:
             supported = False
         return supported
@@ -119,7 +124,7 @@ class Install(object):
 
             self._run('wget -nv -c %s' % epelurl)
             self._run('rpm -Uvh %s' % epelrpm)
-            print('OK')
+            print('...OK')
 
     def install_python(self):
         if self.distname == 'centos':
@@ -129,12 +134,17 @@ class Install(object):
             self._run('yum -y install python26')
 
         elif self.distname == 'ubuntu':
-            pass
+            self._run('apt-get -y install python')
+            # pass
 
         elif self.distname == 'debian':
-            pass
+            self._run('apt-get -y install python')
+            # pass
 
-    def install_panel(self):
+    def handle_intranet(self):
+        # handle Intranet
+        # get the latest Intranet version
+        print('* Installing Intranet')
         # localpkg_found = False
         # if os.path.exists(os.path.join(os.path.dirname(__file__), 'intranet.tar.gz')):
         #     # local install package found
@@ -154,42 +164,51 @@ class Install(object):
         # if not localpkg_found: os.remove('intranet.tar.gz')
 
         # stop service
-        print
-        if os.path.exists('/etc/init.d/vpsmate'):
-            self._run('/etc/init.d/vpsmate stop')
+        if os.path.exists('/etc/init.d/intranet'):
+            self._run('/etc/init.d/intranet stop')
 
         # backup data and remove old code
-        if os.path.exists('%s/data/' % self.installpath):
-            self._run('mkdir /tmp/intranet_panel_data', True)
-            self._run('/bin/cp -rf %s/data/* /tmp/intranet_panel_data/' % self.installpath, True)
+        # if os.path.exists('%s/data/' % self.installpath):
+        #     self._run('mkdir /tmp/intranet_panel_data', True)
+        #     self._run('/bin/cp -rf %s/data/* /tmp/intranet_panel_data/' % self.installpath, True)
+
         self._run('rm -rf %s' % self.installpath)
-        self._run('git clone https://github.com/intranet-panel/intranet.git %s' % self.installpath)
+        branch = 'master'
+        if len(sys.argv) == 2 and sys.argv[1] == '--dev':
+            branch = 'dev'
+        self._run('git clone -b %s %s %s' % (branch, self.repository, self.installpath))
 
         # install new code
         # self._run('mv intranet %s' % self.installpath)
         self._run('chmod +x %s/config.py %s/server.py' % (self.installpath, self.installpath))
 
         # install service
-        initscript = '%s/tools/init.d/%s/vpsmate' % (self.installpath, self.distname)
-        self._run('cp %s /etc/init.d/vpsmate' % initscript)
-        self._run('chmod +x /etc/init.d/vpsmate')
-
-        # start service
-        if self.distname in ('centos', 'redhat'):
-            self._run('chkconfig vpsmate on')
-            self._run('service vpsmate start')
-        elif self.distname == 'ubuntu':
-            pass
-        elif self.distname == 'debian':
-            pass
+        initscript = '%s/tools/init.d/%s/intranet' % (self.installpath, self.distname)
+        self._run('cp %s /etc/init.d/intranet' % initscript)
+        self._run('chmod +x /etc/init.d/intranet')
 
     def config_firewall(self):
-        self._run('iptables -A INPUT -p tcp --dport 8888 -j ACCEPT')
-        self._run('iptables -A OUTPUT -p tcp --sport 8888 -j ACCEPT')
+        # config firewall
+        print('* Config iptables')
+        if os.path.exists('/etc/init.d/iptables'):
+            self._run('iptables -A INPUT -p tcp --dport %s -j ACCEPT' % self.intranet_port)
+            self._run('iptables -A OUTPUT -p tcp --sport %s -j ACCEPT' % self.intranet_port)
+            self._run('service iptables save')
+            self._run('/etc/init.d/iptables restart')
 
-    def config_account(self, username, password):
+    def config_account(self):
+        # set username and password
+        username = raw_input('Admin username [default: admin]: ').strip()
+        password = raw_input('Admin password [default: admin]: ').strip()
+        if len(username) == 0:
+            username = 'admin'
+        if len(password) == 0:
+            password = 'admin'
+
         self._run('%s/config.py username "%s"' % (self.installpath, username))
         self._run('%s/config.py password "%s"' % (self.installpath, password))
+
+        print('* Username and password set successfully!')
 
     def detect_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -197,6 +216,79 @@ class Install(object):
         ip = s.getsockname()[0]
         s.close()
         return ip
+
+    def handle_port(self):
+        # config listen port
+        start_port = int(self.intranet_port)
+        # 2^16-1 = 65535
+        while (start_port < 65536):
+            res = self.find_free_port(start_port)
+            if res:
+                break
+            else:
+                start_port = start_port + 1
+        self.intranet_port = start_port
+        # self.intranet_port = 8899
+        self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
+        print('* Intranet will work on port %s' % self.intranet_port)
+
+    def find_free_port(self, port_number):
+        # find an unuse port
+        enabled = False
+        local_ip = socket.gethostbyname(socket.gethostname())
+        skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ip_list = tuple(set(('127.0.0.1', '0.0.0.0', local_ip)))
+        print(ip_list)
+        for ip in ip_list:
+            print(ip)
+            try:
+                res = skt.connect_ex((str(ip), int(port_number)))
+                # res = skt.connect_ex(('127.0.0.1', port_number))
+                if res == 0:
+                    # print("Port %d is open" % port_number)
+                    enabled = True
+                else:
+                    # print("Port %d is not open" % port_number)
+                    enabled = False
+                skt.close()
+            except:
+                enabled = False
+            
+        return enabled
+
+    def handle_vpsmate(self):
+        # handle VPSMate
+        v_script = '/etc/init.d/vpsmate'
+        if not os.path.exists(v_script):
+            return False
+
+        print('* Checking VPSMate')
+        v_path = '/usr/local/vpsmate'
+        isdel = raw_input('Need to delete VPSMate ? [yes or no, default: yes]: ').strip()
+        if len(isdel) == 0:
+            isdel = 'yes'
+        if isdel == 'yes':
+            self._run('%s stop' % v_script)
+            self._run('rm -f %s' % v_script)
+            print('* VPSMate has been deleted')
+            self._run('rm -rf %s' % v_path)
+        else:
+            if not isdel == 'no':
+                print('* The command you entered is incorrect !')
+            print('* VPSMate will continue to work !')
+            self.intranet_port = 8899
+            self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
+            print('* Intranet will work on port %s' % self.intranet_port)
+
+    def start_service(self):
+        # start service
+        if self.distname in ('centos', 'redhat'):
+            self._run('chkconfig intranet on')
+            self._run('service intranet start')
+        elif self.distname == 'ubuntu':
+            pass
+        elif self.distname == 'debian':
+            pass
 
     def install(self):
         # check platform environment
@@ -247,37 +339,24 @@ class Install(object):
         #     print '* Installing python 2.6 ...'
         #     self.install_python()
 
-        # stop firewall
-        if os.path.exists('/etc/init.d/iptables'):
-            self._run('/etc/init.d/iptables stop')
+        self.handle_intranet()
+        self.handle_vpsmate()
+        # self.handle_port()
+        self.config_account()
+        self.config_firewall()
+        self.start_service()
 
-        # get the latest Intranet version
-        print('* Installing Intranet')
-        self.install_panel()
-
-        # set username and password
+        print
         print
         print('============================')
         print('*    INSTALL COMPLETED!    *')
         print('============================')
         print
-        username = raw_input('Admin username [default: admin]: ').strip()
-        password = raw_input('Admin password [default: admin]: ').strip()
-        if len(username) == 0:
-            username = 'admin'
-        if len(password) == 0:
-            password = 'admin'
-        self.config_account(username, password)
-
         print
-        print('* Username and password set successfully!')
-        print
-
-        print('* Config iptables')
-        self.config_firewall()
 
         print('* The URL of your Intranet Panel is:'),
-        print('http://%s:8888/' % self.detect_ip())
+        print('http://%s:%s/' % (self.detect_ip(), self.intranet_port))
+        print
         print
 
         pass

@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# vpsmate - this script starts and stops the vpsmate daemon
+# intranet - this script starts and stops the intranet daemon
 #
 # chkconfig:   - 85 15
 # description: Intranet is a web-based linux VPS management tools
-# processname: vpsmate
-# pidfile:     /var/run/vpsmate.pid
+# processname: intranet
+# pidfile:     /var/run/intranet.pid
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -16,13 +16,13 @@
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
-exec="/usr/local/vpsmate/server.py"
-pidfile="/var/run/vpsmate.pid"
+exec="/usr/local/intranet/server.py"
+pidfile="/var/run/intranet.pid"
 
-lockfile=/var/lock/subsys/vpsmate
+lockfile=/var/lock/subsys/intranet
 
 start() {
-    [ -x $vpsmate ] || exit 5
+    [ -x $intranet ] || exit 5
     echo -n $"Starting Intranet: "
     daemon --pidfile="$pidfile" "$exec &"
     retval=$?
