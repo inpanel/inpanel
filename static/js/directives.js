@@ -594,7 +594,7 @@ directive('srvupdate', function(){
 							<th>版本</th>\
 							<th style="width:70px">大小</th>\
 							<th style="width:70px">软件源</th>\
-							<th style="width:90px"></th>\
+							<th style="width:90px">操作</th>\
 						</tr>\
 					</thead>\
 					<tbody>\
@@ -765,14 +765,16 @@ directive('srvext', function(){
 							<th>扩展名称</th>\
 							<th>版本</th>\
 							<th style="width:70px">软件源</th>\
-							<th style="width:90px"></th>\
+							<th style="width:70px">大小</th>\
+							<th style="width:90px">操作</th>\
 						</tr>\
 					</thead>\
 					<tbody>\
 						<tr ng-repeat="ext in exts">\
 							<td>{{ext.name}}</td>\
 							<td>{{ext.version}}-{{ext.release}}</td>\
-							<td>{{\'已安装\'|iftrue:ext.repo==\'installed\'}}{{ext.repo|iftrue:ext.repo!=\'installed\'}}</td>\
+                            <td>{{\'已安装\'|iftrue:ext.repo==\'installed\'}}{{ext.repo|iftrue:ext.repo!=\'installed\'}}</td>\
+                            <td>{{ext.size}}</td>\
 							<td>\
 								<button class="btn btn-default btn-xs" ng-show="ext.repo==\'installed\'" ng-click="uninstall(ext.repo, ext.name, ext.version, ext.release)">删除扩展</button>\
 								<button class="btn btn-default btn-xs" ng-show="ext.repo!=\'installed\'" ng-click="install(ext.repo, ext.name, ext.version, ext.release)">安装该扩展</button>\
