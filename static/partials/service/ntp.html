@@ -11,6 +11,7 @@
 	<div class="tabbable" ng-show="installed">
 		<ul class="nav nav-tabs">
 			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" data-toggle="tab">基本信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" data-toggle="tab">配置文件</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" data-toggle="tab">升级</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" data-toggle="tab">卸载</a></li>
@@ -18,6 +19,9 @@
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
 				<div srvbase ng-init="name='NTP';pkg='ntp';service='ntpd';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
+				<div srvext ng-init="name='NTP';pkg='ntp';"></div>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
 				<div srvfile ng-init="items=[{name:'主配置', path:'/etc/ntp.conf', isfile:true}, {name:'', path:'/etc/ntp', isdir:true}];"></div>

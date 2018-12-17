@@ -24,6 +24,7 @@ import user
 import uuid
 from config import Config
 
+import bind
 import chkconfig
 import fdisk
 import file
@@ -34,6 +35,7 @@ import pyDes
 import sc
 import si
 import ssh
+import vsftpd
 import tornado
 import tornado.gen
 import tornado.httpclient
@@ -448,43 +450,45 @@ class QueryHandler(RequestHandler):
 
         # item : realtime update
         server_items = {
-            'hostname'     : False,
-            'datetime'     : True,
-            'uptime'       : True,
-            'loadavg'      : True,
-            'cpustat'      : True,
-            'meminfo'      : True,
-            'mounts'       : True, 
-            'netifaces'    : True,
-            'nameservers'  : True,
-            'distribution' : False,
-            'uname'        : False, 
-            'cpuinfo'      : False,
-            'diskinfo'     : False,
-            'virt'         : False,
+            'hostname'      : False,
+            'datetime'      : True,
+            'uptime'        : True,
+            'loadavg'       : True,
+            'cpustat'       : True,
+            'meminfo'       : True,
+            'mounts'        : True, 
+            'netifaces'     : True,
+            'nameservers'   : True,
+            'distribution'  : False,
+            'uname'         : False, 
+            'cpuinfo'       : False,
+            'diskinfo'      : False,
+            'virt'          : False,
         }
         service_items = {
             'intranet'      : False,
-            'nginx'        : False,
-            'httpd'        : False,
-            'vsftpd'       : False,
-            'mysqld'       : False,
-            'redis'        : False,
-            'memcached'    : False,
-            'mongod'       : False,
-            'php-fpm'      : False,
-            'sendmail'     : False,
-            'postfix'      : False,
-            'sshd'         : False,
-            'iptables'     : False,
-            'crond'        : False,
-            'ntpd'         : False,
+            'nginx'         : False,
+            'httpd'         : False,
+            'vsftpd'        : False,
+            'mysqld'        : False,
+            'redis'         : False,
+            'memcached'     : False,
+            'mongod'        : False,
+            'php-fpm'       : False,
+            'sendmail'      : False,
+            'postfix'       : False,
+            'sshd'          : False,
+            'iptables'      : False,
+            'crond'         : False,
+            'ntpd'          : False,
+            'named'         : False,
+            'lighttpd'      : False
         }
         config_items = {
-            'fstab'        : False,
+            'fstab'         : False,
         }
         tool_items = {
-            'supportfs'    : False,
+            'supportfs'     : False,
         }
 
         result = {}
@@ -851,7 +855,7 @@ class OperationHandler(RequestHandler):
 
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
-    
+
     def chkconfig(self):
         name = self.get_argument('name', '')
         service = self.get_argument('service', '')
@@ -863,7 +867,7 @@ class OperationHandler(RequestHandler):
             self.write({'code': 0, 'msg': u'成功%s %s 自动启动！' % (autostart_str[autostart], name)})
         else:
             self.write({'code': -1, 'msg': u'%s %s 自动启动失败！' % (autostart_str[autostart], name)})
-    
+
     def user(self):
         action = self.get_argument('action', '')
 
@@ -959,7 +963,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'用户组成员%s成功！' % optionstr[option]})
             else:
                 self.write({'code': -1, 'msg': u'用户组成员%s成功！' % optionstr[option]})
-    
+
     def file(self):
         action = self.get_argument('action', '')
 
@@ -1982,7 +1986,7 @@ class OperationHandler(RequestHandler):
             php.ini_set('request_slowlog_timeout', request_slowlog_timeout, initype='php-fpm')
             
             self.write({'code': 0, 'msg': u'PHP FastCGI 设置保存成功！'})
-    
+
     def ssh(self):
         action = self.get_argument('action', '')
 
@@ -2038,6 +2042,10 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'设置保存失败！'})
+
+    def vsftpd(self):
+        vsftpd.web_response(self)
+
 
 class PageHandler(RequestHandler):
     """Return some page.

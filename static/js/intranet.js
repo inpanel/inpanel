@@ -17,6 +17,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/main', _r('main', MainCtrl)).
     when('/service/nginx', _r('service/nginx', ServiceNginxCtrl)).
     when('/service/apache', _r('service/apache', ServiceApacheCtrl)).
+    when('/service/lighttpd', _r('service/lighttpd', ServiceLighttpdCtrl)).
     when('/service/tomcat', _r('service/tomcat', ServiceTomcatCtrl)).
     when('/service/vsftpd', _r('service/vsftpd', ServiceVsftpdCtrl)).
     when('/service/mysql', _r('service/mysql', ServiceMySQLCtrl)).
@@ -30,6 +31,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/service/iptables', _r('service/iptables', ServiceIPTablesCtrl)).
     when('/service/cron', _r('service/cron', ServiceCronCtrl)).
     when('/service/ntp', _r('service/ntp', ServiceNTPCtrl)).
+    when('/service/bind', _r('service/bind', ServiceBindCtrl)).
     when('/service', _r('service/index', ServiceCtrl)).
     when('/file', _r('file/file', FileCtrl)).
     when('/file/go#(:path)', _r('file/file', FileCtrl)).

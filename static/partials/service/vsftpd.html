@@ -5,12 +5,13 @@
 	<div class="module-header">
 		<h3>vsftpd - 安全快速的FTP服务器</h3>
 	</div>
-	
+
 	<div srvinstall ng-init="name='vsftpd';pkg='vsftpd';expected_repolist=['base','CentALT'];"></div>
 
 	<div class="tabbable" ng-show="installed">
 		<ul class="nav nav-tabs">
 			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='baseconfig'"><a href="#baseconfig" ng-click="sec('baseconfig')" data-toggle="tab">基本配置</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
@@ -18,6 +19,165 @@
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
 				<div srvbase ng-init="name='vsftpd';pkg='vsftpd';service='vsftpd';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='baseconfig'" id="baseconfig">
+				<form class="form-horizontal form-horizontal-small" ng-submit="savesettings()" onsubmit="return false">
+					<div class="form-group">
+						<label class="control-label" for="anonymous_enable">anonymous_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.anonymous_enable" ng-disabled="processing" type="text" id="anonymous_enable" placeholder="anonymous_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="local_enable">local_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.local_enable" ng-disabled="processing" type="text" id="local_enable" placeholder="local_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="local_umask">local_umask</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.local_umask" ng-disabled="processing" type="text" id="local_umask" placeholder="local_umask">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="anon_upload_enable">anon_upload_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.anon_upload_enable" ng-disabled="processing" type="text" id="anon_upload_enable" placeholder="anon_upload_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="anon_mkdir_write_enable">anon_mkdir_write_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.anon_mkdir_write_enable" ng-disabled="processing" type="text" id="anon_mkdir_write_enable" placeholder="anon_mkdir_write_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="dirmessage_enable">dirmessage_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.dirmessage_enable" ng-disabled="processing" type="text" id="dirmessage_enable" placeholder="dirmessage_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="xferlog_enable">xferlog_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.xferlog_enable" ng-disabled="processing" type="text" id="xferlog_enable" placeholder="xferlog_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="connect_from_port_20">connect_from_port_20</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.connect_from_port_20" ng-disabled="processing" type="text" id="connect_from_port_20" placeholder="connect_from_port_20">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="chown_upload">chown_upload</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.chown_upload" ng-disabled="processing" type="text" id="chown_upload" placeholder="chown_upload">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="chown_username">chown_username</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.chown_username" ng-disabled="processing" type="text" id="chown_username" placeholder="chown_username">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="xferlog_file">xferlog_file</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.xferlog_file" ng-disabled="processing" type="text" id="xferlog_file" placeholder="xferlog_file">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="xferlog_std_format">xferlog_std_format</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.xferlog_std_format" ng-disabled="processing" type="text" id="xferlog_std_format" placeholder="xferlog_std_format">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="idle_session_timeout">idle_session_timeout</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.idle_session_timeout" ng-disabled="processing" type="text" id="idle_session_timeout" placeholder="idle_session_timeout">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="data_connection_timeout">data_connection_timeout</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.data_connection_timeout" ng-disabled="processing" type="text" id="data_connection_timeout" placeholder="data_connection_timeout">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="nopriv_user">nopriv_user</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.nopriv_user" ng-disabled="processing" type="text" id="nopriv_user" placeholder="nopriv_user">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="async_abor_enable">async_abor_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.async_abor_enable" ng-disabled="processing" type="text" id="async_abor_enable" placeholder="async_abor_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="ascii_upload_enable">ascii_upload_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.ascii_upload_enable" ng-disabled="processing" type="text" id="ascii_upload_enable" placeholder="ascii_upload_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="ascii_download_enable">ascii_download_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.ascii_download_enable" ng-disabled="processing" type="text" id="ascii_download_enable" placeholder="ascii_download_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="ftpd_banner">ftpd_banner</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.ftpd_banner" ng-disabled="processing" type="text" id="ftpd_banner" placeholder="ftpd_banner">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="deny_email_enable">deny_email_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.deny_email_enable" ng-disabled="processing" type="text" id="deny_email_enable" placeholder="deny_email_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="banned_email_file">banned_email_file</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.banned_email_file" ng-disabled="processing" type="text" id="banned_email_file" placeholder="banned_email_file">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="chroot_list_enable">chroot_list_enable</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.chroot_list_enable" ng-disabled="processing" type="text" id="chroot_list_enable" placeholder="chroot_list_enable">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="chroot_list_file">chroot_list_file</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.chroot_list_file" ng-disabled="processing" type="text" id="chroot_list_file" placeholder="chroot_list_file">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="max_clients">max_clients</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.max_clients" ng-disabled="processing" type="text" id="max_clients" placeholder="max_clients">
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="message_file">message_file</label>
+						<div  style="margin-left: 160px">
+							<input class="form-control" ng-model="baseconfigs.message_file" ng-disabled="processing" type="text" id="message_file" placeholder="message_file">
+						</div>
+					</div>
+					<div class="form-group">
+						<div style="margin-left: 160px">
+							<button type="submit" class="btn btn-default" ng-disabled="processing">提交修改</button>
+						</div>
+					</div>
+				</form>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
 				<div srvfile ng-init="items=[{name:'主目录', path:'/etc/vsftpd', isdir:true}];"></div>

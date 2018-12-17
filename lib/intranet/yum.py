@@ -195,7 +195,8 @@ gpgcheck=1',
 yum_pkg_alias = {
     'nginx'         : ('nginx', 'nginx-stable', ),
     'tomcat'        : ('tomcat', 'tomcat6'),
-    'apache'        : ('httpd', ),
+    'apache'        : ('httpd', 'httpd24u'),
+    'lighttpd'      : ('lighttpd'),
     'vsftpd'        : ('vsftpd', ),
     'mysql'         : ('mysql-server', 'mysql55-server', 'mysql56u-server', 'mysql57u-server'),
     'mariadb'       : ('MariaDB-server'),
@@ -204,10 +205,12 @@ yum_pkg_alias = {
     'mongodb'       : ('mongodb-server', 'mongo-10gen-server', 'mongo18-10gen-server', 'mongo20-10gen-server'),
     'php'           : ('php-fpm', 'php53u-fpm', 'php54-fpm', 'php56u-fpm', 'php70u-fpm', 'php71u-fpm', ),
     'sendmail'      : ('sendmail', ),
-    'ssh'           : ('openssh-server', ),
+    'ssh'           : ('openssh-server', 'openssh-clients', 'openssh-ldap', 'openssh-askpass'),
     'iptables'      : ('iptables', ),
     'cron'          : ('cronie', 'vixie-cron', ),
-    'ntp'           : ('ntp', ),
+    'ntp'           : ('ntp', 'ntp-doc', 'ntp-perl'),
+    'ntpdate'       : ('ntpdate'),
+    'bind'          : ('bind', 'bind-chroot', 'bind-devel', 'bind-dyndb-ldap', 'bind-libs', 'bind-sdb', 'bind-to-tinydns')
 }
 
 # Relative available packages.
@@ -224,7 +227,31 @@ yum_pkg_relatives = {
         'nginx-stable'          : {'default': True, 'base': True}
     },
     'httpd'                 : {
-        'httpd'                 : {'default': True, 'base': True}
+        'httpd'                 : {'default': True, 'base': True},
+        'httpd-devel'           : {'default': False, 'isext': True},
+        'httpd-itk'             : {'default': False, 'isext': True},
+        'httpd-tools'           : {'default': False, 'isext': True},
+    },
+    'httpd24u'              : {
+        'httpd24u'                  : {'default': True, 'base': True},
+        'httpd24u-devel'            : {'default': False, 'isext': True},
+        'httpd24u-debuginfo'        : {'default': False, 'isext': True},
+        'httpd24u-mod_ldap'         : {'default': False, 'isext': True},
+        'httpd24u-mod_proxy_html'   : {'default': False, 'isext': True},
+        'httpd24u-mod_security2'    : {'default': False, 'isext': True},
+        'httpd24u-mod_security2-mlogc'  : {'default': False, 'isext': True},
+        'httpd24u-mod_session'      : {'default': False, 'isext': True},
+        'httpd24u-mod_ssl'          : {'default': False, 'isext': True},
+        'httpd24u-mod_xsendfile'    : {'default': False, 'isext': True},
+        'httpd24u-tools'            : {'default': False, 'isext': True}
+    },
+    'lighttpd'              : {
+        'lighttpd'                  : {'default': True, 'base': True},
+        'lighttpd-fastcgi'          : {'default': False, 'isext': True},
+        'lighttpd-mod_authn_gssapi' : {'default': False, 'isext': True},
+        'lighttpd-mod_authn_mysql'  : {'default': False, 'isext': True},
+        'lighttpd-mod_geoip'        : {'default': False, 'isext': True},
+        'lighttpd-mod_mysql_vhost'  : {'default': False, 'isext': True},
     },
     'tomcat'                : {
         'tomcat'                : {'default': True, 'base': True},
@@ -568,7 +595,10 @@ yum_pkg_relatives = {
         'sendmail'              : {'default': True, 'base': True}
     },
     'openssh-server'        : {
-        'openssh-server'        : {'default': True, 'base': True}
+        'openssh-server'        : {'default': True, 'base': True},
+        'openssh-clients'       : {'default': False, 'isext': True},
+        'openssh-ldap'          : {'default': False, 'isext': True},
+        'openssh-askpass'       : {'default': False, 'isext': True},
     },
     'iptables'              : {
         'iptables'              : {'default': True, 'base': True}
@@ -580,11 +610,25 @@ yum_pkg_relatives = {
         'vixie-cron'            : {'default': True, 'base': True}
     },
     'ntp'                   : {
-        'ntp'                   : {'default': True, 'base': True}
+        'ntp'                   : {'default': True, 'base': True},
+        'ntp-doc'               : {'default': False, 'isext': True},
+        'ntp-perl'              : {'default': False, 'isext': True},
+    },
+    'ntpdate'               : {
+        'ntpdate'               : {'default': True, 'base': True},
     },
     'zip'                   : {
         'zip'                   : {'default': True, 'base': True},
         'unzip'                 : {'default': True, 'base': True}
+    },
+    'bind'                  : {
+        'bind'                  : {'default': True, 'base': True},
+        'bind-chroot'           : {'default': True, 'isext': True},
+        'bind-devel'            : {'default': False, 'isext': True},
+        'bind-dyndb-ldap'       : {'default': False, 'isext': True},
+        'bind-libs'             : {'default': False, 'isext': True},
+        'bind-sdb'              : {'default': False, 'isext': True},
+        'bind-to-tinydns'       : {'default': False, 'isext': True}
     }
 }
 
