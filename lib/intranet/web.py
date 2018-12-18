@@ -2875,7 +2875,7 @@ class BackendHandler(RequestHandler):
                             line = '#%s' % line
                             lines.append(line)
                             # # add a mirrorlist line
-                            # metalink = 'http://intranet.pub/mirrorlist?'\
+                            # metalink = 'https://intranet.pub/mirrorlist?'\
                             #     'repo=centalt-%s&arch=$basearch' % self.settings['dist_verint']
                             # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)

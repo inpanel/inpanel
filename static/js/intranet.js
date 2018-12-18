@@ -92,7 +92,7 @@ value('version', {
     'version': '1.1.1',
     'build': '16',
     'releasetime': releasetime,
-    'changelog': 'http://intranet.pub/changelog.html'
+    'changelog': 'https://intranet.pub/changelog.html'
 });
 
 var Auth = {
