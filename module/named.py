@@ -6,15 +6,15 @@
 # Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for bind configuration management."""
+"""Module for named configuration management."""
 
 
 def web_response(self):
     action = self.get_argument('action', '')
     if action == 'getsettings':
-        self.write({'code': 0, 'msg': 'bind 配置信息获取成功！', 'data': get_config()})
+        self.write({'code': 0, 'msg': 'named 配置信息获取成功！', 'data': get_config()})
     elif action == 'savesettings':
-        self.write({'code': 0, 'msg': 'bind 服务配置保存成功！', 'data': set_config(self)})
+        self.write({'code': 0, 'msg': 'named 服务配置保存成功！', 'data': set_config(self)})
     return
 
 

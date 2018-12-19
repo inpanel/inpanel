@@ -1127,12 +1127,12 @@ var ServiceNTPCtrl = [
     }
 ];
 
-var ServiceBindCtrl = [
+var ServiceNamedCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function ($scope, $routeParams, Module, Request) {
-        var module = 'service.bind';
+        var module = 'service.named';
         var section = Module.getSection();
-        Module.init(module, 'bind');
+        Module.init(module, 'named');
         Module.initSection('base');
         $scope.scope = $scope;
         $scope.info = null;

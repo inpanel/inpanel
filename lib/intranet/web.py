@@ -24,18 +24,12 @@ import user
 import uuid
 from config import Config
 
-import aliyuncs
-import bind
 import chkconfig
-import ecs
 import fdisk
 import file
-import lighttpd
 import mysql
 import nginx
 import php
-import proftpd
-import pureftpd
 import pyDes
 import sc
 import si
@@ -46,10 +40,9 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 import utils
-import vsftpd
 import yum
 from async_process import call_subprocess, callbackable
-from core import apache, cron, proc
+from module import *
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
@@ -2038,23 +2031,13 @@ class OperationHandler(RequestHandler):
             self.write({'code': 0, 'msg': 'SSH 服务配置保存成功！'})
 
     def cron(self):
-        action = self.get_argument('action', '')
-
-        if action == 'get_settings':
-            self.write({'code': 0, 'msg': u'获取 Cron 服务配置信息成功！', 'data': cron.load_config()})
-        if action == 'save_settings':
-            mailto = self.get_argument('mailto', '')
-            rt = cron.update_config({'mailto': _u(mailto)})
-            if rt:
-                self.write({'code': 0, 'msg': u'设置保存成功！'})
-            else:
-                self.write({'code': -1, 'msg': u'设置保存失败！'})
+        cron.web_response(self)
 
     def vsftpd(self):
         vsftpd.web_response(self)
 
-    def bind(self):
-        bind.web_response(self)
+    def named(self):
+        named.web_response(self)
 
     def lighttpd(self):
         lighttpd.web_response(self)

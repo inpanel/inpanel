@@ -8,7 +8,7 @@
 
 """Module for vsftpd configuration management."""
 
-from utils import cfg_get_array, cfg_set_array
+from lib.intranet.utils import cfg_get_array, cfg_set_array
 
 config_file = '/etc/vsftpd/vsftpd.conf'
 delimiter = '='

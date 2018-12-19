@@ -33,7 +33,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/service/iptables', _r('service/iptables', ServiceIPTablesCtrl)).
     when('/service/cron', _r('service/cron', ServiceCronCtrl)).
     when('/service/ntp', _r('service/ntp', ServiceNTPCtrl)).
-    when('/service/bind', _r('service/bind', ServiceBindCtrl)).
+    when('/service/named', _r('service/named', ServiceNamedCtrl)).
     when('/service', _r('service/index', ServiceCtrl)).
     when('/file', _r('file/file', FileCtrl)).
     when('/file/go#(:path)', _r('file/file', FileCtrl)).

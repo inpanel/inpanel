@@ -6,4 +6,4 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""The Intranet Core."""
+"""The Third party library."""
