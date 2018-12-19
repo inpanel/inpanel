@@ -1,10 +1,10 @@
 angular.module('intranet.directives', []).
-directive('navbar', function(){
+directive('navbar', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$scope', '$rootScope', function($scope, $rootScope){
+		controller: ['$scope', '$rootScope', function ($scope, $rootScope) {
 			$rootScope.navbar_loaded = true;
 		}],
 		template: '<nav class="navbar navbar-default"><div class="container-fluid">\
@@ -46,12 +46,12 @@ directive('navbar', function(){
 		replace: true
 	};
 }).
-directive('loading', function(){
+directive('loading', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$scope', function($scope){
+		controller: ['$scope', function ($scope) {
 			if (!$scope.loadingText) $scope.loadingText = '模块加载中，请稍候......';
 		}],
 		template: '<div class="text-center">\
@@ -62,12 +62,12 @@ directive('loading', function(){
 		replace: true
 	};
 }).
-directive('message', function(){
+directive('message', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$scope', '$rootScope', function($scope, $rootScope){
+		controller: ['$scope', '$rootScope', function ($scope, $rootScope) {
 			$rootScope.showErrorMsg = false;
 			$rootScope.errorMessage = '';
 			$rootScope.showSuccessMsg = false;
@@ -98,15 +98,15 @@ directive('message', function(){
 		replace: true
 	};
 }).
-directive('srvminiop', function(){
+directive('srvminiop', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$scope', function($scope){
+		controller: ['$scope', function ($scope) {
 			$scope.$scope = $scope.$parent;
 		}],
-    template: '<div>\
+		template: '<div>\
         <div class="btn-group btn-group-sm" ng-show="$scope.info[\'service.\'+service]">\
 					<button type="button" class="btn btn-default" ng-class="\'active\' | iftrue:$scope.info[\'service.\'+service].autostart" data-toggle="button" title="自动启动"\
 						ng-disabled="$scope.waiting" ng-click="$scope.toggleAutostart(name, service)">\
@@ -132,54 +132,54 @@ directive('srvminiop', function(){
 		replace: true
 	};
 }).
-directive('srvbase', function(){
+directive('srvbase', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$rootScope', '$scope', 'Request', 'Backend', function($rootScope, $scope, Request, Backend){
+		controller: ['$rootScope', '$scope', 'Request', 'Backend', function ($rootScope, $scope, Request, Backend) {
 			$scope.$scope = $scope.$parent;
 			$scope.pkginfo = null;
-			
-			$scope.$parent.checkVersion = function(){
+
+			$scope.$parent.checkVersion = function () {
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_info',
-					'/backend/yum_info_'+$scope.pkg,
-					{
+					'/backend/yum_info_' + $scope.pkg, {
 						'pkg': $scope.pkg,
 						'repo': 'installed'
 					}, {
-						'success': function(data){
+						'success': function (data) {
 							$scope.$parent.pkginfo = $scope.pkginfo = data.data[0];
 						},
-						'error': function(data){
-							$scope.pkginfo = {'name': '获取失败！'};
+						'error': function (data) {
+							$scope.pkginfo = {
+								'name': '获取失败！'
+							};
 						}
 					},
 					true
 				);
 			};
-			
-			$scope.toggleAutostart = function(){
+
+			$scope.toggleAutostart = function () {
 				Request.post('/operation/chkconfig', {
 					'name': $scope.name,
 					'service': $scope.service,
 					'autostart': !$scope.$parent.autostart
-				}, function(data){
+				}, function (data) {
 					$scope.$parent.checkInstalled();
 				});
 			};
 
-			var serviceop = function(action){
-				return function(){
+			var serviceop = function (action) {
+				return function () {
 					Backend.call(
 						$scope.$parent,
 						$rootScope.module,
-						'/backend/service_'+action,
-						'/backend/service_'+action+'_'+$scope.service,
-						{
+						'/backend/service_' + action,
+						'/backend/service_' + action + '_' + $scope.service, {
 							'name': $scope.name,
 							'service': $scope.service
 						},
@@ -264,51 +264,52 @@ directive('srvbase', function(){
 		replace: true
 	};
 }).
-directive('srvinstall', function(){
+directive('srvinstall', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function($rootScope, $scope, Request, Timeout, Backend){
+		controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
 			$scope.$scope = $scope.$parent;
 
 			var repolist = [];
 			$scope.installing = false;
 			$scope.installMsg = '';
-			
+
 			// check repolist
-			$scope.startInstall = function(){
+			$scope.startInstall = function () {
 				$scope.installMsg = '正在检测软件源...';
 				$scope.installing = true;
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_repolist',
-					'/backend/yum_repolist',
-					{}, {
-						'wait': function(data){
+					'/backend/yum_repolist', {}, {
+						'wait': function (data) {
 							$scope.installMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.installMsg = data.msg;
 							repolist = data.data;
 							$scope.installRepo();
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.installMsg = data.msg;
-							Timeout(function(){$scope.installing = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.installing = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
 				);
 			};
-			
+
 			// install expected repolist
-			$scope.installRepo = function(){
+			$scope.installRepo = function () {
 				var newrepo_found = false;
-				for (var i=0; i<$scope.expected_repolist.length; i++) {
+				for (var i = 0; i < $scope.expected_repolist.length; i++) {
 					var repo_found = false;
-					for (var j=0; j<repolist.length; j++) {
+					for (var j = 0; j < repolist.length; j++) {
 						if (repolist[j] == $scope.expected_repolist[i]) {
 							repo_found = true;
 							break;
@@ -322,21 +323,22 @@ directive('srvinstall', function(){
 						$scope.$parent,
 						$rootScope.module,
 						'/backend/yum_installrepo',
-						'/backend/yum_installrepo_'+$scope.expected_repolist[i],
-						{
+						'/backend/yum_installrepo_' + $scope.expected_repolist[i], {
 							'repo': $scope.expected_repolist[i]
 						}, {
-							'wait': function(data){
+							'wait': function (data) {
 								$scope.installMsg = data.msg;
 							},
-							'success': function(data){
+							'success': function (data) {
 								$scope.installMsg = data.msg;
 								repolist.push($scope.expected_repolist[i]);
 								$scope.installRepo();
 							},
-							'error': function(data){
+							'error': function (data) {
 								$scope.installMsg = data.msg;
-								Timeout(function(){$scope.installing = false;}, 3000, $rootScope.module);
+								Timeout(function () {
+									$scope.installing = false;
+								}, 3000, $rootScope.module);
 							}
 						},
 						true
@@ -346,64 +348,66 @@ directive('srvinstall', function(){
 				// if no new repo be installed, goto next step
 				if (!newrepo_found) $scope.checkVersion();
 			};
-			
+
 			// check and list versions of the pkg
 			$scope.showVerList = false;
-			$scope.checkVersion = function(){
+			$scope.checkVersion = function () {
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_info',
-					'/backend/yum_info_'+$scope.pkg,
-					{
+					'/backend/yum_info_' + $scope.pkg, {
 						'pkg': $scope.pkg
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.installMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.installMsg = data.msg;
 							$scope.pkgs = data.data;
 							$scope.showVerList = true;
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.installMsg = data.msg;
-							Timeout(function(){$scope.installing = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.installing = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
 				);
 			};
-			
+
 			// install specified version of pkg in specified repository
-			$scope.install = function(repo, name, version, release){
+			$scope.install = function (repo, name, version, release) {
 				$scope.installMsg = '开始安装...';
 				$scope.showVerList = false;
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_install',
-					'/backend/yum_install_'+repo+'_'+name+'_'+version+'_'+release,
-					{
+					'/backend/yum_install_' + repo + '_' + name + '_' + version + '_' + release, {
 						'repo': repo,
 						'pkg': name,
 						'version': version,
 						'release': release
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.installMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.installMsg = data.msg;
 							$scope.$parent.activeTabName = 'base';
-							Timeout(function(){
+							Timeout(function () {
 								$scope.installing = false;
 								$scope.$parent.checkInstalled();
 							}, 3000, $rootScope.module);
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.installMsg = data.msg;
-							Timeout(function(){$scope.installing = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.installing = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
@@ -411,33 +415,34 @@ directive('srvinstall', function(){
 			};
 
 			// uninstall specified version of pkg in specified repository
-			$scope.uninstall = function(repo, name, version, release){
+			$scope.uninstall = function (repo, name, version, release) {
 				$scope.installMsg = '正在清理...';
 				$scope.showVerList = false;
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_uninstall',
-					'/backend/yum_uninstall_'+name+'_'+version+'_'+release,
-					{
+					'/backend/yum_uninstall_' + name + '_' + version + '_' + release, {
 						'repo': repo,
 						'pkg': name,
 						'version': version,
 						'release': release
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.installMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.installMsg = data.msg;
-							Timeout(function(){
+							Timeout(function () {
 								$scope.installing = false;
 								$scope.$parent.checkInstalled();
 							}, 3000, $rootScope.module);
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.installMsg = data.msg;
-							Timeout(function(){$scope.installing = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.installing = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
@@ -476,41 +481,42 @@ directive('srvinstall', function(){
 		replace: true
 	};
 }).
-directive('srvupdate', function(){
+directive('srvupdate', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function($rootScope, $scope, Request, Timeout, Backend){
+		controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
 			$scope.$scope = $scope.$parent;
 
 			$scope.updating = false;
 			$scope.updateMsg = '';
-			
+
 			// check pkg version
-			$scope.startUpdate = function(){
+			$scope.startUpdate = function () {
 				$scope.updating = true;
 				$scope.updateMsg = '正在检测当前版本信息...';
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_info',
-					'/backend/yum_info_'+$scope.pkg,
-					{
+					'/backend/yum_info_' + $scope.pkg, {
 						'pkg': $scope.pkg,
 						'repo': 'installed'
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.updateMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.updateMsg = data.msg;
 							$scope.pkginfo = data.data[0];
 							$scope.checkVersion($scope.pkginfo.name);
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.updateMsg = data.msg;
-							Timeout(function(){$scope.updating = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.updating = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
@@ -519,63 +525,65 @@ directive('srvupdate', function(){
 
 			// check and list versions of the pkg
 			$scope.showVerList = false;
-			$scope.checkVersion = function(name){
+			$scope.checkVersion = function (name) {
 				$scope.updateMsg = '正在检测新版本...';
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_info',
-					'/backend/yum_info_'+name,
-					{
+					'/backend/yum_info_' + name, {
 						'pkg': name,
 						'option': 'update'
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.updateMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.updateMsg = data.msg;
 							$scope.pkgs = data.data;
 							$scope.showVerList = true;
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.updateMsg = data.msg;
-							Timeout(function(){$scope.updating = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.updating = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
 				);
 			};
-			
+
 			// update pkg
-			$scope.update = function(repo, name, version, release){
+			$scope.update = function (repo, name, version, release) {
 				$scope.updateMsg = '开始升级...';
 				$scope.showVerList = false;
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_update',
-					'/backend/yum_update_'+repo+'_'+name+'_'+version+'_'+release,
-					{
+					'/backend/yum_update_' + repo + '_' + name + '_' + version + '_' + release, {
 						'repo': repo,
 						'pkg': name,
 						'version': version,
 						'release': release
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.updateMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.updateMsg = data.msg;
 							$scope.$parent.activeTabName = 'base';
-							Timeout(function(){
+							Timeout(function () {
 								$scope.updating = false;
 								$scope.$parent.checkInstalled();
 							}, 3000, $rootScope.module);
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.updateMsg = data.msg;
-							Timeout(function(){$scope.updating = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.updating = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
@@ -612,40 +620,41 @@ directive('srvupdate', function(){
 		replace: true
 	};
 }).
-directive('srvext', function(){
+directive('srvext', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function($rootScope, $scope, Request, Timeout, Backend){
+		controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
 			$scope.$scope = $scope.$parent;
 
 			$scope.operating = false;
 			$scope.showMsg = '';
 
-			$scope.start = function(){
+			$scope.start = function () {
 				$scope.operating = true;
 				$scope.showMsg = '正在检测版本信息...';
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_info',
-					'/backend/yum_info_'+$scope.pkg,
-					{
+					'/backend/yum_info_' + $scope.pkg, {
 						'pkg': $scope.pkg,
 						'repo': 'installed'
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.showMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.showMsg = data.msg;
 							$scope.pkginfo = data.data[0];
 							$scope.checkExt();
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.showMsg = data.msg;
-							Timeout(function(){$scope.operating = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.operating = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
@@ -654,7 +663,7 @@ directive('srvext', function(){
 
 			// check and list ext of the pkg
 			$scope.showExtList = false;
-			$scope.checkExt = function(){
+			$scope.checkExt = function () {
 				$scope.operating = true;
 				$scope.showExtList = false;
 				$scope.showMsg = '正在检测扩展...';
@@ -662,56 +671,58 @@ directive('srvext', function(){
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_ext_info',
-					'/backend/yum_ext_info_'+$scope.pkginfo.name,
-					{
+					'/backend/yum_ext_info_' + $scope.pkginfo.name, {
 						'pkg': $scope.pkginfo.name
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.showMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.showMsg = data.msg;
 							$scope.exts = data.data;
 							$scope.showExtList = true;
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.showMsg = data.msg;
-							Timeout(function(){$scope.operating = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.operating = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
 				);
 			};
-			
+
 			// install specified version of ext in specified repository
-			$scope.install = function(repo, name, version, release){
+			$scope.install = function (repo, name, version, release) {
 				$scope.showMsg = '开始安装...';
 				$scope.showExtList = false;
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_install',
-					'/backend/yum_install_'+repo+'_'+$scope.pkginfo.name+'_'+name+'_'+version+'_'+release,
-					{
+					'/backend/yum_install_' + repo + '_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
 						'repo': repo,
 						'pkg': $scope.pkginfo.name,
 						'ext': name,
 						'version': version,
 						'release': release
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.showMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.showMsg = data.msg;
-							Timeout(function(){
+							Timeout(function () {
 								$scope.operating = false;
 								$scope.checkExt();
 							}, 3000, $rootScope.module);
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.showMsg = data.msg;
-							Timeout(function(){$scope.operating = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.operating = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
@@ -719,34 +730,35 @@ directive('srvext', function(){
 			};
 
 			// uninstall specified version of ext in specified repository
-			$scope.uninstall = function(repo, name, version, release){
+			$scope.uninstall = function (repo, name, version, release) {
 				$scope.showMsg = '正在删除...';
 				$scope.showExtList = false;
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_uninstall',
-					'/backend/yum_uninstall_'+$scope.pkginfo.name+'_'+name+'_'+version+'_'+release,
-					{
+					'/backend/yum_uninstall_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
 						'repo': repo,
 						'pkg': $scope.pkginfo.name,
 						'ext': name,
 						'version': version,
 						'release': release
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.showMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.showMsg = data.msg;
-							Timeout(function(){
+							Timeout(function () {
 								$scope.operating = false;
 								$scope.checkExt();
 							}, 3000, $rootScope.module);
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.showMsg = data.msg;
-							Timeout(function(){$scope.operating = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.operating = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
@@ -786,75 +798,77 @@ directive('srvext', function(){
 		replace: true
 	};
 }).
-directive('srvuninstall', function(){
+directive('srvuninstall', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function($rootScope, $scope, Request, Timeout, Backend){
+		controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
 			$scope.$scope = $scope.$parent;
 
 			$scope.uninstalling = false;
 			$scope.uninstallMsg = '';
-			
+
 			// check pkg version
-			$scope.startUninstall = function(){
+			$scope.startUninstall = function () {
 				$scope.uninstallMsg = '开始卸载...';
 				$scope.uninstalling = true;
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_info',
-					'/backend/yum_info_'+$scope.pkg,
-					{
+					'/backend/yum_info_' + $scope.pkg, {
 						'pkg': $scope.pkg,
 						'repo': 'installed'
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.uninstallMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.uninstallMsg = data.msg;
 							$scope.pkginfo = data.data[0];
 							$scope.showVersion = true;
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.uninstallMsg = data.msg;
-							Timeout(function(){$scope.uninstalling = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.uninstalling = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
 				);
 			};
-			
+
 			// uninstall specified version of pkg in specified repository
-			$scope.uninstall = function(repo, name, version, release){
+			$scope.uninstall = function (repo, name, version, release) {
 				$scope.uninstallMsg = '正在卸载...';
 				$scope.showVersion = false;
 				Backend.call(
 					$scope.$parent,
 					$rootScope.module,
 					'/backend/yum_uninstall',
-					'/backend/yum_uninstall_'+name+'_'+version+'_'+release,
-					{
+					'/backend/yum_uninstall_' + name + '_' + version + '_' + release, {
 						'repo': repo,
 						'pkg': name,
 						'version': version,
 						'release': release
 					}, {
-						'wait': function(data){
+						'wait': function (data) {
 							$scope.uninstallMsg = data.msg;
 						},
-						'success': function(data){
+						'success': function (data) {
 							$scope.uninstallMsg = data.msg;
-							Timeout(function(){
+							Timeout(function () {
 								$scope.uninstalling = false;
 								$scope.$parent.checkInstalled();
 							}, 3000, $rootScope.module);
 						},
-						'error': function(data){
+						'error': function (data) {
 							$scope.uninstallMsg = data.msg;
-							Timeout(function(){$scope.uninstalling = false;}, 3000, $rootScope.module);
+							Timeout(function () {
+								$scope.uninstalling = false;
+							}, 3000, $rootScope.module);
 						}
 					},
 					true
@@ -883,13 +897,12 @@ directive('srvuninstall', function(){
 		replace: true
 	};
 }).
-directive('srvfile', function(){
+directive('srvfile', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$scope', function($scope){
-		}],
+		controller: ['$scope', function ($scope) {}],
 		template: '\
 			<table class="table">\
 				<tbody>\
@@ -917,13 +930,12 @@ directive('srvfile', function(){
 		replace: true
 	};
 }).
-directive('srvlog', function(){
+directive('srvlog', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$scope', function($scope){
-		}],
+		controller: ['$scope', function ($scope) {}],
 		template: '\
 			<table class="table">\
 				<tbody>\
@@ -951,24 +963,24 @@ directive('srvlog', function(){
 		replace: true
 	};
 }).
-directive('selector', function(){
+directive('selector', function () {
 	return {
 		restrict: 'A',
 		transclude: true,
 		scope: {},
-		controller: ['$scope', 'Request', function($scope, Request){
+		controller: ['$scope', 'Request', function ($scope, Request) {
 			$scope.$scope = $scope.$parent;
 			$scope.onlydir = true;
 			$scope.onlyfile = true;
 			$scope.path = '/';
-			var parse_path = function(){
+			var parse_path = function () {
 				// parse dir to array
 				if (!$scope.curpath) return;
 				var pathnames = $scope.curpath.split('/');
 				var pathinfos = [];
-				for (var i=1; i<pathnames.length; i++) {
+				for (var i = 1; i < pathnames.length; i++) {
 					if (!pathnames[i]) continue;
-					var fullpath = pathnames[i-1]+'/'+pathnames[i];
+					var fullpath = pathnames[i - 1] + '/' + pathnames[i];
 					pathinfos.push({
 						'name': pathnames[i],
 						'path': fullpath
@@ -977,7 +989,7 @@ directive('selector', function(){
 				}
 				$scope.pathinfos = pathinfos;
 			};
-			$scope.load = function(path){
+			$scope.load = function (path) {
 				if ($scope.onlyfile) {
 					$scope.otherdir = true;
 					$scope.listdir(path);
@@ -986,12 +998,12 @@ directive('selector', function(){
 					$scope.path = path;
 				}
 			};
-			$scope.listdir = function(path){
+			$scope.listdir = function (path) {
 				if (path) $scope.path = path;
 				if (!$scope.path)
 					$scope.path = '/root';
 				else if ($scope.path != '/' && $scope.path.substr(-1) == '/')
-					$scope.path = $scope.path.substr(0, $scope.path.length-1);
+					$scope.path = $scope.path.substr(0, $scope.path.length - 1);
 				$scope.path = $scope.path.replace('//', '/');
 
 				var curpath = $scope.path;
@@ -1001,7 +1013,7 @@ directive('selector', function(){
 					'showhidden': false,
 					'remember': false,
 					'onlydir': $scope.onlydir
-				}, function(data){
+				}, function (data) {
 					if (data.code == 0) {
 						$scope.items = data.data;
 						$scope.curpath = curpath;
@@ -1059,8 +1071,8 @@ directive('selector', function(){
 		replace: true
 	};
 }).
-directive('autofocus', function(){
-	return function($scope, element){
+directive('autofocus', function () {
+	return function ($scope, element) {
 		element[0].focus();
 	};
 });

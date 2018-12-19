@@ -487,8 +487,8 @@ class QueryHandler(RequestHandler):
             'ntpd'          : False,
             'named'         : False,
             'lighttpd'      : False,
-            'proftpd'      : False,
-            'pureftpd'      : False,
+            'proftpd'       : False,
+            'pure-ftpd'     : False,
         }
         config_items = {
             'fstab'         : False,

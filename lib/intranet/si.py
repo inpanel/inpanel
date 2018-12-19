@@ -627,7 +627,7 @@ class Service(object):
         'named',
         'lighttpd',
         'proftpd',
-        'pureftpd'
+        'pure-ftpd'
         ]
 
     pidnames = {

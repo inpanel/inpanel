@@ -1131,6 +1131,7 @@ var ServiceBindCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function ($scope, $routeParams, Module, Request) {
         var module = 'service.bind';
+        var section = Module.getSection();
         Module.init(module, 'bind');
         Module.initSection('base');
         $scope.scope = $scope;
@@ -1150,6 +1151,9 @@ var ServiceBindCtrl = [
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
                     if ($scope.checkVersion) $scope.checkVersion();
+                    if (section == 'settings') {
+                        $scope.load_settings();
+                    }
                 } else {
                     $scope.installed = false;
                 }
@@ -1158,7 +1162,12 @@ var ServiceBindCtrl = [
                 $scope.checking = false;
             });
         };
-
+        $scope.load_settings = function () {
+            if (!$scope.installed) return;
+            $scope.getsettings();
+            $scope.sec('settings');
+            Module.setSection('settings');
+        };
         $scope.getsettings = function () {
             Request.post('/operation/named', {
                 'action': 'getsettings'
@@ -1187,6 +1196,7 @@ var ServiceLighttpdCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function ($scope, $routeParams, Module, Request) {
         var module = 'service.lighttpd';
+        var section = Module.getSection();
         Module.init(module, 'Lighttpd');
         Module.initSection('base');
         $scope.scope = $scope;
@@ -1205,7 +1215,9 @@ var ServiceLighttpdCtrl = [
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
-                    $scope.getsettings();
+                    if (section == 'settings') {
+                        $scope.load_settings();
+                    }
                     if ($scope.checkVersion) {
                         $scope.checkVersion();
                     }
@@ -1217,7 +1229,12 @@ var ServiceLighttpdCtrl = [
                 $scope.checking = false;
             });
         };
-
+        $scope.load_settings = function () {
+            if (!$scope.installed) return;
+            $scope.getsettings();
+            $scope.sec('settings');
+            Module.setSection('settings');
+        };
         $scope.getsettings = function () {
             Request.post('/operation/lighttpd', {
                 'action': 'getsettings'
@@ -1227,7 +1244,6 @@ var ServiceLighttpdCtrl = [
                 }
             });
         };
-
         $scope.savesettings = function () {
             $scope.processing = true;
             Request.post('/operation/lighttpd', {
@@ -1246,6 +1262,7 @@ var ServiceProFTPDCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function ($scope, $routeParams, Module, Request) {
         var module = 'service.proftpd';
+        var section = Module.getSection();
         Module.init(module, 'ProFTPD');
         Module.initSection('base');
         $scope.scope = $scope;
@@ -1264,7 +1281,9 @@ var ServiceProFTPDCtrl = [
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
-                    $scope.getsettings();
+                    if (section == 'settings') {
+                        $scope.load_settings();
+                    }
                     if ($scope.checkVersion) {
                         $scope.checkVersion();
                     }
@@ -1276,7 +1295,12 @@ var ServiceProFTPDCtrl = [
                 $scope.checking = false;
             });
         };
-
+        $scope.load_settings = function () {
+            if (!$scope.installed) return;
+            $scope.getsettings();
+            $scope.sec('settings');
+            Module.setSection('settings');
+        };
         $scope.getsettings = function () {
             Request.post('/operation/proftpd', {
                 'action': 'getsettings'
@@ -1305,6 +1329,7 @@ var ServicePureFTPdCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function ($scope, $routeParams, Module, Request) {
         var module = 'service.pureftpd';
+        var section = Module.getSection();
         Module.init(module, 'Pure-FTPd');
         Module.initSection('base');
         $scope.scope = $scope;
@@ -1317,13 +1342,15 @@ var ServicePureFTPdCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.pureftpd', function (res) {
-                var info = res['service.pureftpd'];
+            Request.get('/query/service.pure-ftpd', function (res) {
+                var info = res['service.pure-ftpd'];
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
-                    $scope.getsettings();
+                    if (section == 'settings') {
+                        $scope.load_settings();
+                    }
                     if ($scope.checkVersion) {
                         $scope.checkVersion();
                     }
@@ -1336,6 +1363,12 @@ var ServicePureFTPdCtrl = [
             });
         };
 
+        $scope.load_settings = function () {
+            if (!$scope.installed) return;
+            $scope.getsettings();
+            $scope.sec('settings');
+            Module.setSection('settings');
+        };
         $scope.getsettings = function () {
             Request.post('/operation/pureftpd', {
                 'action': 'getsettings'
@@ -1345,7 +1378,6 @@ var ServicePureFTPdCtrl = [
                 }
             });
         };
-
         $scope.savesettings = function () {
             $scope.processing = true;
             Request.post('/operation/pureftpd', {

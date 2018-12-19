@@ -212,7 +212,7 @@ yum_pkg_alias = {
     'ntpdate'       : ['ntpdate'],
     'bind'          : ['bind'],
     'docker'        : ['docker'],
-    'pureftpd'     : ['pure-ftpd'], # 'pure-ftpd-selinux'],
+    'pureftpd'      : ['pure-ftpd'],
     'proftpd'       : ['proftpd'],
     'GeoIP'         : ['GeoIP'],
     'mono'          : ['mono'],
@@ -226,6 +226,7 @@ yum_pkg_alias = {
 #   base: is other pkg base on this pkg
 #   isext: is extend pkg
 #   conflicts: what pkg this pkg would conflict with
+#   depends: the depends packages
 yum_pkg_relatives = {
     'nginx'                         : {
         'nginx'                         : {'default': True, 'base': True},
@@ -305,7 +306,9 @@ yum_pkg_relatives = {
     },
     'pure-ftpd'                     : {
         'pure-ftpd'                     : {'default': True, 'base': True},
-        'pure-ftpd-selinux'             : {'default': False, 'isext': True}
+        'pure-ftpd-selinux'             : {'default': False, 'isext': True},
+        'postgresql-libs'               : {'default': True, 'depends': True},
+        'usermode'                      : {'default': True, 'depends': True}
     },
     'proftpd'                       : {
         'proftpd'                       : {'default': True, 'base': True},
@@ -728,4 +731,4 @@ yum_pkg_noarchitecture = [
 # if 'updates' not in yum_repolist + ['installed', '*']:
 #     print({'code': -1, 'msg': u'未知的软件源 updates ！'})
 
-print yum_pkg_alias.has_key('pureftpd')
+# print yum_pkg_alias.has_key('pure-ftpd')

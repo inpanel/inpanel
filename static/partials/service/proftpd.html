@@ -11,7 +11,7 @@
 	<div class="tabbable" ng-show="installed">
 		<ul class="nav nav-tabs">
 			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='baseconfig'"><a href="#baseconfig" ng-click="sec('baseconfig')" data-toggle="tab">基本设置</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='settings'"><a href="#settings" ng-click="load_settings()" data-toggle="tab">基本设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
@@ -21,7 +21,7 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
 				<div srvbase ng-init="name='ProFTPD';pkg='proftpd';service='proftpd';"></div>
 			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='baseconfig'" id="baseconfig">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='settings'" id="settings">
                 <form class="form-horizontal form-horizontal-small" ng-submit="savesettings()" onsubmit="return false">
                     <table class="table">
                         <thead>
