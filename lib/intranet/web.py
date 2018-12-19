@@ -36,6 +36,10 @@ import sc
 import si
 import ssh
 import vsftpd
+import bind
+import lighttpd
+import proftpd
+import pureftpd
 import tornado
 import tornado.gen
 import tornado.httpclient
@@ -482,7 +486,9 @@ class QueryHandler(RequestHandler):
             'crond'         : False,
             'ntpd'          : False,
             'named'         : False,
-            'lighttpd'      : False
+            'lighttpd'      : False,
+            'proftpd'      : False,
+            'pureftpd'      : False,
         }
         config_items = {
             'fstab'         : False,
@@ -2045,6 +2051,18 @@ class OperationHandler(RequestHandler):
 
     def vsftpd(self):
         vsftpd.web_response(self)
+
+    def bind(self):
+        bind.web_response(self)
+
+    def lighttpd(self):
+        lighttpd.web_response(self)
+
+    def proftpd(self):
+        proftpd.web_response(self)
+
+    def pureftpd(self):
+        pureftpd.web_response(self)
 
 
 class PageHandler(RequestHandler):

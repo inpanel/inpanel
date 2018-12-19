@@ -20,6 +20,8 @@ config(['$routeProvider', function ($routeProvider) {
     when('/service/lighttpd', _r('service/lighttpd', ServiceLighttpdCtrl)).
     when('/service/tomcat', _r('service/tomcat', ServiceTomcatCtrl)).
     when('/service/vsftpd', _r('service/vsftpd', ServiceVsftpdCtrl)).
+    when('/service/proftpd', _r('service/proftpd', ServiceProFTPDCtrl)).
+    when('/service/pureftpd', _r('service/pureftpd', ServicePureFTPdCtrl)).
     when('/service/mysql', _r('service/mysql', ServiceMySQLCtrl)).
     when('/service/mariadb', _r('service/mariadb', ServiceMariaDBCtrl)).
     when('/service/redis', _r('service/redis', ServiceRedisCtrl)).

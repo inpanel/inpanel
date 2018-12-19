@@ -1187,7 +1187,7 @@ var ServiceLighttpdCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function ($scope, $routeParams, Module, Request) {
         var module = 'service.lighttpd';
-        Module.init(module, 'lighttpd');
+        Module.init(module, 'Lighttpd');
         Module.initSection('base');
         $scope.scope = $scope;
         $scope.info = null;
@@ -1205,7 +1205,10 @@ var ServiceLighttpdCtrl = [
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
-                    if ($scope.checkVersion) $scope.checkVersion();
+                    $scope.getsettings();
+                    if ($scope.checkVersion) {
+                        $scope.checkVersion();
+                    }
                 } else {
                     $scope.installed = false;
                 }
@@ -1228,6 +1231,124 @@ var ServiceLighttpdCtrl = [
         $scope.savesettings = function () {
             $scope.processing = true;
             Request.post('/operation/lighttpd', {
+                'action': 'savesettings'
+            }, function (data) {
+                if (data.code == 0) {
+                    $scope.getsettings();
+                }
+                $scope.processing = false;
+            });
+        };
+    }
+];
+
+var ServiceProFTPDCtrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.proftpd';
+        Module.init(module, 'ProFTPD');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/query/service.proftpd', function (res) {
+                var info = res['service.proftpd'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    $scope.getsettings();
+                    if ($scope.checkVersion) {
+                        $scope.checkVersion();
+                    }
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+
+        $scope.getsettings = function () {
+            Request.post('/operation/proftpd', {
+                'action': 'getsettings'
+            }, function (data) {
+                if (data.code == 0) {
+                    $scope.baseconfigs = data.data;
+                }
+            });
+        };
+
+        $scope.savesettings = function () {
+            $scope.processing = true;
+            Request.post('/operation/proftpd', {
+                'action': 'savesettings'
+            }, function (data) {
+                if (data.code == 0) {
+                    $scope.getsettings();
+                }
+                $scope.processing = false;
+            });
+        };
+    }
+];
+
+var ServicePureFTPdCtrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.pureftpd';
+        Module.init(module, 'Pure-FTPd');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/query/service.pureftpd', function (res) {
+                var info = res['service.pureftpd'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    $scope.getsettings();
+                    if ($scope.checkVersion) {
+                        $scope.checkVersion();
+                    }
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+
+        $scope.getsettings = function () {
+            Request.post('/operation/pureftpd', {
+                'action': 'getsettings'
+            }, function (data) {
+                if (data.code == 0) {
+                    $scope.baseconfigs = data.data;
+                }
+            });
+        };
+
+        $scope.savesettings = function () {
+            $scope.processing = true;
+            Request.post('/operation/pureftpd', {
                 'action': 'savesettings'
             }, function (data) {
                 if (data.code == 0) {

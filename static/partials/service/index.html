@@ -19,19 +19,19 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='http'" id="http">
 				<table class="table">
 					<thead>
-						<tr><th colspan="4">HTTP服务</th></tr>
+						<tr><th colspan="4">HTTP 服务器软件</th></tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td>Apache</td>
 							<td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
-							<td class="muted">被广泛使用的开源 Web 服务器软件</td>
+							<td class="muted">广泛使用的老牌开源 HTTP 服务器软件</td>
 							<td><div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div></td>
 						</tr>
 						<tr>
 							<td style="width:100px">Nginx</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>
-							<td class="muted">高性能的开源 Web 服务器软件</td>
+							<td class="muted">高性能的开源 HTTP 服务器软件</td>
 							<td style="width:150px"><div srvminiop ng-init="name='Nginx';service='nginx';urlname='nginx'"></div></td>
 						</tr>
 						<tr>
@@ -43,13 +43,13 @@
 						<tr>
 							<td style="width:100px">Lighttpd</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.lighttpd']['status'] | service.status"></td>
-							<td class="muted">一款快速灵活高性能的开源 Web 服务器软件</td>
+							<td class="muted">快速灵活高性能的开源 HTTP 服务器软件</td>
 							<td style="width:150px"><div srvminiop ng-init="name='Lighttpd';service='lighttpd';urlname='lighttpd'"></div></td>
 						</tr>
 						<tr>
 							<td style="width:100px">Tengine</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.tengine']['status'] | service.status"></td>
-							<td class="muted">基于 Nginx 的高效稳定安全的 Web 服务器软件</td>
+							<td class="muted">基于 Nginx 的高效稳定安全的 HTTP 服务器软件</td>
 							<td style="width:150px"><div srvminiop ng-init="name='Tengine';service='tengine';urlname='tengine'"></div></td>
 						</tr>
 					</tbody>
@@ -58,14 +58,26 @@
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ftp'" id="ftp">
 				<table class="table">
 					<thead>
-						<tr><th colspan="4">FTP服务</th></tr>
+						<tr><th colspan="4">FTP 服务器软件</th></tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td style="width:100px">vsftpd</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.vsftpd']['status'] | service.status"></td>
-							<td class="muted">安全快速的FTP服务器</td>
+							<td class="muted">安全快速的 FTP 服务器</td>
 							<td style="width:150px"><div srvminiop ng-init="name='vsftpd';service='vsftpd';urlname='vsftpd'"></div></td>
+						</tr>
+						<tr>
+							<td style="width:100px">ProFTPD</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.proftpd']['status'] | service.status"></td>
+							<td class="muted">安全简单的 FTP 服务器</td>
+							<td style="width:150px"><div srvminiop ng-init="name='proftpd';service='proftpd';urlname='proftpd'"></div></td>
+						</tr>
+						<tr>
+							<td style="width:100px">Pure-FTPd</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.pureftpd']['status'] | service.status"></td>
+							<td class="muted">快速稳定全功能的 FTP 服务器</td>
+							<td style="width:150px"><div srvminiop ng-init="name='pureftpd';service='pureftpd';urlname='pureftpd'"></div></td>
 						</tr>
 					</tbody>
 				</table>

@@ -208,16 +208,16 @@ yum_pkg_alias = {
     'ssh'           : ['openssh-server', 'openssh-clients', 'openssh-ldap', 'openssh-askpass'],
     'iptables'      : ['iptables'],
     'cron'          : ['cronie', 'vixie-cron'],
-    'ntp'           : ['ntp'], # 'ntp-doc', 'ntp-perl'],
+    'ntp'           : ['ntp'],
     'ntpdate'       : ['ntpdate'],
-    'bind'          : ['bind'], # 'bind-chroot', 'bind-devel', 'bind-dyndb-ldap', 'bind-libs', 'bind-sdb', 'bind-to-tinydns'],
-    'docker'        : ['docker'], # 'docker-io', 'docker-io-fish-completion', 'docker-io-logrotate', 'docker-io-vim', 'docker-io-zsh-completion'],
-    'pure-ftpd'     : ['pure-ftpd'], # 'pure-ftpd-selinux'],
-    'proftpd'       : ['proftpd'], # 'proftpd-ldap', 'proftpd-mysql', 'proftpd-postgresql', 'proftpd-utils'],
-    'GeoIP'         : ['GeoIP'], # 'GeoIP-GeoLite-data', 'GeoIP-GeoLite-data-extra', 'GeoIP-devel'],
-    'mono'          : ['mono'], # 'mono-core','mono-data','mono-data-oracle','mono-data-sqlite','mono-devel','mono-extras','mono-locale-extras','mono-mvc','mono-mvc-devel','mono-reactive','mono-reactive-devel','mono-reactive-winforms','mono-wcf','mono-web','mono-web-devel', 'mono-winforms', 'mono-winfx'],
-    'ntfs-3g'       : ['ntfs-3g'], # 'ntfs-3g-devel'],
-    'ntfsprogs'     : ['ntfsprogs'], # 'ntfsprogs-devel', 'ntfsprogs-gnomevfs']
+    'bind'          : ['bind'],
+    'docker'        : ['docker'],
+    'pureftpd'     : ['pure-ftpd'], # 'pure-ftpd-selinux'],
+    'proftpd'       : ['proftpd'],
+    'GeoIP'         : ['GeoIP'],
+    'mono'          : ['mono'],
+    'ntfs-3g'       : ['ntfs-3g'],
+    'ntfsprogs'     : ['ntfsprogs']
 }
 
 # Relative available packages.
@@ -677,7 +677,7 @@ yum_pkg_relatives = {
         'docker-io-vim'                 : {'default': False, 'isext': True},
         'docker-io-zsh-completion'      : {'default': False, 'isext': True}
     },
-    'mono'                          : {
+    'mono'                          : { # epel
         'mono-core'                     : {'default': True, 'base': True},
         'mono-data'                     : {'default': True, 'base': True},
         'mono-data-oracle'              : {'default': False, 'isext': True},
@@ -696,11 +696,11 @@ yum_pkg_relatives = {
         'mono-winforms'                 : {'default': False, 'isext': True},
         'mono-winfx'                    : {'default': False, 'isext': True}
     },
-    'ntfs-3g'                       : {
+    'ntfs-3g'                       : { # epel
         'ntfs-3g'                       : {'default': True, 'base': True},
         'ntfs-3g-devel'                 : {'default': False, 'isext': True}
     },
-    'ntfsprogs'                     : {
+    'ntfsprogs'                     : { # epel
         'ntfsprogs'                     : {'default': True, 'base': True},
         'ntfsprogs-devel'               : {'default': False, 'isext': True},
         'ntfsprogs-gnomevfs'            : {'default': False, 'isext': True}
@@ -727,3 +727,5 @@ yum_pkg_noarchitecture = [
 
 # if 'updates' not in yum_repolist + ['installed', '*']:
 #     print({'code': -1, 'msg': u'未知的软件源 updates ！'})
+
+print yum_pkg_alias.has_key('pureftpd')

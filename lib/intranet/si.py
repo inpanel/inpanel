@@ -607,11 +607,28 @@ class Server(object):
 
 
 class Service(object):
-
-    support_services = ['intranet', 'nginx', 'httpd',
-                        'vsftpd', 'mysqld', 'redis', 'memcached', 'mongod', 'php-fpm',
-                        'postfix',
-                        'sendmail', 'sshd', 'iptables', 'crond', 'ntpd']
+    '''supported service operate script'''
+    support_services = [
+        'intranet',
+        'nginx',
+        'httpd',
+        'vsftpd',
+        'mysqld',
+        'redis',
+        'memcached',
+        'mongod',
+        'php-fpm',
+        'postfix',
+        'sendmail',
+        'sshd',
+        'iptables',
+        'crond',
+        'ntpd',
+        'named',
+        'lighttpd',
+        'proftpd',
+        'pureftpd'
+        ]
 
     pidnames = {
         'sendmail': ('sm-client', ),

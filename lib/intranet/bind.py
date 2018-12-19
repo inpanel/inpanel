@@ -19,8 +19,8 @@ def web_response(self):
 
 
 def get_config():
-    return {}
+    return dict()
 
 
 def set_config(self):
-    return {}
+    return dict()

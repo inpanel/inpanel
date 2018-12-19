@@ -878,7 +878,7 @@ directive('srvuninstall', function(){
 						<tr ng-show="pkginfo.from_repo"><td>软件源：</td><td>{{pkginfo.from_repo}}</td></tr>\
 					</tbody>\
 				</table>\
-				<p ng-show="showVersion"><button class="btn btn-default btn-xs" ng-click="uninstall(pkginfo.repo, pkginfo.name, pkginfo.version, pkginfo.release)">确认并卸载</button>\
+				<p ng-show="showVersion"><button class="btn btn-default" ng-click="uninstall(pkginfo.repo, pkginfo.name, pkginfo.version, pkginfo.release)">确认并卸载</button>\
 			</div>',
 		replace: true
 	};
