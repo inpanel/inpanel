@@ -266,3 +266,11 @@ def cfg_set_array(self, cfgfile, configs_array, delimiter):
         if q_value:
             cfg_set(cfgfile, key, q_value, delimiter)
     return True
+
+
+def gen_accesskey():
+    """Generate a access key.
+    """
+    keys = [chr(int(random.random()*256)) for i in range(0, 32)]
+    return base64.b64encode(''.join(keys))
+

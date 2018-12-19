@@ -58,6 +58,10 @@ config(['$routeProvider', function ($routeProvider) {
     when('/utils/partition', _r('utils/partition', UtilsPartitionCtrl)).
     when('/utils/autofm', _r('utils/autofm', UtilsAutoFMCtrl)).
     when('/utils/movedata', _r('utils/movedata', UtilsMoveDataCtrl)).
+    when('/ecs', _r('ecs/ecs', ECSCtrl)).
+    when('/ecs/index', _r('ecs/index', ECSIndexCtrl)).
+    when('/ecs/account', _r('ecs/account', ECSAccountCtrl)).
+    when('/ecs/:section', _r('ecs/setting', ECSSettingCtrl)).
     when('/setting', _r('setting', SettingCtrl)).
     when('/backup', _r('backup', BackupCtrl)).
     when('/secure', _r('secure', SecureCtrl)).
@@ -88,6 +92,11 @@ run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Requ
         'password_validated': false
     };
 
+	$rootScope.$ecs = {
+        'access_key_id': '',
+		'page_size': 10,
+		'page_number': 1
+    };
     $rootScope.$proxyroot = location_path;
 }]).
 value('version', {

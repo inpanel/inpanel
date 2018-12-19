@@ -32,8 +32,9 @@ directive('navbar', function () {
                             <li ng-class="\'active\' | ifmatch:[currentItem,\'ftp\']"><a href="#/ftp">FTP管理</a></li>\
                             <li ng-class="\'active\' | ifmatch:[currentItem,\'backup\']"><a href="#/backup">备份管理</a></li>\
                             <li ng-class="\'active\' | ifmatch:[currentItem,\'secure\']"><a href="#/secure">安全管理</a></li>\
-                            <li role="separator" class="divider"></li>\
                             <li ng-class="\'active\' | ifmatch:[currentItem,\'log\']"><a href="#/log">日志管理</a></li>\
+                            <li role="separator" class="divider"></li>\
+                            <li ng-class="\'active\' | ifmatch:[currentItem,\'ecs\']"><a href="#/ecs">ECS 管理(测试)</a></li>\
                         </ul>\
                     </li>\
                 </ul>\

@@ -24,28 +24,29 @@ import user
 import uuid
 from config import Config
 
+import aliyuncs
 import bind
 import chkconfig
+import ecs
 import fdisk
 import file
+import lighttpd
 import mysql
 import nginx
 import php
+import proftpd
+import pureftpd
 import pyDes
 import sc
 import si
 import ssh
-import vsftpd
-import bind
-import lighttpd
-import proftpd
-import pureftpd
 import tornado
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 import utils
+import vsftpd
 import yum
 from async_process import call_subprocess, callbackable
 from core import apache, cron, proc
@@ -2515,6 +2516,38 @@ class BackendHandler(RequestHandler):
             newpassword = _u(self.get_argument('newpassword', ''))
             if not path: path = '/root/.ssh/sshkey_intranet'
             self._call(functools.partial(self.ssh_chpasswd, path, oldpassword, newpassword))
+        elif jobname in ('intranet_install', 'intranet_uninstall', 'intranet_update'):
+            if self.config.get('runtime', 'mode') == 'demo':
+                self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
+                return
+            ssh_ip = self.get_argument('ssh_ip', '')
+            ssh_port = self.get_argument('ssh_port', '22')
+            ssh_user = self.get_argument('ssh_user', '')
+            ssh_password = self.get_argument('ssh_password', '')
+            instance_name = self.get_argument('instance_name', '')
+            if jobname == 'intranet_install':
+                accessnet = self.get_argument('accessnet', 'public')
+                accesskey = utils.gen_accesskey()
+                accessport = '8888'
+            elif jobname == 'intranet_update':
+                if not self.config.has_option('intranet', instance_name):
+                    self.write({'code': -1, 'msg': u'该服务器还未配置远程控制！'})
+                    return
+                accessdata = self.config.get('intranet', instance_name)
+                accessdata = accessdata.split('|')
+                accesskey = accessdata[0]
+            if jobname == 'intranet_install':
+                self._call(functools.partial(self.intranet_install,
+                        _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
+                        _u(instance_name), _u(accessnet), _u(accessport), _u(accesskey)))
+            elif jobname == 'intranet_uninstall':
+                self._call(functools.partial(self.intranet_uninstall,
+                        _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
+                        _u(instance_name)))
+            elif jobname == 'intranet_update':
+                self._call(functools.partial(self.intranet_update,
+                        _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
+                        _u(accesskey)))
         else:   # undefined job
             self.write({'code': -1, 'msg': u'未定义的操作！'})
             return
@@ -2602,14 +2635,13 @@ class BackendHandler(RequestHandler):
 
     @tornado.gen.engine
     def service(self, action, service, name):
-        """Service operation.
-        """
+        """Service operation."""
         jobname = 'service_%s_%s' % (action, service)
         if not self._start_job(jobname): return
 
         action_str = {'start': u'启动', 'stop': u'停止', 'restart': u'重启'}
         self._update_job(jobname, 2, u'正在%s %s 服务...' % (action_str[action], _d(name)))
-        
+
         # patch before start sendmail in redhat/centos 5.x
         # REF: http://www.mombu.com/gnu_linux/red-hat/t-why-does-sendmail-hang-during-rh-9-start-up-1068528.html
         if action == 'start' and service in ('sendmail', )\
@@ -3831,3 +3863,638 @@ class BackendHandler(RequestHandler):
             msg = u'私钥密码修改失败！'
 
         self._finish_job(jobname, code, msg)
+
+    @tornado.web.asynchronous
+    @tornado.gen.engine
+    def intranet_install(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport=None, accesskey=None):
+        """Install Intranet"""
+        jobname = 'intranet_install_%s' % ssh_ip
+        if not self._start_job(jobname): return
+
+        self._update_job(jobname, 2, u'正在将 Intranet 安装到 %s...' % ssh_ip)
+
+        result = yield tornado.gen.Task(callbackable(ecs.install),
+                    ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey, intranet_port=accessport)
+        if result == True:
+            code = 0
+            msg = u'Intranet 安装成功！'
+            self.config.set('intranet', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
+        else:
+            code = -1
+            msg = u'Intranet 安装过程中发生错误！'
+
+        self._finish_job(jobname, code, msg)
+
+    @tornado.web.asynchronous
+    @tornado.gen.engine
+    def intranet_uninstall(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name):
+        """Uninstall Intranet
+        """
+        jobname = 'intranet_uninstall_%s' % ssh_ip
+        if not self._start_job(jobname): return
+
+        self._update_job(jobname, 2, u'正在将 Intranet 从 %s 上卸载...' % ssh_ip)
+    
+        result = yield tornado.gen.Task(callbackable(ecs.uninstall),
+                    ssh_ip, ssh_port, ssh_user, ssh_password)
+        if result == True:
+            code = 0
+            msg = u'Intranet 卸载成功！'
+            try:
+                self.config.remove_option('intranet', instance_name)
+            except:
+                pass
+        else:
+            code = -1
+            msg = u'Intranet 卸载过程中发生错误！'
+
+        self._finish_job(jobname, code, msg)
+
+    @tornado.web.asynchronous
+    @tornado.gen.engine
+    def intranet_update(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
+        """Update Intranet"""
+        jobname = 'intranet_update_%s' % ssh_ip
+        if not self._start_job(jobname): return
+
+        self._update_job(jobname, 2, u'正在更新 %s 上的 Intranet 配置...' % ssh_ip)
+
+        result = yield tornado.gen.Task(callbackable(ecs.update),
+                    ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey)
+        if result == True:
+            code = 0
+            msg = u'Intranet 配置更新成功！'
+        else:
+            code = -1
+            msg = u'Intranet 配置更新过程中发生错误！'
+
+        self._finish_job(jobname, code, msg)
+
+
+class BackupHandler(RequestHandler):
+    def get(self):
+        self.authed()
+
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write(u'DEMO状态不允许执行此操作！')
+            return
+
+        path = os.path.join(self.settings['data_path'], 'config.ini')
+        if os.path.isfile(path):
+            self.set_header('Content-Type', 'application/octet-stream')
+            self.set_header('Content-disposition', 'attachment; filename=ecsmate_backup_%s.bak' % time.strftime('%Y%m%d'))
+            self.set_header('Content-Transfer-Encoding', 'binary')
+            with open(path) as f: self.write(f.read())
+        else:
+            self.write('配置文件不存在！')
+
+    def authed(self):
+        # get the cookie within 30 mins
+        if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
+            # regenerate the cookie timestamp per 5 mins
+            if self.get_secure_cookie('authed', None, 5.0/1440) == None:
+                self.set_secure_cookie('authed', 'yes', None)
+        else:
+            raise tornado.web.HTTPError(403, "Please login first")
+
+ 
+class RestoreHandler(RequestHandler):
+    def post(self):
+        self.authed()
+
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write(u'DEMO状态不允许执行此操作！')
+            return
+
+        path = os.path.join(self.settings['data_path'], 'config.ini')
+
+        self.write(u'<body style="font-size:14px;overflow:hidden;margin:0;padding:0;">')
+
+        if not self.request.files.has_key('ufile'):
+            self.write(u'请选择备份配置文件！')
+        else:
+            self.write(u'正在上传...')
+            file = self.request.files['ufile'][0]
+            testpath = path+'.test'
+            with open(testpath, 'wb') as f: f.write(file['body'])
+
+            try:
+                t = Config(testpath)
+                with open(path, 'wb') as f: f.write(file['body'])
+                self.write(u'还原成功！')
+            except:
+                self.write(u'配置文件有误，还原失败！')
+
+            os.unlink(testpath)
+
+        self.write('</body>')
+
+        
+class BuyECSHandler(RequestHandler):
+    """Aliyun CPS program.
+    """
+    def get(self):
+        self.redirect('http://www.aliyun.com/cps/rebate?from_uid=zop0qMW4KbY=')
+
+
+class AccountHandler(RequestHandler):
+    """ECS Account handler.
+    """
+    def get(self):
+        self.authed()
+        status = self.get_argument('status', '')
+
+        accounts = self.config.get('ecs', 'accounts')
+        try:
+            accounts = json.loads(accounts)
+        except:
+            accounts = []
+        
+        accounts = sorted(accounts, key=lambda k:k['name'])
+        if status:
+            status = status == 'enable'
+            accounts = filter(lambda a: a['status'] == status, accounts)
+
+        if self.config.get('runtime', 'mode') == 'demo':
+            for i, account in enumerate(accounts):
+                accounts[i]['access_key_secret'] = '***DEMO状态下密钥被保护***'
+
+        self.write({'code': 0, 'msg': u'成功加载 ECS 帐号列表！', 'data': accounts})
+    
+    def post(self):
+        self.authed()
+        action = self.get_argument('action', '')
+
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': u'DEMO状态不允许修改 ECS 帐号！'})
+            return
+        
+        if action == 'add' or action == 'update':
+            name = self.get_argument('name', '')
+            access_key_id = self.get_argument('access_key_id', '')
+            access_key_secret = self.get_argument('access_key_secret', '')
+            status = self.get_argument('status', '')
+            newaccount = {
+                'name': name,
+                'access_key_id': access_key_id,
+                'access_key_secret': access_key_secret,
+                'status': status == 'on',
+            }
+            if action == 'update':
+                old_access_key_id = self.get_argument('old_access_key_id', '')
+
+            accounts = self.config.get('ecs', 'accounts')
+            try:
+                accounts = json.loads(accounts)
+            except:
+                accounts = []
+
+            if action == 'add':
+                for account in accounts:
+                    if account['access_key_id'] == access_key_id:
+                        self.write({'code': -1, 'msg': u'添加失败！该 Access Key ID 已存在！'})
+                        return
+                accounts.append(newaccount)
+            else:
+                found = False
+                for i, account in enumerate(accounts):
+                    if account['access_key_id'] == old_access_key_id:
+                        accounts[i] = newaccount
+                        found = True
+                        break
+                if not found:
+                    self.write({'code': -1, 'msg': u'更新失败！该 Access Key ID 不存在！'})
+                    return
+
+            self.config.set('ecs', 'accounts', json.dumps(accounts))
+            if action == 'add':
+                self.write({'code': 0, 'msg': u'新帐号添加成功！'})
+            else:
+                self.write({'code': 0, 'msg': u'帐号更新成功！'})
+
+        elif action == 'delete':
+            access_key_id = self.get_argument('access_key_id', '')
+            accounts = self.config.get('ecs', 'accounts')
+            try:
+                accounts = json.loads(accounts)
+            except:
+                accounts = []
+
+            found = False
+            for i, account in enumerate(accounts):
+                if account['access_key_id'] == access_key_id:
+                    del accounts[i]
+                    found = True
+                    break
+            if not found:
+                self.write({'code': -1, 'msg': u'删除失败！该 Access Key ID 不存在！'})
+                return
+
+            self.config.set('ecs', 'accounts', json.dumps(accounts))
+            self.write({'code': 0, 'msg': u'帐号删除成功！'})
+
+
+class ECSHandler(RequestHandler):
+    '''ECS operation handler.'''
+
+    def _get_secret(self, access_key_id):
+        accounts = self.config.get('ecs', 'accounts')
+        try:
+            accounts = json.loads(accounts)
+        except:
+            accounts = []
+
+        for account in accounts:
+            if account['access_key_id'] == access_key_id:
+                return account['access_key_secret']
+
+        return False
+
+    @tornado.web.asynchronous
+    @tornado.gen.engine
+    def get(self, section):
+        self.authed()
+
+        if section == 'instances':
+            access_key_id = self.get_argument('access_key_id', '')
+            page_number = self.get_argument('page_number', '1')
+            page_size = self.get_argument('page_size', '10')
+
+            access_key_secret = self._get_secret(access_key_id)
+            if access_key_secret == False:
+                self.write({'code': -1, 'msg': u'该帐号不存在！'})
+                self.finish()
+                return
+
+            srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
+            result, data, reqid = yield tornado.gen.Task(callbackable(srv.DescribeInstanceStatus), PageNumber=_u(page_number), PageSize=_u(page_size))
+            if not result:
+                self.write({'code': -1, 'msg': u'云服务器列表加载失败！（%s）' % data['Message']})
+                self.finish()
+                return
+
+            instances = []
+            tasks = []
+            if data.has_key('InstanceStatusSets'):
+                for instance in data['InstanceStatusSets']:
+                    tasks.append(tornado.gen.Task(callbackable(srv.DescribeInstanceAttribute), _u(instance['InstanceName'])))
+                    instances.append(instance)
+            
+            if tasks:
+                responses = yield tasks
+                for i, response in enumerate(responses):
+                    result, instdata, reqid = response
+                    if result: instances[i].update(instdata)
+            
+            # get access info for Intranet
+            for instance in instances:
+                if not self.config.has_option('intranet', instance['InstanceName']):
+                    instance['IntranetStatus'] = False
+                else:
+                    accessdata = self.config.get('intranet', instance['InstanceName'])
+                    accessdata = accessdata.split('|')
+                    accessinfo = {
+                        'accesskey': accessdata[0],
+                        'accessnet': accessdata[1],
+                        'accessport': accessdata[2],
+                    }
+                    instance['IntranetStatus'] = accessinfo
+
+            self.write({'code': 0, 'msg': u'成功加载云服务器列表！', 'data': {
+                'instances': instances,
+                'page_number': data['PageNumber'],
+                'page_size': data['PageSize'],
+            }})
+            self.finish()
+
+        elif section == 'instance':
+            access_key_id = self.get_argument('access_key_id', '')
+            instance_name = self.get_argument('instance_name', '')
+
+            access_key_secret = self._get_secret(access_key_id)
+            if access_key_secret == False:
+                self.write({'code': -1, 'msg': u'该帐号不存在！'})
+                self.finish()
+                return
+
+            srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
+            result, instdata, reqid = yield tornado.gen.Task(callbackable(srv.DescribeInstanceAttribute), _u(instance_name))
+            if not result:
+                self.write({'code': -1, 'msg': u'云服务器 %s 信息加载失败！（%s）' % (instance_name, instdata['Message'])})
+                self.finish()
+                return
+
+            self.write({'code': 0, 'msg': u'成功加载云服务器信息！', 'data': instdata})
+            self.finish()
+
+        elif section == 'images':
+            access_key_id = self.get_argument('access_key_id', '')
+            region_code = self.get_argument('region_code', '')
+            page_number = self.get_argument('page_number', '1')
+            page_size = self.get_argument('page_size', '10')
+
+            access_key_secret = self._get_secret(access_key_id)
+            if access_key_secret == False:
+                self.write({'code': -1, 'msg': u'该帐号不存在！'})
+                self.finish()
+                return
+
+            srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
+            result, data, reqid = yield tornado.gen.Task(callbackable(srv.DescribeImages), RegionCode=_u(region_code), PageNumber=_u(page_number), PageSize=_u(page_size))
+            if not result:
+                self.write({'code': -1, 'msg': u'系统镜像列表加载失败！（%s）' % data['Message']})
+                self.finish()
+                return
+
+            if data.has_key('Images'):
+                images = data['Images']
+            else:
+                images = []
+
+            self.write({'code': 0, 'msg': u'成功加载系统镜像列表！', 'data': {
+                'images': images,
+                'total_number': data['ImageTotalNumber'],
+                'page_number': data['PageNumber'],
+                'page_size': data['PageSize'],
+            }})
+            self.finish()
+
+        elif section == 'disks':
+            access_key_id = self.get_argument('access_key_id', '')
+            instance_name = self.get_argument('instance_name', '')
+
+            access_key_secret = self._get_secret(access_key_id)
+            if access_key_secret == False:
+                self.write({'code': -1, 'msg': u'该帐号不存在！'})
+                self.finish()
+                return
+
+            srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
+            result, data, reqid = yield tornado.gen.Task(callbackable(srv.DescribeDisks), InstanceName=_u(instance_name))
+            if not result:
+                self.write({'code': -1, 'msg': u'磁盘列表加载失败！（%s）' % data['Message']})
+                self.finish()
+                return
+            
+            if data.has_key('Disks'):
+                disks = data['Disks']
+            else:
+                disks = []
+
+            self.write({'code': 0, 'msg': u'成功加载磁盘列表列表！', 'data': {
+                'disks': disks
+            }})
+            self.finish()
+
+        elif section == 'snapshots':
+            access_key_id = self.get_argument('access_key_id', '')
+            instance_name = self.get_argument('instance_name', '')
+            disk_code = self.get_argument('disk_code', '')
+
+            access_key_secret = self._get_secret(access_key_id)
+            if access_key_secret == False:
+                self.write({'code': -1, 'msg': u'该帐号不存在！'})
+                self.finish()
+                return
+
+            srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
+            result, data, reqid = yield tornado.gen.Task(callbackable(srv.DescribeSnapshots), InstanceName=_u(instance_name), DiskCode=_u(disk_code))
+            if not result:
+                self.write({'code': -1, 'msg': u'磁盘快照列表加载失败！（%s）' % data['Message']})
+                self.finish()
+                return
+            
+            if data.has_key('Snapshots'):
+                snapshots = data['Snapshots']
+            else:
+                snapshots = []
+                
+            snapshots = sorted(snapshots, key=lambda k:k['CreateTime'], reverse=True)
+
+            self.write({'code': 0, 'msg': u'成功加载磁盘快照列表！', 'data': {
+                'snapshots': snapshots
+            }})
+            self.finish()
+
+        elif section == 'accessinfo':
+            instance_name = self.get_argument('instance_name', '')
+            if not instance_name:
+                self.write({'code': -1, 'msg': u'服务器不存在！'})
+                self.finish()
+                return
+
+            if not self.config.has_option('intranet', instance_name):
+                accessinfo = {'accesskey': '', 'accessnet': 'public', 'accessport': '8888'}
+            else:
+                data = self.config.get('intranet', instance_name)
+                data = data.split('|')
+                accessinfo = {
+                    'accesskey': data[0],
+                    'accessnet': data[1],
+                    'accessport': data[2],
+                }
+
+            self.write({'code': 0, 'msg': u'', 'data': accessinfo})
+            self.finish()
+
+        else:
+            self.write({'code': -1, 'msg': u'未定义的操作！'})
+            self.finish()
+    
+    @tornado.web.asynchronous
+    @tornado.gen.engine
+    def post(self, section):
+        self.authed()
+
+        if section in ('startinstance', 'stopinstance', 'rebootinstance', 'resetinstance'):
+
+            if self.config.get('runtime', 'mode') == 'demo':
+                self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
+                self.finish()
+                return
+
+            access_key_id = self.get_argument('access_key_id', '')
+            instance_name = self.get_argument('instance_name', '')
+            if section in ('stopinstance', 'rebootinstance'):
+                force = self.get_argument('force', '') and 'true' or None
+            elif section == 'resetinstance':
+                image_code = self.get_argument('image_code', '')
+
+            access_key_secret = self._get_secret(access_key_id)
+            if access_key_secret == False:
+                self.write({'code': -1, 'msg': u'该帐号不存在！'})
+                self.finish()
+                return
+            
+            opstr = {'startinstance': u'启动', 'stopinstance': u'停止', 'rebootinstance': u'重启', 'resetinstance': u'重置'}
+
+            srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
+            if section == 'startinstance':
+                result, data, reqid = yield tornado.gen.Task(callbackable(srv.StartInstance), _u(instance_name))
+            elif section == 'stopinstance':
+                result, data, reqid = yield tornado.gen.Task(callbackable(srv.StopInstance), _u(instance_name), ForceStop=_u(force))
+            elif section == 'rebootinstance':
+                result, data, reqid = yield tornado.gen.Task(callbackable(srv.RebootInstance), _u(instance_name), ForceStop=_u(force))
+            elif section == 'resetinstance':
+                result, data, reqid = yield tornado.gen.Task(callbackable(srv.ResetInstance), _u(instance_name), ImageCode=_u(image_code))
+            if not result:
+                self.write({'code': -1, 'msg': u'云服务器 %s %s失败！（%s）' % (instance_name, opstr[section], data['Message'])})
+                self.finish()
+                return
+            
+            self.write({'code': 0, 'msg': u'云服务器%s指令发送成功！' % opstr[section], 'data': data})
+            self.finish()
+
+        elif section in ('createsnapshot', 'deletesnapshot', 'cancelsnapshot', 'rollbacksnapshot'):
+
+            if self.config.get('runtime', 'mode') == 'demo':
+                self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
+                self.finish()
+                return
+
+            access_key_id = self.get_argument('access_key_id', '')
+            instance_name = self.get_argument('instance_name', '')
+            disk_code = self.get_argument('disk_code', '')
+            if section in ('deletesnapshot', 'cancelsnapshot', 'rollbacksnapshot'):
+                snapshot_code = self.get_argument('snapshot_code', '')
+
+            access_key_secret = self._get_secret(access_key_id)
+            if access_key_secret == False:
+                self.write({'code': -1, 'msg': u'该帐号不存在！'})
+                self.finish()
+                return
+            
+            opstr = {'createsnapshot': u'创建', 'deletesnapshot': u'删除', 'cancelsnapshot': u'取消', 'rollbacksnapshot': u'回滚'}
+
+            srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
+            if section == 'createsnapshot':
+                result, data, reqid = yield tornado.gen.Task(callbackable(srv.CreateSnapshot), InstanceName=_u(instance_name), DiskCode=_u(disk_code))
+            elif section == 'deletesnapshot':
+                result, data, reqid = yield tornado.gen.Task(callbackable(srv.DeleteSnapshot), InstanceName=_u(instance_name), DiskCode=_u(disk_code), SnapshotCode=_u(snapshot_code))
+            elif section == 'cancelsnapshot':
+                result, data, reqid = yield tornado.gen.Task(callbackable(srv.CancelSnapshotRequest), InstanceName=_u(instance_name), SnapshotCode=_u(snapshot_code))
+            elif section == 'rollbacksnapshot':
+                result, data, reqid = yield tornado.gen.Task(callbackable(srv.RollbackSnapshot), InstanceName=_u(instance_name), DiskCode=_u(disk_code), SnapshotCode=_u(snapshot_code))
+            if not result:
+                self.write({'code': -1, 'msg': u'快照%s失败！（%s）' % (opstr[section], data['Message'])})
+                self.finish()
+                return
+            
+            self.write({'code': 0, 'msg': u'快照%s指令发送成功！' % opstr[section], 'data': data})
+            self.finish()
+
+        elif section == 'accessinfo':
+
+            if self.config.get('runtime', 'mode') == 'demo':
+                self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
+                self.finish()
+                return
+
+            instance_name = self.get_argument('instance_name', '')
+            accesskey = self.get_argument('accesskey', '')
+            accessnet = self.get_argument('accessnet', '')
+            accessport = self.get_argument('accessport', '')
+
+            if not instance_name:
+                self.write({'code': -1, 'msg': u'服务器不存在！'})
+                self.finish()
+                return
+
+            self.config.set('intranet', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
+
+            self.write({'code': 0, 'msg': u'Intranet 远程控制设置保存成功！'})
+            self.finish()
+
+        else:
+            self.write({'code': -1, 'msg': u'未定义的操作！'})
+            self.finish()
+
+
+class IntranetIndexHandler(RequestHandler):
+    """Index page of Intranet.
+    """
+    def get(self, instance_name, ip, port):
+        with open(os.path.join(self.settings['intranet_path'], 'index.html')) as f:
+            html = f.read()
+        html = html.replace('<link rel="stylesheet" href="', '<link rel="stylesheet" href="/intranet/')
+        html = html.replace('<script src="', '<script src="/intranet/')
+        html = html.replace("var template_path = '';", "var template_path = '/intranet';")
+        self.write(html)
+
+
+class IntranetHandler(RequestHandler):
+    """Operation proxy of Intranet.
+
+    REF: https://groups.google.com/forum/?fromgroups=#!topic/python-tornado/TB_6oKBmdlA
+    """
+    def handle_response(self, response): 
+        if response.error and not isinstance(response.error, tornado.httpclient.HTTPError): 
+            logging.info("response has error %s", response.error)
+            self.set_status(500)
+            self.write("Internal server error:\n" + str(response.error))
+            self.finish()
+        else:
+            self.set_status(response.code)
+            for header in ('Date', 'Cache-Control', 'Content-Type', 'Etag', 'Location'):
+                v = response.headers.get(header)
+                if v:
+                    self.set_header(header, v)
+            if response.body:
+                self.write(response.body)
+            self.finish()
+
+    def forward(self, port=None, host=None): 
+        try:
+            tornado.httpclient.AsyncHTTPClient().fetch(
+                tornado.httpclient.HTTPRequest(
+                    url = "%s://%s:%s%s" % (
+                        self.request.protocol, host or "127.0.0.1",
+                        port or 80, self.request.uri),
+                    method=self.request.method,
+                    body=self.request.body,
+                    headers=self.request.headers,
+                    follow_redirects=False),
+                self.handle_response)
+        except tornado.httpclient.HTTPError, x:
+            logging.info("tornado signalled HTTPError %s", x)
+            if hasattr(x, response) and x.response:
+                self.handle_response(x.response)
+        except:
+            self.set_status(500)
+            self.write("Internal server error\n")
+            self.finish()
+    
+    def gen_token(self, instance_name):
+        if not self.config.has_option('intranet', instance_name):
+            self.set_status(403)
+            self.finish()
+            return
+        else:
+            data = self.config.get('intranet', instance_name)
+            data = data.split('|')
+            accesskey = data[0]
+
+        accesskey = base64.b64decode(accesskey)
+        key = accesskey[:24]
+        iv = accesskey[24:]
+        k = pyDes.triple_des(key, pyDes.CBC, iv, pad=None, padmode=pyDes.PAD_PKCS5)
+        access_token = k.encrypt('timestamp:%d' % int(time.time()))
+        access_token = base64.b64encode(access_token)
+        return access_token
+
+    @tornado.web.asynchronous
+    @tornado.gen.engine
+    def get(self, instance_name, ip, port, uri):
+        self.authed()
+        self.request.body = None
+        self.request.uri = '/'+uri
+        self.request.headers['X-ACCESS-TOKEN'] = self.gen_token(instance_name)
+        self.forward(port, ip)
+
+    @tornado.web.asynchronous
+    @tornado.gen.engine
+    def post(self, instance_name, ip, port, uri):
+        self.authed()
+        self.request.uri = '/'+uri
+        self.request.headers['X-ACCESS-TOKEN'] = self.gen_token(instance_name)
+        self.forward(port, ip)

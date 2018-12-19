@@ -1,0 +1,459 @@
+<div navbar ng-init="currentItem='ecs'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>管理 {{instance_name}}</h3>
+    </div>
+
+    <div class="tabbable" ng-init="load()">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='operation'"><a href="#operation" ng-click="sec('operation')" data-toggle="tab">基本操作</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='disks'"><a href="#disks" ng-click="sec('disks')" data-toggle="tab">磁盘管理</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='reset'"><a href="#reset" ng-click="sec('reset')" data-toggle="tab">重置系统</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='intranet'"><a href="#intranet" ng-click="sec('intranet')" data-toggle="tab">控制面板</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+                <table class="table table-button" style="width:500px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">基本信息</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:120px;">服务器编号：</td>
+                            <td>{{instance.InstanceName}}</td>
+                        </tr>
+                        <tr>
+                            <td>云服务器状态：</td>
+                            <td ng-bind-html-unsafe="instance.Status | instance.status"></td>
+                        </tr>
+                        <tr>
+                            <td>系统主机名称：</td>
+                            <td>{{instance.HostName}}</td>
+                        </tr>
+                        <tr>
+                            <td>云服务器 IP：</td>
+                            <td>
+                                公网：{{instance.PublicIpAddress.AllocateIpAddress}}<br>
+                                内网：{{instance.InnerIpAddress}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>云服务器配置：</td>
+                            <td>
+                                CPU：{{instance.CPUs}}核<br>
+                                内存：{{instance.Memory*1024*1024|bytes2human}}<br>
+                                带宽：{{instance.MaxBandwidthOut/1000/1024}}Mbps<br>
+                                容量：{{instance.DiskSize}}GB
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>系统安装镜像：</td>
+                            <td>{{instance.Image.ImageCode}}</td>
+                        </tr>
+                        <tr>
+                            <td>所在数据中心：</td>
+                            <td>
+                                {{instance.RegionCode|instance.datacenter}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>所在数据区域：</td>
+                            <td>
+                                {{instance.ZoneCode|instance.datacenter}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='operation'" id="operation">
+                <table class="table table-button" style="width:500px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">基本操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:80px;">当前状态：</td>
+                            <td ng-bind-html-unsafe="instance.Status | instance.status"></td>
+                        </tr>
+                        <tr>
+                            <td>管理操作：</td>
+                            <td>
+                                <button ng-click="start()" class="btn btn-small" ng-disabled="processing||!(instance.Status=='Stopped'||instance.Status=='Pending'||instance.Status=='StartFailure')"><i
+                                        class="icon-play"></i> 启动</button>
+                                <button ng-click="stop()" class="btn btn-small" ng-disabled="processing||!(instance.Status=='Running'||instance.Status=='StopFailure')"><i
+                                        class="icon-stop"></i> 关闭</button>
+                                <button ng-click="reboot()" class="btn btn-small" ng-disabled="processing||!(instance.Status=='Running'||instance.Status=='StopFailure')"><i
+                                        class="icon-refresh"></i> 重启</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='disks'" id="disks">
+                <div class="widget widget-table" style="width:500px">
+                    <div class="widget-header">
+                        <i class="icon-hdd"></i>
+                        <h3>磁盘管理</h3>
+                    </div>
+                    <div class="widget-content">
+                        <div style="padding:20px;display:none" ng-show="diskloading">
+                            <img src="images/loading.gif" style="margin-right:5px"> 正在加载磁盘列表，请稍候...
+                        </div>
+                        <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered"
+                            ng-show="!diskloading">
+                            <thead>
+                                <tr>
+                                    <th style="width:20px" class="td-right">#</th>
+                                    <th>磁盘编号</th>
+                                    <th>磁盘类型</th>
+                                    <th>磁盘大小</th>
+                                    <th style="width:100px">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-show="disks.length==0">
+                                    <td colspan="5" style="font-size:14px">
+                                        未检测到磁盘。
+                                    </td>
+                                </tr>
+                                <tr ng-repeat="disk in disks">
+                                    <td class="td-right">{{$index+1}}</td>
+                                    <td>{{disk.DiskCode}}</td>
+                                    <td>{{disk.Type|disk.type}}</td>
+                                    <td>{{disk.Size}}G</td>
+                                    <td>
+                                        <button class="btn btn-small" ng-click="loadsnapshots(disk)">
+                                            <i class="icon-camera"></i> 快照管理
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="widget widget-table" style="width:500px" ng-show="curdisk">
+                    <div class="widget-header">
+                        <i class="icon-camera"></i>
+                        <h3>磁盘 {{curdisk.DiskCode}} 的快照列表</h3>
+                        <div class="pull-right" style="margin-right:10px;margin-top:8px;margin-bottom:-10px">
+                            <div class="input-append">
+                                <button class="btn btn-small" ng-disabled="processing" ng-click="createsnapshot()"><i
+                                        class="icon-plus"></i> 创建快照</button>
+                                <button class="btn btn-small" ng-disabled="processing" ng-click="loadsnapshots()"><i
+                                        class="icon-refresh"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <div style="padding:20px;display:none" ng-show="snaploading">
+                            <img src="images/loading.gif" style="margin-right:5px"> 正在加载磁盘快照列表，请稍候...
+                        </div>
+                        <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered"
+                            ng-show="!snaploading">
+                            <thead>
+                                <tr>
+                                    <th style="width:20px" class="td-right">#</th>
+                                    <th>创建时间</th>
+                                    <th>快照进度</th>
+                                    <th style="width:125px">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-show="snapshots.length==0">
+                                    <td colspan="4" style="font-size:14px">
+                                        未检测到磁盘快照。
+                                    </td>
+                                </tr>
+                                <tr ng-repeat="snapshot in snapshots">
+                                    <td class="td-right">{{$index+1}}</td>
+                                    <td>{{snapshot.CreateTime|snapshot.time}}</td>
+                                    <td>{{snapshot.Progress}}</td>
+                                    <td>
+                                        <button ng-click="rollbacksnapshot(snapshot)" ng-disabled="processing" class="btn btn-small"
+                                            ng-show="snapshot.Progress=='100%'"><i class="icon-tint"></i> 回滚</button>
+                                        <button ng-click="deletesnapshot(snapshot)" ng-disabled="processing" class="btn btn-small"
+                                            ng-show="snapshot.Progress=='100%'"><i class="icon-remove"></i> 删除</button>
+                                        <button ng-click="cancelsnapshot(snapshot)" ng-disabled="processing" class="btn btn-small"
+                                            ng-show="snapshot.Progress!='100%'"><i class="icon-remove"></i> 取消</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='reset'" id="reset">
+                <table class="table table-button" style="width:500px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">重置系统</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="2" class="alert alert-error">重置系统将导致数据丢失，请谨慎操作！</td>
+                        </tr>
+                        <tr ng-show="instance.Status!='Stopped'&&instance.Status!='ResetFailure'">
+                            <td colspan="2">服务器还未停止，不能重置系统，请先关闭服务器。</td>
+                        </tr>
+                        <tr>
+                            <td style="width:120px;">当前服务器状态：</td>
+                            <td ng-bind-html-unsafe="instance.Status | instance.status"></td>
+                        </tr>
+                        <tr ng-show="instance.Status=='Stopped'||instance.Status=='ResetFailure'">
+                            <td colspan="2">
+                                <div style="display:none" ng-show="imageloading">
+                                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载系统镜像列表，请稍候...
+                                </div>
+                                <table class="table table-condensed" ng-show="!imageloading">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:30px">#</th>
+                                            <th>系统镜像描述</th>
+                                            <th class="td-right" style="width:120px;">
+                                                <div class="btn-group">
+                                                    <button class="btn btn-small" ng-disabled="image_page_number<=1"
+                                                        ng-click="loadimages(-1, true)">上一页</button>
+                                                    <button class="btn btn-small" ng-disabled="image_page_number>=image_total_number/image_page_size"
+                                                        ng-click="loadimages(1, true)">下一页</button>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="image in images">
+                                            <td>{{image_page_size*(image_page_number-1)+$index+1}}</td>
+                                            <td style="font-size:12px" colspan="2">
+                                                代号：{{ image.ImageCode }}<br>
+                                                <button style="margin-top:15px" ng-click="reset(image)" ng-disabled="instance.Status!='Stopped'&&instance.Status!='ResetFailure'"
+                                                    class="btn btn-small pull-right">
+                                                    <i class="icon-hdd"></i> 重置为此系统
+                                                </button>
+                                                平台：{{ image.Platform }}<br>
+                                                大小：{{ image.Size }}G<br>
+                                                <span ng-show="image.Description">描述：{{ image.Description }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <div class="input-prepend" style="margin-top:10px">
+                                                    <span class="add-on">共{{image_total_number}}条，当前第{{image_page_number}}页</span>
+                                                    <select style="width:100px" ng-model="image_page_size" ng-change="image_page_number=1;loadimages(0, true)">
+                                                        <option value="5">5条/页</option>
+                                                        <option value="10">10条/页</option>
+                                                        <option value="20">20条/页</option>
+                                                        <option value="30">30条/页</option>
+                                                        <option value="40">40条/页</option>
+                                                        <option value="50">50条/页</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <td class="td-right">
+                                                <div class="btn-group" style="margin-top:10px">
+                                                    <button class="btn btn-small" ng-disabled="image_page_number<=1"
+                                                        ng-click="loadimages(-1, true)">上一页</button>
+                                                    <button class="btn btn-small" ng-disabled="image_page_number>=image_total_number/image_page_size"
+                                                        ng-click="loadimages(1, true)">下一页</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='intranet'" id="intranet" ng-init="loadintranet()">
+                <table class="table table-button" style="width:500px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">Intranet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:100px;">基本操作：</td>
+                            <td>
+                                <button class="btn btn-small" ng-disabled="processing" ng-click="intranet_install()"><i
+                                        class="icon-briefcase"></i> 安装或升级</button>
+                                <button class="btn btn-small" ng-disabled="processing" ng-click="intranet_uninstall()"
+                                    style="margin-left:5px"><i class="icon-remove"></i> 卸载 Intranet</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-button" style="width:500px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">远程控制设置</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:100px;">远程控制密钥：</td>
+                            <td>
+                                <textarea ng-model="accessinfo.accesskey" ng-disabled="processing" placeholder="远程控制使用的密钥"
+                                    style="width:250px;height:50px"></textarea><br>
+                                <button class="btn btn-small" ng-disabled="processing" ng-click="genaccesskey()" style="margin-left:5px">随机生成密钥</button>
+                                <button class="btn btn-small" ng-disabled="processing" ng-click="syncaccesskey()" style="margin-left:5px">同步到云服务器</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>远程控制线路：</td>
+                            <td>
+                                <label class="radio inline">
+                                    <input type="radio" ng-model="accessinfo.accessnet" value="public"> 公网线路
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" ng-model="accessinfo.accessnet" value="inner"> 内网线路
+                                </label>
+                                <label class="help-block" style="font-size:12px;margin-top:5px">内网线路更安全更快速，但要求ECSMate和服务器在同一个内网中。</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Intranet 端口：</td>
+                            <td>
+                                <input type="text" ng-model="accessinfo.accessport" ng-disabled="processing"
+                                    placeholder="Intranet 监听的端口">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-primary" ng-click="saveintranet()">保存配置</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="confirm" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>{{confirm_title}}</h3>
+    </div>
+    <div class="modal-body">
+        <p>{{confirm_body}}</p>
+    </div>
+    <div class="modal-footer">
+        <button ng-show="confirm_forcebutton" style="float:left" class="btn btn-danger" onclick="$('#confirm').modal('hide')"
+            ng-click="confirm_force()">{{confirm_forcebutton}}</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">{{confirm_button}}</button>
+    </div>
+</div>
+
+<div id="resetconfirm" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>重置系统确认</h3>
+    </div>
+    <div class="modal-body">
+        <h5>云服务器信息</h5>
+        <table class="table table-condensed table-borderless" style="width:500px;margin:10px">
+            <tr>
+                <td style="width:50px">编号：</td>
+                <td>{{instance_name}}</td>
+            </tr>
+            <tr>
+                <td>IP：</td>
+                <td>
+                    <span>公网：{{instance.PublicIpAddress.AllocateIpAddress}}</span>
+                    <span style="margin-left:20px">内网：{{instance.InnerIpAddress}}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>镜像：</td>
+                <td>{{instance.Image.ImageCode}}</td>
+            </tr>
+        </table>
+
+        <h5 style="margin-top:20px">新系统信息</h5>
+        <table class="table table-condensed table-borderless" style="width:500px;margin:10px">
+            <tr>
+                <td style="width:50px">代号：</td>
+                <td>{{curimage.ImageCode}}</td>
+            </tr>
+            <tr>
+                <td>平台：</td>
+                <td>{{curimage.Platform}}</td>
+            </tr>
+            <tr>
+                <td>大小：</td>
+                <td>{{curimage.Size}}G</td>
+            </tr>
+            <tr ng-show="curimage.Description">
+                <td>描述：</td>
+                <td>{{curimage.Description}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-primary" onclick="$('#resetconfirm').modal('hide')" ng-click="doreset()">确认重置系统</button>
+    </div>
+</div>
+
+<div id="sshconfirm" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>{{sshconfirm_title}}</h3>
+    </div>
+    <div class="modal-body">
+        <h5 style="margin:20px">此操作需要服务器管理员 root 权限，请设置：</h5>
+        <div class="form-horizontal form-horizontal-small">
+            <div class="control-group">
+                <label class="control-label" for="accesskey">服务器IP：</label>
+                <div class="controls">
+                    <select ng-model="ssh_ip">
+                        <option ng-selected="ssh_ip==instance.PublicIpAddress.AllocateIpAddress" value="{{instance.PublicIpAddress.AllocateIpAddress}}">
+                            公网：{{instance.PublicIpAddress.AllocateIpAddress}}</option>
+                        <option ng-selected="ssh_ip==instance.InnerIpAddress" value="{{instance.InnerIpAddress}}">
+                            内网：{{instance.InnerIpAddress}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">SSH端口：</label>
+                <div class="controls">
+                    <input type="text" ng-model="ssh_port" class="input-small">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">SSH用户：</label>
+                <div class="controls">
+                    <input type="text" ng-model="ssh_user">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">SSH密码：</label>
+                <div class="controls">
+                    <input type="password" ng-model="ssh_password">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-primary" onclick="$('#sshconfirm').modal('hide')" ng-click="sshconfirm()">{{sshconfirm_button}}</button>
+    </div>
+</div>
