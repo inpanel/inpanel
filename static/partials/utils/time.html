@@ -68,7 +68,7 @@
 					</div>
 				</form>
 			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='sync'" id="sync" ng-init="checkVirt(loadSync)">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='sync'" id="sync" ng-init="loadSync()">
                 <div class="panel panel-default" style="display:none" ng-show="virt=='Virtuozzo/OpenVZ'">
                     <div class="panel-body">
                         <p>时间同步在 Virtuozzo/OpenVZ 虚拟化平台下无法正常工作！</p>
@@ -77,24 +77,24 @@
 				</div>
 				<div class="panel panel-default" style=display:none" ng-show="virt!='Virtuozzo/OpenVZ'">
 					<div class="panel-body" ng-show="ntpdChecking">
-						<p>正在检测NTPD服务状态...</p>
+						<p>正在检测 NTP 服务状态...</p>
 					</div>
-					<div class="panel-body" ng-show="!ntpdChecking&&(ntpdStatus==null)">
-						<p ng-bind-html-unsafe="installMessage"</p>
+					<div class="panel-body" ng-show="!ntpdChecking && (ntpdStatus==null)">
+						<p ng-bind-html-unsafe="installMessage"></p>
 						<p style="display:none;" ng-show="showInstallBtn">
-							<button class="btn btn-default btn-sm" ng-click="install()" ng-disabled="processing">确定并安装</button>
+							<button class="btn btn-default btn-sm" ng-click="ntp_install()" ng-disabled="processing">确定并安装</button>
 						</p>
 					</div>
 					<div class="panel-body" ng-show="ntpdStatus=='stopped'">
-						<p ng-bind-html-unsafe="startMessage"</p>
+						<p ng-bind-html-unsafe="startMessage"></p>
 						<p style="display:none;" ng-show="showStartBtn">
-							<button class="btn btn-default btn-sm" ng-click="start()" ng-disabled="processing">确定并启用</button>
+							<button class="btn btn-default btn-sm" ng-click="ntp_start()" ng-disabled="processing">确定并启用</button>
 						</p>
 					</div>
 					<div class="panel-body" ng-show="ntpdStatus=='running'">
-						<p ng-bind-html-unsafe="stopMessage"</p>
+						<p ng-bind-html-unsafe="stopMessage"></p>
 						<p style="display:none;" ng-show="showStopBtn">
-							<button class="btn btn-default btn-sm" ng-click="stop()" ng-disabled="processing">确定并停止</button>
+							<button class="btn btn-default btn-sm" ng-click="ntp_stop()" ng-disabled="processing">确定并停止</button>
 						</p>
 					</div>
 				</div>

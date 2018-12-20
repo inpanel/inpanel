@@ -2692,13 +2692,14 @@ class BackendHandler(RequestHandler):
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             code = 0
-            offset = float(output.split(' offset ')[-1].split()[0])
-            msg = u'同步时间成功！（时间偏差 %f 秒）' % _d(offset)
+            offset = output.split(' offset ')[-1].split()[0]
+            msg = u'同步时间成功！（时间偏差 %s 秒）' % str(offset)
         else:
             code = -1
-            # no server suitable for synchronization found
-            if 'no server suitable' in output:
+            if 'no server suitable' in output: # no server suitable for synchronization found
                 msg = u'同步时间失败！没有找到合适同步服务器。'
+            elif 'no servers can be used' in output: # no address associated with hostname
+                msg = u'同步时间失败！没有找到同步服务器的地址'
             else:
                 msg = u'同步时间失败！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
 
@@ -2951,7 +2952,6 @@ class BackendHandler(RequestHandler):
         data = []
         matched = False
         for cmd in cmds:
-            print(cmd)
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
                 matched = True
