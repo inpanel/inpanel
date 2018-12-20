@@ -643,7 +643,9 @@ yum_pkg_relatives = {
         'openssh-askpass'               : {'default': False, 'isext': True},
     },
     'iptables'                      : {
-        'iptables'                      : {'default': True, 'base': True}
+        'iptables'                      : {'default': True, 'base': True},
+        'iptables-ipv6'                 : {'default': False, 'isext': True},
+        'iptables-devel'                : {'default': False, 'isext': True}
     },
     'cronie'                        : {
         'cronie'                        : {'default': True, 'base': True}
