@@ -8,12 +8,12 @@
 
 	<div class="tabbable" ng-init="loadInfo('service.**')">
 		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='http'"><a href="#http" ng-click="sec('http')" data-toggle="tab">HTTP服务</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP服务</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='database'"><a href="#database" ng-click="sec('database')" data-toggle="tab">数据库服务</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='http'"><a href="#http" ng-click="sec('http')" data-toggle="tab">HTTP</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='database'"><a href="#database" ng-click="sec('database')" data-toggle="tab">数据库</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='appengine'"><a href="#appengine" ng-click="sec('appengine')" data-toggle="tab">应用/脚本引擎</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='mail'"><a href="#mail" ng-click="sec('mail')" data-toggle="tab">邮件服务</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统服务</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='mail'"><a href="#mail" ng-click="sec('mail')" data-toggle="tab">邮件</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统</a></li>
 		</ul>
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='http'" id="http">
@@ -25,7 +25,7 @@
 						<tr>
 							<td>Apache</td>
 							<td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
-							<td class="muted">广泛使用的老牌开源 HTTP 服务器软件</td>
+							<td class="muted">广泛使用的开源 HTTP 服务器软件</td>
 							<td><div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div></td>
 						</tr>
 						<tr>
@@ -176,11 +176,11 @@
 							<td><div srvminiop ng-init="name='Cron';service='crond';urlname='cron'"></div></td>
 						</tr>
 						<tr>
-							<td style="width:100px">bind</td>
+							<td style="width:100px">named</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.named']['status'] | service.status"></td>
-							<td class="muted">DNS 服务器</td>
+							<td class="muted">DNS 域名解析服务器</td>
 							<td style="width:100px">
-								<div srvminiop ng-init="name='bind';service='named';urlname='bind'"></div>
+								<div srvminiop ng-init="name='named';service='named';urlname='named'"></div>
 							</td>
 						</tr>
 						<tr style="display:none" ng-show="info['server.virt'] != 'Virtuozzo/OpenVZ'">
