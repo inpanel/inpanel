@@ -48,7 +48,7 @@ from tornado.escape import utf8 as _u
 
 APP_NAME = 'Intranet'
 APP_VERSION = '1.1.1'
-APP_BUILD = '16'
+APP_BUILD = '17'
 
 
 class Application(tornado.web.Application):
