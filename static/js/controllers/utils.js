@@ -301,6 +301,8 @@ var UtilsTimeCtrl = [
         Module.init(module, '时间设置');
         Module.initSection('datetime');
         $scope.loaded = true;
+        $scope.ntpdChecking = true;
+        $scope.ntpdStatus = null;
 
         $scope.loadDatetime = function() {
             Request.get('/utils/time/datetime', function(data) {
@@ -397,17 +399,16 @@ var UtilsTimeCtrl = [
             });
         };
 
-        $scope.ntpdChecking = true;
         var installInit = function() {
-            $scope.installMessage = '时间同步需要使用 NTP 服务，您当前尚未安装该服务。<br>是否安装？';
+            $scope.installMessage = '时间同步需要使用 NTP 服务，您当前尚未安装该服务。<br>是否安装 ？';
             $scope.showInstallBtn = true;
         };
         var startInit = function() {
-            $scope.startMessage = 'NTP 服务已安装但还未启动，是否启动？';
+            $scope.startMessage = 'NTP 服务已安装但还未启动。是否启动同步 ？';
             $scope.showStartBtn = true;
         };
         var stopInit = function() {
-            $scope.stopMessage = 'NTP 服务正在运行，是否停止？';
+            $scope.stopMessage = 'NTP 服务正在运行，系统时间会一直保持同步。是否停止同步 ？';
             $scope.showStopBtn = true;
         };
         installInit();
@@ -416,14 +417,13 @@ var UtilsTimeCtrl = [
 
         $scope.loadSync = function() {
             Request.get('/query/service.ntpd', function(data) {
-                $scope.ntpdStatus = null;
                 if (data['service.ntpd']) {
                     $scope.ntpdStatus = data['service.ntpd']['status'];
                 }
                 $scope.ntpdChecking = false;
             });
         };
-        $scope.install = function() {
+        $scope.ntp_install = function() {
             $scope.installMessage = '正在安装，请稍候...'
             $scope.showInstallBtn = false;
             Backend.call(
@@ -449,7 +449,7 @@ var UtilsTimeCtrl = [
                 true
             );
         };
-        $scope.start = function() {
+        $scope.ntp_start = function() {
             $scope.startMessage = '正在启动，请稍候...'
             $scope.showStartBtn = false;
             Backend.call(
@@ -481,7 +481,7 @@ var UtilsTimeCtrl = [
                 true
             );
         };
-        $scope.stop = function() {
+        $scope.ntp_stop = function() {
             $scope.stopMessage = '正在停止，请稍候...'
             $scope.showStopBtn = false;
             Backend.call(

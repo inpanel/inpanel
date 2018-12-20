@@ -1,0 +1,198 @@
+<div navbar ng-init="currentItem='ecs'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>云服务器（ECS）管理</h3>
+    </div>
+
+    <div class="widget widget-table" ng-init="load()">
+        <div class="widget-header">
+            <i class="icon-list-alt"></i>
+            <h3>云服务器列表</h3>
+            <div class="pull-right" style="margin-right:10px;margin-top:5px;margin-bottom:-10px">
+                <div class="input-append">
+                    <select style="width:180px" ng-options="account.access_key_id as account.name for account in accounts"
+                        ng-model="$ecs.access_key_id"></select>
+                    <button class="btn" ng-click="chaccount()">切换帐号</button>
+                </div>
+            </div>
+        </div>
+        <div class="widget-content">
+            <div style="padding:20px;display:none" ng-show="instloading">
+                <img src="images/loading.gif" style="margin-right:5px"> 正在加载云服务器列表，请稍候...
+            </div>
+            <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered" ng-show="!instloading">
+                <thead>
+                    <tr>
+                        <th style="width:20px" class="td-right">#</th>
+                        <th>服务器编号</th>
+                        <th>IP</th>
+                        <th>系统安装镜像</th>
+                        <th style="width:70px">状态</th>
+                        <th style="width:80px">Intranet</th>
+                        <th style="width:180px">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-show="instances.length==0">
+                        <td colspan="7" style="font-size:14px">
+                            <span ng-show="!errmsg">未检测到云服务器。</span>
+                            <span ng-show="errmsg">{{errmsg}}</span>
+                        </td>
+                    </tr>
+                    <tr ng-repeat="instance in instances">
+                        <td class="td-right">{{$ecs.page_size*($ecs.page_number-1)+$index+1}}</td>
+                        <td>
+                            {{instance.InstanceName}}<br>
+                            <span style="color:gray">配置：{{instance.CPUs}}核处理器 {{instance.Memory*1024*1024|bytes2human}}
+                                {{instance.MaxBandwidthOut/1000/1024}}Mbps 容量{{instance.DiskSize}}GB</span>
+                        </td>
+                        <td>
+                            公网：{{instance.PublicIpAddress.AllocateIpAddress}}<br>
+                            内网：{{instance.InnerIpAddress}}
+                        </td>
+                        <td>{{instance.Image.ImageCode}}</td>
+                        <td ng-bind-html-unsafe="instance.Status | instance.status"></td>
+                        <td ng-bind-html-unsafe="instance.IntranetStatus | instance.intranetstatus"></td>
+                        <td>
+                            <a class="btn btn-small" href="#/ecs/{{instance.InstanceName|urlencode}},{{$ecs.access_key_id|urlencode}}">
+                                <i class="icon-wrench"></i> 管理
+                            </a>
+                            <a ng-show="instance.IntranetStatus&&instance.IntranetStatus.accessnet=='public'" class="btn btn-small"
+                                href="/{{instance.InstanceName|urlencode}}/{{instance.PublicIpAddress.AllocateIpAddress|urlencode}}/8888/#/main"
+                                target="_blank">
+                                <i class="icon-home"></i> 打开Intranet
+                            </a>
+                            <a ng-show="instance.IntranetStatus&&instance.IntranetStatus.accessnet=='inner'" class="btn btn-small"
+                                href="/{{instance.InstanceName|urlencode}}/{{instance.InnerIpAddress|urlencode}}/8888/#/main"
+                                target="_blank">
+                                <i class="icon-home"></i> 打开 Intranet
+                            </a>
+                            <a ng-show="!instance.IntranetStatus" class="btn btn-small" href="#/ecs/{{instance.InstanceName|urlencode}},{{$ecs.access_key_id|urlencode}}?s=intranet">
+                                <i class="icon-plus-sign"></i> 安装 Intranet
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="height:30px" ng-show="!instloading&&!errmsg">
+        <div class="pull-right">
+            <div class="input-prepend" style="display:inline">
+                <span class="add-on">第{{$ecs.page_number}}页</span>
+                <select style="width:100px" ng-model="$ecs.page_size" ng-change="$ecs.page_number=1;loadinstances()">
+                    <option value="1">1条/页</option>
+                    <option value="5">5条/页</option>
+                    <option value="10">10条/页</option>
+                    <option value="20">20条/页</option>
+                    <option value="30">30条/页</option>
+                    <option value="40">40条/页</option>
+                    <option value="50">50条/页</option>
+                </select>
+            </div>
+            <div class="btn-group" style="margin-left:20px;display:inline">
+                <button class="btn" ng-disabled="$ecs.page_number<=1" ng-click="loadinstances(-1)">上一页</button>
+                <button class="btn" ng-click="loadinstances(1)">下一页</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="addconfirm" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>添加新帐号</h3>
+    </div>
+    <div class="modal-body">
+        <div class="form-horizontal" onsubmit="return false">
+            <div class="control-group">
+                <label class="control-label">帐号备注：</label>
+                <div class="controls">
+                    <input type="text" class="input" ng-model="newaccount.name">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Access Key ID：</label>
+                <div class="controls">
+                    <input type="text" class="input" ng-model="newaccount.access_key_id">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Access Key Secret：</label>
+                <div class="controls">
+                    <input type="text" class="input" ng-model="newaccount.access_key_secret">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <label class="checkbox">
+                        <input type="checkbox" ng-model="newaccount.status"> 启用对该帐号下云服务器的管理
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-primary" onclick="$('#addconfirm').modal('hide')" ng-click="add()">添加帐号</button>
+    </div>
+</div>
+
+<div id="editconfirm" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>更新帐号设置</h3>
+    </div>
+    <div class="modal-body">
+        <div class="form-horizontal" onsubmit="return false">
+            <div class="control-group">
+                <label class="control-label">帐号备注：</label>
+                <div class="controls">
+                    <input type="text" class="input" ng-model="curaccount.name">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Access Key ID：</label>
+                <div class="controls">
+                    <input type="text" class="input" ng-model="curaccount.access_key_id">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Access Key Secret：</label>
+                <div class="controls">
+                    <input type="text" class="input" ng-model="curaccount.access_key_secret">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <label class="checkbox">
+                        <input type="checkbox" ng-model="curaccount.status"> 启用对该帐号下云服务器的管理
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-primary" onclick="$('#editconfirm').modal('hide')" ng-click="update()">保存设置</button>
+    </div>
+</div>
+
+<div id="removeconfirm" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>删除确认</h3>
+    </div>
+    <div class="modal-body">
+        <p>是否确认删除 “{{curaccount.name}}” 这个帐号？</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">取消</button>
+        <button class="btn btn-primary" onclick="$('#removeconfirm').modal('hide')" ng-click="remove()">确认删除</button>
+    </div>
+</div>

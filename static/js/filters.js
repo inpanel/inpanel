@@ -1,31 +1,31 @@
 angular.module('intranet.filters', []).
-filter('iftrue', function() {
-    return function(input, cond) {
+filter('iftrue', function () {
+    return function (input, cond) {
         return cond ? input : '';
     };
 }).
-filter('ifmatch', function() {
-    return function(input, cond) {
+filter('ifmatch', function () {
+    return function (input, cond) {
         return cond[0].match(new RegExp('^' + cond[1] + '$')) ? input : '';
     };
 }).
-filter('ifnotmatch', function() {
-    return function(input, cond) {
+filter('ifnotmatch', function () {
+    return function (input, cond) {
         return cond[0].match(new RegExp('^' + cond[1] + '$')) ? '' : input;
     };
 }).
-filter('ifin', function() {
-    return function(input, cond) {
+filter('ifin', function () {
+    return function (input, cond) {
         return typeof cond[1][cond[0]] != 'undefined' ? input : '';
     };
 }).
-filter('ifnotin', function() {
-    return function(input, cond) {
+filter('ifnotin', function () {
+    return function (input, cond) {
         return typeof cond[1][cond[0]] != 'undefined' ? '' : input;
     };
 }).
-filter('ifverget', function() { // version great or equal then
-    return function(input, cond) {
+filter('ifverget', function () { // version great or equal then
+    return function (input, cond) {
         if (!cond[0] || !cond[1]) return '';
         var v1parts = cond[0].split('.');
         var v2parts = cond[1].split('.');
@@ -47,20 +47,20 @@ filter('ifverget', function() { // version great or equal then
         return input;
     };
 }).
-filter('urlencode', function() {
-    return function(input) {
+filter('urlencode', function () {
+    return function (input) {
         return input ? encodeURIComponent(input) : '';
     };
 }).
-filter('netiface.updown', function() {
-    return function(input) {
+filter('netiface.updown', function () {
+    return function (input) {
         return input == 'up' ?
             '<span class="label label-success">启用</span>' :
             '<span class="label label-warning">停用</span>';
     };
 }).
-filter('netiface.encap', function() {
-    return function(input) {
+filter('netiface.encap', function () {
+    return function (input) {
         if (input == 'Local Loopback') return '本地环路';
         if (input == 'Ethernet') return '以太网';
         if (input == 'Point-to-Point Protocol') return '点对点';
@@ -68,8 +68,8 @@ filter('netiface.encap', function() {
         return input;
     };
 }).
-filter('loadavg.overload', function() {
-    return function(input, cpucount) {
+filter('loadavg.overload', function () {
+    return function (input, cpucount) {
         if (!input) return '';
         var overload = input - cpucount;
         overload = parseInt(overload * 100 / cpucount);
@@ -84,8 +84,8 @@ filter('loadavg.overload', function() {
         }
     };
 }).
-filter('uptime.idlerate', function() {
-    return function(input) {
+filter('uptime.idlerate', function () {
+    return function (input) {
         if (!input) return '';
         var rate = parseInt(input);
         if (rate < 10) {
@@ -97,8 +97,8 @@ filter('uptime.idlerate', function() {
         }
     };
 }).
-filter('space.used', function() {
-    return function(input) {
+filter('space.used', function () {
+    return function (input) {
         if (!input) return '';
         var rate = parseInt(input);
         if (rate > 90) {
@@ -110,8 +110,8 @@ filter('space.used', function() {
         }
     };
 }).
-filter('space.free', function() {
-    return function(input) {
+filter('space.free', function () {
+    return function (input) {
         if (!input) return '';
         var rate = parseInt(input);
         if (rate < 10) {
@@ -123,37 +123,37 @@ filter('space.free', function() {
         }
     };
 }).
-filter('service.status', function() {
-    return function(input) {
+filter('service.status', function () {
+    return function (input) {
         if (!input) return '<span class="label label-info">未安装</span>';
         return input == 'running' ?
             '<span class="label label-success">运行中</span>' :
             '<span class="label label-default">已停止</span>';
     };
 }).
-filter('user.lock', function() {
-    return function(input) {
+filter('user.lock', function () {
+    return function (input) {
         return input ?
             '<span class="label label-default">锁定</span>' :
             '<span class="label label-success">正常</span>';
     };
 }).
-filter('process.status', function() {
-    return function(input) {
+filter('process.status', function () {
+    return function (input) {
         return input ?
             '<span class="label label-default">锁定</span>' :
             '<span class="label label-success">运行中</span>';
     };
 }).
-filter('site.status', function() {
-    return function(input) {
+filter('site.status', function () {
+    return function (input) {
         return input == 'on' ?
             '<span class="label label-success">启用</span>' :
             '<span class="label label-default">停用</span>';
     };
 }).
-filter('site.engine', function() {
-    return function(input) {
+filter('site.engine', function () {
+    return function (input) {
         if (input == 'static')
             return '静态';
         else if (input == 'fastcgi')
@@ -174,8 +174,8 @@ filter('site.engine', function() {
             return input;
     };
 }).
-filter('site.port', function() {
-    return function(input) {
+filter('site.port', function () {
+    return function (input) {
         if (input == '80')
             return 'http';
         else if (input == '443')
@@ -184,13 +184,13 @@ filter('site.port', function() {
             return ''
     };
 }).
-filter('site.default_server', function() {
-    return function(input) {
+filter('site.default_server', function () {
+    return function (input) {
         return !input ? '<span class="label label-info">默认</span>' : '';
     };
 }).
-filter('bytes2human', function() {
-    return function(n) {
+filter('bytes2human', function () {
+    return function (n) {
         var symbols = ['G', 'M', 'K'];
         var x = symbols.length;
         var units = [];
@@ -203,37 +203,37 @@ filter('bytes2human', function() {
         return n + 'B';
     };
 }).
-filter('mysql.user', function() {
-    return function(input) {
+filter('mysql.user', function () {
+    return function (input) {
         return input == '' ? '<span class="text-error">任意</span>' : input;
     };
 }).
-filter('mysql.haspasswd', function() {
-    return function(input) {
+filter('mysql.haspasswd', function () {
+    return function (input) {
         return input == 'N' ? '<span class="text-error">否</span>' : '是';
     };
 }).
-filter('mysql.grant', function() {
-    return function(input) {
+filter('mysql.grant', function () {
+    return function (input) {
         return input == 'N' ? '否' : '是';
     };
 }).
-filter('mysql.privtype', function() {
-    return function(input, dbname) {
+filter('mysql.privtype', function () {
+    return function (input, dbname) {
         if (input == '*' || input == '') return '全局指定';
         if (input == dbname) return '按数据库指定';
         return '通配符';
     };
 }).
-filter('mysql.privtype_en', function() {
-    return function(input, dbname) {
+filter('mysql.privtype_en', function () {
+    return function (input, dbname) {
         if (input == '*' || input == '') return 'global';
         if (input == dbname) return 'bydb';
         return 'wildcard';
     };
 }).
-filter('mysql.privs', function() {
-    return function(user, type) {
+filter('mysql.privs', function () {
+    return function (user, type) {
         if (!user) return '---';
         var privs = [
             'Select_priv',
@@ -280,5 +280,72 @@ filter('mysql.privs', function() {
         } else {
             return '部分权限';
         }
+    };
+}).
+filter('account.status', function () {
+    return function (input) {
+        return input ?
+            '<span class="label label-success">启用管理</span>' :
+            '<span class="label">停用管理</span>';
+    };
+}).
+filter('account.secret', function () {
+    return function (input) {
+        var s = '';
+        for (var i = 0; i < input.length; i++) {
+            s += '*'
+        }
+        return s;
+    };
+}).
+filter('instance.status', function () {
+    return function (input) {
+        if (!input) return '';
+        input = input.toLowerCase();
+        if (input == 'pending') return '<span class="label">待启动</span>';
+        if (input == 'starting') return '<span class="label label-info">正在启动</span>';
+        if (input == 'startfailure') return '<span class="label label-important">启动失败</span>';
+        if (input == 'running') return '<span class="label label-success">运行中</span>';
+        if (input == 'stopping') return '<span class="label label-info">正在停止</span>';
+        if (input == 'stopfailure') return '<span class="label label-important">停止失败</span>';
+        if (input == 'transferring') return '<span class="label label-info">正在迁移</span>';
+        if (input == 'stopped') return '<span class="label label-warning">已停止</span>';
+        if (input == 'released') return '<span class="label label-inverse">已释放</span>';
+        if (input == 'resetting') return '<span class="label label-info">正在重置</span>';
+        if (input == 'resetfailure') return '<span class="label label-important">重置失败</span>';
+    };
+}).
+filter('instance.intranetstatus', function () {
+    return function (input) {
+        return input ? '<span class="label label-success">已配置</span>' :
+            '<span class="label">未配置</span>';
+    };
+}).
+filter('instance.datacenter', function () {
+    return function (input) {
+        if (!input) return '';
+        input = input.toLowerCase();
+        if (input.indexOf('cn-benjin-btc') != -1) return '中国北京北土城 (' + input + ')';
+        if (input.indexOf('cn-hangzhou-dg') != -1) return '中国杭州东冠 (' + input + ')';
+        if (input.indexOf('cn-hangzhou-xy') != -1) return '中国杭州兴义 (' + input + ')';
+        if (input.indexOf('cn-benjin') != -1) return '中国北京 (' + input + ')';
+        if (input.indexOf('cn-hangzhou') != -1) return '中国杭州 (' + input + ')';
+        if (input.indexOf('cn-shanghai') != -1) return '中国上海 (' + input + ')';
+        return input;
+    };
+}).
+filter('disk.type', function () {
+    return function (input) {
+        if (!input) return '';
+        input = input.toLowerCase();
+        if (input == 'system') return '系统盘';
+        if (input == 'data') return '数据盘';
+        return input;
+    };
+}).
+filter('snapshot.time', function () {
+    return function (input) {
+        if (!input) return '';
+        return input.replace('T', ' ').replace('Z', ' ');
     };
 });

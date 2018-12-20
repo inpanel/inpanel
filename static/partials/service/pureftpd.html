@@ -1,0 +1,57 @@
+<div navbar ng-init="currentItem='service.pureftpd'"></div>
+<div ng-show="Auth.processing||!loaded"><div loading></div></div>
+
+<div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
+	<div class="module-header">
+		<h3>Pure-FTPd - FTP 服务器软件</h3>
+	</div>
+
+	<div srvinstall ng-init="name='Pure-FTPd';pkg='pureftpd';expected_repolist=['base','epel'];"></div>
+
+	<div class="tabbable" ng-show="installed">
+		<ul class="nav nav-tabs">
+			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='settings'"><a href="#settings" ng-click="load_settings()" data-toggle="tab">基本设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+				<div srvbase ng-init="name='Pure-FTPd';pkg='pureftpd';service='pure-ftpd';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='settings'" id="settings">
+                <form class="form-horizontal form-horizontal-small" ng-submit="savesettings()" onsubmit="return false">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th colspan="2">基本设置</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>暂未实现设置功能，等待新版本升级</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-primary" style="margin-left:10px" ng-click="savesettings()" disabled>保存设置</button>
+                </form>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
+                <div srvfile ng-init="items=[
+                {name:'主目录', path:'/etc/pureftpd', isdir:true},
+                {name:'主配置', path:'/etc/pureftpd/pureftpd.conf', isfile:true}];"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
+				<div srvext ng-init="name='Pure-FTPd';pkg='pureftpd';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
+				<div srvupdate ng-init="name='Pure-FTPd';pkg='pureftpd';"></div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
+				<div srvuninstall ng-init="name='Pure-FTPd';pkg='pureftpd';"></div>
+			</div>
+		</div>
+	</div>
+</div>

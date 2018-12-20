@@ -20,14 +20,18 @@ import subprocess
 import sys
 # import re
 
+OK = '\033[1;32mOK\033[0m'
+FAILED = '\033[1;31mFAILED\033[0m'
+INSTALL_COMPLETED = '\033[1;32mINSTALL COMPLETED\033[0m'
 
 class Install(object):
     def __init__(self):
 
         self.user = getpass.getuser()
-
         if (self.user != 'root'):
-            print('Must run in root')
+            print
+            print('\033[7;31mThis script must be run as root !\033[0m')
+            print
             sys.exit()
 
         if hasattr(platform, 'linux_distribution'):
@@ -37,8 +41,9 @@ class Install(object):
         self.arch = platform.machine()
         if self.arch != 'x86_64':
             self.arch = 'i386'
+        self.initd_script = '/etc/init.d/intranet'
         self.installpath = '/usr/local/intranet'
-        self.intranet_port = 8888
+        self.listen_port = 8888
         self.repository = 'https://github.com/intranet-panel/intranet.git'
         self.distname = self.dist[0].lower()
         self.version = self.dist[1]
@@ -72,37 +77,26 @@ class Install(object):
             supported = False
         return supported
 
-    def check_git(self):
-        supported = True
+    def handle_git(self):
+        '''install git'''
+        success = True
+        print('* Install GIT ...'),
         try:
             if self.distname in ('centos', 'redhat'):
                 self._run("yum install -y git")
             if self.distname in ('ubuntu', 'debian'):
                 self._run("apt-get -y install git")
+            success = True
+            print('[ %s ]' % OK)
         except:
-            pass
+            success = False
+            print('[ %s ]' % FAILED)
+        return success
 
-        if self.distname == 'centos':
-            if float(self.version) < 5.4:
-                supported = False
-        elif self.distname == 'redhat':
-            if float(self.version) < 5.4:
-                supported = False
-        elif self.distname == 'ubuntu':
-           if float(self.version) < 10.10:
-               supported = False
-        elif self.distname == 'debian':
-           if float(self.version) < 6.0:
-               supported = False
-        elif self.os == 'Darwin':
-            supported = False
-        else:
-            supported = False
-        return supported
-
-    def install_epel_release(self):
+    def handle_repository(self):
+        '''install software repository'''
         if self.distname in ('centos', 'redhat'):
-            # following this: http://fedoraproject.org/wiki/EPEL/FAQ
+            print('* Install epel-release...')
             if int(float(self.version)) == 5:
                 epelrpm = 'epel-release-5-4.noarch.rpm'
                 epelurl = 'http://download.fedoraproject.org/pub/epel/5/%s/%s' % (self.arch, epelrpm)
@@ -121,12 +115,36 @@ class Install(object):
                 fastestmirror = 'https://mirrors.aliyun.com/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 # fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
                 self._run('rpm -Uvh %s' % fastestmirror)
-
             self._run('wget -nv -c %s' % epelurl)
             self._run('rpm -Uvh %s' % epelrpm)
-            print('...OK')
+            print('[ %s ]' % OK)
+        elif self.distname in ('ubuntu', 'debian'):
+            pass
 
-    def install_python(self):
+    def handle_dependent(self):
+        '''Install dependent software'''
+        success = True
+        print('* Install Dependent Software...'),
+        try:
+            self._run('yum install -y wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
+            success = True
+            print('[ %s ]' % OK)
+        except:
+            success = False
+            print('[ %s ]' % FAILED)
+        return success
+
+    def handle_python(self):
+        '''handle Python and install Python 2.6'''
+        # check python version
+        print('* Current Python Version is [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1])),
+        if (sys.version_info[:2] == (2, 6) or sys.version_info[:2] == (2, 7)):
+            print('[ %s ]' % OK)
+            return True
+        else:
+            print('[ %s ]' % FAILED)
+        # Install Python
+        print('* Installing Python 2.6 ...'),
         if self.distname == 'centos':
             self._run('yum -y install python26')
 
@@ -135,11 +153,10 @@ class Install(object):
 
         elif self.distname == 'ubuntu':
             self._run('apt-get -y install python')
-            # pass
 
         elif self.distname == 'debian':
             self._run('apt-get -y install python')
-            # pass
+        print('[ %s ]' % OK)
 
     def handle_intranet(self):
         # handle Intranet
@@ -157,15 +174,15 @@ class Install(object):
         #     f.close()
         #     downloadurl = re.search('"download":"([^"]+)"', data).group(1).replace('\/', '/')
         #     self._run('wget -nv -c "%s" -O intranet.tar.gz' % downloadurl)
-        
+
         # # uncompress and install it
         # self._run('mkdir intranet')
         # self._run('tar zxmf intranet.tar.gz -C intranet  --strip-components 1')
         # if not localpkg_found: os.remove('intranet.tar.gz')
 
         # stop service
-        if os.path.exists('/etc/init.d/intranet'):
-            self._run('/etc/init.d/intranet stop')
+        if os.path.exists(self.initd_script):
+            self._run('%s stop' % self.initd_script)
 
         # backup data and remove old code
         # if os.path.exists('%s/data/' % self.installpath):
@@ -184,30 +201,31 @@ class Install(object):
 
         # install service
         initscript = '%s/tools/init.d/%s/intranet' % (self.installpath, self.distname)
-        self._run('cp %s /etc/init.d/intranet' % initscript)
-        self._run('chmod +x /etc/init.d/intranet')
+        self._run('cp %s %s' % (initscript, self.initd_script))
+        self._run('chmod +x %s' % self.initd_script)
 
     def config_firewall(self):
-        # config firewall
-        print('* Config iptables')
+        '''config firewall'''
+        print('* Config firewall...'),
         if os.path.exists('/etc/init.d/iptables'):
-            self._run('iptables -A INPUT -p tcp --dport %s -j ACCEPT' % self.intranet_port)
-            self._run('iptables -A OUTPUT -p tcp --sport %s -j ACCEPT' % self.intranet_port)
+            self._run('iptables -A INPUT -m state --state NEW -p tcp --dport %s -j ACCEPT' % self.listen_port)
+            self._run('iptables -A OUTPUT -m state --state NEW -p tcp --sport %s -j ACCEPT' % self.listen_port)
             self._run('service iptables save')
             self._run('/etc/init.d/iptables restart')
+            print('[ %s ]' % OK)
+        else:
+            print('Not Installed, No configuration required.')
 
     def config_account(self):
-        # set username and password
+        '''set username and password'''
         username = raw_input('Admin username [default: admin]: ').strip()
         password = raw_input('Admin password [default: admin]: ').strip()
         if len(username) == 0:
             username = 'admin'
         if len(password) == 0:
             password = 'admin'
-
         self._run('%s/config.py username "%s"' % (self.installpath, username))
         self._run('%s/config.py password "%s"' % (self.installpath, password))
-
         print('* Username and password set successfully!')
 
     def detect_ip(self):
@@ -219,7 +237,7 @@ class Install(object):
 
     def handle_port(self):
         # config listen port
-        start_port = int(self.intranet_port)
+        start_port = int(self.listen_port)
         # 2^16-1 = 65535
         while (start_port < 65536):
             res = self.find_free_port(start_port)
@@ -227,10 +245,10 @@ class Install(object):
                 break
             else:
                 start_port = start_port + 1
-        self.intranet_port = start_port
-        # self.intranet_port = 8899
-        self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
-        print('* Intranet will work on port %s' % self.intranet_port)
+        self.listen_port = start_port
+        # self.listen_port = 8899
+        self._run('%s/config.py port "%s"' % (self.installpath, self.listen_port))
+        print('* Intranet will work on port %s' % self.listen_port)
 
     def find_free_port(self, port_number):
         # find an unuse port
@@ -276,12 +294,15 @@ class Install(object):
             if not isdel == 'no':
                 print('* The command you entered is incorrect !')
             print('* VPSMate will continue to work !')
-            self.intranet_port = 8899
-            self._run('%s/config.py port "%s"' % (self.installpath, self.intranet_port))
-            print('* Intranet will work on port %s' % self.intranet_port)
+            self.listen_port = 8899
+            self._run('%s/config.py port "%s"' % (self.installpath, self.listen_port))
+            print('* Intranet will work on port %s' % self.listen_port)
 
     def start_service(self):
         # start service
+        if not os.path.exists(self.initd_script):
+            print('Starting Intranet [ %s ]' % FAILED)
+            return False
         if self.distname in ('centos', 'redhat'):
             self._run('chkconfig intranet on')
             self._run('service intranet start')
@@ -291,75 +312,39 @@ class Install(object):
             pass
 
     def install(self):
-        # check platform environment
-        print('* Checking platform...'),
-        supported = self.check_platform()
-
-        if not supported:
-            print('FAILED')
-            print('Unsupport platform %s %s %s' % self.dist)
+        '''check platform environment to install software'''
+        print('* Checking Platform...'),
+        if not self.check_platform():
+            print('[ %s ]' % FAILED)
+            print('Unsupport Platform %s %s %s' % self.dist)
             sys.exit()
         else:
             print(self.distname),
-            print('...OK')
+            print('...%s' % OK)
 
-        print('* Install depend software ...')
-        self._run('yum install -y wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
-
-        print('* Install EPEL release...'),
-        self.install_epel_release()
-
-        # check python version
-        print('* Current Python version [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1])),
-
-        if (sys.version_info[:2] == (2, 6) or sys.version_info[:2] == (2, 7)):
-            print('OK')
-        else:
-            print('FAILED')
-
-            # install the right version
-            print('* Installing python 2.6 ...'),
-            self.install_python()
-
-        # check GIT version
-        print('* Checking GIT ...'),
-        if self.check_git():
-            print('OK')
-        else:
-            print('FAILED')
-
-        # if sys.version_info[:2] == (2, 6):
-        #     print('OK')
-        # else:
-        #     print('FAILED')
-        #
-        #     # install the right version
-
-
-        #     print '* Installing python 2.6 ...'
-        #     self.install_python()
-
+        self.handle_repository()
+        self.handle_dependent()
+        self.handle_python()
+        self.handle_git()
         self.handle_intranet()
         self.handle_vpsmate()
         # self.handle_port()
         self.config_account()
         self.config_firewall()
         self.start_service()
-
-        print
         print
         print('============================')
-        print('*    INSTALL COMPLETED!    *')
+        print('*                          *')
+        print('*     %s    *' % INSTALL_COMPLETED)
+        print('*                          *')
         print('============================')
         print
+        print('The URL of your Intranet Panel is:'),
+        print('\033[4;34mhttp://%s:%s/\033[0m' % (self.detect_ip(), self.listen_port))
         print
-
-        print('* The URL of your Intranet Panel is:'),
-        print('http://%s:%s/' % (self.detect_ip(), self.intranet_port))
+        print('\033[5;32mWish you a happy life !\033[0m')
         print
         print
-
-        pass
 
 
 def main():

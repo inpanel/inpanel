@@ -14,7 +14,7 @@ import shutil
 from config import Config
 
 import si
-from core.configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
+from module.configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
                                readconfig, saveconfig, writeconfig)
 
 

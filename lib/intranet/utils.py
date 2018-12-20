@@ -118,3 +118,159 @@ def valid_filename(filename):
     """
     valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
     return not any([c for c in filename if c not in valid_chars])
+
+
+def callbackable(func):
+    """Make a function callbackable.
+    """
+    def wrapper(*args, **kwds):
+        callback = kwds['callback']
+        if callback:
+            del kwds['callback']
+        result = func(*args, **kwds)
+        if callback:
+            return callback(result)
+        else:
+            return result
+    return wrapper
+
+
+def loadconfig(cfgfile, delimiter, detail=False):
+    """Read config file and parse config item to dict.
+    """
+    #if not cfgfile: cfgfile = SSHCFG
+
+    settings = {}
+    with open(cfgfile) as f:
+        for line_i, line in enumerate(f):
+            line = line.strip()
+            if not line or line.startswith('# '):
+                continue
+
+            # detect if it's commented
+            if line.startswith('#'):
+                line = line.strip('#')
+                commented = True
+                if not detail:
+                    continue
+            else:
+                commented = False
+
+            fs = re.split(delimiter, line, 1)
+            if len(fs) != 2:
+                continue
+
+            item = fs[0].strip()
+            value = fs[1].strip()
+
+            if settings.has_key(item):
+                if detail:
+                    count = settings[item]['count']+1
+                if not commented:
+                    settings[item] = detail and {
+                        'file': cfgfile,
+                        'line': line_i,
+                        'value': value,
+                        'commented': commented,
+                    } or value
+            else:
+                count = 1
+                settings[item] = detail and {
+                    'file': cfgfile,
+                    'line': line_i,
+                    'value': fs[1].strip(),
+                    'commented': commented,
+                } or value
+            if detail:
+                settings[item]['count'] = count
+
+    return settings
+
+
+def cfg_get(cfgfile, item, delimiter, detail=False, config=None):
+    """Get value of a config item.
+    """
+    if not config:
+        config = loadconfig(cfgfile, delimiter, detail=detail)
+    if config.has_key(item):
+        return config[item]
+    else:
+        return None
+
+
+def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
+    """Set value of a config item.
+    """
+    #cfgfile = SSHCFG
+    v = cfg_get(cfgfile, item, delimiter, detail=True, config=config)
+    if delimiter == '\s+':
+        delimiter = ' '
+    if v:
+        # detect if value change
+        if v['commented'] == commented and v['value'] == value:
+            return True
+
+        # empty value should be commented
+        if value == '':
+            commented = True
+
+        # replace item in line
+        lines = []
+        with open(v['file']) as f:
+            for line_i, line in enumerate(f):
+                if line_i == v['line']:
+                    if not v['commented']:
+                        if commented:
+                            if v['count'] > 1:
+                                # delete this line, just ignore it
+                                pass
+                            else:
+                                # comment this line
+                                lines.append('#%s%s%s\n' %
+                                             (item, delimiter, value))
+                        else:
+                            lines.append('%s%s%s\n' % (item, delimiter, value))
+                    else:
+                        if commented:
+                            # do not allow change comment value
+                            lines.append(line)
+                            pass
+                        else:
+                            # append a new line after comment line
+                            lines.append(line)
+                            lines.append('%s%s%s\n' % (item, delimiter, value))
+                else:
+                    lines.append(line)
+        with open(v['file'], 'w') as f:
+            f.write(''.join(lines))
+    else:
+        # append to the end of file
+        with open(cfgfile, 'a') as f:
+            f.write('\n%s%s%s\n' % (item, delimiter, value))
+
+    return True
+
+
+def cfg_get_array(cfgfile, configs_array, delimiter):
+    q_keys = configs_array.keys()
+    for key in q_keys:
+        q_value = cfg_get(cfgfile, key, delimiter)
+        configs_array[key] = q_value
+    return configs_array
+
+
+def cfg_set_array(self, cfgfile, configs_array, delimiter):
+    q_keys = configs_array.keys()
+    for key in q_keys:
+        q_value = self.get_argument(key, '')
+        if q_value:
+            cfg_set(cfgfile, key, q_value, delimiter)
+    return True
+
+
+def gen_accesskey():
+    """Generate a access key.
+    """
+    keys = [chr(int(random.random()*256)) for i in range(0, 32)]
+    return base64.b64encode(''.join(keys))
+

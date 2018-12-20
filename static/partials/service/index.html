@@ -8,30 +8,31 @@
 
 	<div class="tabbable" ng-init="loadInfo('service.**')">
 		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='http'"><a href="#http" ng-click="sec('http')" data-toggle="tab">HTTP服务</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP服务</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='database'"><a href="#database" ng-click="sec('database')" data-toggle="tab">数据库服务</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='appengine'"><a href="#appengine" ng-click="sec('appengine')" data-toggle="tab">应用/脚本引擎</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='mail'"><a href="#mail" ng-click="sec('mail')" data-toggle="tab">邮件服务</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统服务</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='http'"><a href="#http" ng-click="sec('http')" data-toggle="tab">HTTP</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='database'"><a href="#database" ng-click="sec('database')" data-toggle="tab">数据库</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='appengine'"><a href="#appengine" ng-click="sec('appengine')" data-toggle="tab">脚本引擎</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='application'"><a href="#application" ng-click="sec('application')" data-toggle="tab">应用程序</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='mail'"><a href="#mail" ng-click="sec('mail')" data-toggle="tab">邮件</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统</a></li>
 		</ul>
 		<div class="tab-content">
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='http'" id="http">
 				<table class="table">
 					<thead>
-						<tr><th colspan="4">HTTP服务</th></tr>
+						<tr><th colspan="4">HTTP 服务器软件</th></tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td>Apache</td>
 							<td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
-							<td class="muted">老牌 HTTP 服务器</td>
+							<td class="muted">广泛使用的开源 HTTP 服务器软件</td>
 							<td><div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div></td>
 						</tr>
 						<tr>
 							<td style="width:100px">Nginx</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>
-							<td class="muted">高性能的 HTTP 服务器</td>
+							<td class="muted">高性能的开源 HTTP 服务器软件</td>
 							<td style="width:150px"><div srvminiop ng-init="name='Nginx';service='nginx';urlname='nginx'"></div></td>
 						</tr>
 						<tr>
@@ -40,20 +41,44 @@
 							<td class="muted">小型的轻量级 JSP 引擎应用</td>
 							<td style="width:150px"><div srvminiop ng-init="name='Tomcat';service='tomcat';urlname='tomcat'"></div></td>
 						</tr>
+						<tr>
+							<td style="width:100px">Lighttpd</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.lighttpd']['status'] | service.status"></td>
+							<td class="muted">快速灵活高性能的开源 HTTP 服务器软件</td>
+							<td style="width:150px"><div srvminiop ng-init="name='Lighttpd';service='lighttpd';urlname='lighttpd'"></div></td>
+						</tr>
+						<tr>
+							<td style="width:100px">Tengine</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.tengine']['status'] | service.status"></td>
+							<td class="muted">基于 Nginx 的高效稳定安全的 HTTP 服务器软件</td>
+							<td style="width:150px"><div srvminiop ng-init="name='Tengine';service='tengine';urlname='tengine'"></div></td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ftp'" id="ftp">
 				<table class="table">
 					<thead>
-						<tr><th colspan="4">FTP服务</th></tr>
+						<tr><th colspan="4">FTP 服务器软件</th></tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td style="width:100px">vsftpd</td>
 							<td style="width:60px" ng-bind-html-unsafe="info['service.vsftpd']['status'] | service.status"></td>
-							<td class="muted">安全快速的FTP服务器</td>
+							<td class="muted">安全快速的 FTP 服务器</td>
 							<td style="width:150px"><div srvminiop ng-init="name='vsftpd';service='vsftpd';urlname='vsftpd'"></div></td>
+						</tr>
+						<tr>
+							<td style="width:100px">ProFTPD</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.proftpd']['status'] | service.status"></td>
+							<td class="muted">安全简单的 FTP 服务器</td>
+							<td style="width:150px"><div srvminiop ng-init="name='proftpd';service='proftpd';urlname='proftpd'"></div></td>
+						</tr>
+						<tr>
+							<td style="width:100px">Pure-FTPd</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.pure-ftpd']['status'] | service.status"></td>
+							<td class="muted">快速稳定全功能的 FTP 服务器</td>
+							<td style="width:150px"><div srvminiop ng-init="name='Pure-FTPd';service='pure-ftpd';urlname='pureftpd'"></div></td>
 						</tr>
 					</tbody>
 				</table>
@@ -112,6 +137,42 @@
 					</tbody>
 				</table>
 			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='application'" id="application">
+				<table class="table">
+					<thead>
+						<tr><th colspan="4">应用程序</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="width:100px">Shadowsocks</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.shadowsocks-libev']['status'] | service.status"></td>
+							<td class="muted">libev 版 - 内存占用小（600k左右），低 CPU 消耗</td>
+							<td style="width:150px">
+								<a class="btn btn-default btn-sm" role="button" href="#/service?s=application" disabled>正在开发</a>
+								<!-- <div srvminiop ng-init="name='Shadowsocks-libev';service='shadowsocks-libev';urlname='shadowsocks-libev'"></div> -->
+							</td>
+						</tr>
+						<tr>
+							<td style="width:100px">Shadowsocks</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.shadowsocks']['status'] | service.status"></td>
+							<td class="muted">Python 版</td>
+							<td style="width:150px">
+								<a class="btn btn-default btn-sm" role="button" href="#/service?s=application" disabled>正在开发</a>
+								<!-- <div srvminiop ng-init="name='Shadowsocks';service='shadowsocks';urlname='shadowsocks'"></div> -->
+							</td>
+						</tr>
+						<tr>
+							<td style="width:100px">ShadowsocksR</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.shadowsocks']['status'] | service.status"></td>
+							<td class="muted">ShadowsocksR - SOCKS 代理服务器</td>
+							<td style="width:150px">
+								<a class="btn btn-default btn-sm" role="button" href="#/service?s=application" disabled>正在开发</a>
+								<!-- <div srvminiop ng-init="name='ShadowsocksR';service='shadowsocks';urlname='shadowsocks'"></div> -->
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mail'" id="mail">
 				<table class="table">
 					<thead>
@@ -150,6 +211,14 @@
 							<td ng-bind-html-unsafe="info['service.crond']['status'] | service.status"></td>
 							<td class="muted">定时任务管理服务器</td>
 							<td><div srvminiop ng-init="name='Cron';service='crond';urlname='cron'"></div></td>
+						</tr>
+						<tr>
+							<td style="width:100px">named</td>
+							<td style="width:60px" ng-bind-html-unsafe="info['service.named']['status'] | service.status"></td>
+							<td class="muted">DNS 域名解析服务器</td>
+							<td style="width:100px">
+								<div srvminiop ng-init="name='named';service='named';urlname='named'"></div>
+							</td>
 						</tr>
 						<tr style="display:none" ng-show="info['server.virt'] != 'Virtuozzo/OpenVZ'">
 							<td>NTP</td>

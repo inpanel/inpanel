@@ -1,4 +1,4 @@
-var releasetime = '2018-12-17 06:05:12 CST';
+var releasetime = '2018-12-20 18:57:43 CST';
 var _v = new Date(releasetime.replace(/-/g, '/')).getTime() / 1000;
 //if (1) _v += Math.random();	// ie test mode
 angular.module('intranet', ['intranet.services', 'intranet.directives', 'intranet.filters']).
@@ -17,8 +17,11 @@ config(['$routeProvider', function ($routeProvider) {
     when('/main', _r('main', MainCtrl)).
     when('/service/nginx', _r('service/nginx', ServiceNginxCtrl)).
     when('/service/apache', _r('service/apache', ServiceApacheCtrl)).
+    when('/service/lighttpd', _r('service/lighttpd', ServiceLighttpdCtrl)).
     when('/service/tomcat', _r('service/tomcat', ServiceTomcatCtrl)).
     when('/service/vsftpd', _r('service/vsftpd', ServiceVsftpdCtrl)).
+    when('/service/proftpd', _r('service/proftpd', ServiceProFTPDCtrl)).
+    when('/service/pureftpd', _r('service/pureftpd', ServicePureFTPdCtrl)).
     when('/service/mysql', _r('service/mysql', ServiceMySQLCtrl)).
     when('/service/mariadb', _r('service/mariadb', ServiceMariaDBCtrl)).
     when('/service/redis', _r('service/redis', ServiceRedisCtrl)).
@@ -30,6 +33,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/service/iptables', _r('service/iptables', ServiceIPTablesCtrl)).
     when('/service/cron', _r('service/cron', ServiceCronCtrl)).
     when('/service/ntp', _r('service/ntp', ServiceNTPCtrl)).
+    when('/service/named', _r('service/named', ServiceNamedCtrl)).
     when('/service', _r('service/index', ServiceCtrl)).
     when('/file', _r('file/file', FileCtrl)).
     when('/file/go#(:path)', _r('file/file', FileCtrl)).
@@ -54,6 +58,10 @@ config(['$routeProvider', function ($routeProvider) {
     when('/utils/partition', _r('utils/partition', UtilsPartitionCtrl)).
     when('/utils/autofm', _r('utils/autofm', UtilsAutoFMCtrl)).
     when('/utils/movedata', _r('utils/movedata', UtilsMoveDataCtrl)).
+    when('/ecs', _r('ecs/ecs', ECSCtrl)).
+    when('/ecs/index', _r('ecs/index', ECSIndexCtrl)).
+    when('/ecs/account', _r('ecs/account', ECSAccountCtrl)).
+    when('/ecs/:section', _r('ecs/setting', ECSSettingCtrl)).
     when('/setting', _r('setting', SettingCtrl)).
     when('/backup', _r('backup', BackupCtrl)).
     when('/secure', _r('secure', SecureCtrl)).
@@ -84,13 +92,18 @@ run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Requ
         'password_validated': false
     };
 
+	$rootScope.$ecs = {
+        'access_key_id': '',
+		'page_size': 10,
+		'page_number': 1
+    };
     $rootScope.$proxyroot = location_path;
 }]).
 value('version', {
     'version': '1.1.1',
-    'build': '16',
+    'build': '17',
     'releasetime': releasetime,
-    'changelog': 'http://intranet.pub/changelog.html'
+    'changelog': 'https://intranet.pub/changelog.html'
 });
 
 var Auth = {

@@ -457,6 +457,7 @@ var SettingCtrl = [
             $.getScript('/js/controllers/site.js');
             $.getScript('/js/controllers/task.js');
             $.getScript('/js/controllers/database.js');
+            $.getScript('/js/controllers/ecs.js');
             $.getScript('/js/controllers/utils.js');
             $.getScript('/js/directives.js');
             $.getScript('/js/filters.js');
