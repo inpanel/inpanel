@@ -456,7 +456,10 @@ directive('srvinstall', function () {
 					<p>是否要开始安装？</p>\
 				</div>\
 				<div ng-show="installing" ng-bind-html-unsafe="installMsg"></div>\
-				<p ng-show="!installing"><button class="btn btn-default btn-sm" style="margin-top:10px" ng-click="startInstall()">开始安装</button></p>\
+				<p ng-show="!installing">\
+				<button class="btn btn-default" style="margin-top:10px" onclick="history.back()">取消返回</button>\
+				<button class="btn btn-default" style="margin-top:10px" ng-click="startInstall()">开始安装</button>\
+				</p>\
 				<table class="table table-condensed" style="margin-top:20px;display:none" ng-show="showVerList&&pkgs.length>0">\
 					<thead>\
 						<tr>\
