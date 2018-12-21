@@ -2559,7 +2559,7 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = u'%s/tools/init.d/%s/intranet' % (root_path, distname)
+        initscript = u'%s/core/init.d/%s/intranet' % (root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
