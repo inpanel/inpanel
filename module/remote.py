@@ -10,18 +10,14 @@
 '''Package for Intranet operations for remote server.'''
 
 
-import os
-if __name__ == '__main__':
-    import sys
-    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    sys.path.append(root_path)
-
-import pxssh
-import shlex
 import base64
+import os
+import shlex
+
+import lib.pxssh as pxssh
 
 
-def install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, intranet_ip=None, intranet_port=None):
+def intranet_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, intranet_ip=None, intranet_port=None):
     '''Install Intranet on a remote server.'''
     try:
         s = pxssh.pxssh()
@@ -57,7 +53,7 @@ def install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, intranet_i
         return False
 
 
-def uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
+def intranet_uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
     '''Uninstall Intranet on a remote server.'''
     try:
         s = pxssh.pxssh()
@@ -72,7 +68,7 @@ def uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
         return False
 
 
-def update(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, accesskeyenable=None, username=None, password=None, loginlock=None, intranet_ip=None, intranet_port=None):
+def intranet_config(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, accesskeyenable=None, username=None, password=None, loginlock=None, intranet_ip=None, intranet_port=None):
     '''Update config on remote server.'''
     try:
         s = pxssh.pxssh()

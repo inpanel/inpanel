@@ -12,7 +12,7 @@ __all__ = [
     'aliyuncs',
     'apache',
     'cron',
-    'ecs',
+    'remote',
     'lighttpd',
     'proc',
     'proftpd',

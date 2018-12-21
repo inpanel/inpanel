@@ -531,8 +531,8 @@ var ECSSettingCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/intranet_update',
-                '/backend/intranet_update_' + $scope.ssh_ip, {
+                '/backend/intranet_config',
+                '/backend/intranet_config_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,

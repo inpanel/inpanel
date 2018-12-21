@@ -14,6 +14,7 @@ import functools
 import hashlib
 import hmac
 import json
+import logging
 import os
 import platform
 import re
@@ -2499,7 +2500,7 @@ class BackendHandler(RequestHandler):
             newpassword = _u(self.get_argument('newpassword', ''))
             if not path: path = '/root/.ssh/sshkey_intranet'
             self._call(functools.partial(self.ssh_chpasswd, path, oldpassword, newpassword))
-        elif jobname in ('intranet_install', 'intranet_uninstall', 'intranet_update'):
+        elif jobname in ('intranet_install', 'intranet_uninstall', 'intranet_config'):
             if self.config.get('runtime', 'mode') == 'demo':
                 self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
                 return
@@ -2512,7 +2513,7 @@ class BackendHandler(RequestHandler):
                 accessnet = self.get_argument('accessnet', 'public')
                 accesskey = utils.gen_accesskey()
                 accessport = '8888'
-            elif jobname == 'intranet_update':
+            elif jobname == 'intranet_config':
                 if not self.config.has_option('intranet', instance_name):
                     self.write({'code': -1, 'msg': u'该服务器还未配置远程控制！'})
                     return
@@ -2527,8 +2528,8 @@ class BackendHandler(RequestHandler):
                 self._call(functools.partial(self.intranet_uninstall,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(instance_name)))
-            elif jobname == 'intranet_update':
-                self._call(functools.partial(self.intranet_update,
+            elif jobname == 'intranet_config':
+                self._call(functools.partial(self.intranet_config,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(accesskey)))
         else:   # undefined job
@@ -3856,7 +3857,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, u'正在将 Intranet 安装到 %s...' % ssh_ip)
 
-        result = yield tornado.gen.Task(callbackable(ecs.install),
+        result = yield tornado.gen.Task(callbackable(remote.intranet_install),
                     ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey, intranet_port=accessport)
         if result == True:
             code = 0
@@ -3871,14 +3872,12 @@ class BackendHandler(RequestHandler):
     @tornado.web.asynchronous
     @tornado.gen.engine
     def intranet_uninstall(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name):
-        """Uninstall Intranet
-        """
+        """Uninstall Intranet"""
         jobname = 'intranet_uninstall_%s' % ssh_ip
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, u'正在将 Intranet 从 %s 上卸载...' % ssh_ip)
-    
-        result = yield tornado.gen.Task(callbackable(ecs.uninstall),
+        self._update_job(jobname, 2, u'正在卸载 %s 上的 Intranet...' % ssh_ip)
+        result = yield tornado.gen.Task(callbackable(remote.intranet_uninstall),
                     ssh_ip, ssh_port, ssh_user, ssh_password)
         if result == True:
             code = 0
@@ -3895,14 +3894,14 @@ class BackendHandler(RequestHandler):
 
     @tornado.web.asynchronous
     @tornado.gen.engine
-    def intranet_update(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
-        """Update Intranet"""
-        jobname = 'intranet_update_%s' % ssh_ip
+    def intranet_config(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
+        """Update Intranet Config"""
+        jobname = 'intranet_config%s' % ssh_ip
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, u'正在更新 %s 上的 Intranet 配置...' % ssh_ip)
 
-        result = yield tornado.gen.Task(callbackable(ecs.update),
+        result = yield tornado.gen.Task(callbackable(remote.intranet_config),
                     ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey)
         if result == True:
             code = 0
@@ -3925,7 +3924,7 @@ class BackupHandler(RequestHandler):
         path = os.path.join(self.settings['data_path'], 'config.ini')
         if os.path.isfile(path):
             self.set_header('Content-Type', 'application/octet-stream')
-            self.set_header('Content-disposition', 'attachment; filename=ecsmate_backup_%s.bak' % time.strftime('%Y%m%d'))
+            self.set_header('Content-disposition', 'attachment; filename=intranet_backup_%s.bak' % time.strftime('%Y%m%d'))
             self.set_header('Content-Transfer-Encoding', 'binary')
             with open(path) as f: self.write(f.read())
         else:
@@ -3992,7 +3991,7 @@ class AccountHandler(RequestHandler):
             accounts = json.loads(accounts)
         except:
             accounts = []
-        
+
         accounts = sorted(accounts, key=lambda k:k['name'])
         if status:
             status = status == 'enable'
@@ -4003,7 +4002,7 @@ class AccountHandler(RequestHandler):
                 accounts[i]['access_key_secret'] = '***DEMO状态下密钥被保护***'
 
         self.write({'code': 0, 'msg': u'成功加载 ECS 帐号列表！', 'data': accounts})
-    
+
     def post(self):
         self.authed()
         action = self.get_argument('action', '')
@@ -4011,7 +4010,7 @@ class AccountHandler(RequestHandler):
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': u'DEMO状态不允许修改 ECS 帐号！'})
             return
-        
+
         if action == 'add' or action == 'update':
             name = self.get_argument('name', '')
             access_key_id = self.get_argument('access_key_id', '')
@@ -4122,13 +4121,13 @@ class ECSHandler(RequestHandler):
                 for instance in data['InstanceStatusSets']:
                     tasks.append(tornado.gen.Task(callbackable(srv.DescribeInstanceAttribute), _u(instance['InstanceName'])))
                     instances.append(instance)
-            
+
             if tasks:
                 responses = yield tasks
                 for i, response in enumerate(responses):
                     result, instdata, reqid = response
                     if result: instances[i].update(instdata)
-            
+
             # get access info for Intranet
             for instance in instances:
                 if not self.config.has_option('intranet', instance['InstanceName']):
@@ -4218,7 +4217,7 @@ class ECSHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'磁盘列表加载失败！（%s）' % data['Message']})
                 self.finish()
                 return
-            
+
             if data.has_key('Disks'):
                 disks = data['Disks']
             else:
@@ -4246,12 +4245,12 @@ class ECSHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'磁盘快照列表加载失败！（%s）' % data['Message']})
                 self.finish()
                 return
-            
+
             if data.has_key('Snapshots'):
                 snapshots = data['Snapshots']
             else:
                 snapshots = []
-                
+
             snapshots = sorted(snapshots, key=lambda k:k['CreateTime'], reverse=True)
 
             self.write({'code': 0, 'msg': u'成功加载磁盘快照列表！', 'data': {
@@ -4283,7 +4282,7 @@ class ECSHandler(RequestHandler):
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
             self.finish()
-    
+
     @tornado.web.asynchronous
     @tornado.gen.engine
     def post(self, section):
@@ -4308,7 +4307,7 @@ class ECSHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'该帐号不存在！'})
                 self.finish()
                 return
-            
+
             opstr = {'startinstance': u'启动', 'stopinstance': u'停止', 'rebootinstance': u'重启', 'resetinstance': u'重置'}
 
             srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
@@ -4324,7 +4323,7 @@ class ECSHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'云服务器 %s %s失败！（%s）' % (instance_name, opstr[section], data['Message'])})
                 self.finish()
                 return
-            
+
             self.write({'code': 0, 'msg': u'云服务器%s指令发送成功！' % opstr[section], 'data': data})
             self.finish()
 
@@ -4346,7 +4345,7 @@ class ECSHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'该帐号不存在！'})
                 self.finish()
                 return
-            
+
             opstr = {'createsnapshot': u'创建', 'deletesnapshot': u'删除', 'cancelsnapshot': u'取消', 'rollbacksnapshot': u'回滚'}
 
             srv = aliyuncs.ECS(_u(access_key_id), _u(access_key_secret))
@@ -4362,7 +4361,7 @@ class ECSHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'快照%s失败！（%s）' % (opstr[section], data['Message'])})
                 self.finish()
                 return
-            
+
             self.write({'code': 0, 'msg': u'快照%s指令发送成功！' % opstr[section], 'data': data})
             self.finish()
 
