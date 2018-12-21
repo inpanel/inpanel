@@ -7,10 +7,16 @@
 # Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
+'''Module for config file management.'''
+
 import os
-from ConfigParser import ConfigParser
 
 from lib.filelock import FileLock
+
+try:
+    from ConfigParser import ConfigParser
+except:
+    from configparser import ConfigParser
 
 
 class Config(object):
@@ -19,7 +25,7 @@ class Config(object):
         self.inifile = inifile
         self.cfg = ConfigParser()
 
-        with FileLock(self.inifile):
+        with FileLock(inifile):
             if os.path.exists(inifile):
                 self.cfg.read(inifile)
 
@@ -33,13 +39,13 @@ class Config(object):
                 },
                 'auth': {
                     'username': 'admin',
-                    'password': '',     # empty password never validated
+                    'password': '',         # empty password never validated
                     'passwordcheck': 'on',
-                    'accesskey': '',    # empty access key never validated
+                    'accesskey': '',        # empty access key never validated
                     'accesskeyenable': 'off',
                 },
                 'runtime': {
-                    'mode': '',
+                    'mode': '',             # format: demo | dev | prod
                     'loginlock': 'off',
                     'loginfails': 0,
                     'loginlockexpire': 0,
@@ -49,10 +55,10 @@ class Config(object):
                     'lastfile': '',
                 },
                 'time': {
-                    # format: timezone = Asia/Shanghai
+                    'timezone': ''          # format: timezone = Asia/Shanghai
                 },
                 'ecs': {
-                    'accounts': '',
+                    'accounts': ''
                 },
                 'intranet': {
                     # format: Instance Name = Access key
@@ -107,8 +113,8 @@ class Config(object):
     def add_section(self, section):
         return self.cfg.add_section(section)
 
-    def remove_option(self, section):
-        return self.cfg.remove_option(section)
+    def remove_option(self, section, option):
+        return self.cfg.remove_option(section, option)
 
     def set(self, section, option, value):
         try:
