@@ -291,7 +291,9 @@ directive('srvinstall', function () {
 						},
 						'success': function (data) {
 							$scope.installMsg = data.msg;
-							repolist = data.data;
+							if (data && data.data) {
+								repolist = data.data;
+							}
 							$scope.installRepo();
 						},
 						'error': function (data) {
