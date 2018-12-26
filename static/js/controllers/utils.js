@@ -214,11 +214,23 @@ var UtilsNetworkCtrl = [
     function($scope, $routeParams, Module, Timeout, Message, Request) {
         var module = 'utils.network';
         Module.init(module, '网络设置');
-        Module.initSection('ip');
+        Module.initSection('hostname');
         $scope.restartMessage = '是否要重启网络？';
         $scope.loaded = true;
         $scope.showRestartBtn = true;
 
+        $scope.loadHostName = function () {
+            Request.get('/utils/network/hostname', function(data) {
+                $scope.hostname = data.hostname;
+            });
+        };
+        $scope.saveHostName = function () {
+            Request.post('/utils/network/hostname', {
+                'hostname': $scope.hostname
+            }, function (data) {
+                if (data.code == 0) $scope.loadHostName();
+            });
+        };
         $scope.loadIfNames = function() {
             Request.get('/utils/network/ifnames', function(data) {
                 $scope.ifnames = data.ifnames;
