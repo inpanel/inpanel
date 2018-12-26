@@ -112,8 +112,8 @@ class Install(object):
             elif int(float(self.version)) == 7:
                 epelrpm = 'epel-release-7-11.noarch.rpm'
                 epelurl = 'https://mirrors.aliyun.com/epel/7/%s/Packages/e/%s' % (self.arch, epelrpm)
-                fastestmirror = 'https://mirrors.aliyun.com/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
-                # fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-45.el7.noarch.rpm' % (self.arch)
+                fastestmirror = 'https://mirrors.aliyun.com/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-50.el7.noarch.rpm' % (self.arch)
+                # fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-50.el7.noarch.rpm' % (self.arch)
                 self._run('rpm -Uvh %s' % fastestmirror)
             self._run('wget -nv -c %s' % epelurl)
             self._run('rpm -Uvh %s' % epelrpm)
