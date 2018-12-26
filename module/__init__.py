@@ -18,5 +18,6 @@ __all__ = [
     'proftpd',
     'pureftpd',
     'named',
-    'vsftpd'
+    'vsftpd',
+    'shell'
 ]

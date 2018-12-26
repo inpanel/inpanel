@@ -7,7 +7,7 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for load config file."""
+"""Module for reading and writing config file."""
 
 import os
 
@@ -51,7 +51,7 @@ def raw_saveconfig(filepath, config, sortlist=[], delimiter='=', quoter='"'):
     if len(sortlist) > 0:
         for k in sortlist:
             if config.has_key(k):
-                line = '%s="%s"\n' % (k, config[k])
+                line = '%s%s%s%s%s\n' % (k, delimiter, quoter, config[k], quoter)
                 del config[k]
                 lines.append(line)
 
@@ -70,27 +70,38 @@ def raw_saveconfig(filepath, config, sortlist=[], delimiter='=', quoter='"'):
     return True
 
 
-def loadconfig(filepath, keymap, delimiter='=', quoter=' "\''):
+def loadconfig(filepath, keymap=None, delimiter='=', quoter=' "\''):
     """Load config from file and parse it to dict.
     """
     raw_config = raw_loadconfig(filepath)
+    # print(raw_config)
     if raw_config == None:
         return None
-    config = dict((keymap[k], v)
-                  for k, v in raw_config.iteritems() if keymap.has_key(k))
+    if keymap == None:
+        # return raw_config
+        config = dict((k, v) for k, v in raw_config.iteritems())
+    else:
+        config = dict((keymap[k], v) for k, v in raw_config.iteritems() if keymap.has_key(k))
     return config
 
 
-def saveconfig(filepath, keymap, config, delimiter='=', read_quoter=' "\'', write_quoter='"'):
-    """Save config to file.
-    """
-    raw_config, sortlist = raw_loadconfig(
-        filepath, return_sort=True, delimiter=delimiter, quoter=read_quoter)
+def saveconfig(filepath, config, keymap=None, delimiter='=', read_quoter=' "\'', write_quoter='"'):
+    """Save config to file."""
+    # current config
+    raw_config, sortlist = raw_loadconfig(filepath, return_sort=True, delimiter=delimiter, quoter=read_quoter)
     if raw_config == None:
         return False
     for k, v in config.iteritems():
-        if keymap.has_key(k):
-            raw_config[keymap[k]] = v
+        if keymap == None:
+            # Unspecified range of key-value pairs
+            # Modify the specified field
+            raw_config[k] = v
+        else:
+            # Specify a range of key-value pairs
+            if keymap.has_key(k):
+                raw_config[keymap[k]] = v
+            else:
+                return False
     return raw_saveconfig(filepath, raw_config, sortlist, delimiter=delimiter, quoter=write_quoter)
 
 

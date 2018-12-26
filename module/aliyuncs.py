@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 #
+# Copyright (c) 2017 - 2018, doudoudzj
 # Copyright (c) 2012, ECSMate development team
 # All rights reserved.
 #

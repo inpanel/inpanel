@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 #
+# Copyright (c) 2017 - 2018, doudoudzj
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
@@ -16,9 +17,25 @@ from config import Config
 import si
 from module.configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
                                readconfig, saveconfig, writeconfig)
-
+from module.shell import run as shell_run
 
 class Server(object):
+
+    @classmethod
+    def hostname(self, hostname=None):
+        '''change hostname'''
+        if hostname == None:
+            return False
+        else:
+            hostname = hostname.replace(' ', '').replace('\n', '')
+            # change network, hosts, hostname
+            if saveconfig('/etc/sysconfig/network', {'HOSTNAME': hostname}) and\
+                saveconfig('/etc/hosts', {'127.0.0.1': hostname, '::1': hostname}) and\
+                shell_run(str('hostname %s' % hostname)) == 0:
+                return True
+            else:
+                return False
+
 
     @classmethod
     def ifconfig(self, ifname, config=None):
@@ -41,7 +58,7 @@ class Server(object):
                 return loadconfig(cfile, cmap)
             else:
                 cmap_reverse = dict((v, k) for k, v in cmap.iteritems())
-                return saveconfig(cfile, cmap_reverse, config)
+                return saveconfig(cfile, config, cmap_reverse)
         else:
             return None
 
@@ -195,6 +212,7 @@ class Server(object):
         elif dev.startswith('UUID='):
             uuid = dev.replace('UUID=', '')
             partinfo = si.Server.partinfo(devname=params['devname'])
+            # partinfo = si.Server.partinfo(uuid=uuid, devname=params['devname'])
             if partinfo['uuid'] == uuid:
                 return config
 

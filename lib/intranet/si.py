@@ -1,13 +1,13 @@
 #-*- coding: utf-8 -*-
 #
+# Copyright (c) 2017 - 2018, doudoudzj
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Package for quering server info
-"""
+'''Package for quering server info'''
 
 import datetime
 import fcntl
@@ -706,7 +706,6 @@ class Service(object):
             for filePath in glob.glob('%s*.service' % enableServicePath)
         ]
         return services
-        
 
 
 class Tool(object):
@@ -722,7 +721,7 @@ class Tool(object):
                 support_list.append(fstype)
         support_list.append('swap')
         return support_list
-    
+
 
 if __name__ == '__main__':
     print

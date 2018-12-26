@@ -543,7 +543,9 @@ class UtilsNetworkHandler(RequestHandler):
     """
     def get(self, sec, ifname):
         self.authed()
-        if sec == 'ifnames':
+        if sec == 'hostname':
+            self.write({'hostname': si.Server.hostname()})
+        elif sec == 'ifnames':
             ifconfigs = sc.Server.ifconfigs()
             # filter lo
             del ifconfigs['lo']
@@ -553,18 +555,28 @@ class UtilsNetworkHandler(RequestHandler):
             if ifconfig != None: self.write(ifconfig)
         elif sec == 'nameservers':
             self.write({'nameservers': sc.Server.nameservers()})
-        
+
     def post(self, sec, ifname):
         self.authed()
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': u'DEMO状态不允许修改网络设置！'})
             return
 
+        if sec == 'hostname':
+            hostname = self.get_argument('hostname', '')
+            if hostname != '':
+                if sc.Server.hostname(hostname):
+                    self.write({'code': 0, 'msg': u'主机名保存成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'主机名保存失败！'})
+            else:
+                self.write({'code': -1, 'msg': u'主机名不能为空！'})
+
         if sec == 'ifconfig':
             ip = self.get_argument('ip', '')
             mask = self.get_argument('mask', '')
             gw = self.get_argument('gw', '')
-            
+
             if not utils.is_valid_ip(_u(ip)):
                 self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % ip})
                 return
