@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2018, doudoudzj
+# Copyright (c) 2017 - 2019, doudoudzj
 # All rights reserved.
 #
 # Intranet is distributed under the terms of the New BSD License.
