@@ -8,8 +8,13 @@ Official Website: [intranet.pub](https://intranet.pub "Intranet")
 #### Installation
 
 ```shell
+# stable version
 curl -O https://raw.githubusercontent.com/intranet-panel/intranet/master/install.py
 python install.py
+
+# beta version
+curl -O https://raw.githubusercontent.com/intranet-panel/intranet/dev/install.py
+python install.py --dev
 ```
 
 #### Uninstall
