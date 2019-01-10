@@ -1,0 +1,322 @@
+<div navbar ng-init="currentItem='ssl'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>SSL 管理器</h3>
+    </div>
+    <div class="alert alert-info" ng-show="activeTabName=='keys'">
+        <p>私钥用于解密通过 SSL 传输的信息。 在创建 SSL 证书时，第一步是生成与该 SSL 证书关联的私钥文件。 应为您创建的每一个 SSL 证书生成一个私钥。 此私钥非常重要，应严格保密。 应将每一个私钥的副本放在安全的地方；私钥一旦丢失将无法找回。</p>
+    </div>
+    <div class="alert alert-info" ng-show="activeTabName=='crts'">
+        <p>您可以使用自签名证书，或者使用 SSL 证书颁发机构颁发的受信任证书。 如果想要为您的站点之一使用自签名证书，请在下面生成证书。 如果想要使用受信任的证书，则需要首先从受信任的提供商处获得 SSL 证书，然后上传或在下面提供该证书。</p>
+    </div>
+
+    <div class="tabbable" ng-init="load()">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='keys'"><a href="#keys" ng-click="load_keys()" data-toggle="tab">私钥</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='crts'"><a href="#crts" ng-click="load_crts()" data-toggle="tab">证书</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='csrs'"><a href="#csrs" ng-click="load_csrs()" data-toggle="tab">证书签名请求</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='host'"><a href="#host" ng-click="load_host()" data-toggle="tab">站点管理</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='keys'" id="keys">
+                <div class="well" ng-show="loading_keys">
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载私钥列表，请稍候...
+                </div>
+                <div ng-show="!loading_keys">
+                    <div class="pull-left"><h5>服务器上的密钥</h5></div>
+                    <div class="pull-right">
+                        <button class="btn btn-default btn-sm" ng-click="rename(item.name)" title="生成私钥">生成私钥</button>
+                        <button class="btn btn-default btn-sm" ng-click="rename(item.name)" title="上传私钥">上传私钥</button>
+                    </div>
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width: 20px;" class="text-right">#</th>
+                                <th style="width: 50px;">说明</th>
+                                <th>域名</th>
+                                <th style="width: 140px;">ID</th>
+                                <th style="width: 210px;">大小</th>
+                                <th style="width: 110px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-show="list_keys.length==0">
+                                <td colspan="6">服务器上暂无私钥。</td>
+                            </tr>
+                            <tr ng-repeat="item_key in list_keys">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>baokan.pub</td>
+                                <td>9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac</td>
+                                <td>2048</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-default btn-xs" title="编辑该私钥" ng-click="edit_key(item_key)">
+                                            <i class="glyphicon glyphicon-wrench"></i> 编辑
+                                        </button>
+                                        <button class="btn btn-default btn-xs" title="删除该私钥" ng-click="delete_key(item_key)">
+                                            <i class="glyphicon glyphicon-remove"></i> 删除
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr ng-repeat="item_key in list_keys">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{item_key.domain}}</td>
+                                <td>{{item_key.id}}</td>
+                                <td>{{item_key.size}}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-default btn-xs" title="编辑该私钥" ng-click="edit_key(item_key)"><i class="glyphicon glyphicon-wrench"></i></button>
+                                        <button class="btn btn-default btn-xs" title="删除该私钥" ng-click="delete_key(item_key)"><i class="glyphicon glyphicon-remove"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='crts'" id="crts">
+                <div class="well" ng-show="loading_crts">
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载证书列表，请稍候...
+                </div>
+                <div ng-show="!loading_crts">
+                    <div class="pull-left"><h5>服务器上的证书</h5></div>
+                    <div class="pull-right">
+                        <button class="btn btn-default btn-sm" ng-click="upload_crts()" title="上传证书">上传证书</button>
+                        <button class="btn btn-default btn-sm" ng-click="generate_crts()" title="生成自签名证书">生成自签名证书</button>
+                    </div>
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width: 20px;" class="text-right">#</th>
+                                <th>域名</th>
+                                <th style="width: 50px;">颁发者</th>
+                                <th style="width: 140px;">过期(UTC)</th>
+                                <th style="width: 210px;">密钥大小</th>
+                                <th style="width: 110px;">说明</th>
+                                <th style="width: 110px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-show="list_crts.length==0">
+                                <td colspan="6">服务器上暂无证书。</td>
+                            </tr>
+                            <tr>
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>angeldoit.cn.uiie.cn<br>angeldoit.cn<br>mail.angeldoit.cn<br>www.angeldoit.cn<br>www.angeldoit.cn.uiie.cn</td>
+                                <td>Let's Encrypt</td>
+                                <td>4/3/19</td>
+                                <td>2048</td>
+                                <td>Cert for “angeldoit.cn.uiie.cn”</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-default btn-xs" title="编辑该证书" ng-click="edit_crts()"><i class="glyphicon glyphicon-wrench"></i></button>
+                                        <button class="btn btn-default btn-xs" title="删除该证书" ng-click="delete_crts()"><i class="glyphicon glyphicon-remove"></i></button>
+                                        <button class="btn btn-default btn-xs" title="安装该证书" ng-click="install_crts()"><i class="glyphicon glyphicon-remove"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr ng-repeat="item in list_crts">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{item.domains}}</td>
+                                <td>{{item.issuer}}</td>
+                                <td>{{item.expiration }}</td>
+                                <td>{{item.keySize}}</td>
+                                <td>{{item.description}}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-default btn-xs" title="编辑该证书" ng-click="edit_crts(item)"><i class="glyphicon glyphicon-wrench"></i></button>
+                                        <button class="btn btn-default btn-xs" title="删除该证书" ng-click="delete_crts(item)"><i class="glyphicon glyphicon-remove"></i></button>
+                                        <button class="btn btn-default btn-xs" title="安装该证书" ng-click="install_crts(item)"><i class="glyphicon glyphicon-remove"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='csrs'" id="csrs">
+                <div ng-show="!packageloading">
+                    <div class="well" ng-show="host_packages.length==0">未找到网站程序。</div>
+                    <table class="table table-hover table-bordered" ng-repeat="cate in host_packages">
+                        <thead>
+                            <tr>
+                                <th colspan="3">{{cate.name}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="package in cate.packages">
+                                <td style="width: 120px;">
+                                    <a href="{{package.official_host}}" target="_blank">{{package.name}}</a>
+                                </td>
+                                <td style="width: 380px;" class="muted">{{package.description}}</td>
+                                <td style="width: 100px;">
+                                    <button class="btn btn-default btn-xs" ng-click="package_install_setting(package)">开始安装</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='host'" id="host">
+                <div class="well" ng-show="loading_host">
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载，请稍候...
+                </div>
+                <div ng-show="!loading_host">
+                    <div class="pull-left"><h5>管理 SSL 主机</h5></div>
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width: 20px;" class="text-right">#</th>
+                                <th>域名</th>
+                                <th style="width: 50px;">颁发时间</th>
+                                <th style="width: 140px;">过期时间</th>
+                                <th style="width: 210px;">站点目录</th>
+                                <th style="width: 110px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-show="list_host.length==0">
+                                <td colspan="6">服务器上暂无安装证书的站点。</td>
+                            </tr>
+                            <tr>
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>angeldoit.cn.uiie.cn<br>angeldoit.cn<br>mail.angeldoit.cn<br>www.angeldoit.cn<br>www.angeldoit.cn.uiie.cn</td>
+                                <td>2019-01-04</td>
+                                <td>2019-03-04</td>
+                                <td>/public_html/angeldoit.cn</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-link btn-xs" title="设为主网站" ng-click="host_make_primary(item)">设为主网站</button>
+                                        <button class="btn btn-link btn-xs" title="卸载" ng-click="host_crts_uninstall(item)">卸载</button>
+                                        <button class="btn btn-link btn-xs" title="更新证书" ng-click="host_crts_update(item)">更新证书</button>
+                                        <button class="btn btn-link btn-xs" title="证书详细信息" ng-click="host_crts_details(item)">证书详细信息</button>
+                                        <button class="btn btn-link btn-xs" title="为新站点使用证书" ng-click="host_crts_new(item)">为新站点使用证书</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr ng-repeat="item in list_host">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{item.domains}}</td>
+                                <td>{{item.start}}</td>
+                                <td>{{item.expiration}}</td>
+                                <td>{{item.docroot}}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-link btn-xs" title="设为主网站" ng-click="host_make_primary(item)">设为主网站</button>
+                                        <button class="btn btn-link btn-xs" title="卸载" ng-click="host_crts_uninstall(item)">卸载</button>
+                                        <button class="btn btn-link btn-xs" title="更新证书" ng-click="host_crts_update(item)">更新证书</button>
+                                        <button class="btn btn-link btn-xs" title="证书详细信息" ng-click="host_crts_details(item)">证书详细信息</button>
+                                        <button class="btn btn-link btn-xs" title="为新站点使用证书" ng-click="host_crts_new(item)">为新站点使用证书</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div ng-show="!has_httpserver" value="install" style="display:none">
+        <div class="well">
+            <p>系统检测到您还未安装 Let’s Encrypt 证书管理工具。</p>
+            <p>请先安装 Let’s Encrypt 证书管理工具后继续操作。</p>
+            <p style="padding-top: 10px;"><a class="btn btn-default" href="#/application?s=lets-encrypt">立即安装</a></p>
+        </div>
+    </div>
+</div>
+
+<div id="pkg_install_setting" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>{{curpkg.name}} 安装设置</h3>
+            </div>
+            <div class="modal-body">
+                <h5>请选择要安装的版本</h5>
+                <table class="table table-condensed" style="width: 350px;">
+                    <thead>
+                        <tr>
+                            <th>版本名称</th>
+                            <th>大小</th>
+                            <th>选择</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="v in curpkg.versions">
+                            <td>{{v.name}}</td>
+                            <td>{{v.size}}</td>
+                            <td><label class="radio"><input type="radio" name="pkgver" ng-model="pkgver" ng-click="package_version_select(v)" value="{{v.code}}"></label></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h5>请设置要安装到的目录</h5>
+                <div class="input-append">
+                    <input ng-model="installpath" type="text" class="input-large" placeholder="网站系统的安装目录">
+                    <button class="btn btn-default" ng-click="selectinstallpath()"><i class="glyphicon glyphicon-folder-open"></i></button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#pkg_install_setting').modal('hide')" ng-click="package_install()">开始安装</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="confirm" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>{{confirm_title}}</h3>
+            </div>
+            <div class="modal-body" ng-bind-html-unsafe="confirm_body">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">取消</button>
+                <button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="nginx_deleteserverconfirm" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>删除确认</h3>
+            </div>
+            <div class="modal-body">
+                <p>是否确认删除 “{{nginx_server_name}}” 这个站点？</p>
+                <p class="text-error">注意：此处仅删除站点配置文件，网站的其它数据不受影响。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#nginx_deleteserverconfirm').modal('hide')" ng-click="nginx_deleteserver()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="selector" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>{{selector_title}}</h3>
+            </div>
+            <div class="modal-body">
+                <div selector></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
