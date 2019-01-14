@@ -1,32 +1,41 @@
-<div navbar ng-init="currentItem='ssl'"></div>
+<div navbar ng-init="currentItem='utils.ssl'"></div>
 <div ng-show="!loaded">
     <div loading></div>
 </div>
 
 <div id="main" ng-show="loaded" style="display:none">
     <div class="module-header">
-        <h3>SSL 管理器</h3>
-    </div>
-    <div class="alert alert-info" ng-show="activeTabName=='keys'">
-        <p>私钥用于解密通过 SSL 传输的信息。 在创建 SSL 证书时，第一步是生成与该 SSL 证书关联的私钥文件。 应为您创建的每一个 SSL 证书生成一个私钥。 此私钥非常重要，应严格保密。 应将每一个私钥的副本放在安全的地方；私钥一旦丢失将无法找回。</p>
-    </div>
-    <div class="alert alert-info" ng-show="activeTabName=='crts'">
-        <p>您可以使用自签名证书，或者使用 SSL 证书颁发机构颁发的受信任证书。 如果想要为您的站点之一使用自签名证书，请在下面生成证书。 如果想要使用受信任的证书，则需要首先从受信任的提供商处获得 SSL 证书，然后上传或在下面提供该证书。</p>
+        <h3>SSL 证书管理</h3>
     </div>
 
-    <div class="tabbable" ng-init="load()">
+    <div ng-show="!installed" value="install" style="display:none">
+        <div class="well">
+            <p>系统检测到您还未安装 Let’s Encrypt 证书管理工具。</p>
+            <p>请先安装 Let’s Encrypt 证书管理工具后继续操作。</p>
+            <p style="padding-top: 10px;"><a class="btn btn-default" href="#/application?s=lets-encrypt">立即安装</a></p>
+        </div>
+    </div>
+    <div class="tabbable" ng-init="load()" ng-show="installed">
+        <div class="alert alert-info alert-dismissible" ng-show="showAlertInfo && activeTabName=='keys'">
+            <button ng-click="showAlertInfo=false" type="button" class="close"><span aria-hidden="true">&times;</span></button>
+            <p>私钥用于解密通过 SSL 传输的信息。 在创建 SSL 证书时，第一步是生成与该 SSL 证书关联的私钥文件。 应为您创建的每一个 SSL 证书生成一个私钥。 此私钥非常重要，应严格保密。 应将每一个私钥的副本放在安全的地方；私钥一旦丢失将无法找回。</p>
+        </div>
+        <div class="alert alert-info alert-dismissible" ng-show="showAlertInfo && activeTabName=='crts'">
+            <button ng-click="showAlertInfo=false" type="button" class="close"><span aria-hidden="true">&times;</span></button>
+            <p>您可以使用自签名证书，或者使用 SSL 证书颁发机构颁发的受信任证书。 如果想要为您的站点之一使用自签名证书，请在下面生成证书。 如果想要使用受信任的证书，则需要首先从受信任的提供商处获得 SSL 证书，然后上传或在下面提供该证书。</p>
+        </div>
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='keys'"><a href="#keys" ng-click="load_keys()" data-toggle="tab">私钥</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='crts'"><a href="#crts" ng-click="load_crts()" data-toggle="tab">证书</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='csrs'"><a href="#csrs" ng-click="load_csrs()" data-toggle="tab">证书签名请求</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='host'"><a href="#host" ng-click="load_host()" data-toggle="tab">站点管理</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='keys'"><a href="#keys" ng-click="tab_sec('keys')" data-toggle="tab">私钥</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='crts'"><a href="#crts" ng-click="tab_sec('crts')" data-toggle="tab">证书</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='csrs'"><a href="#csrs" ng-click="tab_sec('csrs')" data-toggle="tab">证书签名请求</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='host'"><a href="#host" ng-click="tab_sec('host')" data-toggle="tab">站点</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='keys'" id="keys">
                 <div class="well" ng-show="loading_keys">
                     <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载私钥列表，请稍候...
                 </div>
-                <div ng-show="!loading_keys">
+                <div ng-show="!loading_keys" style="display:none">
                     <div class="pull-left"><h5>服务器上的密钥</h5></div>
                     <div class="pull-right">
                         <button class="btn btn-default btn-sm" ng-click="rename(item.name)" title="生成私钥">生成私钥</button>
@@ -35,33 +44,16 @@
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
-                                <th style="width: 20px;" class="text-right">#</th>
-                                <th style="width: 50px;">说明</th>
+                                <th style="width: 30px;" class="text-right">#</th>
                                 <th>域名</th>
                                 <th style="width: 140px;">ID</th>
-                                <th style="width: 210px;">大小</th>
-                                <th style="width: 110px;">操作</th>
+                                <th style="width: 60px;">大小</th>
+                                <th style="width: 70px;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-show="list_keys.length==0">
-                                <td colspan="6">服务器上暂无私钥。</td>
-                            </tr>
-                            <tr ng-repeat="item_key in list_keys">
-                                <td class="text-right">{{$index+1}}</td>
-                                <td>baokan.pub</td>
-                                <td>9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac</td>
-                                <td>2048</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button class="btn btn-default btn-xs" title="编辑该私钥" ng-click="edit_key(item_key)">
-                                            <i class="glyphicon glyphicon-wrench"></i> 编辑
-                                        </button>
-                                        <button class="btn btn-default btn-xs" title="删除该私钥" ng-click="delete_key(item_key)">
-                                            <i class="glyphicon glyphicon-remove"></i> 删除
-                                        </button>
-                                    </div>
-                                </td>
+                                <td colspan="5">服务器上暂无私钥。</td>
                             </tr>
                             <tr ng-repeat="item_key in list_keys">
                                 <td class="text-right">{{$index+1}}</td>
@@ -140,27 +132,27 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='csrs'" id="csrs">
-                <div ng-show="!packageloading">
+                <div ng-show="!loading_csrs">
                     <div class="well" ng-show="host_packages.length==0">未找到网站程序。</div>
-                    <table class="table table-hover table-bordered" ng-repeat="cate in host_packages">
-                        <thead>
-                            <tr>
-                                <th colspan="3">{{cate.name}}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="package in cate.packages">
-                                <td style="width: 120px;">
-                                    <a href="{{package.official_host}}" target="_blank">{{package.name}}</a>
-                                </td>
-                                <td style="width: 380px;" class="muted">{{package.description}}</td>
-                                <td style="width: 100px;">
-                                    <button class="btn btn-default btn-xs" ng-click="package_install_setting(package)">开始安装</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
+                <table class="table table-hover table-bordered" ng-repeat="cate in host_packages">
+                    <thead>
+                        <tr>
+                            <th colspan="3">{{cate.name}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="package in cate.packages">
+                            <td style="width: 120px;">
+                                <a href="{{package.official_host}}" target="_blank">{{package.name}}</a>
+                            </td>
+                            <td style="width: 380px;" class="muted">{{package.description}}</td>
+                            <td style="width: 100px;">
+                                <button class="btn btn-default btn-xs" ng-click="package_install_setting(package)">开始安装</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='host'" id="host">
                 <div class="well" ng-show="loading_host">
@@ -219,12 +211,6 @@
                     </table>
                 </div>
             </div>
-        </div>
-        <div ng-show="!has_httpserver" value="install" style="display:none">
-        <div class="well">
-            <p>系统检测到您还未安装 Let’s Encrypt 证书管理工具。</p>
-            <p>请先安装 Let’s Encrypt 证书管理工具后继续操作。</p>
-            <p style="padding-top: 10px;"><a class="btn btn-default" href="#/application?s=lets-encrypt">立即安装</a></p>
         </div>
     </div>
 </div>

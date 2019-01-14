@@ -645,7 +645,23 @@ class UtilsTimeHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'时区设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'时区设置保存失败！'})
-        
+
+
+class UtilsSSLHandler(RequestHandler):
+    """Handler for SSL/TLS setting.
+    """
+    def get(self, sec):
+        self.authed()
+        if sec == 'keys_list':
+            keys_list = ssltls.get_keys_list()
+            if keys_list:
+                self.write(keys_list)
+            else:
+                self.write({'code': -1, 'msg': u'获取证书失败！'})
+        else:
+            self.write({'code': -1, 'msg': u'未定义的操作！'})
+
+
 
 class SettingHandler(RequestHandler):
     """Settings for Intranet
@@ -3951,7 +3967,7 @@ class BackupHandler(RequestHandler):
         else:
             raise tornado.web.HTTPError(403, "Please login first")
 
- 
+
 class RestoreHandler(RequestHandler):
     def post(self):
         self.authed()

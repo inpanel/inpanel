@@ -58,6 +58,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/utils/partition', _r('utils/partition', UtilsPartitionCtrl)).
     when('/utils/autofm', _r('utils/autofm', UtilsAutoFMCtrl)).
     when('/utils/movedata', _r('utils/movedata', UtilsMoveDataCtrl)).
+    when('/utils/ssl', _r('utils/ssl', UtilsSSLCtrl)).
     when('/ecs', _r('ecs/ecs', ECSCtrl)).
     when('/ecs/index', _r('ecs/index', ECSIndexCtrl)).
     when('/ecs/account', _r('ecs/account', ECSAccountCtrl)).
