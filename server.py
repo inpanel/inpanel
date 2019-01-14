@@ -49,6 +49,7 @@ def main():
         (r'/utils/network/(.+?)(?:/(.+))?', intranet.web.UtilsNetworkHandler),
         (r'/utils/process/(.+?)(?:/(.+))?', intranet.web.UtilsProcessHandler),
         (r'/utils/time/(.+?)(?:/(.+))?', intranet.web.UtilsTimeHandler),
+        (r'/utils/ssl/(.+?)(?:/(.+))?', intranet.web.UtilsSSLHandler),
         (r'/setting/(.+)', intranet.web.SettingHandler),
         (r'/operation/(.+)', intranet.web.OperationHandler),
         (r'/page/(.+)/(.+)', intranet.web.PageHandler),

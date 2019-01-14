@@ -947,3 +947,80 @@ var UtilsMoveDataCtrl = [
         };
     }
 ];
+
+var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backend', 'Timeout',
+function($scope, Module, $routeParams, Request, Message, Backend, Timeout) {
+        var module = 'utils.ssl';
+        Module.init(module, 'SSL证书管理');
+        var section = Module.getSection();
+        var enabled_sections = ['keys', 'crts', 'csrs', 'host'];
+        Module.initSection(enabled_sections[0]);
+        $scope.installed = false;
+        $scope.loaded = false;
+        $scope.showAlertInfo = true;
+        $scope.loading_keys = true;
+        $scope.loading_crts = true;
+        $scope.loading_csrs = true;
+        $scope.loading_host = true;
+        $scope.list_keys = [];
+        $scope.list_crts = [];
+        $scope.list_host = [];
+
+        $scope.load = function() {
+            $scope.installed = true;
+            Timeout(function () {
+                $scope.loaded = true;
+                $scope.tab_sec(section);
+            }, 1000, module);
+        };
+
+        $scope.tab_sec = function (section) {
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            console.log('选中标签', section);
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section]();
+        };
+
+        $scope.load_keys = function (callback) {
+            $scope.loading_keys = true;
+            Request.get('/utils/ssl/keys_list', function(data) {
+                $scope.loading_keys = false;
+                $scope.list_keys = data;
+                $scope.list_keys = [
+                    {
+                        'domain': 'baokan.pub',
+                        'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
+                        'size': 2048,
+                    }, {
+                        'domain': 'zhoubao.pub',
+                        'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
+                        'size': 2048,
+                    }
+                ];
+                if (callback) callback.call();
+            });
+        };
+        $scope.load_crts = function () {
+            console.log('加载证书');
+            $scope.loading_crts = true;
+            Timeout(() => {
+                console.log('加载证书2');
+                $scope.loading_crts = false;
+            }, 1000, module);
+            console.log('加载证书3');
+        };
+        $scope.load_csrs = function () {
+            $scope.loading_csrs = true;
+            Timeout(() => {
+                $scope.loading_csrs = false;
+            }, 1000, module);
+        };
+        $scope.load_host = function () {
+            $scope.loading_host = true;
+            Timeout(() => {
+                $scope.loading_host = false;
+            }, 1000, module);
+        };
+    }
+];
