@@ -984,43 +984,35 @@ function($scope, Module, $routeParams, Request, Message, Backend, Timeout) {
 
         $scope.load_keys = function (callback) {
             $scope.loading_keys = true;
-            Request.get('/utils/ssl/keys_list', function(data) {
+            Request.get('/utils/ssl/keys', function(data) {
                 $scope.loading_keys = false;
-                $scope.list_keys = data;
-                $scope.list_keys = [
-                    {
-                        'domain': 'baokan.pub',
-                        'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
-                        'size': 2048,
-                    }, {
-                        'domain': 'zhoubao.pub',
-                        'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
-                        'size': 2048,
-                    }
-                ];
+                $scope.list_keys = data.list;
                 if (callback) callback.call();
             });
         };
-        $scope.load_crts = function () {
-            console.log('加载证书');
+        $scope.load_crts = function (callback) {
             $scope.loading_crts = true;
-            Timeout(() => {
-                console.log('加载证书2');
+            Request.get('/utils/ssl/crts', function(data) {
                 $scope.loading_crts = false;
-            }, 1000, module);
-            console.log('加载证书3');
+                $scope.list_crts = data.list;
+                if (callback) callback.call();
+            });
         };
-        $scope.load_csrs = function () {
+        $scope.load_csrs = function (callback) {
             $scope.loading_csrs = true;
-            Timeout(() => {
+            Request.get('/utils/ssl/csrs', function(data) {
                 $scope.loading_csrs = false;
-            }, 1000, module);
+                $scope.list_csrs = data.list;
+                if (callback) callback.call();
+            });
         };
-        $scope.load_host = function () {
+        $scope.load_host = function (callback) {
             $scope.loading_host = true;
-            Timeout(() => {
+            Request.get('/utils/ssl/host', function(data) {
                 $scope.loading_host = false;
-            }, 1000, module);
+                $scope.list_host = data.list;
+                if (callback) callback.call();
+            });
         };
     }
 ];

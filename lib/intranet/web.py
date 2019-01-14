@@ -636,7 +636,7 @@ class UtilsTimeHandler(RequestHandler):
     def post(self, sec, ifname):
         self.authed()
         if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': u'DEMO状态不允许时区设置！'})
+            self.write({'code': -1, 'msg': u'DEMO 状态不允许时区设置！'})
             return
 
         if sec == 'timezone':
@@ -650,14 +650,35 @@ class UtilsTimeHandler(RequestHandler):
 class UtilsSSLHandler(RequestHandler):
     """Handler for SSL/TLS setting.
     """
-    def get(self, sec):
+    def get(self, sec, x=None):
         self.authed()
-        if sec == 'keys_list':
-            keys_list = ssltls.get_keys_list()
-            if keys_list:
-                self.write(keys_list)
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 SSL ！'})
+            return
+        if sec == 'keys':
+            res = ssltls.get_keys_list()
+            if res is None:
+                self.write({'code': -1, 'msg': u'获取私钥失败！'})
             else:
+                self.write({'code': 0, 'msg': u'获取私钥成功！', 'list': res})
+        if sec == 'crts':
+            res = ssltls.get_crts_list()
+            if res is None:
                 self.write({'code': -1, 'msg': u'获取证书失败！'})
+            else:
+                self.write({'code': 0, 'msg': u'获取证书成功！', 'list': res})
+        if sec == 'csrs':
+            res = ssltls.get_csrs_list()
+            if res is None:
+                self.write({'code': -1, 'msg': u'获取证书签名请求失败！'})
+            else:
+                self.write({'code': 0, 'msg': u'获取证书签名请求成功！', 'list': res})
+        if sec == 'host':
+            res = ssltls.get_host_list()
+            if res is None:
+                self.write({'code': -1, 'msg': u'获取站点失败！'})
+            else:
+                self.write({'code': 0, 'msg': u'获取站点成功！', 'list': res})
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
 
@@ -2884,8 +2905,10 @@ class BackendHandler(RequestHandler):
             for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
                 cmds.append('rpm -U %s' % rpm)
 
-            cmds.append('cp -f /etc/issue.intranet /etc/issue')
-            cmds.append('cp -f /etc/redhat-release.intranet /etc/redhat-release')
+            if os.path.exists('/etc/issue.intranet'):
+                cmds.append('cp -f /etc/issue.intranet /etc/issue')
+            if os.path.exists('/etc/redhat-release.intranet'):
+                cmds.append('cp -f /etc/redhat-release.intranet /etc/redhat-release')
 
         elif repo in ('epel', 'CentALT'):
             # elif repo in ('epel', 'CentALT', 'ius'):
