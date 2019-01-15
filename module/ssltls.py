@@ -10,61 +10,60 @@
 
 
 def get_keys_list():
-    res = [
-        {
-            'domain': 'baokan.pub',
-            'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
-            'size': 2048,
-        }, {
-            'domain': 'zhoubao.pub',
-            'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
-            'size': 2048,
-        }
-    ]
+    res = None
+    res = [{
+        'domain': 'baokan.pub',
+        'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
+        'size': 2048
+    }, {
+        'domain': 'zhoubao.pub',
+        'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
+        'size': 2048
+    }]
     return res
 
+
 def get_crts_list():
-    res = [
-        {
-            'domain': 'baokan.pub',
-            'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
-            'size': 2048,
-        }, {
-            'domain': 'zhoubao.pub',
-            'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
-            'size': 2048,
-        }
-    ]
+    res = None
+    res = [{
+        'domain': 'baokan.pub',
+        'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
+        'size': 2048
+    }, {
+        'domain': 'zhoubao.pub',
+        'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
+        'size': 2048
+    }]
     return res
 
 
 def get_csrs_list():
-    res = [
-        {
-            'domain': 'baokan.pub',
-            'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
-            'size': 2048,
-        }, {
-            'domain': 'zhoubao.pub',
-            'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
-            'size': 2048,
-        }
-    ]
+    res = None
+    res = [{
+        'domain': 'baokan.pub',
+        'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
+        'size': 2048
+    }, {
+        'domain': 'zhoubao.pub',
+        'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
+        'size': 2048
+    }]
     return res
 
+
 def get_host_list():
-    res = [
-        {
-            'domain': 'baokan.pub',
-            'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
-            'size': 2048,
-        }, {
-            'domain': 'zhoubao.pub',
-            'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
-            'size': 2048,
-        }
-    ]
+    res = None
+    res = [{
+        'domain': 'baokan.pub',
+        'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
+        'size': 2048
+    }, {
+        'domain': 'zhoubao.pub',
+        'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
+        'size': 2048
+    }]
     return res
+
 
 def web_response(self):
     action = self.get_argument('action', '')
@@ -73,11 +72,11 @@ def web_response(self):
             {
                 'domain': 'baokan.pub',
                 'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
-                'size': 2048,
+                'size': 2048
             }, {
                 'domain': 'zhoubao.pub',
                 'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
-                'size': 2048,
+                'size': 2048
             }
         ]
         self.write({'code': 0, 'msg': 'SSL 配置信息获取成功！', 'data': res})

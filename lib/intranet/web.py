@@ -599,7 +599,7 @@ class UtilsNetworkHandler(RequestHandler):
             for i, nameserver in enumerate(nameservers):
                 if nameserver == '':
                     del nameservers[i]
-                    continueSO
+                    continue
                 if not utils.is_valid_ip(nameserver):
                     self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % nameserver})
                     return
@@ -615,7 +615,7 @@ class UtilsProcessHandler(RequestHandler):
     """
     def get(self, sec, region=None):
         self.authed()
-        if sec == 'list':
+        if sec == 'process':
             self.write(proc.get_process_list())
 
 class UtilsTimeHandler(RequestHandler):
@@ -655,30 +655,31 @@ class UtilsSSLHandler(RequestHandler):
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 SSL ！'})
             return
+
         if sec == 'keys':
-            res = ssltls.get_keys_list()
-            if res is None:
+            keys_list = ssltls.get_keys_list()
+            if keys_list is None:
                 self.write({'code': -1, 'msg': u'获取私钥失败！'})
             else:
-                self.write({'code': 0, 'msg': u'获取私钥成功！', 'list': res})
-        if sec == 'crts':
-            res = ssltls.get_crts_list()
-            if res is None:
+                self.write({'code': 0, 'msg': u'获取私钥成功！', 'list': keys_list})
+        elif sec == 'crts':
+            crts_list = ssltls.get_crts_list()
+            if crts_list is None:
                 self.write({'code': -1, 'msg': u'获取证书失败！'})
             else:
-                self.write({'code': 0, 'msg': u'获取证书成功！', 'list': res})
-        if sec == 'csrs':
-            res = ssltls.get_csrs_list()
-            if res is None:
+                self.write({'code': 0, 'msg': u'获取证书成功！', 'list': crts_list})
+        elif sec == 'csrs':
+            csrs_list = ssltls.get_csrs_list()
+            if csrs_list is None:
                 self.write({'code': -1, 'msg': u'获取证书签名请求失败！'})
             else:
-                self.write({'code': 0, 'msg': u'获取证书签名请求成功！', 'list': res})
-        if sec == 'host':
-            res = ssltls.get_host_list()
-            if res is None:
+                self.write({'code': 0, 'msg': u'获取证书签名请求成功！', 'list': csrs_list})
+        elif sec == 'host':
+            host_list = ssltls.get_host_list()
+            if host_list is None:
                 self.write({'code': -1, 'msg': u'获取站点失败！'})
             else:
-                self.write({'code': 0, 'msg': u'获取站点成功！', 'list': res})
+                self.write({'code': 0, 'msg': u'获取站点成功！', 'list': host_list})
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
 
