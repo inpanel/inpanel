@@ -4,8 +4,9 @@ var LoginCtrl = [
         var module = 'login';
         Module.init(module, '登录');
         $scope.loginText = '登录';
+        $scope.errorText = '';
         $scope.showForgetPwdMsg = false;
-        $scope.showLoginForm = true;
+        $scope.loaded = true;
         $scope.username = '';
         $scope.password = '';
 
@@ -25,13 +26,22 @@ var LoginCtrl = [
         };
 
         $scope.login = function (rawpwd) {
+            $scope.errorText = '';
+            if ($scope.username.replace(/(^\s*)|(\s*$)/g, '') === '') {
+                $scope.errorText = '用户名不能为空！';
+                return
+            }
+            if ($scope.password.replace(/(^\s*)|(\s*$)/g, '') === '') {
+                $scope.errorText = '密码不能为空！';
+                return
+            }
             $scope.loginText = '登录中...';
             Request.post('/login', {
                 username: $scope.username,
                 password: rawpwd ? $scope.password : hex_md5($scope.password)
             }, function (data) {
                 if (data.code >= 0) {
-                    $scope.showLoginForm = false;
+                    $scope.loaded = false;
                     var path = $rootScope.loginto ? $rootScope.loginto : '/main';
                     var section = $rootScope.loginto_section;
                     if (data.code == 0) {
