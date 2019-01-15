@@ -24,6 +24,15 @@
             <button ng-click="showAlertInfo=false" type="button" class="close"><span aria-hidden="true">&times;</span></button>
             <p>您可以使用自签名证书，或者使用 SSL 证书颁发机构颁发的受信任证书。 如果想要为您的站点之一使用自签名证书，请在下面生成证书。 如果想要使用受信任的证书，则需要首先从受信任的提供商处获得 SSL 证书，然后上传或在下面提供该证书。</p>
         </div>
+        <div class="alert alert-info alert-dismissible" ng-show="showAlertInfo && activeTabName=='csrs'">
+            <button ng-click="showAlertInfo=false" type="button" class="close"><span aria-hidden="true">&times;</span></button>
+            <p>如果是从受信任的 SSL 提供商处获取证书，必须填写证书签名请求表单以提供生成您的 SSL 证书所需的信息。</p>
+        </div>
+        <div class="alert alert-info alert-dismissible" ng-show="showAlertInfo && activeTabName=='host'">
+            <button ng-click="showAlertInfo=false" type="button" class="close"><span aria-hidden="true">&times;</span></button>
+            <p>通过此界面可配置域的 SSL。</p>
+            <p>SSL 证书可为一个或多个域提供安全保护；要为某个域创建 SSL 主机，您必须拥有一个保护该域安全的证书。 每个 SSL 证书都对应有一个匹配的密钥文件，它是安装证书时必不可少的文件。 用于生产目的的 SSL 证书通常需要一个 CA 包，该页面会自动从服务器请求获得 CA 包，如果服务器找不到所需的 CA 包，您需要将其粘贴于此。</p>
+        </div>
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='keys'"><a href="#keys" ng-click="tab_sec('keys')" data-toggle="tab">私钥</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='crts'"><a href="#crts" ng-click="tab_sec('crts')" data-toggle="tab">证书</a></li>

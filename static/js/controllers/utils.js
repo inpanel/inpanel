@@ -189,23 +189,54 @@ var UtilsProcessCtrl = [
     '$scope', '$routeParams', 'Module', 'Timeout', 'Request',
     function ($scope, $routeParams, Module, Timeout, Request) {
         var module = 'utils.process';
+        var section = Module.getSection();
+        var enabled_sections = ['process', 'other'];
         Module.init(module, '进程管理');
-        Module.initSection('list');
-        $scope.loaded = true;
-        $scope.process = null;
+        Module.initSection(enabled_sections[0]);
         $scope.loaded = false;
+        $scope.init_process = true;
+        $scope.process = {
+            process: [],
+            total: 0
+        };
 
-        $scope.loadInfo = function () {
-            Request.get('/utils/process/list', function (data) {
-                if ($scope.process == null) {
-                    $scope.process = data;
-                    if (!$scope.loaded) $scope.loaded = true;
-                } else {
-                    deepUpdate($scope.process, data);
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+
+        var getProcess = function() {
+            Request.get('/utils/process/process', function (res) {
+                $scope.process.process = res.process;
+                $scope.process.total = res.total;
+                if (!$scope.loaded) {
+                    $scope.loaded = true;
                 }
-                Timeout($scope.loadInfo, 1000, module);
+                if ($scope.init_process) {
+                    $scope.init_process = false;
+                }
+                if (Module.getSection() == 'process') {
+                    Timeout(getProcess, 1000, module);
+                }
             });
         };
+        $scope.load_process = function (init) {
+            if (!init && !$scope.init_process) {
+                return; // Prevent duplicate requests
+            }
+            getProcess();
+        };
+        $scope.load_other = function (init) {
+            console.log('待开发功能', init)
+        }
     }
 ]
 
@@ -949,7 +980,7 @@ var UtilsMoveDataCtrl = [
 ];
 
 var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backend', 'Timeout',
-function($scope, Module, $routeParams, Request, Message, Backend, Timeout) {
+    function($scope, Module, $routeParams, Request, Message, Backend, Timeout) {
         var module = 'utils.ssl';
         Module.init(module, 'SSL证书管理');
         var section = Module.getSection();
@@ -964,19 +995,17 @@ function($scope, Module, $routeParams, Request, Message, Backend, Timeout) {
         $scope.loading_host = true;
         $scope.list_keys = [];
         $scope.list_crts = [];
+        $scope.list_csrs = [];
         $scope.list_host = [];
 
         $scope.load = function() {
             $scope.installed = true;
-            Timeout(function () {
-                $scope.loaded = true;
-                $scope.tab_sec(section);
-            }, 1000, module);
+            $scope.loaded = true;
+            $scope.tab_sec(section);
         };
 
         $scope.tab_sec = function (section) {
             section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
-            console.log('选中标签', section);
             $scope.sec(section);
             Module.setSection(section);
             $scope['load_' + section]();
@@ -984,34 +1013,50 @@ function($scope, Module, $routeParams, Request, Message, Backend, Timeout) {
 
         $scope.load_keys = function (callback) {
             $scope.loading_keys = true;
-            Request.get('/utils/ssl/keys', function(data) {
+            Request.get('/utils/ssl/keys', function(res) {
                 $scope.loading_keys = false;
-                $scope.list_keys = data.list;
-                if (callback) callback.call();
+                if (res.list) {
+                    $scope.list_keys = res.list;
+                }
+                if (callback) {
+                    callback.call();
+                }
             });
         };
         $scope.load_crts = function (callback) {
             $scope.loading_crts = true;
-            Request.get('/utils/ssl/crts', function(data) {
+            Request.get('/utils/ssl/crts', function(res) {
                 $scope.loading_crts = false;
-                $scope.list_crts = data.list;
-                if (callback) callback.call();
+                if (res.list) {
+                    $scope.list_crts = res.list;
+                }
+                if (callback) {
+                    callback.call();
+                }
             });
         };
         $scope.load_csrs = function (callback) {
             $scope.loading_csrs = true;
-            Request.get('/utils/ssl/csrs', function(data) {
+            Request.get('/utils/ssl/csrs', function(res) {
                 $scope.loading_csrs = false;
-                $scope.list_csrs = data.list;
-                if (callback) callback.call();
+                if (res.list) {
+                    $scope.list_csrs = res.list;
+                }
+                if (callback) {
+                    callback.call();
+                }
             });
         };
         $scope.load_host = function (callback) {
             $scope.loading_host = true;
-            Request.get('/utils/ssl/host', function(data) {
+            Request.get('/utils/ssl/host', function(res) {
                 $scope.loading_host = false;
-                $scope.list_host = data.list;
-                if (callback) callback.call();
+                if (res.list) {
+                    $scope.list_host = res.list;
+                }
+                if (callback) {
+                    callback.call();
+                }
             });
         };
     }
