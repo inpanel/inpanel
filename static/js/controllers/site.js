@@ -315,13 +315,16 @@ var SiteNginxCtrl = [
         }
 
         var module = 'site.nginx';
-        var tabSection = Module.getSection();
+        var tab_section = Module.getSection();
+        var tab_section_enabled = ['basic', 'ssl', 'advanced'];
         Module.init(module, action == 'new' ? '新建站点（Nginx）' : '编辑站点（Nginx）');
         $scope.loaded = false;
         $scope.showglobaladv = false;
         $scope.curloc = -1;
         $scope.setloc = function(i) { $scope.curloc = i; };
         $scope.action = action;
+        $scope.proxy_caches = [];
+        $scope.ssl_enabled = false;
 
         var server_tmpl = {
             server_names: [],
@@ -431,45 +434,38 @@ var SiteNginxCtrl = [
             $scope.setting.rewrite_rules = value ? global_rewrite_templates[value] : '';
         });
 
-
-        // check nginx version
         $scope.load = function() {
-            if (tabSection && tabSection == 'advanced-settings') {
-                $scope.sec('advanced-settings');
-                Module.setSection('advanced-settings');
-            } else {
-                $scope.sec('basic-settings');
-                Module.setSection('basic-settings');
-            }
+            // check nginx version
+            tab_section = (tab_section && tab_section_enabled.indexOf(tab_section) > -1) ? tab_section : tab_section_enabled[0];
+            $scope.sec(tab_section);
+            Module.setSection(tab_section);
             // nginx version check may take too long time, so we don't want to wait for it
-            if (action == 'new') $scope.loaded = true;
-            else $scope.getserver();
-
-            Backend.call(
-                $scope,
-                module,
-                '/backend/yum_info',
-                '/backend/yum_info_nginx', {
-                    'pkg': 'nginx',
-                    'repo': 'installed'
-                }, {
-                    'success': function(res) {
-                        $scope.nginx_version = res.data[0].version;
-                    },
-                    'error': function(error) {
-                        $scope.nginx_version = '';
-                        //$scope.loaded = true;
-                    }
-                },
-                true
-            );
-
-            $scope.loadproxycaches();
+            if (action == 'new') {
+                $scope.loaded = true;
+            } else {
+                $scope.getserver();
+            }
+            $scope.load_nginx_version();
+            $scope.load_proxy_caches();
         };
 
-        // load proxy cache list
-        $scope.proxy_caches = [];
-        $scope.loadproxycaches = function() {
+        $scope.load_nginx_version = function () {
+            // nginx version check
+            Backend.call($scope, module, '/backend/yum_info', '/backend/yum_info_nginx', {
+                'pkg': 'nginx',
+                'repo': 'installed'
+            }, {
+                'success': function(res) {
+                    $scope.nginx_version = res.data[0].version;
+                },
+                'error': function(error) {
+                    $scope.nginx_version = '';
+                    //$scope.loaded = true;
+                }
+            }, true);
+        };
+        $scope.load_proxy_caches = function() {
+            // load proxy cache list
             Request.post('/operation/nginx', {
                 'action': 'gethttpsettings',
                 'items': 'proxy_cache_path[]'
@@ -487,9 +483,8 @@ var SiteNginxCtrl = [
                 }
             }, false, true);
         };
-
-        // get server info (in edit mode)
         $scope.getserver = function(quiet) {
+            // get server info (in edit mode)
             Request.post('/operation/nginx', {
                 'action': 'getserver',
                 'ip': server_ip,
@@ -745,6 +740,9 @@ var SiteNginxCtrl = [
             };
             $('#selector').modal();
         };
+        $scope.ssl_status_set = function(i) {
+            $scope.ssl_enabled = i || false;
+        };
         // ssl selector
         $scope.selectsslcrt = function(i) {
             $scope.selector_title = '请选择CRT文件（*.crt）';
@@ -846,7 +844,7 @@ var SiteApacheCtrl = [
         }
 
         var module = 'site.apache';
-        var tabSection = Module.getSection();
+        var tab_section = Module.getSection();
         Module.init(module, action == 'new' ? '新建站点（Apache）' : '编辑站点（Apache）');
         $scope.loaded = false;
         $scope.showglobaladv = false;
@@ -965,12 +963,12 @@ var SiteApacheCtrl = [
 
         // check Apache version
         $scope.load = function() {
-            if (tabSection && tabSection == 'advanced-settings') {
-                $scope.sec('advanced-settings');
-                Module.setSection('advanced-settings');
+            if (tab_section && tab_section == 'advanced') {
+                $scope.sec('advanced');
+                Module.setSection('advanced');
             } else {
-                $scope.sec('basic-settings');
-                Module.setSection('basic-settings');
+                $scope.sec('basic');
+                Module.setSection('basic');
             }
             // Apache version check may take too long time, so we don't want to wait for it
             if (action == 'new') $scope.loaded = true;
