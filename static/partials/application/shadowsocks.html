@@ -1,14 +1,25 @@
-<div navbar ng-init="currentItem='service.shadowsocks-libev'"></div>
+<div navbar ng-init="currentItem='application.shadowsocks'"></div>
 <div ng-show="Auth.processing||!loaded">
     <div loading></div>
 </div>
 
-<div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
+<div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="load()">
     <div class="module-header">
-        <h3>Shadowsocks-libev - SOCKS 代理服务器</h3>
+        <h3>Shadowsocks</h3>
     </div>
 
-    <div srvinstall ng-init="name='shadowsocks-libev';pkg='shadowsocks-libev';expected_repolist=['base'];"></div>
+    <div ng-show="!installed" class="well">
+        <div ng-show="!installing">
+            <p class="ng-binding">系统检测到 Shadowsocks 当前尚未安装。</p>
+            <p>是否要开始安装？</p>
+        </div>
+        <div ng-show="installing" ng-bind-html-unsafe="installMsg" class="ng-binding" style="display: none;"></div>
+            <p ng-show="!installing">
+                <button class="btn btn-default" style="margin-top:10px" onclick="history.back()">取消返回</button>
+                <button class="btn btn-default" style="margin-top:10px" ng-click="startInstall()">开始安装</button>
+            </p>
+        </div>
+    </div>
 
     <div class="tabbable" ng-show="installed">
         <ul class="nav nav-tabs">

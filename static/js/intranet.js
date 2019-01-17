@@ -66,6 +66,9 @@ config(['$routeProvider', function ($routeProvider) {
     when('/setting', _r('setting', SettingCtrl)).
     when('/backup', _r('backup', BackupCtrl)).
     when('/secure', _r('secure', SecureCtrl)).
+    when('/application', _r('application/index', ApplicationCtrl)).
+    when('/application/shadowsocks', _r('application/shadowsocks', ApplicationShadowsocksCtrl)).
+    when('/application/acme', _r('application/acme', ApplicationCACMEtrl)).
     when('/log', _r('log', LogCtrl)).
     when('/logout', _r('logout', LogoutCtrl)).
     when('/sorry', _r('sorry', SorryCtrl)).
