@@ -24,19 +24,8 @@ directive('navbar', function () {
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'file\']"><a href="#/file">文件</a></li>\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'site(\..*)?\']"><a href="#/site">网站</a></li>\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'database\']"><a href="#/database">数据库</a></li>\
+                    <li ng-class="\'active\' | ifmatch:[currentItem,\'application(\..*)?\']"><a href="#/application">应用</a></li>\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'utils(\..*)?\']"><a href="#/utils">系统</a></li>\
-                    <li class="dropdown">\
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">工具 <span class="caret"></span></a>\
-                        <ul class="dropdown-menu">\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'task\']"><a href="#/task">计划任务</a></li>\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'ftp\']"><a href="#/ftp">FTP管理</a></li>\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'backup\']"><a href="#/backup">备份管理</a></li>\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'secure\']"><a href="#/secure">安全管理</a></li>\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'log\']"><a href="#/log">日志管理</a></li>\
-                            <li role="separator" class="divider"></li>\
-                            <li ng-class="\'active\' | ifmatch:[currentItem,\'ecs\']"><a href="#/ecs">ECS 管理(测试)</a></li>\
-                        </ul>\
-                    </li>\
                 </ul>\
                 <ul class="nav navbar-nav navbar-right">\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'setting(\..*)?\']"><a href="#/setting">设置</a></li>\
