@@ -1033,17 +1033,12 @@ directive('selector', function () {
 			</div>\
 			<div ng-show="otherdir">\
 			<ul class="breadcrumb" style="margin-bottom:0">\
-				<li><a ng-click="listdir(\'/\')">根目录</a> <span class="divider">/</span></li>\
-				<li ng-repeat="pathinfo in pathinfos" ng-show="pathinfos.length>0"><a ng-click="listdir(pathinfo.path)">{{pathinfo.name}}</a> <span class="divider">/</span></li>\
+				<li><a ng-click="listdir(\'/\')">根目录</a></li>\
+				<li ng-repeat="pathinfo in pathinfos" ng-show="pathinfos.length>0"><a ng-click="listdir(pathinfo.path)">{{pathinfo.name}}</a></li>\
 				<li><button class="btn btn-default btn-xs" ng-show="onlydir" ng-click="selecthandler(curpath)">选取该目录</button></li>\
 			</ul>\
 			<table class="table table-hover">\
-				<thead>\
-					<tr>\
-						<th></th>\
-						<th style="width:80px"></th>\
-					</tr>\
-				</thead>\
+				<thead><tr><th style="width:20px"></th><th></th><th style="width:80px"></th></tr></thead>\
 				<tbody>\
 					<tr ng-repeat="item in items">\
 						<td>\
@@ -1051,11 +1046,11 @@ directive('selector', function () {
 							<i class="glyphicon glyphicon-file" title="文件" ng-show="item.isreg"></i>\
 							<i class="glyphicon glyphicon-link" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>\
 							<i class="glyphicon glyphicon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>\
+						</td><td>\
 							<a class="black" ng-click="listdir(curpath_pre+\'/\'+item.name)" ng-show="item.isdir||(item.islnk&&item.link_isdir)">{{item.name}}</a>\
 							<a class="black" ng-show="item.isreg||(item.islnk&&!item.link_isdir)">{{item.name}}</a>\
 							<span class="text-info" ng-show="item.islnk">-> {{item.linkto}}</span>\
-						</td>\
-						<td>\
+						</td><td>\
 							<button class="btn btn-default btn-xs" ng-show="onlydir&&(item.isdir||(item.islnk&&item.link_isdir))" ng-click="selecthandler(curpath_pre+\'/\'+item.name)">选取该目录</button>\
 							<button class="btn btn-default btn-xs" ng-show="onlyfile&&(item.isreg||(item.islnk&&item.link_isreg))" ng-click="selecthandler(curpath_pre+\'/\'+item.name)">选取该文件</button>\
 						</td>\

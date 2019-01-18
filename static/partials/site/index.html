@@ -24,6 +24,11 @@
                     <div class="pull-left"><h5>Nginx 网站列表</h5></div>
                     <div class="pull-right">
                         <a class="btn btn-default btn-sm" href="#/site/nginx/new"><span class="glyphicon glyphicon-plus"></span> 新建站点</a>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="启动 Nginx" ng-click="nginx_set_status('start')" ng-disabled="nginxloading || !nginx_supported || nginx_status=='running'"><i class="glyphicon glyphicon-play"></i></button>
+                            <button class="btn btn-default" title="停止 Nginx" ng-click="nginx_set_status('stop')" ng-disabled="nginxloading || !nginx_supported || nginx_status=='stopped'"><i class="glyphicon glyphicon-stop"></i></button>
+                            <button class="btn btn-default" title="重启 Nginx" ng-click="nginx_set_status('restart')" ng-disabled="nginxloading || !nginx_supported || nginx_status=='stopped'"><i class="glyphicon glyphicon-refresh"></i></button>
+                        </div>
                     </div>
                     <table class="table table-hover table-bordered">
                         <thead>

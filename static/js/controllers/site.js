@@ -2,46 +2,82 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
     function($scope, Module, $routeParams, Request, Message, Backend) {
         var module = 'site';
         Module.init(module, '网站管理');
-        $scope.loaded = false;
-
         var section = Module.getSection();
+
+        $scope.loaded = false;
         $scope.has_httpserver = false;
         $scope.nginx_supported = false;
-        $scope.apache_supported = false;
         $scope.nginxloading = false;
-        $scope.apacheloading = false;
-        $scope.packageloading = false;
-        $scope.apacheservers = [];
         $scope.nginxservers = [];
+        $scope.nginx_status = '';
+        $scope.apache_supported = false;
+        $scope.apacheloading = false;
+        $scope.apacheservers = [];
+        $scope.apache_status = '';
+        $scope.packageloading = false;
         $scope.site_packages = [];
 
         $scope.load = function() {
-            Request.get('/query/service.nginx,service.httpd', function(res) {
+            $scope.load_status(function () {
                 $scope.loaded = true;
-                if (res['service.nginx'] && res['service.nginx'].status) $scope.nginx_supported = true;
-                if (res['service.httpd'] && res['service.httpd'].status) $scope.apache_supported = true;
-                $scope.has_httpserver = $scope.nginx_supported || $scope.apache_supported;
                 if (!$scope.has_httpserver) {
                     return;
                 }
-                if (section) {
-                    if (section == 'package') {
-                        $scope.loadpackage(1);
-                    } else if (section == 'apache') {
-                        $scope.loadapache(1);
-                    } else if (section == 'nginx') {
-                        $scope.loadnginx(1);
-                    }
-                } else {
-                    if (res['service.nginx'].status == 'running') {
-                        $scope.loadnginx(1);
-                        return;
-                    }
-                    $scope.loadapache(1);
+                $scope.load_section();
+            })
+        };
+
+        $scope.load_status = function (callback) {
+            Request.get('/query/service.nginx,service.httpd', function(res) {
+                $scope.nginx_status = res['service.nginx'].status;
+                $scope.apache_status = res['service.httpd'].status;
+                if (res['service.nginx'] && res['service.nginx'].status) {
+                    $scope.nginx_supported = true;
+                }
+                if (res['service.httpd'] && res['service.httpd'].status) {
+                    $scope.apache_supported = true;
+                }
+                $scope.has_httpserver = $scope.nginx_supported || $scope.apache_supported;
+                if (callback) {
+                    callback();
                 }
             });
         };
-
+        $scope.load_section = function () {
+            if (section) {
+                if (section == 'package') {
+                    $scope.loadpackage(1);
+                } else if (section == 'apache') {
+                    $scope.loadapache(1);
+                } else if (section == 'nginx') {
+                    $scope.loadnginx(1);
+                }
+            } else {
+                if ($scope.nginx_status == 'running') {
+                    $scope.loadnginx(1);
+                    return;
+                }
+                $scope.loadapache(1);
+            }
+        };
+        $scope.nginx_set_status = function (status) {
+            if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
+                return;
+            }
+            Backend.call($scope, module, '/backend/service_' + status, '/backend/service_' + status + '_nginx', {
+                'name': 'Nginx',
+                'service': 'nginx'
+            }, {
+                'success': function(res) {
+                    if (res.code == 0) {
+                        Message.setInfo(res.msg);
+                    }
+                    if (res.status == 'finish') {
+                        $scope.load_status();
+                    }
+                }
+            }, true);
+        };
         $scope.loadnginx = function(init, reload) {
             if (!init && Module.getSection() == 'nginx' && !reload) {
                 return;
@@ -72,9 +108,6 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 return;
             }
             $scope.apacheloading = true;
-            // setTimeout(() => {
-            //     $scope.apacheloading = true;
-            // }, 1000);
             Request.post('/operation/apache', {
                 'action': 'getservers'
             }, function(res) {
@@ -291,8 +324,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
     }
 ];
 
-var SiteNginxCtrl = [
-    '$scope', 'Module', '$routeParams', '$location', 'Request', 'Backend', 'Timeout',
+var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Backend', 'Timeout',
     function($scope, Module, $routeParams, $location, Request, Backend, Timeout) {
         var section = $routeParams.section;
         var action = section == 'new' ? 'new' : 'edit';
@@ -745,10 +777,10 @@ var SiteNginxCtrl = [
         };
         // ssl selector
         $scope.selectsslcrt = function(i) {
-            $scope.selector_title = '请选择CRT文件（*.crt）';
+            $scope.selector_title = '请选择证书文件（*.crt）';
             $scope.selector.onlydir = false;
             $scope.selector.onlyfile = true;
-            $scope.selector.load('/root');
+            $scope.selector.load('/etc/nginx');
             $scope.selector.selecthandler = function(path) {
                 $('#selector').modal('hide');
                 $scope.setting.ssl_crt = path;
@@ -759,7 +791,7 @@ var SiteNginxCtrl = [
             $scope.selector_title = '请选择密钥文件（*.key）';
             $scope.selector.onlydir = false;
             $scope.selector.onlyfile = true;
-            $scope.selector.load('/root');
+            $scope.selector.load('/etc/nginx');
             $scope.selector.selecthandler = function(path) {
                 $('#selector').modal('hide');
                 $scope.setting.ssl_key = path;
