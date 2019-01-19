@@ -25,7 +25,7 @@ directive('navbar', function () {
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'site(\..*)?\']"><a href="#/site">网站</a></li>\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'database\']"><a href="#/database">数据库</a></li>\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'application(\..*)?\']"><a href="#/application">应用</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'utils(\..*)?\']"><a href="#/utils">系统</a></li>\
+                    <li ng-class="\'active\' | ifmatch:[currentItem,\'utils(\..*)?\']"><a href="#/utils">工具</a></li>\
                 </ul>\
                 <ul class="nav navbar-nav navbar-right">\
                     <li ng-class="\'active\' | ifmatch:[currentItem,\'setting(\..*)?\']"><a href="#/setting">设置</a></li>\
