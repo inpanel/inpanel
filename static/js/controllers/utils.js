@@ -1059,5 +1059,19 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
                 }
             });
         };
+        $scope.add_domain_keys = function (callback) {
+            $scope.loading_host = true;
+            Request.post('/utils/ssl/keys', {
+                'action': 'add_domain_keys'
+            }, function(res) {
+                // $scope.loading_host = false;
+                if (res) {
+                    console.log('创建成功')
+                }
+                if (callback) {
+                    callback.call();
+                }
+            });
+        };
     }
 ];
