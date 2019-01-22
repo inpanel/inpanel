@@ -6,7 +6,7 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""The Intranet Modules."""
+"""The Modules for Intranet Control Panel ."""
 
 __all__ = [
     'aliyuncs',
@@ -20,5 +20,6 @@ __all__ = [
     'named',
     'vsftpd',
     'shell',
-    'certificate'
+    'certificate',
+    'acme'
 ]
