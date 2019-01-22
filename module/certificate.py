@@ -11,7 +11,7 @@
 import os
 import subprocess
 
-from lib.acme import get_crt as get_acme_crt
+from acme import acme_get_crt
 
 
 class Certificate():
@@ -19,12 +19,18 @@ class Certificate():
     def __init__(self):
         # self.path_current = os.path.dirname(os.path.realpath(__file__))
         self.path_home = '/usr/local/intranet/data/certificate/'
-        self.path_crts = os.path.join(self.path_home, 'crts')
+        self.path_crt = os.path.join(self.path_home, 'crt')
+        self.path_key = os.path.join(self.path_home, 'key')
+        self.path_csr = os.path.join(self.path_home, 'csr')
         self.key_size = '4096'
         self.account_key = os.path.join(self.path_home, 'account.key')
 
-        if not os.path.exists(self.path_crts):
-            os.makedirs(self.path_crts)
+        if not os.path.exists(self.path_crt):
+            os.makedirs(self.path_crt)
+        if not os.path.exists(self.path_key):
+            os.makedirs(self.path_key)
+        if not os.path.exists(self.path_csr):
+            os.makedirs(self.path_csr)
 
         self.init_acme_account()
 
@@ -52,8 +58,8 @@ class Certificate():
 
     def _check_csr(self, csr):
         '''verify the CSR is ok'''
-        csr = csr if os.path.exists(csr) or os.path.isfile(
-            csr) else self.path_crts + csr
+        if not os.path.exists(csr) or not os.path.isfile(csr):
+            csr = os.path.join(self.path_csr, csr)
         if not os.path.exists(csr):
             return {'code': -1, 'msg': 'csr_not_found'}
         try:
@@ -97,29 +103,36 @@ class Certificate():
 
     def init_acme_account(self, file_key=None, forced=False):
         '''Create a Let's Encrypt account private key'''
-        file_key = self.account_key if file_key == None or file_key == '' else file_key
+        if file_key == None or file_key == '' or not file_key:
+            file_key = self.account_key
         return self._generate_private_key(file_key=file_key, forced=forced)
 
     def create_domain_key(self, domain, forced=False):
         '''Create a domain private key'''
-        key = os.path.join(self.path_crts, domain + '.key')
+        key = os.path.join(self.path_key, domain + '.key')
         return self._generate_private_key(file_key=key, forced=forced)
 
-    def generate_domain_csr(self, domain=[], domain_key=None, forced=False):
+    def generate_domain_csr(self, domain=[], custom_key=None, forced=False):
         '''Generate a certificate signing request (CSR) for domains.'''
         # openssl genrsa 4096 > github.com.key
         if domain is None or len(domain) == 0:
             return {'code': -1, 'msg': 'domain_error'}
+
         g_domain = domain[0]
-        if domain_key and os.path.isfile(domain_key):
-            k = domain_key
+        if custom_key and os.path.isfile(custom_key):
+            k = custom_key
         else:
-            k = self.path_crts + g_domain + '.key'
+            k = os.path.join(self.path_key, g_domain + '.key')
         if not os.path.isfile(k):
             return {'code': -1, 'msg': 'key_not_found'}
-        c = self.path_crts + g_domain + '.csr'
+        ckk = self._check_key(k)
+        if ckk['code'] == 0 and ckk['msg'] == 'key_broken':
+            return {'code': -1, 'msg': 'key_broken'}
+
+        c = os.path.join(self.path_csr, g_domain + '.csr')
         if os.path.isfile(c) and forced == False:
             return {'code': -1, 'msg': 'csr_exists'}
+
         if len(domain) == 1:
             cmd_list = ['openssl', 'req', '-new', '-sha256',
                         '-key', k, '-subj', '/CN=' + g_domain]
@@ -150,11 +163,13 @@ class Certificate():
                 return {'code': 0, 'msg': 'csr_create_success', 'data': out}
 
     def show_domain_csr(self, domain_csr=None, text=True, pubkey=False, subject=False):
-        # domain_csr = self.path_crts + domain_csr
-        if not domain_csr:
+        if os.path.exists(domain_csr) and os.path.isfile(domain_csr):
+            csr = domain_csr
+        else:
+            csr = os.path.join(self.path_csr, domain_csr)
+        if not os.path.exists(csr):
             return {'code': -1, 'msg': 'csr_not_found'}
-        csr = domain_csr if os.path.exists(domain_csr) and os.path.isfile(
-            domain_csr) else self.path_crts + domain_csr
+
         ckcsr = self._check_csr(csr)
         if not ckcsr['code'] == 0:
             return ckcsr
@@ -179,13 +194,13 @@ class Certificate():
         if not host:
             return None
         acc = self.account_key
-        csr = '%s%s.csr' % (self.path_crts, host)
-        crt = '%s%s.crt' % (self.path_crts, host)
+        csr = os.path.join(self.path_csr, host + '.csr')
+        crt = os.path.join(self.path_crt, host + '.crt')
         ckdir = '/var/www/%s/.well-known/acme-challenge' % host
         print(acc, csr, crt, ckdir)
         if not os.path.exists(ckdir):
             os.makedirs(ckdir)
-        signed_crt = get_acme_crt(acc, csr, ckdir)
+        signed_crt = acme_get_crt(acc, csr, ckdir)
         if signed_crt is not None:
             with open(crt, 'w') as f:
                 f.write(signed_crt)
@@ -195,7 +210,7 @@ class Certificate():
 
     def get_keys_list(self):
         res = None
-        path = os.path.abspath(self.path_crts)
+        path = os.path.abspath(self.path_key)
         if not os.path.exists(path) or not os.path.isdir(path):
             return False
         items = sorted(os.listdir(path))
@@ -255,10 +270,8 @@ class Certificate():
     def get_config(self):
         return dict()
 
-
     def set_config(self):
         return dict()
-
 
 
 if __name__ == "__main__":  # pragma: no cover
@@ -266,19 +279,19 @@ if __name__ == "__main__":  # pragma: no cover
     # acme.init_acme_account()
     # print(acme.init_acme_account())
     # main(sys.argv[1:])
-    for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
-        acme.create_domain_key(domain)
-    # print(acme.create_domain_key('baokan.pub'))
+    # for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
+    #     acme.create_domain_key(domain)
+    print(acme.create_domain_key('baokan.pub'))
     # print(acme.create_domain_key('dougroup.com'))
     # print(acme.create_domain_key('effect.pub'))
     # print(acme.create_domain_key('zhoubao.pub'))
     # print(acme.create_domain_key('zhoukan.pub'))
-    # print(acme.generate_domain_csr(['baokan.pub'],forced=True))
+    print(acme.generate_domain_csr(['baokan.pub']))
     # print(acme.generate_domain_csr(['baokan.pub', 'www.baokan.pub'], forced=True))
     # print(acme.generate_domain_csr(['effect.pub', '*.effect.pub']))
     # print(acme._check_csr('effect.pub.csr'))
     # acme._check_csr('effect.pub.csr')
 
-    print(acme.show_domain_csr('baokan.pub.csr', subject=True))
+    # print(acme.show_domain_csr('baokan.pub.csr', subject=True))
     # acme.show_domain_csr('effect.pub.csr')
-    # acme.generate_domain_cert('baokan.pub')
+    acme.generate_domain_cert('baokan.pub')
