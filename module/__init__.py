@@ -20,5 +20,5 @@ __all__ = [
     'named',
     'vsftpd',
     'shell',
-    'ssltls'
+    'certificate'
 ]

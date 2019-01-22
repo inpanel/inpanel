@@ -655,27 +655,27 @@ class UtilsSSLHandler(RequestHandler):
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 SSL ！'})
             return
-
+        certs = certificate.Certificate()
         if sec == 'keys':
-            keys_list = ssltls.get_keys_list()
+            keys_list = certs.get_keys_list()
             if keys_list is None:
                 self.write({'code': -1, 'msg': u'获取私钥失败！'})
             else:
                 self.write({'code': 0, 'msg': u'获取私钥成功！', 'list': keys_list})
         elif sec == 'crts':
-            crts_list = ssltls.get_crts_list()
+            crts_list = certs.get_crts_list()
             if crts_list is None:
                 self.write({'code': -1, 'msg': u'获取证书失败！'})
             else:
                 self.write({'code': 0, 'msg': u'获取证书成功！', 'list': crts_list})
         elif sec == 'csrs':
-            csrs_list = ssltls.get_csrs_list()
+            csrs_list = certs.get_csrs_list()
             if csrs_list is None:
                 self.write({'code': -1, 'msg': u'获取证书签名请求失败！'})
             else:
                 self.write({'code': 0, 'msg': u'获取证书签名请求成功！', 'list': csrs_list})
         elif sec == 'host':
-            host_list = ssltls.get_host_list()
+            host_list = certs.get_host_list()
             if host_list is None:
                 self.write({'code': -1, 'msg': u'获取站点失败！'})
             else:
@@ -683,7 +683,19 @@ class UtilsSSLHandler(RequestHandler):
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
 
+    def post(self, sec, x=None):
+        self.authed()
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 SSL ！'})
+            return
+        action = self.get_argument('action', '')
+        certs = certificate.Certificate()
 
+        if sec == 'keys':
+            if action == 'add_domain_keys':
+                for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
+                    certs.create_domain_key(domain)
+                self.write({'code': 0, 'msg': u'创建测试私钥成功！'})
 
 class SettingHandler(RequestHandler):
     """Settings for Intranet
