@@ -11,7 +11,7 @@
 import os
 import subprocess
 
-from acme import acme_get_crt
+import acme
 
 
 class Certificate():
@@ -19,11 +19,12 @@ class Certificate():
     def __init__(self):
         # self.path_current = os.path.dirname(os.path.realpath(__file__))
         self.path_home = '/usr/local/intranet/data/certificate/'
+        self.path_acc = os.path.join(self.path_home, 'account.key')
         self.path_crt = os.path.join(self.path_home, 'crt')
         self.path_key = os.path.join(self.path_home, 'key')
         self.path_csr = os.path.join(self.path_home, 'csr')
         self.key_size = '4096'
-        self.account_key = os.path.join(self.path_home, 'account.key')
+        self.acme = acme.ACME()
 
         if not os.path.exists(self.path_crt):
             os.makedirs(self.path_crt)
@@ -104,7 +105,7 @@ class Certificate():
     def init_acme_account(self, file_key=None, forced=False):
         '''Create a Let's Encrypt account private key'''
         if file_key == None or file_key == '' or not file_key:
-            file_key = self.account_key
+            file_key = self.path_acc
         return self._generate_private_key(file_key=file_key, forced=forced)
 
     def create_domain_key(self, domain, forced=False):
@@ -193,14 +194,14 @@ class Certificate():
         '''getting a signed TLS certificate from Let's Encrypt'''
         if not host:
             return None
-        acc = self.account_key
+        acc = self.path_acc
         csr = os.path.join(self.path_csr, host + '.csr')
         crt = os.path.join(self.path_crt, host + '.crt')
         ckdir = '/var/www/%s/.well-known/acme-challenge' % host
         print(acc, csr, crt, ckdir)
         if not os.path.exists(ckdir):
             os.makedirs(ckdir)
-        signed_crt = acme_get_crt(acc, csr, ckdir)
+        signed_crt = self.acme.acme_get_crt(acc, csr, ckdir)
         if signed_crt is not None:
             with open(crt, 'w') as f:
                 f.write(signed_crt)
