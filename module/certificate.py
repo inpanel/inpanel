@@ -11,9 +11,9 @@
 import os
 import subprocess
 import shutil
-import tempfile
 
 from acme import ACME
+from lib.intranet.file import list_dir_files
 
 
 class Certificate():
@@ -36,7 +36,7 @@ class Certificate():
         if not os.path.exists(self.path_csr):
             os.makedirs(self.path_csr)
 
-        self.init_acme_account()
+        self.init_account()
 
     def _cmd(self, cmd_list, stdin=None, cmd_input=None, err_msg="Command Line Error"):
         proc = subprocess.Popen(cmd_list, stdin=stdin,
@@ -105,7 +105,7 @@ class Certificate():
         except:
             return {'code': -1, 'msg': 'key_generate_error'}
 
-    def init_acme_account(self, file_key=None, forced=False):
+    def init_account(self, file_key=None, forced=False):
         '''Create a Let's Encrypt account private key'''
         if file_key == None or file_key == '' or not file_key:
             file_key = self.path_acc
@@ -208,18 +208,15 @@ class Certificate():
         print(domain)
 
     def get_keys_list(self):
-        res = None
-        path = os.path.abspath(self.path_key)
-        if not os.path.exists(path) or not os.path.isdir(path):
-            return False
-        items = sorted(os.listdir(path))
+        items = list_dir_files(self.path_key)
+        if items is None:
+            return None
         res = []
         for i, item in enumerate(items):
-            # print(os.path.splitext(item))
             itm = os.path.splitext(item)
             if os.path.splitext(item)[1] == '.key':
                 res.append({
-                    'domain': itm[0],
+                    'name': item,
                     'ans': itm[0],
                     'ext': itm[1],
                     'id': 'ididid',
@@ -228,29 +225,37 @@ class Certificate():
         return res
 
     def get_crts_list(self):
-        res = None
-        res = [{
-            'domain': 'baokan.pub',
-            'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
-            'size': 2048
-        }, {
-            'domain': 'zhoubao.pub',
-            'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
-            'size': 2048
-        }]
+        items = list_dir_files(self.path_crt)
+        if items is None:
+            return None
+        res = []
+        for i, item in enumerate(items):
+            itm = os.path.splitext(item)
+            if os.path.splitext(item)[1] == '.crt':
+                res.append({
+                    'name': item,
+                    'ans': itm[0],
+                    'ext': itm[1],
+                    'id': 'ididid',
+                    'size': self.key_size
+                })
         return res
 
     def get_csrs_list(self):
-        res = None
-        res = [{
-            'domain': 'baokan.pub',
-            'id': '9a6d6_7f1c1_e1fd1b154418d4d88d32153bec4b20ac',
-            'size': 2048
-        }, {
-            'domain': 'zhoubao.pub',
-            'id': '9a6d6_7f1c1_e1fd1bfgj418d4d45632153bec4b20ac',
-            'size': 2048
-        }]
+        items = list_dir_files(self.path_csr)
+        if items is None:
+            return None
+        res = []
+        for i, item in enumerate(items):
+            itm = os.path.splitext(item)
+            if os.path.splitext(item)[1] == '.csr':
+                res.append({
+                    'name': item,
+                    'ext': itm[1],
+                    'created': '2019-01-24',
+                    'size': self.key_size,
+                    'description': '说明'
+                })
         return res
 
     def get_host_list(self):
@@ -275,8 +280,8 @@ class Certificate():
 
 if __name__ == "__main__":  # pragma: no cover
     acme = Certificate()
-    # acme.init_acme_account(forced=True)
-    # print(acme.init_acme_account())
+    # acme.init_account(forced=True)
+    # print(acme.init_account())
     # main(sys.argv[1:])
     # for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
     #     acme.create_domain_key(domain)

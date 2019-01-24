@@ -29,21 +29,17 @@ var ApplicationShadowsocksCtrl = [
         }
     }
 ];
+
 var ApplicationCACMEtrl = [
     '$scope', 'Module',
     function ($scope, Module) {
         var module = 'application.acme';
-        Module.init(module, 'acme.sh');
+        Module.init(module, 'ACME');
         $scope.loaded = false;
-        $scope.installed = false;
 
         $scope.load = function () {
             $scope.loaded = true;
-            $scope.check();
         };
 
-        $scope.check = function () {
-            $scope.installed = false;
-        }
     }
 ];
