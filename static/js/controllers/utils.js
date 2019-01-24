@@ -1073,5 +1073,80 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
                 }
             });
         };
+        $scope.keys_check = function (keys, callback) {
+            console.log('keys_check', keys);
+            if (callback) {
+                callback.call();
+            }
+        };
+        $scope.keys_delete = function (keys, confirmed, callback) {
+            if (confirmed && confirmed == true) {
+                console.log('keys_delete', keys);
+                if (callback) {
+                    callback.call();
+                }
+            } else {
+                $scope.keys_delete_confirm(keys, callback)
+            }
+        };
+        $scope.keys_delete_confirm = function(keys, callback) {
+            console.log('keys_delete_confirm', keys);
+            $scope.confirm_title = '删除私钥确认';
+            $scope.confirm_body = '<p>删除私钥后，可能会导致对应域名 https 请求出问题！<p><p>确认要删除吗？</p>';
+            $('#confirm').modal();
+            $scope.confirm = function() {
+                $scope.keys_delete(keys, true, callback);
+            };
+        };
+        $scope.crts_check = function (crts, callback) {
+            console.log('crts_check', crts);
+            if (callback) {
+                callback.call();
+            }
+        };
+        $scope.crts_renew = function (crts, callback) {
+            console.log('crts_renew', crts);
+            if (callback) {
+                callback.call();
+            }
+        };
+        $scope.crts_revoke = function (crts, confirmed, callback) {
+            if (confirmed && confirmed == true) {
+                console.log('crts_revoke', crts);
+                if (callback) {
+                    callback.call();
+                }
+            } else {
+                $scope.crts_revoke_confirm(crts, callback)
+            }
+        };
+        $scope.crts_revoke_confirm = function(crts, callback) {
+            console.log('crts_delete_confirm', crts);
+            $scope.confirm_title = '吊销证书';
+            $scope.confirm_body = '<p>吊销此证书后，会导致对应域名的 HTTPS 请求出问题！<p><p>确定要吊销吗？</p>';
+            $('#confirm').modal();
+            $scope.confirm = function() {
+                $scope.crts_revoke(crts, true, callback);
+            };
+        };
+        $scope.crts_delete = function (crts, confirmed, callback) {
+            if (confirmed && confirmed == true) {
+                console.log('crts_delete', crts);
+                if (callback) {
+                    callback.call();
+                }
+            } else {
+                $scope.crts_delete_confirm(crts, callback)
+            }
+        };
+        $scope.crts_delete_confirm = function(crts, callback) {
+            console.log('crts_delete_confirm', crts);
+            $scope.confirm_title = '删除证书';
+            $scope.confirm_body = '<p>删除证书后，会导致对应域名的 HTTPS 请求出问题！<p><p>确定要删除吗？</p>';
+            $('#confirm').modal();
+            $scope.confirm = function() {
+                $scope.crts_delete(crts, true, callback);
+            };
+        };
     }
 ];

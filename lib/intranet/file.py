@@ -362,6 +362,13 @@ def chmod(path, perms, recursively=False):
         return False
     return True
 
+def list_dir_files(directory):
+    '''only list files of directory'''
+    d = os.path.abspath(directory)
+    if not os.path.exists(d) or not os.path.isdir(d):
+        return None
+    items = sorted(os.listdir(d))
+    return items if len(items) > 0 else []
 
 if __name__ == '__main__':
     print '* List directory of /root:'

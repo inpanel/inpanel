@@ -1,0 +1,15 @@
+<div navbar ng-init="currentItem='application.acme'"></div>
+<div ng-show="Auth.processing||!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="load()">
+    <div class="module-header">
+        <h3>ACME 协议设置</h3>
+    </div>
+
+    <div class="well">
+        <p>我们使用 ACME 协议 申请和管理 Let’s Encrypt 证书，这里可以对 ACME 进行简单的设置</p>
+    </div>
+
+</div>

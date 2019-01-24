@@ -76,7 +76,7 @@ class ACME():
                 "User-Agent": "inpanel"
             }
             res = urlopen(Request(url, data=data, headers=hd))
-            res_data = res.read().decode("utf8")
+            res_data = res.read().decode('utf8')
             code = res.getcode()
             headers = res.headers
         except IOError as e:
@@ -124,26 +124,28 @@ class ACME():
 
     def init_api_url(self, ca_directory=None):
         # get the ACME directory of urls
-        print('Getting directory...')
-        if ca_directory is None:
-            ca_directory = self.ca_directory
-        self.directory, _, _ = self._request(
-            ca_directory, err_msg='get directory error')
-        self.ca_new_account = self.directory['newAccount']
-        self.ca_new_nonce = self.directory['newNonce']
-        self.ca_new_order = self.directory['newOrder']
-        self.ca_revoke_cert = self.directory['revokeCert']
-        self.ca_key_change = self.directory['keyChange']
-        print('Directory found!')
+        print('API directory getting...')
+        ca = ca_directory
+        if ca is None:
+            ca = self.ca_directory
+        ca_dir, _, _ = self._request(ca, err_msg='get directory error')
+        self.ca_new_account = ca_dir['newAccount']
+        self.ca_new_nonce = ca_dir['newNonce']
+        self.ca_new_order = ca_dir['newOrder']
+        self.ca_revoke_cert = ca_dir['revokeCert']
+        self.ca_key_change = ca_dir['keyChange']
+        self.directory = ca_dir
+        print('API directory ready!')
 
     def init_account(self, account_key=None):
         # parse account key to get public key
         print('Account key parsing...')
-        if account_key is None:
-            account_key = self.account_key
-        if not os.path.exists(account_key) or not os.path.isfile(account_key):
+        acc_key = account_key
+        if acc_key is None:
+            acc_key = self.account_key
+        if not os.path.exists(acc_key) or not os.path.isfile(acc_key):
             return None
-        cmd = ['openssl', 'rsa', '-in', account_key, '-noout', '-text']
+        cmd = ['openssl', 'rsa', '-in', acc_key, '-noout', '-text']
         out = self._cmd(cmd, err_msg='openssl error')
         pub_pattern = r"modulus:\n\s+00:([a-f0-9\:\s]+?)\npublicExponent: ([0-9]+)"
         pub_hex, pub_exp = re.search(pub_pattern, out.decode('utf8'), re.MULTILINE | re.DOTALL).groups()
@@ -154,19 +156,22 @@ class ACME():
             'kty': 'RSA',
             'n': self._b64(binascii.unhexlify(re.sub(r"(\s|:)", '', pub_hex).encode('utf-8'))),
         }
-        acc_key_json = json.dumps(
-            self.jwk, sort_keys=True, separators=(',', ':'))
+        acc_key_json = json.dumps(self.jwk, sort_keys=True, separators=(',', ':'))
         self.thumbprint = self._b64(hashlib.sha256(
             acc_key_json.encode('utf8')).digest())
         # print('thumbprint', self.thumbprint)
+        print('Account key ready...')
 
     def registe_account(self, contact=None):
         # create account, update contact details (if any), and set the global key identifier
-        print('Account registering...')
+        print('Account registration...')
         reg_payload = {'termsOfServiceAgreed': True}
         account, code, self.acct_headers = self._s_request(
             self.ca_new_account, reg_payload, 'Error registering')
-        print('Account registered !' if code == 201 else 'Account Already registered !')
+        if code == 201:
+            print('Account registration is successful !')
+        else:
+            print('Account is already registered!')
         # print(self.acct_headers)
         if contact is None:
             contact = self.contact
@@ -179,7 +184,7 @@ class ACME():
 
     def parse_csr(self, order=False):
         # find domains
-        print('Parsing CSR...')
+        print('Domains CSR parsing...')
         cmd = ['openssl', 'req', '-in', self.csr, '-noout', '-text']
         out = self._cmd(cmd, err_msg="Error loading {0}".format(self.csr))
         domains = set([])
@@ -207,27 +212,25 @@ class ACME():
         order, _, order_headers = self._s_request(
             self.ca_new_order, order_payload, "Error creating new order")
         print("Order created!")
-        # print(order)
 
         # get the authorizations that need to be completed
         for auth_url in order['authorizations']:
-            authorization, _, _ = self._request(
-                auth_url, err_msg='Error getting challenges')
+            authorization, _, _ = self._request(auth_url, err_msg='Error getting challenges')
             domain = authorization['identifier']['value']
-            print("Verifying {0}...".format(domain))
+            print("Domain {0} Verifying...".format(domain))
 
             # find the http-01 challenge and write the challenge file
             challenge = [c for c in authorization['challenges'] if c['type'] == "http-01"][0]
             token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
-            keyauthorization = "{0}.{1}".format(token, self.thumbprint)
+            key_auth = "{0}.{1}".format(token, self.thumbprint)
             wellknown_path = os.path.join(self.acme_check_dir, token)
-            with open(wellknown_path, "w") as wellknown_file:
-                wellknown_file.write(keyauthorization)
+            with open(wellknown_path, "w") as f:
+                f.write(key_auth)
 
-            # check that the file is in place
+            # check that the wellknown_file is in specified place
             try:
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
-                assert(disable_check or self._request(wellknown_url)[0] == keyauthorization)
+                assert(disable_check or self._request(wellknown_url)[0] == key_auth)
             except (AssertionError, ValueError) as e:
                 os.remove(wellknown_path)
                 raise ValueError("Wrote file to {0}, but couldn't download {1}: {2}".format(
@@ -236,38 +239,33 @@ class ACME():
             # say the challenge is done
             self._s_request(
                 challenge['url'], {}, "Error submitting challenges: {0}".format(domain))
-            authorization = self._poll_until_not(
-                auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
+            authorization = self._poll_until_not(auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
             if authorization['status'] != "valid":
-                raise ValueError(
-                    "Challenge did not pass for {0}: {1}".format(domain, authorization))
-            print("domain {0} verified!".format(domain))
+                raise ValueError("Challenge did not pass for {0}: {1}".format(domain, authorization))
+            print("Domain {0} verified!".format(domain))
 
         # finalize the order with the csr
-        print("Signing certificate...")
-        csr_der = self._cmd(["openssl", "req", "-in", self.csr, "-outform", "DER"], err_msg="DER Export Error")
-        aaa, _, bbb = self._s_request(
-            order['finalize'], {"csr": self._b64(csr_der)}, "Error finalizing order")
-        print('sing', aaa, bbb)
+        print('Certificate signing...')
+        csr_der = self._cmd(['openssl', 'req', '-in', self.csr, '-outform', 'DER'], err_msg='DER Export Error')
+        self._s_request(order['finalize'], {'csr': self._b64(csr_der)}, 'Error finalizing order')
         # poll the order to monitor when it's done
-        order = self._poll_until_not(order_headers['Location'], [
-                                     "pending", "processing"], "Error checking order status")
-        if order['status'] != "valid":
+        order = self._poll_until_not(order_headers['Location'], ['pending', 'processing'], 'Error checking order status')
+        if order['status'] != 'valid':
             raise ValueError("Order failed: {0}".format(order))
         self.certificate = order['certificate']
 
     def get_certificate(self, certificate=None):
         # download the certificate
-        certificate = self.certificate if certificate is None else certificate
-        if certificate is None:
+        crt_url = self.certificate if certificate is None else certificate
+        if crt_url is None:
             return None
-        certificate_pem, _, _ = self._request(
-            certificate, err_msg="Certificate download failed")
-        print("Certificate signed!")
+        certificate_pem, _, _ = self._request(crt_url, err_msg='Certificate download failed')
+        print('Certificate signed!')
         return certificate_pem
 
     def revoke_certificate(self, crt):
         print(crt)
+        print('Certificate revoked!')
 
 
 # if __name__ == "__main__":
