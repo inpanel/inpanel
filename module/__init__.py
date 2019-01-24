@@ -14,7 +14,7 @@ __all__ = [
     'cron',
     'remote',
     'lighttpd',
-    'proc',
+    'process',
     'proftpd',
     'pureftpd',
     'named',

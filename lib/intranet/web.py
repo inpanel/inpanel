@@ -616,7 +616,7 @@ class UtilsProcessHandler(RequestHandler):
     def get(self, sec, region=None):
         self.authed()
         if sec == 'process':
-            self.write(proc.get_process_list())
+            self.write(process.get_process_list())
 
 class UtilsTimeHandler(RequestHandler):
     """Handler for system datetime setting.
