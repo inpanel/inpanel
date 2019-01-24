@@ -1,13 +1,19 @@
 #!/usr/bin/env python
-# Copyright Daniel Roesler
-# under MIT license, see LICENSE at https://github.com/diafygi/acme-tiny
-import argparse
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2017 - 2019, doudoudzj
+# All rights reserved.
+#
+# Intranet is distributed under the terms of the New BSD License.
+# The full license can be found in 'LICENSE'.
+
+'''Module for getting a signed TLS certificate by ACME protocol from Let's Encrypt.'''
+
 import base64
 import binascii
 import copy
 import hashlib
 import json
-import logging
 import os
 import re
 import subprocess
@@ -23,6 +29,7 @@ except ImportError:
 
 class ACME():
 
+    # REF: https://github.com/diafygi/acme-tiny, under MIT license, author: Daniel Roesler
     def __init__(self, account_key, csr, acme_check_dir, contact=None):
         self.account_key = account_key
         self.csr = csr
@@ -32,11 +39,10 @@ class ACME():
         self.alg = 'RS256'
         self.jwk = None
         self.thumbprint = None
-        self.log = logging.getLogger(__name__)
-        self.log.addHandler(logging.StreamHandler())
-        self.log.setLevel(logging.INFO)
+        self.certificate = None
+
         # Contact details (e.g. mailto:aaa@bbb.com) for your account-key
-        self.contact = contact # 'a client of the Intranet Control Panel'
+        self.contact = contact  # 'a client of the Intranet Control Panel'
         # self.ca = "https://acme-v02.api.letsencrypt.org"
         # self.ca_directory = = "https://acme-v02.api.letsencrypt.org/directory"
         # dev
@@ -47,7 +53,7 @@ class ACME():
         self.init_api_url()
         self.init_account()
         self.registe_account()
-        # self.get_domain()
+        self.parse_csr(order=True)
         # self.create_new_order()
 
     def _cmd(self, cmd_list, stdin=None, cmd_input=None, err_msg="Command Line Error"):
@@ -66,7 +72,10 @@ class ACME():
     def _request(self, url, data=None, err_msg='Error', depth=0):
         '''make request and automatically parse json response'''
         try:
-            hd = {"Content-Type": "application/jose+json", "User-Agent": "inpanel"}
+            hd = {
+                "Content-Type": "application/jose+json",
+                "User-Agent": "inpanel"
+            }
             res = urlopen(Request(url, data=data, headers=hd))
             res_data = res.read().decode("utf8")
             code = res.getcode()
@@ -90,12 +99,16 @@ class ACME():
         payload64 = self._b64(json.dumps(payload).encode('utf8'))
         new_nonce = self._request(self.ca_new_nonce)[2]['Replay-Nonce']
         protected = {'url': url, 'alg': self.alg, "nonce": new_nonce}
-        protected.update({"jwk": self.jwk} if self.acct_headers is None else { "kid": self.acct_headers['Location']})
+        protected.update({"jwk": self.jwk} if self.acct_headers is None else {"kid": self.acct_headers['Location']})
         protected64 = self._b64(json.dumps(protected).encode('utf8'))
         protected_input = "{0}.{1}".format(protected64, payload64).encode('utf8')
-        cmd = ["openssl", "dgst", "-sha256", "-sign", self.account_key]
-        out = self._cmd(cmd, stdin=subprocess.PIPE, cmd_input=protected_input, err_msg="OpenSSL Error")
-        data = json.dumps({"protected": protected64, "payload": payload64, "signature": self._b64(out)})
+        cmd = ['openssl', 'dgst', '-sha256', '-sign', self.account_key]
+        out = self._cmd(cmd, stdin=subprocess.PIPE, cmd_input=protected_input, err_msg='OpenSSL Error')
+        data = json.dumps({
+            'protected': protected64,
+            'payload': payload64,
+            'signature': self._b64(out)
+        })
         try:
             return self._request(url, data=data.encode('utf8'), err_msg=err_msg, depth=depth)
         except IndexError:  # retry bad nonces (they raise IndexError)
@@ -112,26 +125,27 @@ class ACME():
 
     def init_api_url(self, ca_directory=None):
         # get the ACME directory of urls
-        self.log.info('InPanel: Getting directory...')
+        print('Getting directory...')
         if ca_directory is None:
             ca_directory = self.ca_directory
-        self.directory, _, _ = self._request(ca_directory, err_msg='get directory error')
+        self.directory, _, _ = self._request(
+            ca_directory, err_msg='get directory error')
         self.ca_new_account = self.directory['newAccount']
         self.ca_new_nonce = self.directory['newNonce']
         self.ca_new_order = self.directory['newOrder']
         self.ca_revoke_cert = self.directory['revokeCert']
         self.ca_key_change = self.directory['keyChange']
-        self.log.info('InPanel: Directory found!')
+        print('Directory found!')
 
     def init_account(self, account_key=None):
         # parse account key to get public key
-        self.log.info("InPanel: Account key parsing...")
+        print('Account key parsing...')
         if account_key is None:
             account_key = self.account_key
         if not os.path.exists(account_key) or not os.path.isfile(account_key):
             return None
         cmd = ['openssl', 'rsa', '-in', account_key, '-noout', '-text']
-        out = self._cmd(cmd, err_msg='OpenSSL Error')
+        out = self._cmd(cmd, err_msg='openssl error')
         pub_pattern = r"modulus:\n\s+00:([a-f0-9\:\s]+?)\npublicExponent: ([0-9]+)"
         pub_hex, pub_exp = re.search(pub_pattern, out.decode('utf8'), re.MULTILINE | re.DOTALL).groups()
         pub_exp = "{0:x}".format(int(pub_exp))
@@ -141,18 +155,20 @@ class ACME():
             'kty': 'RSA',
             'n': self._b64(binascii.unhexlify(re.sub(r"(\s|:)", '', pub_hex).encode('utf-8'))),
         }
-        acc_key_json = json.dumps(self.jwk, sort_keys=True, separators=(',', ':'))
-        self.thumbprint = self._b64(hashlib.sha256(acc_key_json.encode('utf8')).digest())
+        acc_key_json = json.dumps(
+            self.jwk, sort_keys=True, separators=(',', ':'))
+        self.thumbprint = self._b64(hashlib.sha256(
+            acc_key_json.encode('utf8')).digest())
         # print('thumbprint', self.thumbprint)
 
     def registe_account(self, contact=None):
         # create account, update contact details (if any), and set the global key identifier
-        self.log.info('InPanel: Account registering...')
+        print('Account registering...')
         reg_payload = {'termsOfServiceAgreed': True}
         account, code, self.acct_headers = self._s_request(
             self.ca_new_account, reg_payload, 'Error registering')
-        self.log.info('InPanel: Account registered !' if code == 201 else 'InPanel: Account Already registered !')
-        print(self.acct_headers)
+        print('Account registered !' if code == 201 else 'Account Already registered !')
+        # print(self.acct_headers)
         if contact is None:
             contact = self.contact
         if contact is not None:
@@ -160,11 +176,11 @@ class ACME():
             payload = {'contact': contact}
             account, _, _ = self._s_request(url, payload, 'Error updating contact details')
             print(account)
-            self.log.info("InPanel: Updated contact details:\n{0}".format("\n".join(account['contact'])))
+            print("Updated contact details:\n{0}".format("\n".join(account['contact'])))
 
-    def get_domain(self):
+    def parse_csr(self, order=False):
         # find domains
-        self.log.info('InPanel: Parsing CSR...')
+        print('Parsing CSR...')
         cmd = ['openssl', 'req', '-in', self.csr, '-noout', '-text']
         out = self._cmd(cmd, err_msg="Error loading {0}".format(self.csr))
         domains = set([])
@@ -177,23 +193,29 @@ class ACME():
             for san in subject_alt_names.group(1).split(", "):
                 if san.startswith("DNS:"):
                     domains.add(san[4:])
-        self.log.info("InPanel: Found domains: {0}".format(", ".join(domains)))
+        print("Found domains: {0}".format(", ".join(domains)))
+        # print('domains', domains)
+        if order == True:
+            self.create_new_order(domains)
 
     def create_new_order(self, domains, disable_check=False):
         '''create a new order
         disable_check: disable checking if the challenge file is hosted correctly before telling the CA
         '''
-        self.log.info("InPanel: Creating new order...")
-        order_payload = {"identifiers": [{"type": "dns", "value": d} for d in domains]}
+        print("Creating new order...")
+        order_payload = {"identifiers": [
+            {"type": "dns", "value": d} for d in domains]}
         order, _, order_headers = self._s_request(
             self.ca_new_order, order_payload, "Error creating new order")
-        self.log.info("InPanel: Order created!")
+        print("Order created!")
+        # print(order)
 
         # get the authorizations that need to be completed
         for auth_url in order['authorizations']:
-            authorization, _, _ = self._request(auth_url, err_msg='Error getting challenges')
+            authorization, _, _ = self._request(
+                auth_url, err_msg='Error getting challenges')
             domain = authorization['identifier']['value']
-            self.log.info("InPanel: Verifying {0}...".format(domain))
+            print("Verifying {0}...".format(domain))
 
             # find the http-01 challenge and write the challenge file
             challenge = [c for c in authorization['challenges'] if c['type'] == "http-01"][0]
@@ -220,68 +242,49 @@ class ACME():
             if authorization['status'] != "valid":
                 raise ValueError(
                     "Challenge did not pass for {0}: {1}".format(domain, authorization))
-            self.log.info("InPanel: domain {0} verified!".format(domain))
+            print("domain {0} verified!".format(domain))
 
         # finalize the order with the csr
-        self.log.info("InPanel: Signing certificate...")
+        print("Signing certificate...")
         csr_der = self._cmd(["openssl", "req", "-in", self.csr, "-outform", "DER"], err_msg="DER Export Error")
-        self._s_request(order['finalize'], {"csr": self._b64(csr_der)}, "Error finalizing order")
-
+        aaa, _, bbb = self._s_request(
+            order['finalize'], {"csr": self._b64(csr_der)}, "Error finalizing order")
+        print('sing', aaa, bbb)
         # poll the order to monitor when it's done
         order = self._poll_until_not(order_headers['Location'], [
                                      "pending", "processing"], "Error checking order status")
         if order['status'] != "valid":
             raise ValueError("Order failed: {0}".format(order))
-        self.download_certificate(order['certificate'])
+        self.certificate = order['certificate']
 
-    def download_certificate(self, certificate):
+    def get_certificate(self, certificate=None):
         # download the certificate
-        certificate_pem, _, _ = self._request(certificate, err_msg="Certificate download failed")
-        self.log.info("InPanel: Certificate signed!")
+        certificate = self.certificate if certificate is None else certificate
+        if certificate is None:
+            return None
+        certificate_pem, _, _ = self._request(
+            certificate, err_msg="Certificate download failed")
+        print("Certificate signed!")
         return certificate_pem
 
     def revoke_certificate(self, crt):
         print(crt)
 
 
-# def main(argv=None):
-    # parser = argparse.ArgumentParser(
-    #     formatter_class=argparse.RawDescriptionHelpFormatter,
-    #     description=textwrap.dedent("""\
-    #         This script automates the process of getting a signed TLS certificate from Let's Encrypt using
-    #         the ACME protocol. It will need to be run on your server and have access to your private
-    #         account key, so PLEASE READ THROUGH IT! It's only ~200 lines, so it won't take long.
+# if __name__ == "__main__":
+#     # import certificate
+#     # cert = certificate.Certificate()
+#     # # # cert.create_domain_key('test.com')
+#     # cert.generate_domain_csr(['test.com', 'aaa.com'], forced=True)
+#     account_key = '/Users/douzhenjiang/Projects/intranet-panel/data/certificate/account.key'
+#     csr = '/Users/douzhenjiang/Projects/intranet-panel/data/certificate/csr/test.com.csr'
+#     acme_check_dir = '/Users/douzhenjiang/Projects/intranet-panel/data'
+#     # aaa = ACME(account_key, csr, acme_check_dir)
 
-    #         Example Usage:
-    #         python acme_tiny.py --account-key ./account.key --csr ./domain.csr --acme-dir /usr/share/nginx/html/.well-known/acme-challenge/ > signed_chain.crt
+#     key = '/Users/douzhenjiang/Projects/intranet-panel/test/example_com.key'
+#     csr = '/Users/douzhenjiang/Projects/intranet-panel/test/example_com.csr'
+#     aaa = ACME(key, csr, acme_check_dir)
 
-    #         Example Crontab Renewal (once per month):
-    #         0 0 1 * * python /path/to/acme_tiny.py --account-key /path/to/account.key --csr /path/to/domain.csr --acme-dir /usr/share/nginx/html/.well-known/acme-challenge/ > /path/to/signed_chain.crt 2>> /var/log/acme_tiny.log
-    #         """)
-    # )
-    # parser.add_argument("--account-key", required=True,
-    #                     help="path to your Let's Encrypt account private key")
-    # parser.add_argument("--csr", required=True,
-    #                     help="path to your certificate signing request")
-    # parser.add_argument("--acme-dir", required=True,
-    #                     help="path to the .well-known/acme-challenge/ directory")
-    # parser.add_argument("--quiet", action="store_const",
-    #                     const=logging.ERROR, help="suppress output except for errors")
-    # parser.add_argument("--disable-check", default=False, action="store_true", help="disable checking if the challenge file is hosted correctly before telling the CA")
-    # parser.add_argument("--directory-url", default=DEFAULT_DIRECTORY_URL, help="certificate authority directory url, default is Let's Encrypt")
-    # parser.add_argument("--ca", default=DEFAULT_CA, help="DEPRECATED! USE --directory-url INSTEAD!")
-    # parser.add_argument("--contact", metavar="CONTACT", default=None, nargs="*", help="Contact details (e.g. mailto:aaa@bbb.com) for your account-key")
-
-    # args = parser.parse_args(argv)
-    # LOGGER.setLevel(args.quiet or LOGGER.level)
-    # signed_crt = acme_get_crt(args.account_key, args.csr, args.acme_check_dir, log=LOGGER, CA=args.ca,
-    #                           disable_check=args.disable_check, ca_directory=args.ca_directory, contact=args.contact)
-    # sys.stdout.write(signed_crt)
-
-
-if __name__ == "__main__":  # pragma: no cover
-    account_key = '/Users/douzhenjiang/Projects/intranet-panel/certificate/account.key'
-    csr = 'adsf'
-    acme_check_dir = 'af'
-    aaa = ACME(account_key, csr, acme_check_dir)
-
+#     # C=CN, ST=Beijing, L=Beijing, O=Example Inc, OU=Network Dept,
+#     # CN=example.com/subjectAltName=DNS.1=sub1.example.com,DNS.2=sub2.example.com,DNS.3=sub.another-example.com
+#     # CN=test.com/subjectAltName=DNS:test.com,DNS:aaa.com

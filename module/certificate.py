@@ -10,8 +10,10 @@
 
 import os
 import subprocess
+import shutil
+import tempfile
 
-import acme
+from acme import ACME
 
 
 class Certificate():
@@ -19,12 +21,13 @@ class Certificate():
     def __init__(self):
         # self.path_current = os.path.dirname(os.path.realpath(__file__))
         self.path_home = '/usr/local/intranet/data/certificate/'
+        # self.path_home = '/Users/douzhenjiang/Projects/intranet-panel/data/certificate/'
         self.path_acc = os.path.join(self.path_home, 'account.key')
         self.path_crt = os.path.join(self.path_home, 'crt')
         self.path_key = os.path.join(self.path_home, 'key')
         self.path_csr = os.path.join(self.path_home, 'csr')
         self.key_size = '4096'
-        self.acme = acme.ACME()
+        self.acme = None
 
         if not os.path.exists(self.path_crt):
             os.makedirs(self.path_crt)
@@ -118,50 +121,44 @@ class Certificate():
         # openssl genrsa 4096 > github.com.key
         if domain is None or len(domain) == 0:
             return {'code': -1, 'msg': 'domain_error'}
-
-        g_domain = domain[0]
         if custom_key and os.path.isfile(custom_key):
             k = custom_key
         else:
-            k = os.path.join(self.path_key, g_domain + '.key')
+            k = os.path.join(self.path_key, domain[0] + '.key')
         if not os.path.isfile(k):
             return {'code': -1, 'msg': 'key_not_found'}
         ckk = self._check_key(k)
         if ckk['code'] == 0 and ckk['msg'] == 'key_broken':
             return {'code': -1, 'msg': 'key_broken'}
-
-        c = os.path.join(self.path_csr, g_domain + '.csr')
+        c = os.path.join(self.path_csr, domain[0] + '.csr')
         if os.path.isfile(c) and forced == False:
             return {'code': -1, 'msg': 'csr_exists'}
 
-        if len(domain) == 1:
-            cmd_list = ['openssl', 'req', '-new', '-sha256',
-                        '-key', k, '-subj', '/CN=' + g_domain]
-            out = self._cmd(
-                cmd_list, err_msg="Create certificate signing request Error")
-            if out is None:
-                return {'code': -1, 'msg': 'csr_create_error'}
-            else:
-                with open(c, 'w') as f:
-                    f.write(out)
-                return {'code': 0, 'msg': 'csr_create_success', 'data': out}
+        subj = '/CN=%s' % domain[0]
+        print(subj)
+        cmd = ['openssl', 'req', '-new', '-sha256', '-key', k, '-subj', subj]
+        conf_tmp = None
         if len(domain) > 1:
-            sans = []
-            for i in domain:
-                sans.append('DNS:%s' % i)
-            sans = ','.join(sans)
-            # aa = 'openssl req -new -out effect.pub.csr -key effect.pub.key -config openssl.cnf'
-            domain_sans = '/CN=%s/subjectAltName=%s' % (g_domain, sans)
-            cmd_list = ['openssl', 'req', '-new',
-                        '-sha256', '-key', k, '-subj', domain_sans]
-            out = self._cmd(
-                cmd_list, err_msg="Create certificate signing request Error")
-            if out is None:
-                return {'code': -1, 'msg': 'csr_create_error'}
-            else:
-                with open(c, 'w') as f:
-                    f.write(out)
-                return {'code': 0, 'msg': 'csr_create_success', 'data': out}
+            san = ['DNS:%s' % domain[0]]
+            for item in domain[1:]:
+                san.append('DNS:%s' % item)
+            san = 'subjectAltName=%s' % (','.join(san))
+            opssl_conf = '/etc/pki/tls/openssl.cnf'
+            conf_tmp = os.path.join(self.path_home, os.path.basename(opssl_conf))
+            shutil.copy(opssl_conf, conf_tmp)
+            with open(conf_tmp, 'a') as f:
+                f.writelines(['\n[SAN]', '\n%s' % san])
+            # config = '<(cat %s <(printf "[SAN]\\n%s"))' % (opssl_conf, san)
+            cmd.extend(['-reqexts', 'SAN', '-config', conf_tmp])
+        out = self._cmd(cmd, err_msg="Create csr error")
+        if conf_tmp is not None and os.path.exists(conf_tmp):
+            os.remove(conf_tmp)
+        if out is None:
+            return {'code': -1, 'msg': 'csr_create_error'}
+        else:
+            with open(c, 'w') as f:
+                f.write(out)
+            return {'code': 0, 'msg': 'csr_create_success', 'data': out}
 
     def show_domain_csr(self, domain_csr=None, text=True, pubkey=False, subject=False):
         if os.path.exists(domain_csr) and os.path.isfile(domain_csr):
@@ -190,24 +187,25 @@ class Certificate():
         except:
             return {'code': -1, 'msg': 'csr_read_error'}
 
-    def generate_domain_cert(self, host=''):
+    def generate_domain_crt(self, domain):
         '''getting a signed TLS certificate from Let's Encrypt'''
-        if not host:
+        if domain is None:
             return None
         acc = self.path_acc
-        csr = os.path.join(self.path_csr, host + '.csr')
-        crt = os.path.join(self.path_crt, host + '.crt')
-        ckdir = '/var/www/%s/.well-known/acme-challenge' % host
+        csr = os.path.join(self.path_csr, domain + '.csr')
+        crt = os.path.join(self.path_crt, domain + '.crt')
+        ckdir = '/var/www/%s/.well-known/acme-challenge' % domain
         print(acc, csr, crt, ckdir)
         if not os.path.exists(ckdir):
             os.makedirs(ckdir)
-        signed_crt = self.acme.acme_get_crt(acc, csr, ckdir)
+        self.acme = ACME(acc, csr, ckdir)
+        signed_crt = self.acme.get_certificate()
         if signed_crt is not None:
             with open(crt, 'w') as f:
                 f.write(signed_crt)
 
-    def revoke_domain_cert(self, host=''):
-        print(host)
+    def revoke_domain_cert(self, domain=''):
+        print(domain)
 
     def get_keys_list(self):
         res = None
@@ -277,17 +275,17 @@ class Certificate():
 
 if __name__ == "__main__":  # pragma: no cover
     acme = Certificate()
-    # acme.init_acme_account()
+    # acme.init_acme_account(forced=True)
     # print(acme.init_acme_account())
     # main(sys.argv[1:])
     # for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
     #     acme.create_domain_key(domain)
-    print(acme.create_domain_key('baokan.pub'))
+    # print(acme.create_domain_key('baokan.pub'))
     # print(acme.create_domain_key('dougroup.com'))
     # print(acme.create_domain_key('effect.pub'))
     # print(acme.create_domain_key('zhoubao.pub'))
     # print(acme.create_domain_key('zhoukan.pub'))
-    print(acme.generate_domain_csr(['baokan.pub']))
+    # print(acme.generate_domain_csr(['baokan.pub']))
     # print(acme.generate_domain_csr(['baokan.pub', 'www.baokan.pub'], forced=True))
     # print(acme.generate_domain_csr(['effect.pub', '*.effect.pub']))
     # print(acme._check_csr('effect.pub.csr'))
@@ -295,4 +293,8 @@ if __name__ == "__main__":  # pragma: no cover
 
     # print(acme.show_domain_csr('baokan.pub.csr', subject=True))
     # acme.show_domain_csr('effect.pub.csr')
-    acme.generate_domain_cert('baokan.pub')
+    # print(acme.create_domain_key('baokan.pub'))
+    # print(acme.create_domain_key('baokan.pub', forced=True))
+    # print(acme.generate_domain_csr(['baokan.pub'], forced=True))
+    # print(acme.generate_domain_csr(['baokan.pub', 'www.baokan.pub', 'abc.baokan.pub'], forced=True))
+    acme.generate_domain_crt('baokan.pub')
