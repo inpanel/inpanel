@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017 - 2019, doudoudzj
@@ -24,7 +23,7 @@ import time
 try:
     from urllib.request import urlopen, Request  # Python 3
 except ImportError:
-    from urllib2 import urlopen, Request  # Python 2.7+
+    from urllib2 import urlopen, Request  # Python 2
 
 
 class ACME():
