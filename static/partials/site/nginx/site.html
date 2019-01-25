@@ -15,10 +15,6 @@
 		<p>如要手工编辑原始配置文件内容，请<a href="#/service/nginx?s=configfile">点击这里</a>。</p>
 	</div>
 
-	<div class="alert alert-warning">
-		<p>注意：添加或更新站点配置后，需要 <a href="#/service/nginx"><strong>重启 Nginx</strong></a> 后配置才会生效。</p>
-	</div>
-
 	<div class="tabbable" ng-init="load()">
 		<ul class="nav nav-tabs">
 			<li ng-class="'active' | iftrue:activeTabName=='basic'"><a href="#basic" ng-click="sec('basic')" data-toggle="tab">基本设置</a></li>
@@ -526,9 +522,11 @@
 		</div>
 		<hr/>
 		<p>
-			<button ng-show="action=='new'" class="btn btn-primary" ng-click="addserver()">填写完毕，提交新站点</button>
-			<button ng-show="action=='edit'" class="btn btn-primary" ng-click="updateserver()">保存配置</button>
-			<button ng-show="action=='edit'" class="btn btn-default" ng-click="restore()">撤销修改</button>
+			<button class="btn btn-primary" ng-show="action=='new'" ng-click="addserver()">提交站点</button>
+			<button class="btn btn-primary" ng-show="action=='edit'" ng-click="updateserver()">保存修改</button>
+			<button class="btn btn-success" ng-click="updateserver('restart')">立即生效</button>
+			<button class="btn btn-warning" ng-show="action=='edit'" ng-click="restore()">重置表单</button>
+			<a class="btn btn-default" href="#/site?s=nginx">取消返回</a>
 		</p>
 	</div>
 </div>

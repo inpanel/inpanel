@@ -9,11 +9,11 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         $scope.nginx_supported = false;
         $scope.nginxloading = false;
         $scope.nginxservers = [];
-        $scope.nginx_status = '';
+        $scope.nginx_status = null;
         $scope.apache_supported = false;
         $scope.apacheloading = false;
         $scope.apacheservers = [];
-        $scope.apache_status = '';
+        $scope.apache_status = null;
         $scope.packageloading = false;
         $scope.site_packages = [];
 
@@ -29,13 +29,13 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
 
         $scope.load_status = function (callback) {
             Request.get('/query/service.nginx,service.httpd', function(res) {
-                $scope.nginx_status = res['service.nginx'].status;
-                $scope.apache_status = res['service.httpd'].status;
                 if (res['service.nginx'] && res['service.nginx'].status) {
+                    $scope.nginx_status = res['service.nginx'].status;
                     $scope.nginx_supported = true;
                 }
                 if (res['service.httpd'] && res['service.httpd'].status) {
                     $scope.apache_supported = true;
+                    $scope.apache_status = res['service.httpd'].status;
                 }
                 $scope.has_httpserver = $scope.nginx_supported || $scope.apache_supported;
                 if (callback) {
@@ -324,8 +324,8 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
     }
 ];
 
-var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Backend', 'Timeout',
-    function($scope, Module, $routeParams, $location, Request, Backend, Timeout) {
+var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Backend', 'Timeout',
+    function($scope, Module, $routeParams, $location, Request, Message, Backend, Timeout) {
         var section = $routeParams.section;
         var action = section == 'new' ? 'new' : 'edit';
         var site = action == 'edit' ? section.substr(5) : '';
@@ -816,7 +816,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 }
             });
         };
-        $scope.updateserver = function() {
+        $scope.updateserver = function(restart) {
             Request.post('/operation/nginx', {
                 'action': 'updateserver',
                 'ip': server_ip,
@@ -829,19 +829,36 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
-                    Timeout(function() {
-                        var new_path = '/site/nginx/edit_' + encodeURIComponent(name);
-                        if (new_path != $location.path()) $location.path(new_path);
-                        else $scope.restore();
-                    }, 1000, module);
+                    var new_path = '/site/nginx/edit_' + encodeURIComponent(name);
+                    if (new_path != $location.path()) {
+                        $location.path(new_path);
+                        console.log('修改成功')
+                    } else {
+                        $scope.restore();
+                        if (restart && restart == 'restart') {
+                            $scope.nginx_set_status('restart');
+                        }
+                    }
                 }
             });
         };
-        $scope.restore = function() {
+        $scope.restore = function(callback) {
             $scope.setting = angular.copy(server_tmpl);
             $scope.getserver();
         };
-
+        $scope.nginx_set_status = function (status) {
+            if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
+                return;
+            }
+            Backend.call($scope, module, '/backend/service_' + status, '/backend/service_' + status + '_nginx', {
+                'name': 'Nginx',
+                'service': 'nginx'
+            }, {
+                'success': function(res) {
+                    Message.setInfo(res.msg);
+                }
+            }, true);
+        };
         // initially add
         if (section == 'new') {
             $scope.addservername();
