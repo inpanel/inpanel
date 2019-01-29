@@ -7,19 +7,20 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Package for reading and writing server configurations
-"""
+'''Package for reading and writing server configurations'''
+
 
 import os
 import shutil
 from config import Config
 
-import si
 from module.configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
-                               readconfig, saveconfig, writeconfig)
+                                 readconfig, saveconfig, writeconfig)
+from module.server import ServerInfo
 from module.shell import run as shell_run
 
-class Server(object):
+
+class ServerSet(object):
 
     @classmethod
     def hostname(self, hostname=None):
@@ -44,7 +45,7 @@ class Server(object):
         Pass None to parameter config (as default) to read config,
         or pass a dict type to config to write config.
         """
-        dist = si.Server.dist()
+        dist = ServerInfo.dist()
         if dist['name'] in ('centos', 'redhat'):
             cfile = '/etc/sysconfig/network-scripts/ifcfg-%s' % ifname
             cmap = {
@@ -67,10 +68,10 @@ class Server(object):
         """Read config of all interfaces.
         """
         configs = {}
-        ifaces = si.Server.netifaces()
+        ifaces = ServerInfo.netifaces()
         for iface in ifaces:
             ifname = iface['name']
-            config = Server.ifconfig(ifname)
+            config = ServerSet.ifconfig(ifname)
             if config:
                 configs[ifname] = config
         return configs
@@ -114,7 +115,7 @@ class Server(object):
         zonepath = '/usr/share/zoneinfo'
         timezones = []
         if region == None:
-            regions = Server.timezone_regions()
+            regions = ServerSet.timezone_regions()
             for region in regions:
                 regionpath = os.path.join(zonepath, region)
                 for zonefile in os.listdir(regionpath):
@@ -154,7 +155,7 @@ class Server(object):
                 return timezone
 
             # or else check the system config file
-            dist = si.Server.dist()
+            dist = ServerInfo.dist()
             if dist['name'] in ('centos', 'redhat'):
                 clockinfo = raw_loadconfig('/etc/sysconfig/clock')
                 if clockinfo and clockinfo.has_key('ZONE'):
@@ -166,7 +167,7 @@ class Server(object):
             # or else find the file match /etc/localtime
             with open(tzpath) as f:
                 tzdata = f.read()
-            regions = Server.timezone_regions()
+            regions = ServerSet.timezone_regions()
             for region in regions:
                 regionpath = os.path.join(zonepath, region)
                 for zonefile in os.listdir(regionpath):
@@ -211,8 +212,8 @@ class Server(object):
                 return config
         elif dev.startswith('UUID='):
             uuid = dev.replace('UUID=', '')
-            partinfo = si.Server.partinfo(devname=params['devname'])
-            # partinfo = si.Server.partinfo(uuid=uuid, devname=params['devname'])
+            partinfo = ServerInfo.partinfo(devname=params['devname'])
+            # partinfo = ServerInfo.partinfo(uuid=uuid, devname=params['devname'])
             if partinfo['uuid'] == uuid:
                 return config
 
@@ -249,17 +250,17 @@ class Server(object):
         cfgfile = '/etc/fstab'
         if config == None:
             # read config
-            return readconfig(cfgfile, Server._read_fstab, devname=devname)
+            return readconfig(cfgfile, ServerSet._read_fstab, devname=devname)
         else:
             # write or remove config
-            return writeconfig(cfgfile, Server._read_fstab, Server._write_fstab,
+            return writeconfig(cfgfile, ServerSet._read_fstab, ServerSet._write_fstab,
                                devname=devname, config=config)
 
 
 if __name__ == '__main__':
     print
 
-    config = Server.ifconfig('eth0')
+    config = ServerSet.ifconfig('eth0')
     print '* Config of eth0:'
     if config.has_key('mac'):
         print '  HWADDR: %s' % config['mac']
@@ -272,10 +273,10 @@ if __name__ == '__main__':
     print
 
     print '* Write back config of eth0:'
-    print '  Return: %s ' % str(Server.ifconfig('eth0', config))
+    print '  Return: %s ' % str(ServerSet.ifconfig('eth0', config))
     print
 
-    configs = Server.ifconfigs()
+    configs = ServerSet.ifconfigs()
     for ifname, config in configs.iteritems():
         print '* Config of %s:' % ifname
         if config.has_key('mac'):
@@ -288,17 +289,17 @@ if __name__ == '__main__':
             print '  GATEWAY: %s' % config['gw']
         print
 
-    nameservers = Server.nameservers()
+    nameservers = ServerSet.nameservers()
     print '* Nameservers:'
     for nameserver in nameservers:
         print '  %s' % nameserver
     print
 
     print '* Write back nameservers:'
-    print '  Return: %s ' % str(Server.nameservers(nameservers))
+    print '  Return: %s ' % str(ServerSet.nameservers(nameservers))
     print
 
-    timezones = Server.timezone_list()
+    timezones = ServerSet.timezone_list()
     print '* Timezone fullname list (first 10):'
     for i, timezone in enumerate(timezones):
         print '  %s' % timezone
@@ -306,7 +307,7 @@ if __name__ == '__main__':
             break
     print
 
-    timezones = Server.timezone_list('Asia')
+    timezones = ServerSet.timezone_list('Asia')
     print '* Timezone list in Asia (first 10):'
     for i, timezone in enumerate(timezones):
         print '  %s' % timezone
@@ -315,15 +316,15 @@ if __name__ == '__main__':
     print
 
     inifile = os.path.join(os.path.dirname(__file__), '../../data/config.ini')
-    timezone = Server.timezone(inifile)
+    timezone = ServerSet.timezone(inifile)
     print '* Timezone: %s' % timezone
     print
 
     print '* Set timezone: %s' % timezone
-    print '  Return: %s ' % str(Server.timezone(inifile, timezone))
+    print '  Return: %s ' % str(ServerSet.timezone(inifile, timezone))
     print
 
-    config = Server.fstab('sda1')
+    config = ServerSet.fstab('sda1')
     print '* Read sda1 fstab info:'
     print '  dev: %s' % config['dev']
     print '  mount: %s' % config['mount']
@@ -331,9 +332,9 @@ if __name__ == '__main__':
     print
 
     print '* Delete sda1 from /etc/fstab'
-    print '  Return: %s ' % str(Server.fstab('sda1', {}))
+    print '  Return: %s ' % str(ServerSet.fstab('sda1', {}))
     print
 
     print '* Write back to /etc/fstab'
-    print '  Return: %s ' % str(Server.fstab('sda1', config))
+    print '  Return: %s ' % str(ServerSet.fstab('sda1', config))
     print

@@ -9,24 +9,26 @@
 
 '''Package for file operations.'''
 
+import anydbm
+import grp
+import mimetypes
 import os
+import pwd
+import re
+import subprocess
+import time
+from stat import *
+from uuid import uuid4
+
+import magic
+from module.server import ServerInfo
+from module.utils import b2h, ftime
+
 if __name__ == '__main__':
     import sys
     root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     sys.path.insert(0, root_path)
 
-import time
-import pwd
-import grp
-import re
-import magic
-import mimetypes
-import anydbm
-import subprocess
-from stat import *
-from uuid import uuid4
-from utils import b2h, ftime
-from si import Server
 
 
 charsets = ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5', 'euc-jp', 'euc-kr', 'iso-8859-2', 'shift_jis')
@@ -228,7 +230,7 @@ def delete(path):
         return False
 
 def _getmounts():
-    mounts = Server.mounts()
+    mounts = ServerInfo.mounts()
     mounts = [mount['path'] for mount in mounts]
     # let the longest path at the first
     mounts.sort(lambda x,y: cmp(len(y),len(x)))

@@ -7,13 +7,12 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Package for reading and writing nginx configuration.
-"""
+'''Package for reading and writing nginx configuration.'''
 
 import os
 import re
 import glob
-import utils
+from module.utils import version_get
 
 DEBUG = False
 
@@ -796,7 +795,7 @@ def _context_http_init_limit_conn(config=None, version=None):
     if not config or config['_isdirty']:
         config = loadconfig(NGINXCONF, True)
 
-    if not version or utils.version_get(version, '1.1.8'):
+    if not version or version_get(version, '1.1.8'):
         conn_zones = http_get('limit_conn_zone')
         if not conn_zones:
             http_set('limit_conn_zone', '$binary_remote_addr zone=addr:10m', config)

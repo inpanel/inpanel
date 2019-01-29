@@ -8,18 +8,20 @@
 # Intranet is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
-
-import socket
+import base64
+import datetime
 import hashlib
 import hmac
+import os
+import socket
+import sys
 import time
-import datetime
-import base64
+
 from intranet.config import Config
-from intranet.utils import randstr, is_valid_ip
+from module.utils import is_valid_ip, randstr
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

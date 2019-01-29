@@ -56,6 +56,18 @@ restart() {
     start
 }
 
+uninstall() {
+    echo -n $"Deleting Intranet: "
+    stop
+    rm -f /etc/init.d/intranet
+    echo -n $"Intranet Daemon Deleted "
+    mkdir /root/intranet_backup_data
+    cp /usr/local/intranet/data /root/intranet_backup_data
+    echo -n $"Backup Intranet Data to /root/intranet_backup_data"
+    rm -rf /usr/local/intranet
+    echo -n $"Intranet Deleted !"
+}
+
 rh_status() {
     status -p "$pidfile" $exec
     #status $prog

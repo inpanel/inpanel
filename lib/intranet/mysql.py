@@ -21,7 +21,7 @@ import pexpect
 import shlex
 import re
 import time
-import utils
+from module.utils import valid_filename
 
 
 def updatepwd(pwd, oldpwd):
@@ -314,8 +314,8 @@ def export_database(pwd, dbname, exportpath):
     """
     filename = '%s_%s.sql' % (dbname, time.strftime('%Y%m%d_%H%M%S'))
     filepath = os.path.join(exportpath, filename)
-    if not utils.valid_filename(filename): return False
-    
+    if not valid_filename(filename): return False
+
     cmd = 'mysqldump -uroot -p %s' % dbname
     cmd = '/bin/bash -c "%s > %s"' % (cmd, filepath)
     child = pexpect.spawn(cmd)
