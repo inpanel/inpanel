@@ -21,7 +21,7 @@ import tornado.ioloop
 import tornado.httpserver
 import intranet.web
 import intranet.config
-from lib.intranet.utils import make_cookie_secret
+from module.utils import make_cookie_secret
 
 
 def write_pid():
@@ -35,6 +35,8 @@ def main():
     settings = {
         'root_path': root_path,
         'data_path': os.path.join(root_path, 'data'),
+        'conf_path': os.path.join(root_path, 'data', 'config.ini'),
+        'index_path': os.path.join(root_path, 'static', 'index.html'),
         'static_path': os.path.join(root_path, 'static'),
         'xsrf_cookies': True,
         'cookie_secret': make_cookie_secret(),
@@ -56,10 +58,8 @@ def main():
         (r'/backend/(.+)', intranet.web.BackendHandler),
         (r'/sitepackage/(.+)', intranet.web.SitePackageHandler),
         (r'/client/(.+)', intranet.web.ClientHandler),
-        (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)',
-         intranet.web.StaticFileHandler, {'path': settings['static_path']}),
-        (r'/($)', intranet.web.StaticFileHandler,
-         {'path': settings['static_path'] + '/index.html'}),
+        (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)', intranet.web.StaticFileHandler, {'path': settings['static_path']}),
+        (r'/($)', intranet.web.StaticFileHandler, {'path': settings['index_path']}),
         (r'/file/(.+)', intranet.web.FileDownloadHandler, {'path': '/'}),
         (r'/fileupload', intranet.web.FileUploadHandler),
         (r'/version', intranet.web.VersionHandler),
@@ -67,7 +67,7 @@ def main():
     ], **settings)
 
     # read configuration from config.ini
-    cfg = intranet.config.Config(settings['data_path'] + '/config.ini')
+    cfg = intranet.config.Config(settings['conf_path'])
     server_ip = cfg.get('server', 'ip')
     server_port = cfg.get('server', 'port')
 

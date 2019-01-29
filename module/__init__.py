@@ -21,5 +21,9 @@ __all__ = [
     'vsftpd',
     'shell',
     'certificate',
-    'acme'
+    'acme',
+    'server',
+    'service',
+    'sc',
+    'utils'
 ]

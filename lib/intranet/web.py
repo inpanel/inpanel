@@ -32,18 +32,19 @@ import mysql
 import nginx
 import php
 import pyDes
-import sc
-import si
 import ssh
 import tornado
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
-import utils
 import yum
 from async_process import call_subprocess, callbackable
 from module import *
+from module import utils
+from module.server import ServerInfo
+from module.service import Service
+from module.sc import ServerSet
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
@@ -55,11 +56,11 @@ APP_BUILD = '17'
 class Application(tornado.web.Application):
     def __init__(self, handlers=None, default_host="", transforms=None,
                  wsgi=False, **settings):
-        dist = si.Server.dist()
+        dist = ServerInfo.dist()
         settings['dist_name'] = dist['name'].lower()
         settings['dist_version'] = dist['version']
         settings['dist_verint'] = int(dist['version'][0:dist['version'].find('.')])
-        uname = si.Server.uname()
+        uname = ServerInfo.uname()
         settings['arch'] = uname['machine']
         if settings['arch'] == 'i686' and settings['dist_verint'] == 5: settings['arch'] = 'i386'
         #if settings['arch'] == 'unknown': settings['arch'] = uname['machine']
@@ -501,16 +502,16 @@ class QueryHandler(RequestHandler):
                     qs = [item for item, relup in server_items.iteritems() if relup==True]
                 for q in qs:
                     if not server_items.has_key(q): continue
-                    result['%s.%s' % (sec, q)] = getattr(si.Server, q)()
+                    result['%s.%s' % (sec, q)] = getattr(ServerInfo, q)()
             elif sec == 'service':
-                autostart_services = si.Service.autostart_list()
+                autostart_services = Service.autostart_list()
                 if qs == '**':
                     qs = service_items.keys()
                 elif qs == '*':
                     qs = [item for item, relup in service_items.iteritems() if relup==True]
                 for q in qs:
                     if not service_items.has_key(q): continue
-                    status = si.Service.status(q)
+                    status = Service.status(q)
                     result['%s.%s' % (sec, q)] = status and {        'status': status,
                         'autostart': q in autostart_services,
                     } or None
@@ -523,7 +524,7 @@ class QueryHandler(RequestHandler):
                         q, params = q
                         params = params.split(',')
                     if not config_items.has_key(q): continue
-                    result['%s.%s' % (sec, q)] = getattr(sc.Server, q)(*params)
+                    result['%s.%s' % (sec, q)] = getattr(ServerSet, q)(*params)
             elif sec == 'tool':
                 for q in qs:
                     params = []
@@ -533,7 +534,7 @@ class QueryHandler(RequestHandler):
                         q, params = q
                         params = params.split(',')
                     if not tool_items.has_key(q): continue
-                    result['%s.%s' % (sec, q)] = getattr(si.Tool, q)(*params)
+                    result['%s.%s' % (sec, q)] = getattr(ServerInfo.Tool, q)(*params)
 
         self.write(result)
 
@@ -544,17 +545,17 @@ class UtilsNetworkHandler(RequestHandler):
     def get(self, sec, ifname):
         self.authed()
         if sec == 'hostname':
-            self.write({'hostname': si.Server.hostname()})
+            self.write({'hostname': ServerInfo.hostname()})
         elif sec == 'ifnames':
-            ifconfigs = sc.Server.ifconfigs()
+            ifconfigs = ServerSet.ifconfigs()
             # filter lo
             del ifconfigs['lo']
             self.write({'ifnames': sorted(ifconfigs.keys())})
         elif sec == 'ifconfig':
-            ifconfig = sc.Server.ifconfig(_u(ifname))
+            ifconfig = ServerSet.ifconfig(_u(ifname))
             if ifconfig != None: self.write(ifconfig)
         elif sec == 'nameservers':
-            self.write({'nameservers': sc.Server.nameservers()})
+            self.write({'nameservers': ServerSet.nameservers()})
 
     def post(self, sec, ifname):
         self.authed()
@@ -565,7 +566,7 @@ class UtilsNetworkHandler(RequestHandler):
         if sec == 'hostname':
             hostname = self.get_argument('hostname', '')
             if hostname != '':
-                if sc.Server.hostname(hostname):
+                if ServerSet.hostname(hostname):
                     self.write({'code': 0, 'msg': u'主机名保存成功！'})
                 else:
                     self.write({'code': -1, 'msg': u'主机名保存失败！'})
@@ -587,7 +588,7 @@ class UtilsNetworkHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'网关IP %s 不是有效的IP地址！' % gw})
                 return
 
-            if sc.Server.ifconfig(_u(ifname), {'ip': _u(ip), 'mask': _u(mask), 'gw': _u(gw)}):
+            if ServerSet.ifconfig(_u(ifname), {'ip': _u(ip), 'mask': _u(mask), 'gw': _u(gw)}):
                 self.write({'code': 0, 'msg': u'IP设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'IP设置保存失败！'})
@@ -604,7 +605,7 @@ class UtilsNetworkHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % nameserver})
                     return
 
-            if sc.Server.nameservers(nameservers):
+            if ServerSet.nameservers(nameservers):
                 self.write({'code': 0, 'msg': u'DNS设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'DNS设置保存失败！'})
@@ -624,14 +625,14 @@ class UtilsTimeHandler(RequestHandler):
     def get(self, sec, region=None):
         self.authed()
         if sec == 'datetime':
-            self.write(si.Server.datetime(asstruct=True))
+            self.write(ServerInfo.datetime(asstruct=True))
         elif sec == 'timezone':
-            self.write({'timezone': sc.Server.timezone(self.inifile)})
+            self.write({'timezone': ServerSet.timezone(self.inifile)})
         elif sec == 'timezone_list':
             if region == None:
-                self.write({'regions': sorted(sc.Server.timezone_regions())})
+                self.write({'regions': sorted(ServerSet.timezone_regions())})
             else:
-                self.write({'cities': sorted(sc.Server.timezone_list(region))})
+                self.write({'cities': sorted(ServerSet.timezone_list(region))})
 
     def post(self, sec, ifname):
         self.authed()
@@ -641,7 +642,7 @@ class UtilsTimeHandler(RequestHandler):
 
         if sec == 'timezone':
             timezone = self.get_argument('timezone', '')
-            if sc.Server.timezone(self.inifile, _u(timezone)):
+            if ServerSet.timezone(self.inifile, _u(timezone)):
                 self.write({'code': 0, 'msg': u'时区设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'时区设置保存失败！'})
@@ -791,7 +792,7 @@ class SettingHandler(RequestHandler):
                 if not utils.is_valid_ip(_u(ip)):
                     self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % ip})
                     return
-                netifaces = si.Server.netifaces()
+                netifaces = ServerInfo.netifaces()
                 ips = [netiface['ip'] for netiface in netifaces]
                 if not ip in ips:
                     self.write({'code': -1, 'msg': u'<p>%s 不是该服务器的IP地址！</p>'\
@@ -902,7 +903,7 @@ class OperationHandler(RequestHandler):
 
             if fdisk.delete('/dev/%s' % _u(devname)):
                 # remove config from /etc/fstab
-                sc.Server.fstab(_u(devname), {
+                ServerSet.fstab(_u(devname), {
                     'devname': _u(devname),
                     'mount': None,
                 })
@@ -2222,7 +2223,7 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
                     return
 
-            if service not in si.Service.support_services:
+            if service not in Service.support_services:
                 self.write({'code': -1, 'msg': u'未支持的服务！'})
                 return
             if not name: name = service
@@ -2694,7 +2695,7 @@ class BackendHandler(RequestHandler):
             and self.settings['dist_name'] in ('redhat', 'centos')\
             and self.settings['dist_verint'] == 5:
             # check if current hostname line in /etc/hosts have a char '.'
-            hostname = si.Server.hostname()
+            hostname = ServerInfo.hostname()
             hostname_found = False
             dot_found = False
             lines = []
@@ -2807,7 +2808,7 @@ class BackendHandler(RequestHandler):
 
         if action == 'mount':
             # write config to /etc/fstab
-            sc.Server.fstab(_u(devname), {
+            ServerSet.fstab(_u(devname), {
                 'devname': _u(devname),
                 'mount': _u(mountpoint),
                 'fstype': _u(fstype),

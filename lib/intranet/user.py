@@ -10,19 +10,19 @@
 """Package for user management.
 """
 
+import grp
 import os
+import pwd
+import shlex
+import subprocess
+
+import pexpect
+
 if __name__ == '__main__':
     import sys
     root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     sys.path.insert(0, root_path)
 
-import pexpect
-import shlex
-import time
-import pwd
-import grp
-import subprocess
-from utils import b2h, ftime
 
 
 def listuser(fullinfo=True):

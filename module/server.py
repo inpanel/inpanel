@@ -11,7 +11,6 @@
 
 import datetime
 import fcntl
-import glob
 import multiprocessing
 import os
 import platform
@@ -38,7 +37,7 @@ def div_percent(a, b):
     return '%.2f%%' % (round(float(a)/b, 4) * 100)
 
 
-class Server(object):
+class ServerInfo(object):
     @classmethod
     def hostname(self):
         with open('/proc/sys/kernel/hostname', 'r') as f:
@@ -311,7 +310,7 @@ class Server(object):
     def distribution(self):
         dist = platform.linux_distribution()
         return ' '.join(dist)
-    
+
     @classmethod
     def dist(self):
         dist = platform.linux_distribution(full_distribution_name=0)
@@ -365,7 +364,7 @@ class Server(object):
             'cpu_count': cpu_count,
             'core_count': len(cores),
         }
-    
+
     @classmethod
     def partinfo(self, uuid=None, devname=None):
         """Read partition info including uuid and filesystem.
@@ -420,12 +419,12 @@ class Server(object):
                 'partitions': []
             }
         }
-        
+
         # read mount points
-        mounts = Server.mounts(True)
-        
+        mounts = ServerInfo.mounts(True)
+
         # scan for uuid and filesystem of partitions
-        blks = Server.partinfo()
+        blks = ServerInfo.partinfo()
 
         # OpenVZ may not have blk info
         if not blks: return disks
@@ -580,7 +579,7 @@ class Server(object):
                 unpartition = b2h(unpartition)
             disks['partitions'][i]['unpartition'] = unpartition
         return disks
-    
+
     @classmethod
     def virt(self):
         """ Detect the virtual tech of system.
@@ -606,108 +605,6 @@ class Server(object):
         return ''
 
 
-class Service(object):
-    '''supported service operate script'''
-    support_services = [
-        'intranet',
-        'nginx',
-        'httpd',
-        'vsftpd',
-        'mysqld',
-        'redis',
-        'memcached',
-        'mongod',
-        'php-fpm',
-        'postfix',
-        'sendmail',
-        'sshd',
-        'iptables',
-        'crond',
-        'ntpd',
-        'named',
-        'lighttpd',
-        'proftpd',
-        'pure-ftpd'
-        ]
-
-    pidnames = {
-        'sendmail': ('sm-client', ),
-    }
-
-    @classmethod
-    def status(self, service):
-        initscript = '/etc/init.d/%s' % service
-        if not os.path.exists(initscript):
-            initscript = '/usr/lib/systemd/system/%s.service' % service
-            if not os.path.exists(initscript):
-                return None
-
-        pidfile = '/var/run/%s.pid' % service
-        if not os.path.exists(pidfile):
-            p = glob.glob('/var/run/%s/*.pid' % service)
-            if len(p)>0:
-                pidfile = p[0]
-            else:
-                # some services have special pid filename
-                if Service.pidnames.has_key(service):
-                    for pidname in Service.pidnames[service]:
-                        pidfile = '/var/run/%s.pid' % pidname
-                        if os.path.exists(pidfile):
-                            break
-                        else:
-                            pidfile = None
-                else:
-                    pidfile = None
-        if not pidfile:
-            # not always corrent, some services dead but the lock still exists
-            ## some services don't have the pidfile
-            #if os.path.exists('/var/lock/subsys/%s' % service):
-            #    return 'running'
-
-            # try execute pidof to find the pidfile
-            p = subprocess.Popen(shlex.split('pidof -c -o %%PPID -x %s' % service), stdout=subprocess.PIPE, close_fds=True)
-            pid = p.stdout.read().strip()
-            p.wait()
-            
-            if not pid: return 'stopped'
-        
-        if pidfile:
-            with file(pidfile) as f: pid = f.readline().strip()
-            if not pid: return 'stopped'
-            proc = '/proc/%s' % pid
-            if not os.path.exists(proc):
-                return 'stopped'
-        
-        return 'running'
-
-    @classmethod
-    def autostart_list(self):
-        """Return a list of the autostart service name.
-        """
-        startlevel = -1
-        with open('/etc/inittab') as f:
-            for line in f:
-                if line.startswith('id:'):
-                    startlevel = line.split(':')[1]
-                    break
-        if startlevel == -1:
-            p = subprocess.Popen(shlex.split('runlevel'), stdout=subprocess.PIPE, close_fds=True)
-            startlevel = int(p.stdout.read().strip().replace('N ', ''))
-            p.wait()
-
-        rcpath = '/etc/rc.d/rc%s.d/' % startlevel
-        enableServicePath = '/etc/systemd/system/multi-user.target.wants/'
-        services = [
-            os.path.basename(os.readlink(filepath))
-            for filepath in glob.glob('%s/S*' % rcpath)
-        ]
-        services += [
-            os.path.basename(filePath).replace('.service', '')
-            for filePath in glob.glob('%s*.service' % enableServicePath)
-        ]
-        return services
-
-
 class Tool(object):
 
     @classmethod
@@ -725,25 +622,25 @@ class Tool(object):
 
 if __name__ == '__main__':
     print
-    print '* Hostname: %s' % Server.hostname()
+    print '* Hostname: %s' % ServerInfo.hostname()
     print
 
-    print '* Server time: %s' % Server.datetime()
+    print '* Server time: %s' % ServerInfo.datetime()
     print
     
-    uptime = Server.uptime()
+    uptime = ServerInfo.uptime()
     print '* Uptime: %s' % uptime['up']
     print '* Idletime: %s' % uptime['idle']
     print '* Idlerate: %s' % uptime['idle_rate']
     print
 
-    loadavg = Server.loadavg()
+    loadavg = ServerInfo.loadavg()
     print '* Last 1 min processes: %s' % loadavg['1min']
     print '* Last 15 min processes: %s' % loadavg['5min']
     print '* Last 15 min processes: %s' % loadavg['15min']
     print
 
-    cpustat = Server.cpustat()
+    cpustat = ServerInfo.cpustat()
     tstat = cpustat['total']
     print '* Total CPU stats:'
     for k, v in tstat.iteritems():
@@ -754,7 +651,7 @@ if __name__ == '__main__':
             print '  %s: %d' % (k, v)
     print
     
-    meminfo = Server.meminfo()
+    meminfo = ServerInfo.meminfo()
     print '* Memory total: %s' % meminfo['mem_total']
     print '* Memory used: %s (%s)' % (meminfo['mem_used'], meminfo['mem_used_rate'])
     print '* Memory free: %s (%s)' % (meminfo['mem_free'], meminfo['mem_free_rate'])
@@ -765,7 +662,7 @@ if __name__ == '__main__':
     print '* Swap free: %s (%s)' % (meminfo['swap_free'], meminfo['swap_free_rate'])
     print
     
-    mounts = Server.mounts(True)
+    mounts = ServerInfo.mounts(True)
     for mount in mounts:
         print '* Mount device: %s' % mount['dev']
         if mount.has_key('major'): print '* Dev node: (%d, %d)' % (mount['major'], mount['minor'])
@@ -775,7 +672,7 @@ if __name__ == '__main__':
         print '* Used space: %s (%s)' % (mount['used'], mount['used_rate'])
         print 
     
-    netifaces = Server.netifaces()
+    netifaces = ServerInfo.netifaces()
     for netiface in netifaces:
         print '* Interface name: %s' % netiface['name']
         print '* Interface status: %s' % netiface['status']
@@ -789,31 +686,31 @@ if __name__ == '__main__':
         print '* Data transmit: %s' % netiface['tx']
         print 
 
-    nameservers = Server.nameservers()
+    nameservers = ServerInfo.nameservers()
     print '* Name servers:'
     for nameserver in nameservers:
         print '  %s' % nameserver
     print 
 
-    distribution = Server.distribution()
+    distribution = ServerInfo.distribution()
     print '* Linux distribution: %s' % distribution
     print 
 
-    uname = Server.uname()
+    uname = ServerInfo.uname()
     print '* Kernel name: %s' % uname['kernel_name']
     print '* Kernel release: %s' % uname['kernel_release']
     print '* Kernel version: %s' % uname['kernel_version']
     print '* Machine: %s' % uname['machine']
     print 
 
-    cpuinfo = Server.cpuinfo()
+    cpuinfo = ServerInfo.cpuinfo()
     print '* CPU count: %d' % cpuinfo['cpu_count']
     print '* CPU cores: %d' % cpuinfo['core_count']
     for core in cpuinfo['cores']:
         print '* CPU core: %s (%s)' % (core['model'], core['bits'])
     print 
 
-    diskinfo = Server.diskinfo()
+    diskinfo = ServerInfo.diskinfo()
     count = diskinfo['count']
     totalsize = diskinfo['totalsize']
     partitions = diskinfo['partitions']
@@ -861,15 +758,10 @@ if __name__ == '__main__':
         if partition.has_key('mount'): print '  - Mount point: %s' % partition['mount']
         if partition['is_hw']: print '  - Partition count: %d' % partition['partcount']
         print 
-    
-    autostart_services = Service.autostart_list()
-    for service in Service.support_services:
-        print '* Status of %s: %s (autostart: %s)' % (service, Service.status(service), str(service in autostart_services))
-    print
 
     print '* Support file systems:'
     for fstype in Tool.supportfs():
         print '  - %s' % fstype
     print
     
-    print '* Virtual Tech: %s' % Server.virt()
+    print '* Virtual Tech: %s' % ServerInfo.virt()

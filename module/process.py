@@ -13,51 +13,52 @@ import os
 
 def get_process_list():
 
-    process = {}
-    l = []
+    p = []
     for subdir in os.listdir('/proc'):
         if subdir.isdigit():
-            p = {'pid': subdir, 'name': get_process_name(subdir)}
-            l.append(p)
-    process['process'] = l
-    process['total'] = len(l)
-    return process
+            pn = get_process_name(subdir)
+            if pn:
+                p.append({'pid': int(subdir), 'name': pn})
+    return {'process': p, 'total': len(p)}
 
 
 def get_process_name(pid):
     if not pid:
         return False
-    name = ''
+    name = None
     comm = '/proc/%s/comm' % pid
-    with open(comm, 'r') as f:
-        line = f.readline()
-        name = line.strip()
+    if os.path.exists(comm):
+        with open(comm, 'r') as f:
+            line = f.readline()
+            name = line.strip()
     if not name:
         sched = '/proc/%s/sched' % pid
-        with open(sched, 'r') as f:
-            line = f.readline()
-            name = line.split()[0]
+        if os.path.exists(sched):
+            with open(sched, 'r') as f:
+                line = f.readline()
+                name = line.split()[0]
     if not name:
         status = '/proc/%s/status' % pid
-        with open(status, 'r') as f:
-            line = f.readline()
-            name = line.split()[1]
+        if os.path.exists(status):
+            with open(status, 'r') as f:
+                line = f.readline()
+                name = line.split()[1]
     if not name:
         stat = '/proc/%s/stat' % pid
-        with open(stat, 'r') as f:
-            # name = line.strip()
-            # name = line.replace('(','').replace(')','')
-            line = f.readline()
-            line = line.split()[1]
-            if line[0] == '(':
-                line = line[1:]
-            if line[-1] == ')':
-                line = line[:-1]
-            name = line
+        if os.path.exists(stat):
+            with open(stat, 'r') as f:
+                # name = line.strip()
+                # name = line.replace('(','').replace(')','')
+                line = f.readline()
+                line = line.split()[1]
+                if line[0] == '(':
+                    line = line[1:]
+                if line[-1] == ')':
+                    line = line[:-1]
+                name = line
     return name
 
 
-# if __name__ == '__main__':
-#     pids = process_list()
-#     print(pids)
-#     print('Total: {0}'.format(len(pids)))
+if __name__ == '__main__':
+    pids = get_process_list()
+    print(pids)
