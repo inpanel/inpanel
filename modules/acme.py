@@ -263,10 +263,15 @@ class ACME():
         print('Certificate signed!')
         return certificate_pem
 
-    def revoke_certificate(self, crt):
+    def ertificate_revoke(self, crt):
+        '''revoke certificate'''
         print(crt)
         print('Certificate revoked!')
 
+    def certificate_renew(self, crt):
+        '''renew certificate'''
+        print(crt)
+        print('Certificate updated!')
 
 # if __name__ == "__main__":
 #     # import certificate
