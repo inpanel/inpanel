@@ -18,7 +18,8 @@
 	<div class="tabbable" ng-init="load()">
 		<ul class="nav nav-tabs">
 			<li ng-class="'active' | iftrue:activeTabName=='basic'"><a href="#basic" ng-click="sec('basic')" data-toggle="tab">基本设置</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='ssl'"><a href="#ssl" ng-click="sec('ssl')" data-toggle="tab">SSL设置</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='ssl'"><a href="#ssl" ng-click="sec('ssl')" data-toggle="tab">SSL</a></li>
+			<li ng-class="'active' | iftrue:activeTabName=='rewrite'"><a href="#rewrite" ng-click="sec('rewrite')" data-toggle="tab">重定向</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='advanced'"><a href="#advanced" ng-click="sec('advanced')" data-toggle="tab">高级设置</a></li>
 		</ul>
 		<div class="tab-content">
@@ -358,24 +359,19 @@
 												</select>
 											</div>
 										</div>
-										<div class="form-inline" style="margin-top:5px;margin-bottom:0" ng-show="location.engine=='static'">
-											<label class="col-sm-2 control-label">Rewrite</label>
-											<div class="controls">
-												<label class="checkbox-inline">
-													<input ng-model="location.static.rewrite_enable" ng-disabled="processing" type="checkbox"> 在该路径下启用 Rewrite
-												</label>
-											</div>
+										<div class="form-inline" ng-show="location.engine=='static'">
+											<label class="checkbox-inline">
+												<input ng-model="location.static.rewrite_enable" ng-disabled="processing" type="checkbox"> 在该路径下启用 Rewrite
+											</label>
 										</div>
-										<div class="form-inline" ng-show="location.static.rewrite_enable" style="display:none">
-											<div class="controls">
-												<label class="checkbox-inline">
-													<input ng-model="location.static.rewrite_detect_file" ng-disabled="processing" type="checkbox"> 仅当文件不存在时启用 Rewrite
-												</label>
-												<br>
-												<textarea class="form-control" ng-model="location.static.rewrite_rules" style="width:100%;height:100px;margin-top:5px;"></textarea>
-												<br>
-												<a href="https://intranet.pub/docs?sec=nginx_rewrite" target="_blank">常用 Rewrite 规则参考</a>
-											</div>
+										<div class="form-inline" ng-show="location.engine=='static' && location.static.rewrite_enable" style="display:none">
+											<label class="checkbox-inline">
+												<input ng-model="location.static.rewrite_detect_file" ng-disabled="processing" type="checkbox"> 仅当文件不存在时启用 Rewrite
+											</label>
+										</div>
+										<div class="form-inline" ng-show="location.engine=='static' && location.static.rewrite_enable" style="display:none">
+											<textarea class="form-control" ng-model="location.static.rewrite_rules" style="width:100%;height:100px;margin-top:5px;"></textarea>
+											<p><a href="https://intranet.pub/docs?sec=nginx_rewrite" target="_blank">常用 Rewrite 规则参考</a></p>
 										</div>
 										<div class="form-inline" style="margin-top:5px;margin-bottom:0" ng-show="location.engine=='fastcgi'">
 											<label class="col-sm-2 control-label">Rewrite</label>
@@ -404,9 +400,6 @@
 			</div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ssl'" id="ssl">
 				<div class="form-horizontal form-horizontal-small">
-					<div class="alert alert-info">
-						<p>请勿将 SSL 证书相关的文件放在站点目录下</p>
-					</div>
 					<div class="form-group">
 						<label class="col-sm-2 control-label">SSL 开关</label>
 						<div class="col-sm-10">
@@ -435,6 +428,30 @@
 									<button class="btn btn-default" ng-click="selectsslkey()" title="选择密钥文件"><i class="glyphicon glyphicon-folder-open"></i></button>
 								</div>
 								<input ng-model="setting.ssl_key" type="text" class="form-control" placeholder="SSL 密钥文件路径">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='rewrite'" id="rewrite">
+				<div class="form-horizontal form-horizontal-small">
+					<div class="form-group form-inline">
+						<label class="col-sm-2 control-label">Rewrite</label>
+						<div class="col-sm-10">
+							<div class="form-inline" style="margin-bottom:10px;">
+								<label class="checkbox-inline"><input ng-model="setting.rewrite_enable" type="checkbox"> 启用全局 Rewrite</label>
+							</div>
+							<div class="form-inline" style="margin-bottom:10px;">
+								<select class="form-control" ng-model="rewrite_template" ng-disabled="!setting.rewrite_enable">
+									<option value="">常用 Rewrite 规则</option>
+									<option value="301_1">301跳转，保留原路径</option>
+									<option value="301_2">301跳转，不保留原路径</option>
+									<option value="302_1">302跳转，保留原路径</option>
+									<option value="302_2">302跳转，不保留原路径</option>
+								</select>
+							</div>
+							<div class="form-inline" style="margin-bottom:10px;">
+								<textarea class="form-control" ng-model="setting.rewrite_rules" ng-disabled="!setting.rewrite_enable" style="width:100%;height:100px;"></textarea>
 							</div>
 						</div>
 					</div>
@@ -489,31 +506,27 @@
 							<div ng-repeat="listen in setting.listens">
 								<div class="input-group">
 									<input class="form-control" ng-model="listen.ip" type="text" placeholder="默认监听所有可用IP">
-									<span class="input-group-addon">:</span>
-									<input class="form-control" ng-model="listen.port" type="text" placeholder="端口" style="width: 80px;">
+									<div class="input-group-addon" style="border-left: none;border-right:none;">:</div>
+									<input class="form-control" ng-model="listen.port" type="text" placeholder="端口">
+									<div class="input-group-btn">
+										<button class="btn btn-default" ng-click="deletelisten()" ng-disabled="setting.listens.length<2" title="删除监听地址"><i class="glyphicon glyphicon-minus"></i></button>
+										<button class="btn btn-default" ng-click="addlisten()" title="增加监听地址"><i class="glyphicon glyphicon-plus"></i></button>
+										<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">端口 <span class="caret"></span></button>
+										<ul class="dropdown-menu dropdown-menu-right">
+											<li><a href="javascript:void(0);" ng-click="listen.port=80">80</a></li>
+											<li><a href="javascript:void(0);" ng-click="listen.port=443">443</a></li>
+											<li><a href="javascript:void(0);" ng-click="listen.port=81">81</a></li>
+											<li><a href="javascript:void(0);" ng-click="listen.port=8080">8080</a></li>
+											<li><a href="javascript:void(0);" ng-click="listen.port=8899">8899</a></li>
+											<li><a href="javascript:void(0);" ng-click="listen.port=9090">9090</a></li>
+											<!-- <li role="separator" class="divider"></li> -->
+										</ul>
+									</div>
 								</div>
-								<button class="btn btn-default" ng-click="deletelisten()" ng-show="setting.listens.length>1" title="删除这个监听地址"><i class="glyphicon glyphicon-minus"></i></button>
-								<button class="btn btn-default" ng-click="addlisten()" ng-show="$index==setting.listens.length-1" title="增加一个监听地址"><i class="glyphicon glyphicon-plus"></i></button>
 								<p class="form-inline">
 									<label class="checkbox-inline"><input ng-model="listen.ssl" type="checkbox"> 启用SSL加密（https）</label>
 									<label class="checkbox-inline"><input ng-model="listen.default_server" type="checkbox"> 作为默认站点</label>
 								</p>
-							</div>
-						</div>
-					</div>
-					<div class="form-group">
-						<label class="col-sm-2 control-label">Rewrite</label>
-						<div class="col-sm-10">
-							<label class="checkbox-inline"><input ng-model="setting.rewrite_enable" type="checkbox"> 启用全局 Rewrite</label>
-							<div class="form-inline" ng-show="setting.rewrite_enable" style="margin-top:10px;display:none">
-								<select class="form-control" ng-model="rewrite_template">
-									<option value="">常用 Rewrite 规则</option>
-									<option value="301_1">301跳转，保留原路径</option>
-									<option value="301_2">301跳转，不保留原路径</option>
-									<option value="302_1">302跳转，保留原路径</option>
-									<option value="302_2">302跳转，不保留原路径</option>
-								</select><br>
-								<textarea class="form-control" ng-model="setting.rewrite_rules" style="width:100%;height:100px;margin-top:15px;"></textarea>
 							</div>
 						</div>
 					</div>
