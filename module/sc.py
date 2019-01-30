@@ -14,10 +14,10 @@ import os
 import shutil
 from config import Config
 
-from module.configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
+from modules.configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
                                  readconfig, saveconfig, writeconfig)
-from module.server import ServerInfo
-from module.shell import run as shell_run
+from modules.server import ServerInfo
+from modules.shell import run as shell_run
 
 
 class ServerSet(object):

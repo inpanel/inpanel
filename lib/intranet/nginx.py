@@ -12,7 +12,7 @@
 import os
 import re
 import glob
-from module.utils import version_get
+from modules.utils import version_get
 
 DEBUG = False
 

@@ -6,9 +6,9 @@
 # Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for vsftpd configuration management."""
+'''Module for vsftpd configuration management.'''
 
-from module.utils import cfg_get_array, cfg_set_array
+from modules.utils import cfg_get_array, cfg_set_array
 
 config_file = '/etc/vsftpd/vsftpd.conf'
 delimiter = '='

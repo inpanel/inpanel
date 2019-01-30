@@ -21,7 +21,7 @@ import tornado.ioloop
 import tornado.httpserver
 import intranet.web
 import intranet.config
-from module.utils import make_cookie_secret
+from modules.utils import make_cookie_secret
 
 
 def write_pid():

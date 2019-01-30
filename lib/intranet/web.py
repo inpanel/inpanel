@@ -40,11 +40,11 @@ import tornado.ioloop
 import tornado.web
 import yum
 from async_process import call_subprocess, callbackable
-from module import *
-from module import utils
-from module.server import ServerInfo
-from module.service import Service
-from module.sc import ServerSet
+from modules import *
+from modules import utils
+from modules.server import ServerInfo
+from modules.service import Service
+from modules.sc import ServerSet
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
