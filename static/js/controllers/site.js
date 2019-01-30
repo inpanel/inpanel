@@ -348,7 +348,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
 
         var module = 'site.nginx';
         var tab_section = Module.getSection();
-        var tab_section_enabled = ['basic', 'ssl', 'advanced'];
+        var tab_section_enabled = ['basic', 'ssl', 'rewrite', 'advanced'];
         Module.init(module, action == 'new' ? '新建站点（Nginx）' : '编辑站点（Nginx）');
         $scope.loaded = false;
         $scope.showglobaladv = false;
