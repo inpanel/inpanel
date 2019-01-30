@@ -18,7 +18,7 @@ import sys
 import time
 
 from intranet.config import Config
-from module.utils import is_valid_ip, randstr
+from modules.utils import is_valid_ip, randstr
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
 

@@ -21,8 +21,8 @@ from stat import *
 from uuid import uuid4
 
 import magic
-from module.server import ServerInfo
-from module.utils import b2h, ftime
+from modules.server import ServerInfo
+from modules.utils import b2h, ftime
 
 if __name__ == '__main__':
     import sys

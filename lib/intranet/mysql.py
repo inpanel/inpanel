@@ -21,7 +21,7 @@ import pexpect
 import shlex
 import re
 import time
-from module.utils import valid_filename
+from modules.utils import valid_filename
 
 
 def updatepwd(pwd, oldpwd):
