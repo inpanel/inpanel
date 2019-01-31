@@ -7,16 +7,16 @@
 # Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for config file management.'''
+'''Module for config.ini Management.'''
 
 import os
 
 from lib.filelock import FileLock
 
 try:
-    from ConfigParser import ConfigParser
+    from ConfigParser import ConfigParser  # python 2.x
 except:
-    from configparser import ConfigParser
+    from configparser import ConfigParser  # python 3.x
 
 
 class Config(object):

@@ -12,10 +12,10 @@
 
 import os
 import shutil
-from config import Config
 
+from modules.config import Config
 from modules.configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
-                                 readconfig, saveconfig, writeconfig)
+                                  readconfig, saveconfig, writeconfig)
 from modules.server import ServerInfo
 from modules.shell import run as shell_run
 

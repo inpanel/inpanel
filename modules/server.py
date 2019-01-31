@@ -605,7 +605,7 @@ class ServerInfo(object):
         return ''
 
 
-class Tool(object):
+class ServerTool(object):
 
     @classmethod
     def supportfs(self):
@@ -760,7 +760,7 @@ if __name__ == '__main__':
         print 
 
     print '* Support file systems:'
-    for fstype in Tool.supportfs():
+    for fstype in ServerTool.supportfs():
         print '  - %s' % fstype
     print
     

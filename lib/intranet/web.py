@@ -11,26 +11,20 @@ import base64
 import binascii
 import datetime
 import functools
-import hashlib
 import hmac
 import json
 import logging
 import os
-import platform
 import re
 import subprocess
 import time
-# import urllib2
 import user
 import uuid
-from config import Config
 
-import chkconfig
 import fdisk
 import file
 import mysql
 import nginx
-import php
 import pyDes
 import ssh
 import tornado
@@ -38,13 +32,14 @@ import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
-import yum
 from async_process import call_subprocess, callbackable
-from modules import *
-from modules import utils
-from modules.server import ServerInfo
-from modules.service import Service
+from modules import (acme, aliyuncs, apache, certificate, configloader, cron,
+                     lighttpd, named, php, process, proftpd, pureftpd, remote,
+                     utils, vsftpd, yum)
+from modules.config import Config
 from modules.sc import ServerSet
+from modules.server import ServerInfo, ServerTool
+from modules.service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
@@ -534,7 +529,7 @@ class QueryHandler(RequestHandler):
                         q, params = q
                         params = params.split(',')
                     if not tool_items.has_key(q): continue
-                    result['%s.%s' % (sec, q)] = getattr(ServerInfo.Tool, q)(*params)
+                    result['%s.%s' % (sec, q)] = getattr(ServerTool, q)(*params)
 
         self.write(result)
 
@@ -925,9 +920,9 @@ class OperationHandler(RequestHandler):
         service = self.get_argument('service', '')
         autostart = self.get_argument('autostart', '')
         if not name: name = service
-        
+
         autostart_str = {'on': u'启用', 'off': u'禁用'}
-        if chkconfig.set(_u(service), autostart == 'on' and True or False):
+        if Service.autostart_set(_u(service), autostart == 'on' and True or False):
             self.write({'code': 0, 'msg': u'成功%s %s 自动启动！' % (autostart_str[autostart], name)})
         else:
             self.write({'code': -1, 'msg': u'%s %s 自动启动失败！' % (autostart_str[autostart], name)})
@@ -2114,19 +2109,19 @@ class OperationHandler(RequestHandler):
 
 
 class PageHandler(RequestHandler):
-    """Return some page.
+    """Return single page.
     """
     def get(self, op, action):
         try:
             self.authed()
         except:
-            self.write(u'没有权限，请<a href="/">登录</a>后再查看该页！')
+            self.write(u'<!DOCTYPE html><html><head><title>Permission Denied</title><meta charset="utf-8"/></head><body>没有权限，请<a href="/">登录</a>后再查看该页！<body></html>')
             return
         if hasattr(self, op):
             getattr(self, op)(action)
         else:
             self.write(u'未定义的操作！')
-    
+
     def php(self, action):
         if action == 'phpinfo':
             # =PHPE9568F34-D428-11d2-A769-00AA001ACF42 (PHP Logo)

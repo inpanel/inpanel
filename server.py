@@ -20,7 +20,7 @@ import ssl
 import tornado.ioloop
 import tornado.httpserver
 import intranet.web
-import intranet.config
+from modules.config import Config
 from modules.utils import make_cookie_secret
 
 
@@ -67,7 +67,7 @@ def main():
     ], **settings)
 
     # read configuration from config.ini
-    cfg = intranet.config.Config(settings['conf_path'])
+    cfg = Config(settings['conf_path'])
     server_ip = cfg.get('server', 'ip')
     server_port = cfg.get('server', 'port')
 
