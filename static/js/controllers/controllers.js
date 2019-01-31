@@ -274,21 +274,21 @@ var SettingCtrl = [
         $scope.passwordc = '';
 
         $scope.loadAuthInfo = function () {
-            Request.get('/setting/auth', function (data) {
-                $scope.username = data.username;
-                $scope.passwordcheck = data.passwordcheck;
+            Request.get('/setting/auth', function (res) {
+                $scope.username = res.username;
+                $scope.passwordcheck = res.passwordcheck;
             });
         }
         $scope.loadServerInfo = function () {
-            Request.get('/setting/server', function (data) {
-                $scope.ip = data.ip;
-                $scope.port = data.port;
+            Request.get('/setting/server', function (res) {
+                $scope.ip = res.ip;
+                $scope.port = res.port;
             });
         }
         $scope.loadAccessKey = function () {
-            Request.get('/setting/accesskey', function (data) {
-                $scope.accesskey = data.accesskey;
-                $scope.accesskeyenable = data.accesskeyenable;
+            Request.get('/setting/accesskey', function (res) {
+                $scope.accesskey = res.accesskey;
+                $scope.accesskeyenable = res.accesskeyenable;
             });
         }
         $scope.updateAuthInfo = function () {
@@ -297,24 +297,24 @@ var SettingCtrl = [
                 password: $scope.password ? hex_md5($scope.password) : '',
                 passwordc: $scope.passwordc ? hex_md5($scope.passwordc) : '',
                 passwordcheck: $scope.passwordcheck
-            }, function (data) {
-                if (data.code == 0) $scope.loadAuthInfo();
+            }, function (res) {
+                if (res.code == 0) $scope.loadAuthInfo();
             });
         };
         $scope.updateServerInfo = function () {
             Request.post('/setting/server', {
                 port: $scope.port,
                 ip: $scope.ip
-            }, function () {
-                if (data.code == 0) $scope.loadServerInfo();
+            }, function (res) {
+                if (res.code == 0) $scope.loadServerInfo();
             });
         };
         $scope.updateAccessKey = function () {
             Request.post('/setting/accesskey', {
                 accesskey: $scope.accesskey,
                 accesskeyenable: $scope.accesskeyenable
-            }, function (data) {
-                if (data.code == 0) $scope.loadAccessKey();
+            }, function (res) {
+                if (res.code == 0) $scope.loadAccessKey();
             });
         };
         $scope.checkUpVersion = function () {
