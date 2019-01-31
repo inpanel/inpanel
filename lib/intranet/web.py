@@ -30,8 +30,8 @@ import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
-from lib import pyDes
-from lib.async_process import call_subprocess, callbackable
+import pyDes
+from async_process import call_subprocess, callbackable
 from modules import (acme, aliyuncs, apache, certificate, configloader, cron,
                      lighttpd, mysql, named, php, process, proftpd, pureftpd,
                      remote, utils, vsftpd, yum)
@@ -45,6 +45,12 @@ from tornado.escape import utf8 as _u
 APP_NAME = 'Intranet'
 APP_VERSION = '1.1.1'
 APP_BUILD = '17'
+APP_RELEASETIME = '2018-12-20 18:57:43 CST'
+PUB_API = {
+    'latest': 'http://api.intranet.pub/?s=latest',
+    'site_packages': 'http://api.intranet.pub/?s=site_packages',
+    'download_package': 'http://api.intranet.pub/?s=site_packages&a=download'
+}
 
 
 class Application(tornado.web.Application):
@@ -208,8 +214,10 @@ class VersionHandler(RequestHandler):
     def get(self):
         self.authed()
         version_info = {
-            'version': APP_VERSION,
+            'name': APP_NAME,
             'build': APP_BUILD,
+            'version': APP_VERSION,
+            'releasetime': APP_RELEASETIME
         }
         self.write(version_info)
 
@@ -345,7 +353,7 @@ class SitePackageHandler(RequestHandler):
         # fetch from api
         if not packages:
             http = tornado.httpclient.AsyncHTTPClient()
-            response = yield tornado.gen.Task(http.fetch, 'http://api.intranet.pub/?s=site_packages')
+            response = yield tornado.gen.Task(http.fetch, PUB_API['site_packages'])
             if response.error:
                 self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
                 self.finish()
@@ -389,7 +397,7 @@ class SitePackageHandler(RequestHandler):
         if not package:
             self.write({'code': -1, 'msg': u'获取安装包下载地址失败！'})
             return
-        
+
         filename = '%s-%s' % (name, version)
         workpath = os.path.join(self.settings['package_path'], filename)
         if not os.path.exists(workpath): os.mkdir(workpath)
@@ -398,7 +406,7 @@ class SitePackageHandler(RequestHandler):
         filepath = os.path.join(self.settings['package_path'], filenameext)
 
         self.write({'code': 0, 'msg': '', 'data': {
-            'url': 'http://api.intranet.pub/?s=site_packages&a=download?name=%s&version=%s' % (name, version),
+            'url': '%s&name=%s&version=%s' % (PUB_API['download_package'], name, version),
             'path': filepath,
             'temp': workpath,
         }})
@@ -725,7 +733,7 @@ class SettingHandler(RequestHandler):
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
                 http = tornado.httpclient.AsyncHTTPClient()
-                response = yield tornado.gen.Task(http.fetch, 'http://api.intranet.pub/?s=latest')
+                response = yield tornado.gen.Task(http.fetch, PUB_API['latest'])
                 if response.error:
                     self.write({'code': -1, 'msg': u'获取新版本信息失败！'})
                 else:
@@ -2610,7 +2618,7 @@ class BackendHandler(RequestHandler):
 
         # install the latest version
         http = tornado.httpclient.AsyncHTTPClient()
-        response = yield tornado.gen.Task(http.fetch, 'http://api.intranet.pub/?s=latest')
+        response = yield tornado.gen.Task(http.fetch, PUB_API['latest'])
         if response.error:
             self._update_job('update', -1, u'获取版本信息失败！')
             return
