@@ -58,7 +58,12 @@
 import logging
 import shlex
 import subprocess
-import tornado
+import tornado.ioloop
+
+__all__ = [
+    'call_subprocess',
+    'on_subprocess_result'
+]
 
 def call_subprocess(context, command, callback=None, shell=False):
     context.ioloop = tornado.ioloop.IOLoop.instance()
