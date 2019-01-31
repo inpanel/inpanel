@@ -8,8 +8,6 @@
 
 """The Third party library."""
 
-from . import async_process, filelock, magic, pexpect, pxssh, pyDes
-
 __all__ = [
     'async_process',
     'filelock',
