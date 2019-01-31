@@ -13,19 +13,15 @@ import datetime
 import hashlib
 import hmac
 import os
-import socket
 import sys
 import time
 
-from intranet.config import Config
+from modules.config import Config
 from modules.utils import is_valid_ip, randstr
-
-sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print '''Usage: %s option value
+        print('''Usage: %s option value
 
 OPTIONS:
 ip:              ip address (need restart)
@@ -36,9 +32,9 @@ loginlock:       set the login lock. value: on or off
 accesskey:       access key for remote access, must be empty
                  or a 64-bytes string with base64 encoded.
 accesskeyenable: set the remote access switch. value: on or off
-''' % sys.argv[0]
+''' % sys.argv[0])
         sys.exit()
-    
+
     data_path = os.path.join(os.path.dirname(__file__), 'data')
     config = Config(data_path + '/config.ini')
 
@@ -68,8 +64,8 @@ accesskeyenable: set the remote access switch. value: on or off
         if value == 'on':
             config.set('runtime', 'loginlock', 'on')
             config.set('runtime', 'loginfails', 0)
-            config.set('runtime', 'loginlockexpire', 
-                int(time.mktime(datetime.datetime.max.timetuple())))
+            config.set('runtime', 'loginlockexpire',
+                       int(time.mktime(datetime.datetime.max.timetuple())))
         elif value == 'off':
             config.set('runtime', 'loginlock', 'off')
             config.set('runtime', 'loginfails', 0)
@@ -77,7 +73,8 @@ accesskeyenable: set the remote access switch. value: on or off
     elif option == 'accesskey':
         if value != '':
             try:
-                if len(base64.b64decode(value)) != 32: raise Exception()
+                if len(base64.b64decode(value)) != 32:
+                    raise Exception()
             except:
                 print 'Error: invalid accesskey format'
                 sys.exit(-1)

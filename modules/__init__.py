@@ -8,6 +8,7 @@
 
 '''The Modules for Intranet Control Panel .'''
 
+from . import *
 
 __all__ = [
     'acme',
@@ -18,6 +19,7 @@ __all__ = [
     'configloader',
     'cron',
     'lighttpd',
+    'mysql',
     'named',
     'php',
     'process',

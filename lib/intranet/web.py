@@ -23,19 +23,18 @@ import uuid
 
 import fdisk
 import file
-import mysql
 import nginx
-import pyDes
 import ssh
 import tornado
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
-from async_process import call_subprocess, callbackable
+from lib import pyDes
+from lib.async_process import call_subprocess, callbackable
 from modules import (acme, aliyuncs, apache, certificate, configloader, cron,
-                     lighttpd, named, php, process, proftpd, pureftpd, remote,
-                     utils, vsftpd, yum)
+                     lighttpd, mysql, named, php, process, proftpd, pureftpd,
+                     remote, utils, vsftpd, yum)
 from modules.config import Config
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool

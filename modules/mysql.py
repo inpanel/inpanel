@@ -11,16 +11,11 @@
 """
 
 import os
-
-if __name__ == '__main__':
-    import sys
-    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    sys.path.insert(0, root_path)
-
-import pexpect
-import shlex
 import re
+import shlex
 import time
+
+from lib import pexpect
 from modules.utils import valid_filename
 
 
@@ -143,7 +138,7 @@ def _escape(string):
     """Escape a string.
     """
     return re.escape(string).replace('\_', '_').replace('\%', '%')
-    
+
 def fupdatepwd(pwd):
     """Force update password of root.
 
