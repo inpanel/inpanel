@@ -6,24 +6,29 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""The Modules for Intranet Control Panel ."""
+'''The Modules for Intranet Control Panel .'''
+
 
 __all__ = [
+    'acme',
     'aliyuncs',
     'apache',
+    'certificate',
+    'config',
+    'configloader',
     'cron',
-    'remote',
     'lighttpd',
+    'named',
+    'php',
     'process',
     'proftpd',
     'pureftpd',
-    'named',
-    'vsftpd',
-    'shell',
-    'certificate',
-    'acme',
+    'remote',
+    'sc',
     'server',
     'service',
-    'sc',
-    'utils'
+    'shell',
+    'utils',
+    'vsftpd',
+    'yum'
 ]

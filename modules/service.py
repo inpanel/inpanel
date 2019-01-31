@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017 - 2019, doudoudzj
 # Copyright (c) 2012, VPSMate development team
@@ -7,7 +7,7 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for quering service info'''
+'''Package for service management.'''
 
 import glob
 import os
@@ -37,7 +37,7 @@ class Service(object):
         'lighttpd',
         'proftpd',
         'pure-ftpd'
-        ]
+    ]
 
     pidnames = {
         'sendmail': ('sm-client', ),
@@ -54,7 +54,7 @@ class Service(object):
         pidfile = '/var/run/%s.pid' % service
         if not os.path.exists(pidfile):
             p = glob.glob('/var/run/%s/*.pid' % service)
-            if len(p)>0:
+            if len(p) > 0:
                 pidfile = p[0]
             else:
                 # some services have special pid filename
@@ -69,25 +69,42 @@ class Service(object):
                     pidfile = None
         if not pidfile:
             # not always corrent, some services dead but the lock still exists
-            ## some services don't have the pidfile
-            #if os.path.exists('/var/lock/subsys/%s' % service):
+            # some services don't have the pidfile
+            # if os.path.exists('/var/lock/subsys/%s' % service):
             #    return 'running'
 
             # try execute pidof to find the pidfile
-            p = subprocess.Popen(shlex.split('pidof -c -o %%PPID -x %s' % service), stdout=subprocess.PIPE, close_fds=True)
+            cmd_ = shlex.split('pidof -c -o %%PPID -x %s' % service)
+            p = subprocess.Popen(cmd_, stdout=subprocess.PIPE, close_fds=True)
             pid = p.stdout.read().strip()
             p.wait()
-            
-            if not pid: return 'stopped'
-        
+
+            if not pid:
+                return 'stopped'
+
         if pidfile:
-            with file(pidfile) as f: pid = f.readline().strip()
-            if not pid: return 'stopped'
+            with file(pidfile) as f:
+                pid = f.readline().strip()
+            if not pid:
+                return 'stopped'
             proc = '/proc/%s' % pid
             if not os.path.exists(proc):
                 return 'stopped'
-        
+
         return 'running'
+
+    @classmethod
+    def autostart_set(self, service, autostart=True):
+        """Add or remove service to autostart list.
+        E.g: chkconfig service_name on|off
+        """
+        cmdbin = 'chkconfig'
+        status = 'on' if autostart else 'off'
+        cmd = '%s %s %s' % (cmdbin, service, status)
+        cmd = shlex.split(cmd)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, close_fds=True)
+        p.stdout.read()
+        return p.wait() == 0 and True or False
 
     @classmethod
     def autostart_list(self):
@@ -100,7 +117,8 @@ class Service(object):
                     startlevel = line.split(':')[1]
                     break
         if startlevel == -1:
-            p = subprocess.Popen(shlex.split('runlevel'), stdout=subprocess.PIPE, close_fds=True)
+            p = subprocess.Popen(shlex.split('runlevel'),
+                                 stdout=subprocess.PIPE, close_fds=True)
             startlevel = int(p.stdout.read().strip().replace('N ', ''))
             p.wait()
 
@@ -120,10 +138,6 @@ class Service(object):
 if __name__ == '__main__':
     autostart_services = Service.autostart_list()
     for service in Service.support_services:
-        print '* Status of %s: %s (autostart: %s)' % (service, Service.status(service), str(service in autostart_services))
-    print
-
-    print '* Support file systems:'
-    for fstype in Tool.supportfs():
-        print '  - %s' % fstype
+        print '* Status of %s: %s (autostart: %s)' % (service,
+                                                      Service.status(service), str(service in autostart_services))
     print

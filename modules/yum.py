@@ -7,6 +7,7 @@
 # Intranet is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
+'''Package for YUM.'''
 
 # repository list that YUM support
 yum_repolist = ('base', 'updates', 'epel', 'CentALT', 'ius', 'atomic', '10gen', 'mariadb')
