@@ -7,6 +7,8 @@
 # Intranet is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
+'''The Web Server Module for Intranet Panel (InPanel).'''
+
 import base64
 import binascii
 import datetime
@@ -18,23 +20,18 @@ import os
 import re
 import subprocess
 import time
-import user
 import uuid
 
-import fdisk
-import file
-import nginx
-import ssh
+import pyDes
 import tornado
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
-import pyDes
 from async_process import call_subprocess, callbackable
-from modules import (acme, aliyuncs, apache, certificate, configloader, cron,
-                     lighttpd, mysql, named, php, process, proftpd, pureftpd,
-                     remote, utils, vsftpd, yum)
+from modules import (aliyuncs, apache, certificate, cron,
+                     fdisk, lighttpd, mfile, mysql, named, nginx, php, process,
+                     proftpd, pureftpd, remote, ssh, user, utils, vsftpd, yum)
 from modules.config import Config
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
@@ -201,11 +198,11 @@ class FileUploadHandler(RequestHandler):
             self.write(u'请选择要上传的文件！')
         else:
             self.write(u'正在上传...<br>')
-            for file in self.request.files['ufile']:
-                filename = re.split('[\\\/]', file['filename'])[-1]
+            for item in self.request.files['ufile']:
+                filename = re.split('[\\\/]', item['filename'])[-1]
                 with open(os.path.join(path, filename), 'wb') as f:
-                    f.write(file['body'])
-                self.write(u'%s 上传成功！<br>' % file['filename'])
+                    f.write(item['body'])
+                self.write(u'%s 上传成功！<br>' % item['filename'])
 
         self.write('</body>')
 
@@ -1037,22 +1034,22 @@ class OperationHandler(RequestHandler):
             lastdir = self.config.get('file', 'lastdir')
             lastfile = self.config.get('file', 'lastfile')
             self.write({'code': 0, 'msg': '', 'data': {'lastdir': lastdir, 'lastfile': lastfile}})
-            
+
         elif action == 'listdir':
             path = self.get_argument('path', '')
             showhidden = self.get_argument('showhidden', 'off')
             remember = self.get_argument('remember', 'on')
             onlydir = self.get_argument('onlydir', 'off')
-            items = file.listdir(_u(path), showhidden=='on', onlydir=='on')
+            items = mfile.listdir(_u(path), showhidden=='on', onlydir=='on')
             if items == False:
                 self.write({'code': -1, 'msg': u'目录 %s 不存在！' % path})
             else:
                 if remember == 'on': self.config.set('file', 'lastdir', path)
                 self.write({'code': 0, 'msg': u'成功获取文件列表！', 'data': items})
-            
+
         elif action == 'getitem':
             path = self.get_argument('path', '')
-            item = file.getitem(_u(path))
+            item = mfile.getitem(_u(path))
             if item == False:
                 self.write({'code': -1, 'msg': u'%s 不存在！' % path})
             else:
@@ -1061,24 +1058,24 @@ class OperationHandler(RequestHandler):
         elif action == 'fread':
             path = self.get_argument('path', '')
             remember = self.get_argument('remember', 'on')
-            size = file.fsize(_u(path))
+            size = mfile.fsize(_u(path))
             if size == None:
                 self.write({'code': -1, 'msg': u'文件 %s 不存在！' % path})
             elif size > 1024*1024: # support 1MB of file at max
                 self.write({'code': -1, 'msg': u'读取 %s 失败！不允许在线编辑超过1MB的文件！' % path})
-            elif not file.istext(_u(path)):
+            elif not mfile.istext(_u(path)):
                 self.write({'code': -1, 'msg': u'读取 %s 失败！无法识别文件类型！' % path})
             else:
                 if remember == 'on': self.config.set('file', 'lastfile', path)
                 with open(path) as f: content = f.read()
-                charset, content = file.decode(content)
+                charset, content = mfile.decode(content)
                 if not charset:
                     self.write({'code': -1, 'msg': u'不可识别的文件编码！'})
                     return
                 data = {
                     'filename': os.path.basename(path),
                     'filepath': path,
-                    'mimetype': file.mimetype(_u(path)),
+                    'mimetype': mfile.mimetype(_u(path)),
                     'charset': charset,
                     'content': content,
                 }
@@ -1098,14 +1095,14 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if not charset in file.charsets:
+            if not charset in mfile.charsets:
                 self.write({'code': -1, 'msg': u'不可识别的文件编码！'})
                 return
-            content = file.encode(content, charset)
+            content = mfile.encode(content, charset)
             if not content:
                 self.write({'code': -1, 'msg': u'文件编码转换出错，保存失败！'})
                 return
-            if file.fsave(_u(path), content):
+            if mfile.fsave(_u(path), content):
                 self.write({'code': 0, 'msg': u'文件保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'文件保存失败！'})
@@ -1119,7 +1116,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if file.dadd(_u(path), _u(name)):
+            if mfile.dadd(_u(path), _u(name)):
                 self.write({'code': 0, 'msg': u'文件夹创建成功！'})
             else:
                 self.write({'code': -1, 'msg': u'文件夹创建失败！'})
@@ -1133,7 +1130,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if file.fadd(_u(path), _u(name)):
+            if mfile.fadd(_u(path), _u(name)):
                 self.write({'code': 0, 'msg': u'文件创建成功！'})
             else:
                 self.write({'code': -1, 'msg': u'文件创建失败！'})
@@ -1147,7 +1144,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if file.rename(_u(path), _u(name)):
+            if mfile.rename(_u(path), _u(name)):
                 self.write({'code': 0, 'msg': u'重命名成功！'})
             else:
                 self.write({'code': -1, 'msg': u'重命名失败！'})
@@ -1166,7 +1163,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许在除 /var/www 以外的目录下创建链接！'})
                     return
 
-            if file.link(_u(srcpath), _u(despath)):
+            if mfile.link(_u(srcpath), _u(despath)):
                 self.write({'code': 0, 'msg': u'链接 %s 创建成功！' % despath})
             else:
                 self.write({'code': -1, 'msg': u'链接 %s 创建失败！' % despath})
@@ -1183,27 +1180,27 @@ class OperationHandler(RequestHandler):
 
             if len(paths) == 1:
                 path = paths[0]
-                if file.delete(_u(path)):
+                if mfile.delete(_u(path)):
                     self.write({'code': 0, 'msg': u'已将 %s 移入回收站！' % path})
                 else:
                     self.write({'code': -1, 'msg': u'将 %s 移入回收站失败！' % path})
             else:
                 for path in paths:
-                    if not file.delete(_u(path)):
+                    if not mfile.delete(_u(path)):
                         self.write({'code': -1, 'msg': u'将 %s 移入回收站失败！' % path})
                         return
                 self.write({'code': 0, 'msg': u'批量移入回收站成功！'})
 
         elif action == 'tlist':
-            self.write({'code': 0, 'msg': '', 'data': file.tlist()})
+            self.write({'code': 0, 'msg': '', 'data': mfile.tlist()})
 
         elif action == 'trashs':
-            self.write({'code': 0, 'msg': '', 'data': file.trashs()})
+            self.write({'code': 0, 'msg': '', 'data': mfile.trashs()})
 
         elif action == 'titem':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = file.titem(_u(mount), _u(uuid))
+            info = mfile.titem(_u(mount), _u(uuid))
             if info:
                 self.write({'code': 0, 'msg': '', 'data': info})
             else:
@@ -1212,8 +1209,8 @@ class OperationHandler(RequestHandler):
         elif action == 'trestore':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = file.titem(_u(mount), _u(uuid))
-            if info and file.trestore(_u(mount), _u(uuid)):
+            info = mfile.titem(_u(mount), _u(uuid))
+            if info and mfile.trestore(_u(mount), _u(uuid)):
                 self.write({'code': 0, 'msg': u'已还原 %s 到 %s！' % \
                     (_d(info['name']), _d(info['path']))})
             else:
@@ -1222,8 +1219,8 @@ class OperationHandler(RequestHandler):
         elif action == 'tdelete':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = file.titem(_u(mount), _u(uuid))
-            if info and file.tdelete(_u(mount), _u(uuid)):
+            info = mfile.titem(_u(mount), _u(uuid))
+            if info and mfile.tdelete(_u(mount), _u(uuid)):
                 self.write({'code': 0, 'msg': u'已删除 %s！' % _d(info['name'])})
             else:
                 self.write({'code': -1, 'msg': u'删除失败！'})
@@ -2100,7 +2097,11 @@ class OperationHandler(RequestHandler):
         cron.web_response(self)
 
     def vsftpd(self):
-        vsftpd.web_response(self)
+        action = self.get_argument('action', '')
+        if action == 'getsettings':
+            self.write({'code': 0, 'msg': 'vsftpd 配置信息获取成功！', 'data': vsftpd.get_config()})
+        elif action == 'savesettings':
+            self.write({'code': 0, 'msg': 'vsftpd 服务配置保存成功！', 'data': vsftpd.set_config()})
 
     def named(self):
         named.web_response(self)
@@ -3450,14 +3451,15 @@ class BackendHandler(RequestHandler):
         """Change owner of paths.
         """
         jobname = 'chown_%s' % ','.join(paths)
-        if not self._start_job(jobname): return
+        if not self._start_job(jobname):
+            return
 
         self._update_job(jobname, 2, u'正在设置用户和用户组...')
-        
+
         #cmd = 'chown %s %s:%s %s' % (option, user, group, ' '.join(paths))
-        
+
         for path in paths:
-            result = yield tornado.gen.Task(callbackable(file.chown), path, user, group, option=='-R')
+            result = yield tornado.gen.Task(callbackable(mfile.chown), path, user, group, option=='-R')
             if result == True:
                 code = 0
                 msg = u'设置用户和用户组成功！'
@@ -3473,10 +3475,11 @@ class BackendHandler(RequestHandler):
         """Change perms of paths.
         """
         jobname = 'chmod_%s' % ','.join(paths)
-        if not self._start_job(jobname): return
+        if not self._start_job(jobname):
+            return
 
         self._update_job(jobname, 2, u'正在设置权限...')
-        
+
         #cmd = 'chmod %s %s %s' % (option, perms, ' '.join(paths))
         try:
             perms = int(perms, 8)
@@ -3485,7 +3488,7 @@ class BackendHandler(RequestHandler):
             return
 
         for path in paths:
-            result = yield tornado.gen.Task(callbackable(file.chmod), path, perms, option=='-R')
+            result = yield tornado.gen.Task(callbackable(mfile.chmod), path, perms, option=='-R')
             if result == True:
                 code = 0
                 msg = u'权限修改成功！'
@@ -3504,7 +3507,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, u'正在下载 %s...' % _d(url))
-        
+
         if os.path.isdir(path): # download to the directory
             cmd = 'wget -q "%s" --directory-prefix=%s' % (url, path)
         else:
@@ -3518,7 +3521,7 @@ class BackendHandler(RequestHandler):
             msg = u'下载失败！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
 
         self._finish_job(jobname, code, msg)
-    
+
     @tornado.gen.engine
     def mysql_fupdatepwd(self, password):
         """Force updating mysql root password.
@@ -3530,7 +3533,7 @@ class BackendHandler(RequestHandler):
         cmd = 'service mysqld status'
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         isstopped = 'stopped' in output
-        
+
         if not isstopped:
             self._update_job(jobname, 2, u'正在停止 MySQL 服务...')
             cmd = 'service mysqld stop'
@@ -3621,7 +3624,7 @@ class BackendHandler(RequestHandler):
                     msg = u'root 密码重置成功，但在操作服务时出错！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
 
         self._finish_job(jobname, code, msg)
-    
+
     @tornado.gen.engine
     def mysql_databases(self, password):
         """Show MySQL database list.

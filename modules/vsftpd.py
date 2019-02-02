@@ -6,7 +6,7 @@
 # Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for vsftpd configuration management.'''
+'''Module for vsftpd Management'''
 
 from modules.utils import cfg_get_array, cfg_set_array
 
@@ -42,20 +42,11 @@ base_configs = {
 }
 
 
-def web_response(self):
-    action = self.get_argument('action', '')
-    if action == 'getsettings':
-        self.write({'code': 0, 'msg': 'vsftpd 配置信息获取成功！', 'data': get_config()})
-    elif action == 'savesettings':
-        self.write({'code': 0, 'msg': 'vsftpd 服务配置保存成功！', 'data': set_config(self)})
-    return
-
-
 def get_config():
     array_configs = cfg_get_array(config_file, base_configs, delimiter)
     return array_configs
 
 
-def set_config(self):
-    result = cfg_set_array(self, config_file, base_configs, delimiter)
+def set_config():
+    result = cfg_set_array(config_file, base_configs, delimiter)
     return result
