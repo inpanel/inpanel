@@ -6,14 +6,14 @@
 # Intranet is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for certificate configuration management."""
+'''Module for certificate Management.'''
 
 import os
 import subprocess
 import shutil
 
 from acme import ACME
-from lib.intranet.file import list_dir_files
+from modules.mfile import listfile
 
 
 class Certificate():
@@ -208,7 +208,7 @@ class Certificate():
         print(domain)
 
     def get_keys_list(self):
-        items = list_dir_files(self.path_key)
+        items = listfile(self.path_key)
         if items is None:
             return None
         res = []
@@ -225,7 +225,7 @@ class Certificate():
         return res
 
     def get_crts_list(self):
-        items = list_dir_files(self.path_crt)
+        items = listfile(self.path_crt)
         if items is None:
             return None
         res = []
@@ -242,7 +242,7 @@ class Certificate():
         return res
 
     def get_csrs_list(self):
-        items = list_dir_files(self.path_csr)
+        items = listfile(self.path_csr)
         if items is None:
             return None
         res = []

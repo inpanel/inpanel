@@ -7,7 +7,7 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for reading and writing nginx configuration.'''
+'''Module for nginx Management'''
 
 import os
 import re

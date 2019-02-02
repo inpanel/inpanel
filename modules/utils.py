@@ -254,17 +254,15 @@ def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
 
 
 def cfg_get_array(cfgfile, configs_array, delimiter):
-    q_keys = configs_array.keys()
-    for key in q_keys:
+    for key in configs_array:
         q_value = cfg_get(cfgfile, key, delimiter)
         configs_array[key] = q_value
     return configs_array
 
 
-def cfg_set_array(self, cfgfile, configs_array, delimiter):
-    q_keys = configs_array.keys()
-    for key in q_keys:
-        q_value = self.get_argument(key, '')
+def cfg_set_array(cfgfile, configs_array, delimiter):
+    for key in configs_array:
+        q_value = cfg_get(cfgfile, key, delimiter)
         if q_value:
             cfg_set(cfgfile, key, q_value, delimiter)
     return True
@@ -275,4 +273,3 @@ def gen_accesskey():
     """
     keys = [chr(int(random.random()*256)) for i in range(0, 32)]
     return base64.b64encode(''.join(keys))
-

@@ -6,7 +6,7 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''The Modules for Intranet Control Panel .'''
+'''The Modules for Intranet Panel (InPanel)'''
 
 from . import *
 
@@ -18,9 +18,12 @@ __all__ = [
     'config',
     'configloader',
     'cron',
+    'fdisk',
+    'mfile',
     'lighttpd',
     'mysql',
     'named',
+    'nginx',
     'php',
     'process',
     'proftpd',
@@ -30,6 +33,8 @@ __all__ = [
     'server',
     'service',
     'shell',
+    'ssh',
+    'user',
     'utils',
     'vsftpd',
     'yum'

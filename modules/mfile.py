@@ -7,7 +7,7 @@
 # Intranet is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for file operations.'''
+'''Module for file Management'''
 
 import anydbm
 import grp
@@ -20,23 +20,17 @@ import time
 from stat import *
 from uuid import uuid4
 
-import magic
+import lib.magic
 from modules.server import ServerInfo
 from modules.utils import b2h, ftime
-
-if __name__ == '__main__':
-    import sys
-    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    sys.path.insert(0, root_path)
-
-
 
 charsets = ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5', 'euc-jp', 'euc-kr', 'iso-8859-2', 'shift_jis')
 
 
 def listdir(path, showdotfiles=False, onlydir=None):
     path = os.path.abspath(path)
-    if not os.path.exists(path) or not os.path.isdir(path): return False
+    if not os.path.exists(path) or not os.path.isdir(path):
+        return False
     items = sorted(os.listdir(path))
     if not showdotfiles:
         items = [item for item in items if not item.startswith('.')]
@@ -45,17 +39,26 @@ def listdir(path, showdotfiles=False, onlydir=None):
     # let folders list before files
     rt = []
     for i in xrange(len(items)-1, -1, -1):
-        if items[i]['isdir'] \
-            or items[i]['islnk'] \
-                and not items[i]['link_broken'] \
-                and items[i]['link_isdir']:
+        if items[i]['isdir'] or items[i]['islnk'] and not items[i]['link_broken'] and items[i]['link_isdir']:
             rt.insert(0, items.pop(i))
     # check if only list directories
-    if not onlydir: rt.extend(items)
+    if not onlydir:
+        rt.extend(items)
     return rt
 
+
+def listfile(directory):
+    '''only list files of directory'''
+    d = os.path.abspath(directory)
+    if not os.path.exists(d) or not os.path.isdir(d):
+        return None
+    items = sorted(os.listdir(d))
+    return items if len(items) > 0 else []
+
+
 def getitem(path):
-    if not os.path.exists(path) and not os.path.islink(path): return False
+    if not os.path.exists(path) and not os.path.islink(path):
+        return False
     name = os.path.basename(path)
     basepath = os.path.dirname(path)
     stat = os.lstat(path)
@@ -71,12 +74,12 @@ def getitem(path):
     item = {
         'name': name,
         'isdir': S_ISDIR(mode),
-        #'ischr': S_ISCHR(mode),
-        #'isblk': S_ISBLK(mode),
+        # 'ischr': S_ISCHR(mode),
+        # 'isblk': S_ISBLK(mode),
         'isreg': S_ISREG(mode),
-        #'isfifo': S_ISFIFO(mode),
+        # 'isfifo': S_ISFIFO(mode),
         'islnk': S_ISLNK(mode),
-        #'issock': S_ISSOCK(mode),
+        # 'issock': S_ISSOCK(mode),
         'perms': oct(stat.st_mode & 0777),
         'uid': stat.st_uid,
         'gid': stat.st_gid,
@@ -101,9 +104,11 @@ def getitem(path):
             item['link_broken'] = True
     return item
 
+
 def rename(oldpath, newname):
-    path = os.path.abspath(oldpath)
-    if not os.path.exists(oldpath): return False
+    # path = os.path.abspath(oldpath)
+    if not os.path.exists(oldpath):
+        return False
     try:
         basepath = os.path.dirname(oldpath)
         newpath = os.path.join(basepath, newname)
@@ -112,6 +117,7 @@ def rename(oldpath, newname):
     except:
         return False
 
+
 def link(srcpath, despath):
     try:
         os.symlink(srcpath, despath)
@@ -119,27 +125,33 @@ def link(srcpath, despath):
     except:
         return False
 
+
 def dadd(path, name):
     path = os.path.abspath(path)
-    if not os.path.exists(path) or not os.path.isdir(path): return False
+    if not os.path.exists(path) or not os.path.isdir(path):
+        return False
     dpath = os.path.join(path, name)
-    if os.path.exists(dpath): return False
+    if os.path.exists(dpath):
+        return False
     try:
         os.mkdir(dpath)
         return True
     except:
         return False
 
+
 def istext(path):
     if not os.path.exists('/usr/file') and not os.path.exists('/usr/bin/file'):
         return True
     return (re.search(r':(.* text|.* empty)',
-            subprocess.Popen(["file", '-L', path], 
-                            stdout=subprocess.PIPE).stdout.read())
+                      subprocess.Popen(["file", '-L', path],
+                                       stdout=subprocess.PIPE).stdout.read())
             is not None)
 
+
 def mimetype(filepath):
-    if not os.path.exists(filepath): return False
+    if not os.path.exists(filepath):
+        return False
     if os.path.islink(filepath):
         linkfile = os.readlink(filepath)
         if linkfile.startswith('/'):
@@ -147,41 +159,54 @@ def mimetype(filepath):
         else:
             basepath = os.path.dirname(filepath)
             filepath = os.path.abspath(os.path.join(basepath, linkfile))
-        if not os.path.exists(filepath): return False
-    mime = magic.from_file(filepath, mime=True)
+        if not os.path.exists(filepath):
+            return False
+    mime = lib.magic.from_file(filepath, mime=True)
     # sometimes it still return like "text/plain; charset=us-ascii"
-    if ';' in mime: mime = mime.split(';', 1)[0]
+    if ';' in mime:
+        mime = mime.split(';', 1)[0]
     if mime == 'text/plain':
         tmime = mimetypes.guess_type(filepath)[0]
-        if tmime: mime = tmime 
+        if tmime:
+            mime = tmime
     return mime
 
+
 def fsize(filepath):
-    if not os.path.exists(filepath): return None
+    if not os.path.exists(filepath):
+        return None
     return os.lstat(filepath).st_size
+
 
 def fadd(path, name):
     path = os.path.abspath(path)
-    if not os.path.exists(path) or not os.path.isdir(path): return False
+    if not os.path.exists(path) or not os.path.isdir(path):
+        return False
     fpath = os.path.join(path, name)
-    if os.path.exists(fpath): return False
+    if os.path.exists(fpath):
+        return False
     try:
-        with open(fpath, 'w'): pass
+        with open(fpath, 'w'):
+            pass
         return True
     except:
         return False
 
+
 def fsave(path, content, bakup=True):
-    if not os.path.exists(path): return False
+    if not os.path.exists(path):
+        return False
     try:
         if bakup:
             dirname = os.path.dirname(path)
             filename = '.%s.bak' % os.path.basename(path)
             os.rename(path, os.path.join(dirname, filename))
-        with open(path, 'w') as f: f.write(content)
+        with open(path, 'w') as f:
+            f.write(content)
         return True
     except:
         return False
+
 
 def decode(content):
     """Detect charset of content and decode it.
@@ -194,6 +219,7 @@ def decode(content):
             pass
     return (None, content)
 
+
 def encode(content, charset):
     """Encode content using specified charset.
     """
@@ -202,8 +228,10 @@ def encode(content, charset):
     except:
         return False
 
+
 def delete(path):
-    if not os.path.exists(path) and not os.path.islink(path): return False
+    if not os.path.exists(path) and not os.path.islink(path):
+        return False
     path = os.path.realpath(path)
     mounts = _getmounts()
     mount = ''
@@ -211,34 +239,40 @@ def delete(path):
         if path.startswith(m):
             mount = m
             break
-    if not mount: return False
+    if not mount:
+        return False
     trashpath = os.path.join(mount, '.deleted_files')
     _inittrash(mounts)
     try:
         uuid = str(uuid4())
         db = anydbm.open(os.path.join(trashpath, '.fileinfo'), 'c')
-        db[uuid] = '\t'.join([os.path.basename(path), path, str(int(time.time()))])
+        db[uuid] = '\t'.join(
+            [os.path.basename(path), path, str(int(time.time()))])
         db.close()
         os.rename(path, os.path.join(trashpath, uuid))
         # deal with the .filename.bak
         filename = os.path.basename(path)
         dirname = os.path.dirname(path)
         bakfilepath = os.path.join(dirname, '.%s.bak' % filename)
-        if os.path.exists(bakfilepath): return delete(bakfilepath)
+        if os.path.exists(bakfilepath):
+            return delete(bakfilepath)
         return True
     except:
         return False
+
 
 def _getmounts():
     mounts = ServerInfo.mounts()
     mounts = [mount['path'] for mount in mounts]
     # let the longest path at the first
-    mounts.sort(lambda x,y: cmp(len(y),len(x)))
+    mounts.sort(lambda x, y: cmp(len(y), len(x)))
     return mounts
+
 
 def _inittrash(mounts=None):
     # initialize the trash
-    if not mounts: mounts = _getmounts()
+    if not mounts:
+        mounts = _getmounts()
     for mount in mounts:
         trashpath = os.path.join(mount, '.deleted_files')
         if not os.path.exists(trashpath):
@@ -246,11 +280,13 @@ def _inittrash(mounts=None):
             metafile = os.path.join(trashpath, '.fileinfo')
             anydbm.open(metafile, 'c').close()
 
+
 def trashs():
     """Return trash path list.
     """
     mounts = _getmounts()
     return [os.path.join(mount, '.deleted_files') for mount in mounts]
+
 
 def tlist():
     mounts = _getmounts()
@@ -258,7 +294,8 @@ def tlist():
     # gather informations in each mount point's trash
     items = []
     for mount in mounts:
-        db = anydbm.open(os.path.join(mount, '.deleted_files', '.fileinfo'), 'c')
+        db = anydbm.open(os.path.join(
+            mount, '.deleted_files', '.fileinfo'), 'c')
         for uuid, info in db.iteritems():
             fields = info.split('\t')
             item = {
@@ -276,11 +313,12 @@ def tlist():
                 item['islnk'] = S_ISLNK(stat.st_mode)
             items.append(item)
         db.close()
-    items.sort(lambda x,y: cmp(y['time'], x['time']))
+    items.sort(lambda x, y: cmp(y['time'], x['time']))
     return items
 
+
 def titem(mount, uuid):
-    #_inittrash()
+    # _inittrash()
     try:
         trashpath = os.path.join(mount, '.deleted_files')
         db = anydbm.open(os.path.join(trashpath, '.fileinfo'), 'c')
@@ -299,8 +337,9 @@ def titem(mount, uuid):
     except:
         return False
 
+
 def trestore(mount, uuid):
-    #_inittrash()
+    # _inittrash()
     try:
         info = titem(mount, uuid)
         trashpath = os.path.join(mount, '.deleted_files')
@@ -312,38 +351,46 @@ def trestore(mount, uuid):
     except:
         return False
 
+
 def tdelete(mount, uuid):
     # the real file or directory should be deleted external
-    #_inittrash()
+    # _inittrash()
     try:
-        db = anydbm.open(os.path.join(mount, '.deleted_files', '.fileinfo'), 'c')
+        db = anydbm.open(os.path.join(
+            mount, '.deleted_files', '.fileinfo'), 'c')
         del db[uuid]
         db.close()
         return True
     except:
         return False
 
+
 def chown(path, user, group, recursively=False):
     if not os.path.exists(path) and not os.path.islink(path):
         return False
     try:
         userid = groupid = -1
-        if user: userid = pwd.getpwnam(user).pw_uid
-        if group: groupid = grp.getgrnam(group).gr_gid
+        if user:
+            userid = pwd.getpwnam(user).pw_uid
+        if group:
+            groupid = grp.getgrnam(group).gr_gid
         if os.path.isdir(path) and recursively:
             for root, dirs, files in os.walk(path):
                 for momo in dirs:
                     tpath = os.path.join(root, momo)
-                    if not os.path.exists(tpath): continue  # maybe broken link
+                    if not os.path.exists(tpath):
+                        continue  # maybe broken link
                     os.chown(tpath, userid, groupid)
                 for momo in files:
                     tpath = os.path.join(root, momo)
-                    if not os.path.exists(tpath): continue
+                    if not os.path.exists(tpath):
+                        continue
                     os.chown(tpath, userid, groupid)
         os.chown(path, userid, groupid)
     except:
         return False
     return True
+
 
 def chmod(path, perms, recursively=False):
     if not os.path.exists(path) and not os.path.islink(path):
@@ -353,24 +400,20 @@ def chmod(path, perms, recursively=False):
             for root, dirs, files in os.walk(path):
                 for momo in dirs:
                     tpath = os.path.join(root, momo)
-                    if not os.path.exists(tpath): continue  # maybe broken link
+                    if not os.path.exists(tpath):
+                        continue  # maybe broken link
                     os.chmod(tpath, perms)
                 for momo in files:
                     tpath = os.path.join(root, momo)
-                    if not os.path.exists(tpath): continue
+                    if not os.path.exists(tpath):
+                        continue
                     os.chmod(tpath, perms)
         os.chmod(path, perms)
     except:
         return False
     return True
 
-def list_dir_files(directory):
-    '''only list files of directory'''
-    d = os.path.abspath(directory)
-    if not os.path.exists(d) or not os.path.isdir(d):
-        return None
-    items = sorted(os.listdir(d))
-    return items if len(items) > 0 else []
+
 
 if __name__ == '__main__':
     print '* List directory of /root:'
@@ -388,5 +431,5 @@ if __name__ == '__main__':
         print '  ctime: %s' % item['ctime']
         print '  istext: %s' % str(istext(os.path.join('/root', item['name'])))
         print '  mimetype: %s' % mimetype(os.path.join('/root', item['name']))
-        print 
-    print 
+        print
+    print
