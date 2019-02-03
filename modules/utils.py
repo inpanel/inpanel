@@ -108,6 +108,9 @@ def is_valid_domain(name, allow_localname=True):
         pt = r'^(?:(?:(?:[a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z0-9])\.)+[a-z]{2,6}$'
     return re.match(pt, name) and True or False
 
+def is_url(url):
+    '''Check that the URL is in the correct format'''
+    return re.match('[a-z]+://.+', url) and True or False
 
 def version_get(v1, v2):
     """Check if version v1 is great or equal then version v2.

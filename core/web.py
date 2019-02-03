@@ -29,9 +29,9 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 from async_process import call_subprocess, callbackable
-from modules import (aliyuncs, apache, certificate, cron,
-                     fdisk, lighttpd, mfile, mysql, named, nginx, php, process,
-                     proftpd, pureftpd, remote, ssh, user, utils, vsftpd, yum)
+from modules import (aliyuncs, apache, certificate, cron, fdisk, lighttpd,
+                     mfile, mysql, named, nginx, php, process, proftpd,
+                     pureftpd, remote, ssh, user, utils, vsftpd, yum)
 from modules.config import Config
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
@@ -41,7 +41,7 @@ from tornado.escape import utf8 as _u
 
 APP_NAME = 'Intranet'
 APP_VERSION = '1.1.1'
-APP_BUILD = '17'
+APP_BUILD = '18'
 APP_RELEASETIME = '2018-12-20 18:57:43 CST'
 PUB_API = {
     'latest': 'http://api.intranet.pub/?s=latest',
@@ -1660,7 +1660,7 @@ class OperationHandler(RequestHandler):
                     for rule in rules:
                         rule = rule.strip().strip(';')
                         if rule == '': continue
-                        t = re.split('\s+', rule)
+                        t = re.split(r'\s+', rule)
                         #if not re.match(r'^rewrite\s+.+\s+(?:last|break|redirect|permanent);?$', rule):
                         if len(t) not in (3, 4) or \
                            len(t) == 4 and (t[0] != 'rewrite' or t[-1] not in ('last', 'break', 'redirect', 'permanent')) or \
@@ -1747,10 +1747,10 @@ class OperationHandler(RequestHandler):
                                 return
                         location['fastcgi_pass'] = fastcgi_pass
                     elif loc['engine'] == 'redirect':
-                        if not locsetting.has_key('url') or not locsetting['url']:
+                        if not 'url' in locsetting or not locsetting['url']:
                             self.write({'code': -1, 'msg': u'请输入要跳转到的 URL 地址！'})
                             return
-                        if not re.match('[a-z]+://.+', locsetting['url']):
+                        if not utils.is_url(locsetting['url']):
                             self.write({'code': -1, 'msg': u'跳转到的 URL 地址“%s”格式有误，请检查是否添加了 http:// 或 https:// 等！' % locsetting['url']})
                             return
                         location['redirect_url'] = locsetting['url']

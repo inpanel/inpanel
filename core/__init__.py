@@ -8,3 +8,7 @@
 # The full license can be found in 'LICENSE'.
 
 """The Intranet web server and tools."""
+
+__all__ = [
+    'web'
+]
