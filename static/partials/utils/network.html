@@ -31,13 +31,7 @@
                 </form>
             </div>
 			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ip'" id="ip" ng-init="loadIP()">
-				<table class="table">
-					<tbody>
-						<tr class="warning">
-							<td class="text-info">修改IP设置后，需要重启网络，配置才会生效。</th>
-						</tr>
-					</tbody>
-				</table>
+                <div class="alert alert-warning">修改IP设置后，需要重启网络，配置才会生效。</div>
                 <form class="form-horizontal form-horizontal-small" ng-submit="saveIfConfig()" onsubmit="return false">
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">网络接口</label>
