@@ -12,7 +12,6 @@
 			<li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='database'"><a href="#database" ng-click="sec('database')" data-toggle="tab">数据库</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='appengine'"><a href="#appengine" ng-click="sec('appengine')" data-toggle="tab">脚本引擎</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='application'"><a href="#application" ng-click="sec('application')" data-toggle="tab">应用程序</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='mail'"><a href="#mail" ng-click="sec('mail')" data-toggle="tab">邮件</a></li>
 			<li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统</a></li>
 		</ul>
@@ -133,42 +132,6 @@
 							<td style="width:60px" ng-bind-html-unsafe="info['service.php-fpm']['status'] | service.status"></td>
 							<td class="muted">PHP 脚本解析器</td>
 							<td style="width:150px"><div srvminiop ng-init="name='PHP';service='php-fpm';urlname='php'"></div></td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='application'" id="application">
-				<table class="table">
-					<thead>
-						<tr><th colspan="4">应用程序</th></tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td style="width:100px">Shadowsocks</td>
-							<td style="width:60px" ng-bind-html-unsafe="info['service.shadowsocks-libev']['status'] | service.status"></td>
-							<td class="muted">libev 版 - 内存占用小（600k左右），低 CPU 消耗</td>
-							<td style="width:150px">
-								<a class="btn btn-default btn-sm" role="button" href="#/service?s=application" disabled>正在开发</a>
-								<!-- <div srvminiop ng-init="name='Shadowsocks-libev';service='shadowsocks-libev';urlname='shadowsocks-libev'"></div> -->
-							</td>
-						</tr>
-						<tr>
-							<td style="width:100px">Shadowsocks</td>
-							<td style="width:60px" ng-bind-html-unsafe="info['service.shadowsocks']['status'] | service.status"></td>
-							<td class="muted">Python 版</td>
-							<td style="width:150px">
-								<a class="btn btn-default btn-sm" role="button" href="#/service?s=application" disabled>正在开发</a>
-								<!-- <div srvminiop ng-init="name='Shadowsocks';service='shadowsocks';urlname='shadowsocks'"></div> -->
-							</td>
-						</tr>
-						<tr>
-							<td style="width:100px">ShadowsocksR</td>
-							<td style="width:60px" ng-bind-html-unsafe="info['service.shadowsocks']['status'] | service.status"></td>
-							<td class="muted">ShadowsocksR - SOCKS 代理服务器</td>
-							<td style="width:150px">
-								<a class="btn btn-default btn-sm" role="button" href="#/service?s=application" disabled>正在开发</a>
-								<!-- <div srvminiop ng-init="name='ShadowsocksR';service='shadowsocks';urlname='shadowsocks'"></div> -->
-							</td>
 						</tr>
 					</tbody>
 				</table>
