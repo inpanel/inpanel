@@ -1,35 +1,35 @@
-# Intranet Panel
+# InPanel
 
 
 > The goal of this project is to make the easiest, fastest, and most painless way of Linux VPS management. This project has been forked from VPSMate since 11 Jan 2017 but changed a lot.
 
-Official Website: [intranet.pub](https://intranet.pub "Intranet")
+Official Website: [inpanel.org](https://inpanel.org "InPanel")
 
 #### Installation
 
 ```shell
 # stable version
-curl -O https://raw.githubusercontent.com/intranet-panel/intranet/master/install.py
+curl -O https://raw.githubusercontent.com/inpanel/inpanel/master/install.py
 python install.py
 
 # beta version
-curl -O https://raw.githubusercontent.com/intranet-panel/intranet/dev/install.py
+curl -O https://raw.githubusercontent.com/inpanel/inpanel/dev/install.py
 python install.py --dev
 ```
 
 #### Uninstall
 
 ```shell
-service intranet stop
-rm -rf /usr/local/intranet
-rm -f /etc/init.d/intranet
+service inpanel stop
+rm -rf /usr/local/inpanel
+rm -f /etc/init.d/inpanel
 ```
 
 #### Username and Password
 
 ```shell
-/usr/local/intranet/config.py username 'your-username'
-/usr/local/intranet/config.py password 'your-password'
+/usr/local/inpanel/config.py username 'your-username'
+/usr/local/inpanel/config.py password 'your-password'
 ```
 
 #### Features
@@ -43,12 +43,12 @@ rm -f /etc/init.d/intranet
 - 快速创建和安装多种站点
 - 丰富实用的系统工具
 
-#### from VPSMate to Intranet
+#### from VPSMate to InPanel
 
-本管理面板只是在 UI 层面对系统服务及功能进行管理配置，并不会在系统中生成多余的依赖及配置文件，不管VPSMate 还是 Intranet，只是工具而已，卸载或安装，对系统已配置好的服务是没有影响的。
+本管理面板只是在 UI 层面对系统服务及功能进行管理配置，并不会在系统中生成多余的依赖及配置文件，不管VPSMate 还是 InPanel，只是工具而已，卸载或安装，对系统已配置好的服务是没有影响的。
 
-~~现阶段两者使用同一个进程服务文件，所以**只需要卸载 VPSMate ，再安装 Intranet 即可**。~~
+~~现阶段两者使用同一个进程服务文件，所以**只需要卸载 VPSMate ，再安装 InPanel 即可**。~~
 
-从版本 Intranet v1.1.1b16 开始，不再使用 vpsmate 进程名，改用进程名为 intranet，在全新安装 Intranet 面板时，可以对已安装的 VPSMate 进行保留（或者删除）操作。
+从版本 InPanel v1.1.1b16 开始，不再使用 vpsmate 进程名，改用进程名为 inpanel，在全新安装 InPanel 面板时，可以对已安装的 VPSMate 进行保留（或者删除）操作。
 
 > 希望你用得愉快 ！

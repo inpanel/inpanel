@@ -4,10 +4,10 @@
 # Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
-# Intranet is distributed under the terms of The New BSD License.
+# InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''The Web Server Module for Intranet Panel (InPanel).'''
+'''The Web Server Module for InPanel.'''
 
 import base64
 import binascii
@@ -39,7 +39,7 @@ from modules.service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
-APP_NAME = 'Intranet'
+APP_NAME = 'InPanel'
 APP_VERSION = '1.1.1'
 APP_BUILD = '18'
 APP_RELEASETIME = '2018-12-20 18:57:43 CST'
@@ -698,7 +698,7 @@ class UtilsSSLHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'创建测试私钥成功！'})
 
 class SettingHandler(RequestHandler):
-    """Settings for Intranet
+    """Settings for InPanel
     """
     @tornado.web.asynchronous
     @tornado.gen.engine
@@ -3921,64 +3921,64 @@ class BackendHandler(RequestHandler):
     @tornado.web.asynchronous
     @tornado.gen.engine
     def intranet_install(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport=None, accesskey=None):
-        """Install Intranet"""
+        """Install InPanel"""
         jobname = 'intranet_install_%s' % ssh_ip
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, u'正在将 Intranet 安装到 %s...' % ssh_ip)
+        self._update_job(jobname, 2, u'正在将 InPanel 安装到 %s...' % ssh_ip)
 
         result = yield tornado.gen.Task(callbackable(remote.intranet_install),
                     ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey, intranet_port=accessport)
         if result == True:
             code = 0
-            msg = u'Intranet 安装成功！'
+            msg = u'InPanel 安装成功！'
             self.config.set('intranet', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
         else:
             code = -1
-            msg = u'Intranet 安装过程中发生错误！'
+            msg = u'InPanel 安装过程中发生错误！'
 
         self._finish_job(jobname, code, msg)
 
     @tornado.web.asynchronous
     @tornado.gen.engine
     def intranet_uninstall(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name):
-        """Uninstall Intranet"""
+        """Uninstall InPanel"""
         jobname = 'intranet_uninstall_%s' % ssh_ip
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, u'正在卸载 %s 上的 Intranet...' % ssh_ip)
+        self._update_job(jobname, 2, u'正在卸载 %s 上的 InPanel...' % ssh_ip)
         result = yield tornado.gen.Task(callbackable(remote.intranet_uninstall),
                     ssh_ip, ssh_port, ssh_user, ssh_password)
         if result == True:
             code = 0
-            msg = u'Intranet 卸载成功！'
+            msg = u'InPanel 卸载成功！'
             try:
                 self.config.remove_option('intranet', instance_name)
             except:
                 pass
         else:
             code = -1
-            msg = u'Intranet 卸载过程中发生错误！'
+            msg = u'InPanel 卸载过程中发生错误！'
 
         self._finish_job(jobname, code, msg)
 
     @tornado.web.asynchronous
     @tornado.gen.engine
     def intranet_config(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
-        """Update Intranet Config"""
+        """Update InPanel Config"""
         jobname = 'intranet_config%s' % ssh_ip
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, u'正在更新 %s 上的 Intranet 配置...' % ssh_ip)
+        self._update_job(jobname, 2, u'正在更新 %s 上的 InPanel 配置...' % ssh_ip)
 
         result = yield tornado.gen.Task(callbackable(remote.intranet_config),
                     ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey)
         if result == True:
             code = 0
-            msg = u'Intranet 配置更新成功！'
+            msg = u'InPanel 配置更新成功！'
         else:
             code = -1
-            msg = u'Intranet 配置更新过程中发生错误！'
+            msg = u'InPanel 配置更新过程中发生错误！'
 
         self._finish_job(jobname, code, msg)
 
@@ -4198,10 +4198,10 @@ class ECSHandler(RequestHandler):
                     result, instdata, reqid = response
                     if result: instances[i].update(instdata)
 
-            # get access info for Intranet
+            # get access info for InPanel
             for instance in instances:
                 if not self.config.has_option('intranet', instance['InstanceName']):
-                    instance['IntranetStatus'] = False
+                    instance['InPanelStatus'] = False
                 else:
                     accessdata = self.config.get('intranet', instance['InstanceName'])
                     accessdata = accessdata.split('|')
@@ -4210,7 +4210,7 @@ class ECSHandler(RequestHandler):
                         'accessnet': accessdata[1],
                         'accessport': accessdata[2],
                     }
-                    instance['IntranetStatus'] = accessinfo
+                    instance['InPanelStatus'] = accessinfo
 
             self.write({'code': 0, 'msg': u'成功加载云服务器列表！', 'data': {
                 'instances': instances,
@@ -4454,7 +4454,7 @@ class ECSHandler(RequestHandler):
 
             self.config.set('intranet', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
 
-            self.write({'code': 0, 'msg': u'Intranet 远程控制设置保存成功！'})
+            self.write({'code': 0, 'msg': u'InPanel 远程控制设置保存成功！'})
             self.finish()
 
         else:
@@ -4462,8 +4462,8 @@ class ECSHandler(RequestHandler):
             self.finish()
 
 
-class IntranetIndexHandler(RequestHandler):
-    """Index page of Intranet.
+class InPanelIndexHandler(RequestHandler):
+    """Index page of InPanel.
     """
     def get(self, instance_name, ip, port):
         with open(os.path.join(self.settings['intranet_path'], 'index.html')) as f:
@@ -4474,8 +4474,8 @@ class IntranetIndexHandler(RequestHandler):
         self.write(html)
 
 
-class IntranetHandler(RequestHandler):
-    """Operation proxy of Intranet.
+class InPanelHandler(RequestHandler):
+    """Operation proxy of InPanel.
 
     REF: https://groups.google.com/forum/?fromgroups=#!topic/python-tornado/TB_6oKBmdlA
     """

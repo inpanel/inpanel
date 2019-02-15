@@ -356,7 +356,7 @@ var SettingCtrl = [
                             return false;
                         } else if (data.status == 'finish' && data.code == 0) {
                             // restart service
-                            $scope.upverMessage = '正在重启 Intranet...';
+                            $scope.upverMessage = '正在重启 InPanel...';
                             Timeout(function () {
                                 Request.post('/backend/service_restart', {
                                     service: 'intranet'
@@ -386,7 +386,7 @@ var SettingCtrl = [
                 Timeout(getUpdateStatus, 500, module);
             });
         };
-        $scope.restartMessage = '是否要重启 Intranet ？';
+        $scope.restartMessage = '是否要重启 InPanel ？';
         $scope.restart = function () {
             $scope.restartMessage = '正在重启，请稍候...'
             $scope.showRestartBtn = false;

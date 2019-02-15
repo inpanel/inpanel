@@ -451,14 +451,14 @@ var ECSSettingCtrl = [
             if (!$scope.ssh_ip) $scope.ssh_ip = $scope.instance.PublicIpAddress.AllocateIpAddress;
             if (!$scope.ssh_port) $scope.ssh_port = '22';
             if (!$scope.ssh_user) $scope.ssh_user = 'root';
-            $scope.sshconfirm_title = '安装/升级 Intranet 到此服务器上';
+            $scope.sshconfirm_title = '安装/升级 InPanel 到此服务器上';
             $scope.sshconfirm_button = '安装或升级';
             $scope.sshconfirm = doinstallintranet;
             $('#sshconfirm').modal();
         };
         var doinstallintranet = function () {
             $scope.processing = true;
-            Message.setInfo('正在安装 Intranet 到远程服务器，请稍候...');
+            Message.setInfo('正在安装 InPanel 到远程服务器，请稍候...');
             Backend.call(
                 $scope,
                 module,
@@ -486,14 +486,14 @@ var ECSSettingCtrl = [
             if (!$scope.ssh_ip) $scope.ssh_ip = $scope.instance.PublicIpAddress.AllocateIpAddress;
             if (!$scope.ssh_port) $scope.ssh_port = '22';
             if (!$scope.ssh_user) $scope.ssh_user = 'root';
-            $scope.sshconfirm_title = '在此服务器上卸载 Intranet';
+            $scope.sshconfirm_title = '在此服务器上卸载 InPanel';
             $scope.sshconfirm_button = '开始卸载';
             $scope.sshconfirm = douninstallintranet;
             $('#sshconfirm').modal();
         };
         var douninstallintranet = function () {
             $scope.processing = true;
-            Message.setInfo('正在从远程服务器卸载 Intranet，请稍候...');
+            Message.setInfo('正在从远程服务器卸载 InPanel，请稍候...');
             Backend.call(
                 $scope,
                 module,
