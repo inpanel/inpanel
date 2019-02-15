@@ -1,20 +1,22 @@
 <div navbar ng-init="currentItem='utils.user'"></div>
-<div ng-show="!loaded"><div loading></div></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>用户管理</h3>
-	</div>
+    <div class="module-header">
+        <h3>用户管理</h3>
+    </div>
 
-	<div class="tabbable">
-		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='user'"><a href="#user" ng-click="sec('user')" data-toggle="tab">用户管理</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='group'"><a href="#group" ng-click="sec('group')" data-toggle="tab">用户组管理</a></li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='user'" id="user" ng-init="loadUsers()">
-				<div class="panel panel-default">
-					<div class="panel-heading">
+    <div class="tabbable">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='user'"><a href="#user" ng-click="sec('user')" data-toggle="tab">用户管理</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='group'"><a href="#group" ng-click="sec('group')" data-toggle="tab">用户组管理</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='user'" id="user" ng-init="loadUsers()">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
                         <div class="panel-title">
                             <i class="glyphicon glyphicon-list-alt"></i>
                             <span> 用户管理</span>
@@ -22,7 +24,7 @@
                                 <button class="btn btn-default btn-xs" ng-click="useraddconfirm()"><i class="glyphicon glyphicon-plus"></i> 添加新用户</button>
                             </div>
                         </div>
-					</div>
+                    </div>
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
@@ -52,11 +54,11 @@
                             </tr>
                         </tbody>
                     </table>
-				</div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='group'" id="group" ng-init="loadGroups()">
-				<div class="panel panel-default">
-					<div class="panel-heading">
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='group'" id="group" ng-init="loadGroups()">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
                         <div class="panel-title">
                             <i class="glyphicon glyphicon-list-alt"></i>
                             <span> 用户组管理</span>
@@ -64,7 +66,7 @@
                                 <button class="btn btn-default btn-xs" ng-click="groupaddconfirm()"><i class="glyphicon glyphicon-plus"></i> 添加新用户组</button>
                             </div>
                         </div>
-					</div>
+                    </div>
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
@@ -78,7 +80,8 @@
                             <tr ng-repeat="group in groups">
                                 <td class="text-right">{{group.gr_gid}}</td>
                                 <td>{{group.gr_name}}</td>
-                                <td><span ng-repeat="member in group.gr_mem">{{member}}<span ng-show="$index<group.gr_mem.length-1">, </span></span></td>
+                                <td><span ng-repeat="member in group.gr_mem">{{member}}<span ng-show="$index<group.gr_mem.length-1">, </span></span>
+                                </td>
                                 <td>
                                     <button class="btn btn-default btn-xs" ng-click="groupmodconfirm($index)">修改</button>
                                     <button class="btn btn-default btn-xs" ng-click="groupdelconfirm($index)">删除</button>
@@ -88,11 +91,11 @@
                             </tr>
                         </tbody>
                     </table>
-				</div>
-			</div>
-		</div>
-	</div>
-	
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div id="useraddconfirm" class="modal fade">

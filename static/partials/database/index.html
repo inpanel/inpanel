@@ -1,156 +1,158 @@
 <div navbar ng-init="currentItem='database'"></div>
-<div ng-show="!loaded"><div loading></div></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>数据库管理</h3>
-	</div>
+    <div class="module-header">
+        <h3>数据库管理</h3>
+    </div>
 
-	<div class="tabbable" ng-init="load()" ng-show="has_dbserver">
-		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none"><a href="#mysql" ng-click="sec('mysql')" data-toggle="tab">MySQL 数据库管理</a></li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none" id="mysql">
-				<!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
-				<div class="panel panel-warning" ng-show="!$mysql.password_validated">
-					<div class="panel-heading">
-						<div class="panel-title">
-							<i class="glyphicon glyphicon-lock"></i>
-							<span> 请输入数据库管理员 root 的密码</span>
-						</div>
-					</div>
-					<div class="panel-body">
-						<form class="form-horizontal" onsubmit="return false" method="get" action="/">
-							<div class="form-group form-inline">
-								<label class="col-sm-2 control-label" for="password">管理员密码</label>
-								<div class="col-sm-10">
-									<input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autocomplete="off" autofocus>
-								</div>
-							</div>
-							<div class="form-group form-inline">
-								<div class="col-sm-2 control-label"></div>
-								<div class="col-sm-10">
-									<button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">
-										<i class="glyphicon glyphicon-user"></i> <span>登录 MySQL</span>
-									</button>
-									<span style="padding-left:20px">
-										<a href="#/service/mysql?s=password">忘记密码？</a>
-									</span>
-								</div>
-							</div>
-						</form>
-					</div>
-				</div>
+    <div class="tabbable" ng-init="load()" ng-show="has_dbserver">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none"><a href="#mysql" ng-click="sec('mysql')" data-toggle="tab">MySQL 数据库管理</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none" id="mysql">
+                <!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
+                <div class="panel panel-warning" ng-show="!$mysql.password_validated">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-lock"></i>
+                            <span> 请输入数据库管理员 root 的密码</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-horizontal" onsubmit="return false" method="get" action="/">
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="password">管理员密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autocomplete="off" autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <div class="col-sm-2 control-label"></div>
+                                <div class="col-sm-10">
+                                    <button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">
+                                        <i class="glyphicon glyphicon-user"></i> <span>登录 MySQL</span>
+                                    </button>
+                                    <span style="padding-left:20px">
+                                        <a href="#/service/mysql?s=password">忘记密码？</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
-				<div class="well" ng-show="$mysql.password_validated && dbloading">
-					<img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库列表，请稍候...
-				</div>
-				<div class="panel panel-default" ng-show="$mysql.password_validated && !dbloading">
-					<div class="panel-heading">
-						<div class="panel-title">
-							<i class="glyphicon glyphicon-list-alt"></i>
-							<span> 数据库列表</span>
-							<div class="pull-right">
-								<a class="btn btn-default btn-xs" href="#/database/mysql/db/new"><i class="glyphicon glyphicon-plus"></i> 新建数据库</a>
-							</div>
-						</div>
-					</div>
-					<table class="table table-hover table-bordered">
-						<thead>
-							<tr>
-								<th style="width:20px" class="text-right">#</th>
-								<th>数据库名</th>
-								<th>字符集</th>
-								<th>整理</th>
-								<th class="text-right">表数量</th>
-								<th class="text-right">数据大小</th>
-								<th class="text-right">索引大小</th>
-								<th class="text-right">总大小</th>
-								<th style="width:100px">操作</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr ng-repeat="db in dbs">
-								<td class="text-right">{{$index+1}}</td>
-								<td>{{db.name}}</td>
-								<td>{{db.charset}}</td>
-								<td>{{db.collation}}</td>
-								<td class="text-right">{{db.tables}}</td>
-								<td class="text-right" ng-bind-html-unsafe="db.datasize | bytes2human"></td>
-								<td class="text-right" ng-bind-html-unsafe="db.indexsize | bytes2human"></td>
-								<td class="text-right" ng-bind-html-unsafe="db.totalsize | bytes2human"></td>
-								<td>
-									<div class="btn-group">
-										<a class="btn btn-default btn-xs" href="#/database/mysql/db/edit/{{db.name|urlencode|urlencode}}">
-											<i class="icon-wrench"></i> 数据库管理
-										</a>
-									</div>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
+                <div class="well" ng-show="$mysql.password_validated && dbloading">
+                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库列表，请稍候...
+                </div>
+                <div class="panel panel-default" ng-show="$mysql.password_validated && !dbloading">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-list-alt"></i>
+                            <span> 数据库列表</span>
+                            <div class="pull-right">
+                                <a class="btn btn-default btn-xs" href="#/database/mysql/db/new"><i class="glyphicon glyphicon-plus"></i> 新建数据库</a>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width:20px" class="text-right">#</th>
+                                <th>数据库名</th>
+                                <th>字符集</th>
+                                <th>整理</th>
+                                <th class="text-right">表数量</th>
+                                <th class="text-right">数据大小</th>
+                                <th class="text-right">索引大小</th>
+                                <th class="text-right">总大小</th>
+                                <th style="width:100px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="db in dbs">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{db.name}}</td>
+                                <td>{{db.charset}}</td>
+                                <td>{{db.collation}}</td>
+                                <td class="text-right">{{db.tables}}</td>
+                                <td class="text-right" ng-bind-html-unsafe="db.datasize | bytes2human"></td>
+                                <td class="text-right" ng-bind-html-unsafe="db.indexsize | bytes2human"></td>
+                                <td class="text-right" ng-bind-html-unsafe="db.totalsize | bytes2human"></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a class="btn btn-default btn-xs" href="#/database/mysql/db/edit/{{db.name|urlencode|urlencode}}">
+                                            <i class="icon-wrench"></i> 数据库管理
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-				<div class="well" ng-show="$mysql.password_validated && userloading">
-					<img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
-				</div>
+                <div class="well" ng-show="$mysql.password_validated && userloading">
+                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
+                </div>
 
-				<div class="panel panel-default" ng-show="$mysql.password_validated && !userloading">
-					<div class="panel-heading">
-						<div class="panel-title">
-							<i class="glyphicon glyphicon-list-alt"></i>
-							<span> 用户列表</span>
-							<div class="pull-right">
-								<a class="btn btn-default btn-xs" href="#/database/mysql/user/new"><i class="glyphicon glyphicon-plus"></i> 添加新用户</a>
-							</div>
-						</div>
-					</div>
-					<table class="table table-hover table-bordered">
-						<thead>
-							<tr>
-								<th style="width:20px" class="text-right">#</th>
-								<th>用户名</th>
-								<th>主机</th>
-								<th>密码</th>
-								<th>全局权限</th>
-								<th>授权权限</th>
-								<th style="width:90px">操作</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr ng-repeat="user in users">
-								<td class="text-right">{{$index+1}}</td>
-								<td ng-bind-html-unsafe="user.User | mysql.user"></td>
-								<td>{{user.Host}}</td>
-								<td ng-bind-html-unsafe="user.Password | mysql.haspasswd"></td>
-								<td ng-bind-html-unsafe="user | mysql.privs:'global'"></td>
-								<td ng-bind-html-unsafe="user.Grant_priv | mysql.grant"></td>
-								<td>
-									<a class="btn btn-default btn-xs" href="#/database/mysql/user/edit/{{user.User|urlencode|urlencode}}%40{{user.Host|urlencode|urlencode}}" ng-show="user.User!=''">
-										<i class="icon-wrench"></i> 用户设置
-									</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	</div>
+                <div class="panel panel-default" ng-show="$mysql.password_validated && !userloading">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-list-alt"></i>
+                            <span> 用户列表</span>
+                            <div class="pull-right">
+                                <a class="btn btn-default btn-xs" href="#/database/mysql/user/new"><i class="glyphicon glyphicon-plus"></i> 添加新用户</a>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width:20px" class="text-right">#</th>
+                                <th>用户名</th>
+                                <th>主机</th>
+                                <th>密码</th>
+                                <th>全局权限</th>
+                                <th>授权权限</th>
+                                <th style="width:90px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="user in users">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td ng-bind-html-unsafe="user.User | mysql.user"></td>
+                                <td>{{user.Host}}</td>
+                                <td ng-bind-html-unsafe="user.Password | mysql.haspasswd"></td>
+                                <td ng-bind-html-unsafe="user | mysql.privs:'global'"></td>
+                                <td ng-bind-html-unsafe="user.Grant_priv | mysql.grant"></td>
+                                <td>
+                                    <a class="btn btn-default btn-xs" href="#/database/mysql/user/edit/{{user.User|urlencode|urlencode}}%40{{user.Host|urlencode|urlencode}}" ng-show="user.User!=''">
+                                        <i class="icon-wrench"></i> 用户设置
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-	<div class="panel panel-info" ng-show="!has_dbserver" value="install" style="display:none">
-		<div class="panel-heading">
-			<div class="panel-title">
-				<i class="glyphicon glyphicon-info-sign"></i>
-				<span> 未检测到数据库</span>
-			</div>
-		</div>
-		<div class="panel-body">
-			<p>系统检测到您还未安装数据库。</p>
-			<p>请先安装 MySQL 数据库服务再继续操作。</p>
-			<p style="padding-top:10px"><a class="btn btn-default" href="#/service?s=database">立即安装</a></p>
-		</div>
-	</div>
+    <div class="panel panel-info" ng-show="!has_dbserver" value="install" style="display:none">
+        <div class="panel-heading">
+            <div class="panel-title">
+                <i class="glyphicon glyphicon-info-sign"></i>
+                <span> 未检测到数据库</span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <p>系统检测到您还未安装数据库。</p>
+            <p>请先安装 MySQL 数据库服务再继续操作。</p>
+            <p style="padding-top:10px"><a class="btn btn-default" href="#/service?s=database">立即安装</a></p>
+        </div>
+    </div>
 
 </div>

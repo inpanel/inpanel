@@ -1,28 +1,30 @@
 <div navbar ng-init="currentItem='service.apache'"></div>
-<div ng-show="Auth.processing||!loaded"><div loading></div></div>
+<div ng-show="Auth.processing||!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
-	<div class="module-header">
-		<h3>Apache - 广泛使用的老牌开源 HTTP 服务器软件</h3>
-	</div>
+    <div class="module-header">
+        <h3>Apache - 广泛使用的老牌开源 HTTP 服务器软件</h3>
+    </div>
 
-	<div srvinstall ng-init="name='Apache';pkg='apache';expected_repolist=['base','CentALT'];"></div>
+    <div srvinstall ng-init="name='Apache';pkg='apache';expected_repolist=['base','CentALT'];"></div>
 
-	<div class="tabbable" ng-show="installed">
-		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='setting'"><a href="#setting" ng-click="sec('setting')" data-toggle="tab">服务设置</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
-				<div srvbase ng-init="name='Apache';pkg='apache';service='httpd';"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
+    <div class="tabbable" ng-show="installed">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='setting'"><a href="#setting" ng-click="sec('setting')" data-toggle="tab">服务设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+                <div srvbase ng-init="name='Apache';pkg='apache';service='httpd';"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
                 <form class="form-horizontal form-horizontal-small" ng-submit="updateSetting()" onsubmit="return false">
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_listen">监听端口</label>
@@ -88,34 +90,34 @@
                             </div>
                         </div>
                     </div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label"></label>
-						<div class="col-sm-10">
-							<button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
-						</div>
-					</div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
+                        </div>
+                    </div>
                 </form>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
-				<div srvext ng-init="name='Apache';pkg='apache';"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
-				<div srvfile ng-init="items=[
-				{name:'主目录', path:'/etc/httpd', isdir:true},
-				{name:'主配置', path:'/etc/httpd/conf/httpd.conf', isfile:true},
-				{name: 'MIME类型', path:'/etc/httpd/conf/magic', isfile: true},
-				{name:'扩展配置', path:'/etc/httpd/conf.d', isdir: true}];"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
-				<div srvlog ng-init="items=[{name:'日志目录', path:'/var/log/httpd', isdir:true}];"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
-				<div srvupdate ng-init="name='Apache';pkg='apache';"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
-				<div srvuninstall ng-init="name='Apache';pkg='apache';"></div>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
+                <div srvext ng-init="name='Apache';pkg='apache';"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
+                <div srvfile ng-init="items=[
+                {name:'主目录', path:'/etc/httpd', isdir:true},
+                {name:'主配置', path:'/etc/httpd/conf/httpd.conf', isfile:true},
+                {name: 'MIME类型', path:'/etc/httpd/conf/magic', isfile: true},
+                {name:'扩展配置', path:'/etc/httpd/conf.d', isdir: true}];"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
+                <div srvlog ng-init="items=[{name:'日志目录', path:'/var/log/httpd', isdir:true}];"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
+                <div srvupdate ng-init="name='Apache';pkg='apache';"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
+                <div srvuninstall ng-init="name='Apache';pkg='apache';"></div>
+            </div>
+        </div>
+    </div>
 
 </div>

@@ -1,39 +1,41 @@
 <div navbar ng-init="currentItem='utils.movedata'"></div>
-<div ng-show="!loaded"><div loading></div></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>数据移至数据盘</h3>
-	</div>
-	
-	<div class="alert alert-info">
-		<p>该工具帮助您将数据迁移到数据盘，而仍能够保持原访问路径（通过Linux符号连接实现）。</p>
-		<p>建议您在服务器初始化时就迁移好，避免后期数据增大后再迁移时引起的麻烦。</p>
-		<p>
-			以下是 InPanel 建议您迁移的目录：<br>
-			<ul>
-				<li>/var/www（默认站点目录）</li>
-				<li>/var/lib（程序数据目录，数据库等默认都将数据存放在这个目录下）</li>
-			</ul>
-		</p>
-		<p class="text-error">请注意：在迁移前请确保没有网站或其它服务在使用这些数据，否则可能导致迁移失败或服务故障！</p>
-	</div>
+    <div class="module-header">
+        <h3>数据移至数据盘</h3>
+    </div>
 
-	<div class="form-horizontal form-horizontal-small" ng-init="loadMounts()">
-		<div class="form-group form-inline">
-			<label class="col-sm-2 control-label">原始位置</label>
-			<div class="col-sm-10">
-				<div class="input-group">
+    <div class="alert alert-info">
+        <p>该工具帮助您将数据迁移到数据盘，而仍能够保持原访问路径（通过Linux符号连接实现）。</p>
+        <p>建议您在服务器初始化时就迁移好，避免后期数据增大后再迁移时引起的麻烦。</p>
+        <p>
+            以下是 InPanel 建议您迁移的目录：<br>
+            <ul>
+                <li>/var/www（默认站点目录）</li>
+                <li>/var/lib（程序数据目录，数据库等默认都将数据存放在这个目录下）</li>
+            </ul>
+        </p>
+        <p class="text-error">请注意：在迁移前请确保没有网站或其它服务在使用这些数据，否则可能导致迁移失败或服务故障！</p>
+    </div>
+
+    <div class="form-horizontal form-horizontal-small" ng-init="loadMounts()">
+        <div class="form-group form-inline">
+            <label class="col-sm-2 control-label">原始位置</label>
+            <div class="col-sm-10">
+                <div class="input-group">
                     <input class="form-control" ng-model="srcpath" ng-disabled="waiting" type="text" placeholder="请选择要迁移的目录">
                     <span class="input-group-btn">
                         <button class="btn btn-default" ng-click="selectsrcpath()"><i class="glyphicon glyphicon-folder-open"></i></button>
                     </span>
                 </div>
-			</div>
-		</div>
-		<div class="form-group form-inline">
-			<label class="col-sm-2 control-label">目标分区</label>
-			<div class="col-sm-10">
+            </div>
+        </div>
+        <div class="form-group form-inline">
+            <label class="col-sm-2 control-label">目标分区</label>
+            <div class="col-sm-10">
                 <table class="table table-condensed table-borderless table-layout" style="width:350px">
                     <thead>
                         <tr>
@@ -55,27 +57,27 @@
                             <td class="text-right" ng-bind-html-unsafe="mount['used_rate'] | space.used"></td>
                         </tr>
                     </tbody>
-				</table>
-			</div>
-		</div>
-		<div class="form-group form-inline">
-			<label class="col-sm-2 control-label">目标位置</label>
-			<div class="col-sm-10">
-				<div class="input-group">
+                </table>
+            </div>
+        </div>
+        <div class="form-group form-inline">
+            <label class="col-sm-2 control-label">目标位置</label>
+            <div class="col-sm-10">
+                <div class="input-group">
                     <input ng-model="despath" ng-disabled="waiting" type="text" class="form-control" placeholder="请选择迁移到的目录">
                     <span class="input-group-btn">
                         <button class="btn btn-default" ng-click="selectdespath()"><i class="glyphicon glyphicon-folder-open"></i></button>
                     </span>
-				</div>
-			</div>
-		</div>
-		<div class="form-group form-inline">
+                </div>
+            </div>
+        </div>
+        <div class="form-group form-inline">
             <label class="col-sm-2 control-label"></label>
-			<div class="col-sm-10">
-				<button class="btn btn-primary" ng-disabled="!srcpath||!despath||waiting" ng-click="movedata()">开始迁移</button>
-			</div>
-		</div>
-	</div>
+            <div class="col-sm-10">
+                <button class="btn btn-primary" ng-disabled="!srcpath||!despath||waiting" ng-click="movedata()">开始迁移</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="selector" class="modal fade">

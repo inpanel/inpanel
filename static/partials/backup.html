@@ -1,42 +1,42 @@
 <div navbar ng-init="currentItem='utils.backup'"></div>
 <div ng-show="!loaded">
-	<div loading></div>
+    <div loading></div>
 </div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>备份管理</h3>
-	</div>
-	<p>备份管理功能即将推出，敬请留意 InPanel 的版本更新。<a href="#/setting?s=upversion">检测新版本</a></p>
-	<div class="tabbable" ng-init="load()">
-		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='files'">
-				<a href="#files" ng-click="sec('files')" data-toggle="tab">文件备份</a>
-			</li>
-			<li ng-class="'active' | iftrue:activeTabName=='database'">
-				<a href="#database" ng-click="sec('database')" data-toggle="tab">数据库备份</a>
-			</li>
-			<li ng-class="'active' | iftrue:activeTabName=='remote'">
-				<a href="#remote" ng-click="sec('remote')" data-toggle="tab">远程备份</a>
-			</li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='files'" id="files">
-				<div>
-					<p>文件备份列表、新增、删除、下载、恢复</p>
-				</div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='database'" id="database">
-				<div>
-					<p>数据库备份列表、增加、删除、下载、恢复</p>
-				</div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='remote'" id="remote">
-				<div>
-					<p>远程备份服务器：列表、配置、新增、删除</p>
-					<p>远程备份定时任务：列表、新增、编辑、修改、删除、执行</p>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="module-header">
+        <h3>备份管理</h3>
+    </div>
+    <p>备份管理功能即将推出，敬请留意 InPanel 的版本更新。<a href="#/setting?s=upversion">检测新版本</a></p>
+    <div class="tabbable" ng-init="load()">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='files'">
+                <a href="#files" ng-click="sec('files')" data-toggle="tab">文件备份</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTabName=='database'">
+                <a href="#database" ng-click="sec('database')" data-toggle="tab">数据库备份</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTabName=='remote'">
+                <a href="#remote" ng-click="sec('remote')" data-toggle="tab">远程备份</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='files'" id="files">
+                <div>
+                    <p>文件备份列表、新增、删除、下载、恢复</p>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='database'" id="database">
+                <div>
+                    <p>数据库备份列表、增加、删除、下载、恢复</p>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='remote'" id="remote">
+                <div>
+                    <p>远程备份服务器：列表、配置、新增、删除</p>
+                    <p>远程备份定时任务：列表、新增、编辑、修改、删除、执行</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

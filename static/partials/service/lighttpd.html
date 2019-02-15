@@ -14,7 +14,7 @@
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='settings'"><a href="#settings" ng-click="load_settings()" data-toggle="tab">基本设置</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
@@ -39,14 +39,14 @@
                 </table>
                 <button class="btn btn-primary" style="margin-left:10px" ng-click="savesettings()" disabled>保存设置</button>
             </div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
-				<div srvext ng-init="name='lighttpd';pkg='lighttpd';"></div>
-			</div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
+                <div srvext ng-init="name='lighttpd';pkg='lighttpd';"></div>
+            </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
                 <div srvfile ng-init="items=[
-				{name: '配置目录', path: '/etc/lighttpd', isdir: true},
-				{name: '主配置', path: '/etc/lighttpd/lighttpd.conf', isfile: true},
-				{name: '模块配置', path: '/etc/lighttpd/modules.conf', isfile: true}];"></div>
+                {name: '配置目录', path: '/etc/lighttpd', isdir: true},
+                {name: '主配置', path: '/etc/lighttpd/lighttpd.conf', isfile: true},
+                {name: '模块配置', path: '/etc/lighttpd/modules.conf', isfile: true}];"></div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
                 <div srvlog ng-init="items=[{name:'日志文件', path:'/var/log/lighttpd', isfile:true}];"></div>

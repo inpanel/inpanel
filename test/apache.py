@@ -14,7 +14,11 @@ import os
 import re
 import shutil
 import sys
-from cStringIO import StringIO
+
+try:
+    from io import StringIO
+except:
+    from cStringIO import StringIO
 
 # import utils
 

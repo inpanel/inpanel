@@ -1,184 +1,186 @@
 <div navbar ng-init="currentItem='service.ssh'"></div>
-<div ng-show="Auth.processing||!loaded"><div loading></div></div>
+<div ng-show="Auth.processing||!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
     <div class="module-header">
         <h3>SSH - 远程连接服务器</h3>
     </div>
 
-	<div srvinstall ng-init="name='SSH';pkg='ssh';expected_repolist=['base'];"></div>
+    <div srvinstall ng-init="name='SSH';pkg='ssh';expected_repolist=['base'];"></div>
 
-	<div class="tabbable" ng-show="installed">
+    <div class="tabbable" ng-show="installed">
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='setting'"><a href="#setting" ng-click="sec('setting')" data-toggle="tab">基本设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='pubkauth'"><a href="#pubkauth" ng-click="sec('pubkauth')" data-toggle="tab">公钥验证</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='ext'"><a href="#ext" ng-click="sec('ext')" data-toggle="tab">扩展</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
         </ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
-				<div srvbase ng-init="name='SSH';pkg='ssh';service='sshd';"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
-				<div class="form-horizontal form-horizontal-small">
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">服务端口</label>
-						<div class="col-sm-10">
-							<input class="form-control" ng-model="setting.port" type="text" placeholder="默认端口为 22">
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="newpassword">密码验证</label>
-						<div class="col-sm-10">
-							<div class="checkbox">
-								<label><input ng-model="setting.enable_pwdauth" type="checkbox"> 支持使用密码进行登录验证</label>
-							</div>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="newpasswordc">启用SFTP</label>
-						<div class="col-sm-10">
-							<div class="checkbox">
-								<label><input ng-model="setting.enable_sftp" type="checkbox"> 开启 SFTP 支持</label>
-							</div>
-							<span class="help-block">开启后可通过 SFTP 工具上传/下载文件。</span>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label"></label>
-						<div class="col-sm-10">
-							<button class="btn btn-primary"ng-click="savesettings()">保存设置</button>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pubkauth'" id="pubkauth">
-				<div class="alert alert-info">使用公钥验证可以加强 SSH 的安全性，防止暴力破解。</div>
-				<div class="form-horizontal form-horizontal-small">
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">生成密钥对</label>
-						<div class="col-sm-10">
-							<button class="btn btn-default btn-sm" ng-click="gensshkey()">自动生成公钥和私钥</button>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">公钥文件</label>
-						<div class="col-sm-10">
-							<input class="form-control" ng-model="setting.pubkey" type="text" ng-disabled="true">
-							<span style="margin-left:5px;margin-bottom:0">供 SSH 服务器使用</span>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">私钥文件</label>
-						<div class="col-sm-10">
-							<input class="form-control" ng-model="setting.prvkey" type="text" ng-disabled="true">
-							<span style="margin-left:5px;margin-bottom:0">供 SSH 客户端使用</span>
-						</div>
-					</div>
-					<div class="form-group form-inline" ng-show="setting.prvkey">
-						<label class="col-sm-2 control-label"></label>
-						<div class="col-sm-10">
-							<button class="btn btn-default btn-sm" ng-show="setting.prvkey" ng-click="chpasswd()">修改私钥密码</button>
-							<a class="btn btn-default btn-sm" href="/file{{setting.prvkey}}" ng-show="setting.prvkey">下载私钥</a>
-						</div>
-					</div>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+                <div srvbase ng-init="name='SSH';pkg='ssh';service='sshd';"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='setting'" id="setting">
+                <div class="form-horizontal form-horizontal-small">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">服务端口</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.port" type="text" placeholder="默认端口为 22">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="newpassword">密码验证</label>
+                        <div class="col-sm-10">
+                            <div class="checkbox">
+                                <label><input ng-model="setting.enable_pwdauth" type="checkbox"> 支持使用密码进行登录验证</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="newpasswordc">启用SFTP</label>
+                        <div class="col-sm-10">
+                            <div class="checkbox">
+                                <label><input ng-model="setting.enable_sftp" type="checkbox"> 开启 SFTP 支持</label>
+                            </div>
+                            <span class="help-block">开启后可通过 SFTP 工具上传/下载文件。</span>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button class="btn btn-primary" ng-click="savesettings()">保存设置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pubkauth'" id="pubkauth">
+                <div class="alert alert-info">使用公钥验证可以加强 SSH 的安全性，防止暴力破解。</div>
+                <div class="form-horizontal form-horizontal-small">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">生成密钥对</label>
+                        <div class="col-sm-10">
+                            <button class="btn btn-default btn-sm" ng-click="gensshkey()">自动生成公钥和私钥</button>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">公钥文件</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.pubkey" type="text" ng-disabled="true">
+                            <span style="margin-left:5px;margin-bottom:0">供 SSH 服务器使用</span>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">私钥文件</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.prvkey" type="text" ng-disabled="true">
+                            <span style="margin-left:5px;margin-bottom:0">供 SSH 客户端使用</span>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline" ng-show="setting.prvkey">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button class="btn btn-default btn-sm" ng-show="setting.prvkey" ng-click="chpasswd()">修改私钥密码</button>
+                            <a class="btn btn-default btn-sm" href="/file{{setting.prvkey}}" ng-show="setting.prvkey">下载私钥</a>
+                        </div>
+                    </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">启用公钥验证</label>
                         <div class="col-sm-10">
-							<div class="checkbox">
-								<label><input ng-model="setting.enable_pubkauth" type="checkbox"> 支持使用公钥进行登录验证</label>
-							</div>
+                            <div class="checkbox">
+                                <label><input ng-model="setting.enable_pubkauth" type="checkbox"> 支持使用公钥进行登录验证</label>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">关闭密码验证</label>
                         <div class="col-sm-10">
-							<div class="checkbox">
-								<label><input ng-model="setting.disable_pwdauth" type="checkbox"> 禁止使用密码进行登录验证（可选）</label>
-							</div>
+                            <div class="checkbox">
+                                <label><input ng-model="setting.disable_pwdauth" type="checkbox"> 禁止使用密码进行登录验证（可选）</label>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group form-inline">
-						<label class="col-sm-2 control-label"></label>
-						<div class="col-sm-10">
-							<button class="btn btn-primary" ng-click="savepksettings()">保存设置</button>
-						</div>
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button class="btn btn-primary" ng-click="savepksettings()">保存设置</button>
+                        </div>
                     </div>
                 </div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
-				<div srvext ng-init="name='SSH';pkg='ssh';"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
-				<div srvfile ng-init="items=[{name:'主目录', path:'/etc/ssh', isdir:true}];"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
-				<div srvlog ng-init="items=[{name:'日志文件', path:'/var/log/secure', isfile:true}];"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
-				<div srvupdate ng-init="name='SSH';pkg='ssh';"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
-				<div srvuninstall ng-init="name='SSH';pkg='ssh';"></div>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
+                <div srvext ng-init="name='SSH';pkg='ssh';"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
+                <div srvfile ng-init="items=[{name:'主目录', path:'/etc/ssh', isdir:true}];"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
+                <div srvlog ng-init="items=[{name:'日志文件', path:'/var/log/secure', isfile:true}];"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
+                <div srvupdate ng-init="name='SSH';pkg='ssh';"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
+                <div srvuninstall ng-init="name='SSH';pkg='ssh';"></div>
+            </div>
+        </div>
+    </div>
 
 </div>
 
 <div id="confirm" class="modal fade">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h3>{{confirm_title}}</h3>
-			</div>
-			<div class="modal-body" ng-bind-html-unsafe="confirm_body"></div>
-			<div class="modal-footer">
-				<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
-				<button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">确定</button>
-			</div>
-		</div>
-	</div>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>{{confirm_title}}</h3>
+            </div>
+            <div class="modal-body" ng-bind-html-unsafe="confirm_body"></div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-click="confirm()">确定</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="chpasswd" class="modal fade">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h3>修改私钥密码</h3>
-			</div>
-			<div class="modal-body">
-				<form class="form-horizontal" onsubmit="return false">
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="oldpassword">原密码</label>
-						<div class="col-sm-10">
-							<input class="form-control" type="password" id="oldpassword" ng-model="oldpassword" placeholder="无密码请留空" autocomplete="off"/>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="newpassword">新密码</label>
-						<div class="col-sm-10">
-							<input class="form-control" type="password" id="newpassword" ng-model="newpassword" placeholder="至少5位，留空表示删除密码" autocomplete="off"/>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="newpasswordc">确认密码</label>
-						<div class="col-sm-10">
-							<input class="form-control" type="password" id="newpasswordc" ng-model="newpasswordc" placeholder="至少5位，留空表示删除密码" autocomplete="off"/>
-						</div>
-					</div>
-				</form>
-			</div>
-			<div class="modal-footer">
-				<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
-				<button class="btn btn-primary" onclick="$('#chpasswd').modal('hide')" ng-click="dochpasswd()">修改密码</button>
-			</div>
-		</div>
-	</div>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>修改私钥密码</h3>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="oldpassword">原密码</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="password" id="oldpassword" ng-model="oldpassword" placeholder="无密码请留空" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="newpassword">新密码</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="password" id="newpassword" ng-model="newpassword" placeholder="至少5位，留空表示删除密码" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="newpasswordc">确认密码</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" type="password" id="newpasswordc" ng-model="newpasswordc" placeholder="至少5位，留空表示删除密码" autocomplete="off" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#chpasswd').modal('hide')" ng-click="dochpasswd()">修改密码</button>
+            </div>
+        </div>
+    </div>
 </div>

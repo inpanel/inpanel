@@ -13,7 +13,11 @@ import os
 import os.path
 import re
 import string
-from cStringIO import StringIO
+
+try:
+    from io import StringIO
+except:
+    from cStringIO import StringIO
 
 # import glob
 # import sys

@@ -1,29 +1,29 @@
 <div navbar ng-init="currentItem='utils.task'"></div>
 <div ng-show="!loaded">
-	<div loading></div>
+    <div loading></div>
 </div>
 
 <div id="main" ng-init="load()">
-	<div class="module-header">
-		<h3>任务管理</h3>
-	</div>
+    <div class="module-header">
+        <h3>任务管理</h3>
+    </div>
 
-	<div class="tabbable" ng-show="loaded">
-		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">常规计划</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='cron'"><a href="#cron" ng-click="sec('cron')" data-toggle="tab">Cron 任务</a></li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
-				<div>
-					常见任务列表
-				</div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='cron'" id="cron">
-				<div>
-					Cron 任务列表
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="tabbable" ng-show="loaded">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">常规计划</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='cron'"><a href="#cron" ng-click="sec('cron')" data-toggle="tab">Cron 任务</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+                <div>
+                    常见任务列表
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='cron'" id="cron">
+                <div>
+                    Cron 任务列表
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

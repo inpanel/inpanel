@@ -1,95 +1,97 @@
 <div navbar ng-init="currentItem='database'"></div>
-<div ng-show="!loaded"><div loading></div></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>添加新用户</h3>
-	</div>
+    <div class="module-header">
+        <h3>添加新用户</h3>
+    </div>
 
-	<!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
-	<div class="panel panel-warning" ng-show="!$mysql.password_validated">
-		<div class="panel-heading">
-			<div class="panel-title">
-				<i class="glyphicon glyphicon-lock"></i>
-				<span> 请输入数据库管理员 root 的密码</span>
-			</div>
-		</div>
-		<div class="panel-body">
-			<form class="form-horizontal" onsubmit="return false" method="get" action="/">
-				<div class="form-group form-inline">
-					<label class="col-sm-2 control-label" for="password">管理员密码</label>
-					<div class="col-sm-10">
-						<input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autocomplete="off" autofocus>
-					</div>
-				</div>
-				<div class="form-group form-inline">
-					<div class="col-sm-2 control-label"></div>
-					<div class="col-sm-10">
-						<button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">
-							<i class="glyphicon glyphicon-user"></i> <span>登录 MySQL</span>
-						</button>
-						<span style="padding-left:20px">
-							<a href="#/service/mysql?s=password">忘记密码？</a>
-						</span>
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
+    <!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
+    <div class="panel panel-warning" ng-show="!$mysql.password_validated">
+        <div class="panel-heading">
+            <div class="panel-title">
+                <i class="glyphicon glyphicon-lock"></i>
+                <span> 请输入数据库管理员 root 的密码</span>
+            </div>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal" onsubmit="return false" method="get" action="/">
+                <div class="form-group form-inline">
+                    <label class="col-sm-2 control-label" for="password">管理员密码</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autocomplete="off" autofocus>
+                    </div>
+                </div>
+                <div class="form-group form-inline">
+                    <div class="col-sm-2 control-label"></div>
+                    <div class="col-sm-10">
+                        <button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">
+                            <i class="glyphicon glyphicon-user"></i> <span>登录 MySQL</span>
+                        </button>
+                        <span style="padding-left:20px">
+                            <a href="#/service/mysql?s=password">忘记密码？</a>
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
-	<div class="panel panel-default" ng-show="$mysql.password_validated">
-		<div class="panel-heading">
-			<div class="panel-title">
-				<i class="glyphicon glyphicon-user"></i>
-				<span> 添加新用户</span>
-				<span style="display:none" ng-show="dbname">到数据库 {{dbname}}</span>
-			</div>
-		</div>
-		<div class="panel-body form-horizontal form-horizontal-small">
-			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label">用户名</label>
-				<div class="col-sm-10">
-					<input class="form-control" type="text" ng-disabled="processing" ng-model="user" autofocus>
-				</div>
-			</div>
-			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label">主机</label>
-				<div class="col-sm-10">
-					<input class="form-control" type="text" ng-disabled="processing" ng-model="host" ng-init="host='localhost'">
-					<select class="form-control" ng-disabled="processing" ng-model="hosttype" ng-change="host=hosttype" ng-init="hosttype='localhost'">
-						<option value="%">任意（不推荐）</option>
-						<option value="localhost">本地（比较安全）</option>
-						<option value="">自定义</option>
-					</select>
-				</div>
-			</div>
-			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label" for="passwordn">密码</label>
-				<div class="col-sm-10">
-					<input class="form-control" type="password" id="passwordn" ng-disabled="processing||emptypassword" ng-model="password" autocomplete="off">
-					<label><input type="checkbox" ng-model="emptypassword"> 使用空密码</label>
-				</div>
-			</div>
-			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label" for="passwordc">确认密码</label>
-				<div class="col-sm-10">
-					<input class="form-control" type="password" id="passwordc" ng-disabled="processing||emptypassword" ng-model="passwordc" autocomplete="off">
-				</div>
-			</div>
-			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label">随机密码</label>
-				<div class="col-sm-10">
-					<input class="form-control" type="text" ng-disabled="processing||emptypassword" ng-model="randpassword">
-					<button class="btn btn-default" ng-disabled="processing||emptypassword" ng-click="genpassword()">随机生成</button>
-				</div>
-			</div>
-			<div class="form-group form-inline">
-				<div class="col-sm-2 control-label"></div>
-				<div class="col-sm-10">
-					<button class="btn btn-default" ng-disabled="processing" ng-click="newuser()">添加新用户</button>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="panel panel-default" ng-show="$mysql.password_validated">
+        <div class="panel-heading">
+            <div class="panel-title">
+                <i class="glyphicon glyphicon-user"></i>
+                <span> 添加新用户</span>
+                <span style="display:none" ng-show="dbname">到数据库 {{dbname}}</span>
+            </div>
+        </div>
+        <div class="panel-body form-horizontal form-horizontal-small">
+            <div class="form-group form-inline">
+                <label class="col-sm-2 control-label">用户名</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="text" ng-disabled="processing" ng-model="user" autofocus>
+                </div>
+            </div>
+            <div class="form-group form-inline">
+                <label class="col-sm-2 control-label">主机</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="text" ng-disabled="processing" ng-model="host" ng-init="host='localhost'">
+                    <select class="form-control" ng-disabled="processing" ng-model="hosttype" ng-change="host=hosttype" ng-init="hosttype='localhost'">
+                        <option value="%">任意（不推荐）</option>
+                        <option value="localhost">本地（比较安全）</option>
+                        <option value="">自定义</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group form-inline">
+                <label class="col-sm-2 control-label" for="passwordn">密码</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="password" id="passwordn" ng-disabled="processing||emptypassword" ng-model="password" autocomplete="off">
+                    <label><input type="checkbox" ng-model="emptypassword"> 使用空密码</label>
+                </div>
+            </div>
+            <div class="form-group form-inline">
+                <label class="col-sm-2 control-label" for="passwordc">确认密码</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="password" id="passwordc" ng-disabled="processing||emptypassword" ng-model="passwordc" autocomplete="off">
+                </div>
+            </div>
+            <div class="form-group form-inline">
+                <label class="col-sm-2 control-label">随机密码</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="text" ng-disabled="processing||emptypassword" ng-model="randpassword">
+                    <button class="btn btn-default" ng-disabled="processing||emptypassword" ng-click="genpassword()">随机生成</button>
+                </div>
+            </div>
+            <div class="form-group form-inline">
+                <div class="col-sm-2 control-label"></div>
+                <div class="col-sm-10">
+                    <button class="btn btn-default" ng-disabled="processing" ng-click="newuser()">添加新用户</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
