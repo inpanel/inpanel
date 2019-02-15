@@ -1,111 +1,113 @@
 <div navbar ng-init="currentItem='service.mariadb'"></div>
-<div ng-show="Auth.processing||!loaded"><div loading></div></div>
+<div ng-show="Auth.processing||!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
-	<div class="module-header">
-		<h3>MariaDB - 最流行的开源关系型数据库服务器</h3>
-	</div>
+    <div class="module-header">
+        <h3>MariaDB - 最流行的开源关系型数据库服务器</h3>
+    </div>
 
-	<div srvinstall ng-init="name='MariaDB';pkg='mariadb';expected_repolist=['mariadb'];"></div>
+    <div srvinstall ng-init="name='MariaDB';pkg='mariadb';expected_repolist=['mariadb'];"></div>
 
-	<div class="tabbable" ng-show="installed">
-		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='password'"><a href="#password" ng-click="sec('password')" data-toggle="tab">密码设置</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
-				<div srvbase ng-init="name='MariaDB';pkg='mariadb';service='mariadb';"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='password'" id="password">
-				<div class="panel panel-default" ng-show="!forceupdate">
-					<div class="panel-heading">
-						<div class="panel-title">
-							<i class="glyphicon glyphicon-user"></i>
-							<span> 管理员密码设置</span>
-						</div>
-					</div>
-					<div class="panel-body">
-						<p class="alert alert-warning">MariaDB 的管理员用户名为 root，密码可在此修改，默认密码为空。</p>
-						<form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
-							<div class="form-group form-inline">
-								<label class="col-sm-2 control-label" for="oldpassword">原密码</label>
-								<div class="col-sm-10">
-									<input class="form-control" ng-model="root_opasswd" type="password" id="oldpassword" ng-disable="processing" placeholder="请输入原密码" autocomplete="off">
-								</div>
-							</div>
-							<div class="form-group form-inline">
-								<label class="col-sm-2 control-label" for="newpassword">新密码</label>
-								<div class="col-sm-10">
-									<input class="form-control" ng-model="root_passwd" type="password" id="newpassword" ng-disable="processing" placeholder="请输入新密码" autocomplete="off">
-								</div>
-							</div>
-							<div class="form-group form-inline">
-								<label class="col-sm-2 control-label" for="newpasswordc">确认新密码</label>
-								<div class="col-sm-10">
-									<input class="form-control" ng-model="root_passwdc" type="password" id="newpasswordc" ng-disable="processing" placeholder="请再次输入新密码" autocomplete="off">
-								</div>
-							</div>
-							<div class="form-group form-inline">
-								<label class="col-sm-2 control-label"></label>
-								<div class="col-sm-10">
-									<button class="btn btn-primary" ng-click="updatepwd()" ng-disable="processing">修改密码</button>
-									<button class="btn btn-default" ng-click="forceupdate=true" ng-disable="processing">忘记密码</button>
-								</div>
-							</div>
-						</form>
-					</div>
-				</div>
-				<div class="panel panel-default" ng-show="forceupdate">
-					<div class="panel-heading">
-						<div class="panel-title">
-							<i class="glyphicon glyphicon-user"></i>
-							<span> 重置密码</span>
-						</div>
-					</div>
-					<div class="panel-body">
-						<p class="alert alert-warning">此处操作会强制修改 root 密码，在修改过程中会停止 MariaDB 服务。</p>
-						<form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
-							<div class="form-group form-inline">
-								<label class="col-sm-2 control-label" for="passwordn">新密码</label>
-								<div class="col-sm-10">
-									<input class="form-control" ng-model="root_passwd" type="password" id="passwordn" ng-disable="processing" placeholder="请输入新密码" autocomplete="off">
-								</div>
-							</div>
-							<div class="form-group form-inline">
-								<label class="col-sm-2 control-label" for="passwordc">确认新密码</label>
-								<div class="col-sm-10">
-									<input class="form-control" ng-model="root_passwdc" type="password" id="passwordc" ng-disable="processing" placeholder="请再次输入新密码" autocomplete="off">
-								</div>
-							</div>
-							<div class="form-group form-inline">
-								<label class="col-sm-2 control-label"></label>
-								<div class="col-sm-10">
-									<button class="btn btn-primary" ng-click="fupdatepwd()" ng-disable="processing">确认重置</button>
-									<button class="btn btn-default" ng-click="forceupdate=false" ng-disable="processing">取 消</button>
-								</div>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
-				<div srvfile ng-init="items=[{name:'主配置', path:'/etc/my.cnf', isfile:true}];"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
-				<div srvlog ng-init="items=[{name:'日志文件', path:'/var/log/mariadb.log', isfile:true}];"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
-				<div srvupdate ng-init="name='MariaDB';pkg='mariadb';"></div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
-				<div srvuninstall ng-init="name='MariaDB';pkg='mariadb';"></div>
-			</div>
-		</div>
-	</div>
+    <div class="tabbable" ng-show="installed">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">基本信息</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='password'"><a href="#password" ng-click="sec('password')" data-toggle="tab">密码设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='configfile'"><a href="#configfile" ng-click="sec('configfile')" data-toggle="tab">配置文件</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='logfile'"><a href="#logfile" ng-click="sec('logfile')" data-toggle="tab">日志</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='update'"><a href="#update" ng-click="sec('update')" data-toggle="tab">升级</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='uninstall'"><a href="#uninstall" ng-click="sec('uninstall')" data-toggle="tab">卸载</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
+                <div srvbase ng-init="name='MariaDB';pkg='mariadb';service='mariadb';"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='password'" id="password">
+                <div class="panel panel-default" ng-show="!forceupdate">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-user"></i>
+                            <span> 管理员密码设置</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <p class="alert alert-warning">MariaDB 的管理员用户名为 root，密码可在此修改，默认密码为空。</p>
+                        <form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="oldpassword">原密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="root_opasswd" type="password" id="oldpassword" ng-disable="processing" placeholder="请输入原密码" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="newpassword">新密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="root_passwd" type="password" id="newpassword" ng-disable="processing" placeholder="请输入新密码" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="newpasswordc">确认新密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="root_passwdc" type="password" id="newpasswordc" ng-disable="processing" placeholder="请再次输入新密码" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-10">
+                                    <button class="btn btn-primary" ng-click="updatepwd()" ng-disable="processing">修改密码</button>
+                                    <button class="btn btn-default" ng-click="forceupdate=true" ng-disable="processing">忘记密码</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel panel-default" ng-show="forceupdate">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-user"></i>
+                            <span> 重置密码</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <p class="alert alert-warning">此处操作会强制修改 root 密码，在修改过程中会停止 MariaDB 服务。</p>
+                        <form class="form-horizontal form-horizontal-small" onsubmit="return false" method="get" action="/">
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="passwordn">新密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="root_passwd" type="password" id="passwordn" ng-disable="processing" placeholder="请输入新密码" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="passwordc">确认新密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="root_passwdc" type="password" id="passwordc" ng-disable="processing" placeholder="请再次输入新密码" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-10">
+                                    <button class="btn btn-primary" ng-click="fupdatepwd()" ng-disable="processing">确认重置</button>
+                                    <button class="btn btn-default" ng-click="forceupdate=false" ng-disable="processing">取 消</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
+                <div srvfile ng-init="items=[{name:'主配置', path:'/etc/my.cnf', isfile:true}];"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
+                <div srvlog ng-init="items=[{name:'日志文件', path:'/var/log/mariadb.log', isfile:true}];"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
+                <div srvupdate ng-init="name='MariaDB';pkg='mariadb';"></div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
+                <div srvuninstall ng-init="name='MariaDB';pkg='mariadb';"></div>
+            </div>
+        </div>
+    </div>
 
 </div>

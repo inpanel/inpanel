@@ -1,41 +1,43 @@
 <div navbar ng-init="currentItem='utils.autofm'"></div>
-<div ng-show="!loaded"><div loading></div></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>自动格式化挂载</h3>
-	</div>
+    <div class="module-header">
+        <h3>自动格式化挂载</h3>
+    </div>
 
-	<div style="display:none" ng-show="diskcount==0">
-		<div class="panel panel-default">
-			<div class="panel-body">
+    <div style="display:none" ng-show="diskcount==0">
+        <div class="panel panel-default">
+            <div class="panel-body">
                 <p>没有找到未挂载的存储设备，点击以下按钮进入磁盘分区管理。</p>
                 <p><a class="btn btn-default" href="#/utils/partition">磁盘分区管理</a></p>
             </div>
         </div>
-	</div>
+    </div>
 
-	<div style="display:none" ng-init="loadDiskinfo()" ng-show="diskcount > 0">
-		<h5>未挂载的设备列表</h5>
-		<table class="table table-bordered table-hover">
-			<thead>
-				<tr>
-					<th>设备名称</td>
-					<th style="width:100px">存储空间</th>
-					<th style="width:200px">操作</th>
+    <div style="display:none" ng-init="loadDiskinfo()" ng-show="diskcount > 0">
+        <h5>未挂载的设备列表</h5>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>设备名称</td>
+                        <th style="width:100px">存储空间</th>
+                        <th style="width:200px">操作</th>
                 </tr>
             </thead>
             <tbody>
-				<tr ng-repeat="partition in diskinfo['partitions'] | filter:{'is_hw':true, 'is_pv':false, 'partcount':0, 'mount':''}">
-					<td>{{ partition['name'] }}</td>
-					<td>{{ partition['size'] }}</td>
-					<td>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-click="confirm(partition['name'])">格式化并挂载</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+                <tr ng-repeat="partition in diskinfo['partitions'] | filter:{'is_hw':true, 'is_pv':false, 'partcount':0, 'mount':''}">
+                    <td>{{ partition['name'] }}</td>
+                    <td>{{ partition['size'] }}</td>
+                    <td>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-click="confirm(partition['name'])">格式化并挂载</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <div id="confirm" class="modal fade">

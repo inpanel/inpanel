@@ -4,11 +4,11 @@
 </div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>进程管理</h3>
-	</div>
+    <div class="module-header">
+        <h3>进程管理</h3>
+    </div>
 
-	<div class="tabbable" ng-init="load()">
+    <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='process'"><a href="#process" ng-click="tab_sec('process')" data-toggle="tab">进程列表</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='other'"><a href="#other" ng-click="tab_sec('other')" data-toggle="tab">待续</a></li>
@@ -19,7 +19,9 @@
                     <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
                 </div>
                 <div ng-show="!init_process">
-                    <div class="pull-left"><h5>进程列表</h5></div>
+                    <div class="pull-left">
+                        <h5>进程列表</h5>
+                    </div>
                     <div class="pull-right" ng-show="process && process.total">数量：{{process.total}}</div>
                     <table class="table table-hover table-bordered">
                         <thead>
@@ -54,6 +56,6 @@
                 待开发功能
             </div>
         </div>
-	</div>
+    </div>
 
 </div>

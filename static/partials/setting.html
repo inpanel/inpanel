@@ -1,144 +1,146 @@
 <div ng-include src="'/xsrf'"></div>
 
 <div navbar ng-init="currentItem='setting'"></div>
-<div ng-show="!loaded"><div loading></div></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>设置</h3>
-	</div>
+    <div class="module-header">
+        <h3>设置</h3>
+    </div>
 
-	<div class="tabbable">
-		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='authinfo'"><a href="#authinfo" ng-click="sec('authinfo')" data-toggle="tab">登录设置</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='serverinfo'"><a href="#serverinfo" ng-click="sec('serverinfo')" data-toggle="tab">服务设置</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='accesskey'"><a href="#accesskey" ng-click="sec('accesskey')" data-toggle="tab">远程控制</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='upversion'"><a href="#upversion" ng-click="sec('upversion')" data-toggle="tab">版本升级</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='restart'"><a href="#restart" ng-click="sec('restart')" data-toggle="tab">重启服务</a></li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='authinfo'" id="authinfo" ng-init="loadAuthInfo()">
-				<form class="form-horizontal form-horizontal-small" ng-submit="updateAuthInfo()" onsubmit="return false">
+    <div class="tabbable">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='authinfo'"><a href="#authinfo" ng-click="sec('authinfo')" data-toggle="tab">登录设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='serverinfo'"><a href="#serverinfo" ng-click="sec('serverinfo')" data-toggle="tab">服务设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='accesskey'"><a href="#accesskey" ng-click="sec('accesskey')" data-toggle="tab">远程控制</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='upversion'"><a href="#upversion" ng-click="sec('upversion')" data-toggle="tab">版本升级</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='restart'"><a href="#restart" ng-click="sec('restart')" data-toggle="tab">重启服务</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='authinfo'" id="authinfo" ng-init="loadAuthInfo()">
+                <form class="form-horizontal form-horizontal-small" ng-submit="updateAuthInfo()" onsubmit="return false">
                     <div class="form-group form-inline">
                         <label for="username" class="col-sm-2 control-label">用户名</label>
                         <div class="col-sm-10">
-                          <input class="form-control" ng-model="username" ng-disabled="processing" type="text" id="username" placeholder="管理员用户名">
+                            <input class="form-control" ng-model="username" ng-disabled="processing" type="text" id="username" placeholder="管理员用户名">
                         </div>
-                      </div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="password">新密码</label>
-						<div class="col-sm-10">
-							<input class="form-control" ng-model="password" ng-disabled="processing" type="password" id="password" placeholder="留空表示不修改密码" autocomplete="off">
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="passwordc">确认新密码</label>
-						<div class="col-sm-10">
-							<input class="form-control" ng-model="passwordc" ng-disabled="processing" type="password" id="passwordc" placeholder="留空表示不修改密码" autocomplete="off">
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">密码检测</label>
-						<div class="col-sm-10 checkbox">
-							<label><input ng-model="passwordcheck" ng-disabled="processing" type="checkbox"> 开启密码安全级别检测</label>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label"></label>
-						<div class="col-sm-10">
-							<button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
-						</div>
-					</div>
-				</form>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='serverinfo'" id="serverinfo" ng-init="loadServerInfo()">
-				<form class="form-horizontal form-horizontal-small" ng-submit="updateServerInfo()" onsubmit="return false">
+                    </div>
                     <div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="bind_ip">绑定IP</label>
-						<div class="col-sm-10">
-							<input class="form-control" ng-model="ip" ng-disabled="processing" type="text" id="bind_ip" placeholder="服务绑定的IP">
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="bind_port">绑定端口</label>
-						<div class="col-sm-10">
-							<input class="form-control" ng-model="port" ng-disabled="processing" type="text" id="bind_port" placeholder="服务绑定的端口">
-							
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label"></label>
-						<div class="col-sm-10">
-							<button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
-						</div>
-					</div>
-				</form>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='accesskey'" id="accesskey" ng-init="loadAccessKey()">
-				<div class="form-horizontal form-horizontal-small">
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label">远程控制</label>
-						<div class="col-sm-10 checkbox">
-							<label><input ng-model="accesskeyenable" ng-disabled="processing" type="checkbox"> 允许使用密钥进行远程控制</label>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label" for="accesskey">控制密钥</label>
-						<div class="col-sm-10">
-							<textarea class="form-control" ng-model="accesskey" ng-disabled="processing" id="accesskey" placeholder="远程控制使用的密钥" style="width:300px; height:80px"></textarea>
-							<button class="btn btn-default btn-sm" ng-disabled="processing" ng-click="genaccesskey()" style="margin-left:5px">随机生成</button>
-						</div>
-					</div>
-					<div class="form-group form-inline">
-						<label class="col-sm-2 control-label"></label>
-						<div class="col-sm-10">
-							<button ng-click="updateAccessKey()" class="btn btn-default" ng-disabled="processing">保存设置</button>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='upversion'" id="upversion" ng-init="checkUpVersion()">
-				<table class="table table-hover table-bordered">
-					<thead>
-						<tr>
-							<th colspan="2">当前版本信息</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td style="width: 200px;">版本信息：</td>
-							<td>v{{version.version}} b{{version.build}}</td>
-						</tr>
-						<tr>
-							<td>发布时间：</td>
-							<td>{{version.releasetime}}</td>
-						</tr>
-						<tr>
-							<td>变更记录：</td>
-							<td><a href="{{version.changelog}}" target="_blank">查看版本变更记录</a></td>
-						</tr>
-					</tbody>
-				</table>
-				<div ng-bind-html-unsafe="upverMessage"></div>
-				<p style="display:none" ng-show="showUpdateBtn">
-					<button class="btn btn-default" ng-click="update()" ng-disabled="processing">{{updateBtnText}}</button>
-				</p>
-			</div>
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='restart'" id="restart" ng-init="restartService()">
-				<div class="panel panel-danger">
-					<div class="panel-heading">
-						<div class="panel-title">
-							<i class="glyphicon glyphicon-refresh"></i>
-							<span> 重启服务</span>
-						</div>
-					</div>
-					<div class="panel-body">
-						<p ng-bind-html-unsafe="restartMessage"></p>
-						<button class="btn btn-default" ng-show="showRestartBtn" ng-click="restart()" ng-disabled="processing">确定并重启服务</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                        <label class="col-sm-2 control-label" for="password">新密码</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="password" ng-disabled="processing" type="password" id="password" placeholder="留空表示不修改密码" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="passwordc">确认新密码</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="passwordc" ng-disabled="processing" type="password" id="passwordc" placeholder="留空表示不修改密码" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">密码检测</label>
+                        <div class="col-sm-10 checkbox">
+                            <label><input ng-model="passwordcheck" ng-disabled="processing" type="checkbox"> 开启密码安全级别检测</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='serverinfo'" id="serverinfo" ng-init="loadServerInfo()">
+                <form class="form-horizontal form-horizontal-small" ng-submit="updateServerInfo()" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="bind_ip">绑定IP</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="ip" ng-disabled="processing" type="text" id="bind_ip" placeholder="服务绑定的IP">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="bind_port">绑定端口</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="port" ng-disabled="processing" type="text" id="bind_port" placeholder="服务绑定的端口">
+
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='accesskey'" id="accesskey" ng-init="loadAccessKey()">
+                <div class="form-horizontal form-horizontal-small">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">远程控制</label>
+                        <div class="col-sm-10 checkbox">
+                            <label><input ng-model="accesskeyenable" ng-disabled="processing" type="checkbox"> 允许使用密钥进行远程控制</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="accesskey">控制密钥</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control" ng-model="accesskey" ng-disabled="processing" id="accesskey" placeholder="远程控制使用的密钥" style="width:300px; height:80px"></textarea>
+                            <button class="btn btn-default btn-sm" ng-disabled="processing" ng-click="genaccesskey()" style="margin-left:5px">随机生成</button>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button ng-click="updateAccessKey()" class="btn btn-default" ng-disabled="processing">保存设置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='upversion'" id="upversion" ng-init="checkUpVersion()">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th colspan="2">当前版本信息</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width: 200px;">版本信息：</td>
+                            <td>v{{version.version}} b{{version.build}}</td>
+                        </tr>
+                        <tr>
+                            <td>发布时间：</td>
+                            <td>{{version.releasetime}}</td>
+                        </tr>
+                        <tr>
+                            <td>变更记录：</td>
+                            <td><a href="{{version.changelog}}" target="_blank">查看版本变更记录</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div ng-bind-html-unsafe="upverMessage"></div>
+                <p style="display:none" ng-show="showUpdateBtn">
+                    <button class="btn btn-default" ng-click="update()" ng-disabled="processing">{{updateBtnText}}</button>
+                </p>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='restart'" id="restart" ng-init="restartService()">
+                <div class="panel panel-danger">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-refresh"></i>
+                            <span> 重启服务</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <p ng-bind-html-unsafe="restartMessage"></p>
+                        <button class="btn btn-default" ng-show="showRestartBtn" ng-click="restart()" ng-disabled="processing">确定并重启服务</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>

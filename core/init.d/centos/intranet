@@ -95,7 +95,7 @@ case "$1" in
     condrestart|try-restart)
         rh_status_q || exit 7
         restart
-	    ;;
+        ;;
     *)
         echo $"Usage: $0 {start|stop|status|restart}"
         exit 2

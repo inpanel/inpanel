@@ -1,52 +1,54 @@
 <div navbar ng-init="currentItem='database'"></div>
-<div ng-show="!loaded"><div loading></div></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>管理数据库 {{dbname}}</h3>
-	</div>
+    <div class="module-header">
+        <h3>管理数据库 {{dbname}}</h3>
+    </div>
 
-	<!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
-	<div class="panel panel-warning" ng-show="!$mysql.password_validated">
-		<div class="panel-heading">
+    <!-- 请输入数据库管理员 root 的密码后继续操作，需改进为复用模板 -->
+    <div class="panel panel-warning" ng-show="!$mysql.password_validated">
+        <div class="panel-heading">
             <div class="panel-title">
                 <i class="glyphicon glyphicon-lock"></i>
                 <span> 请输入数据库管理员 root 的密码</span>
             </div>
-		</div>
-		<div class="panel-body">
-			<form class="form-horizontal" onsubmit="return false" method="get" action="/">
-				<div class="form-group form-inline">
-					<label class="col-sm-2 control-label" for="password">管理员密码</label>
-					<div class="col-sm-10">
-						<input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autocomplete="off" autofocus>
-					</div>
-				</div>
-				<div class="form-group form-inline">
-					<div class="col-sm-2 control-label"></div>
-					<div class="col-sm-10">
-						<button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">
-							<i class="glyphicon glyphicon-user"></i> <span>登录 MySQL</span>
-						</button>
-						<span style="padding-left:20px">
-							<a href="#/service/mysql?s=password">忘记密码？</a>
-						</span>
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal" onsubmit="return false" method="get" action="/">
+                <div class="form-group form-inline">
+                    <label class="col-sm-2 control-label" for="password">管理员密码</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" ng-model="$mysql.password" type="password" id="password" ng-disabled="processing" placeholder="管理员密码" autocomplete="off" autofocus>
+                    </div>
+                </div>
+                <div class="form-group form-inline">
+                    <div class="col-sm-2 control-label"></div>
+                    <div class="col-sm-10">
+                        <button class="btn btn-primary" ng-click="validate_password()" ng-disabled="processing">
+                            <i class="glyphicon glyphicon-user"></i> <span>登录 MySQL</span>
+                        </button>
+                        <span style="padding-left:20px">
+                            <a href="#/service/mysql?s=password">忘记密码？</a>
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
-	<div class="tabbable" ng-init="load()" ng-show="$mysql.password_validated">
-		<ul class="nav nav-tabs">
-			<li ng-class="'active' | iftrue:activeTabName=='users'"><a href="#users" ng-click="sec('users')" data-toggle="tab">用户权限</a></li>
-			<li ng-class="'active' | iftrue:activeTabName=='operation'"><a href="#operation" ng-click="sec('operation')" data-toggle="tab">数据库操作</a></li>
-		</ul>
-		<div class="tab-content">
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='users'" id="users">
-				<div class="well" ng-show="userloading">
-					<img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
-				</div>
+    <div class="tabbable" ng-init="load()" ng-show="$mysql.password_validated">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='users'"><a href="#users" ng-click="sec('users')" data-toggle="tab">用户权限</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='operation'"><a href="#operation" ng-click="sec('operation')" data-toggle="tab">数据库操作</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='users'" id="users">
+                <div class="well" ng-show="userloading">
+                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
+                </div>
 
                 <div class="panel panel-default" ng-show="!userloading">
                     <div class="panel-heading">
@@ -87,12 +89,12 @@
                         </tbody>
                     </table>
                 </div>
-			</div>
+            </div>
 
-			<div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='operation'" id="operation">
-				<div class="well" ng-show="dbloading">
-					<img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库信息，请稍候...
-				</div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='operation'" id="operation">
+                <div class="well" ng-show="dbloading">
+                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库信息，请稍候...
+                </div>
 
                 <div class="panel panel-default" ng-show="!dbloading">
                     <div class="panel-heading">
@@ -437,9 +439,9 @@
                         </div>
                     </div>
                 </div>
-			</div>
-		</div>
-	</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="selector" class="modal fade" role="dialog">

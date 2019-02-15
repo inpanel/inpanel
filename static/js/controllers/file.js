@@ -442,10 +442,10 @@ var FileCtrl = [
                             }
                         };
                         //$scope.cancel = function(){
-                        //	delete $scope.clipboard.items[name];
+                        //    delete $scope.clipboard.items[name];
                         //};
                         //$scope.confirm = function(){
-                        //	pastedo(type, srcpath, despath, name);
+                        //    pastedo(type, srcpath, despath, name);
                         //};
                     } else { // no despath exists
                         pastedo(type, srcpath, despath, name);
@@ -878,8 +878,7 @@ var FileTrashCtrl = [
         };
         $scope.tcleanconfirm = function() {
             $scope.confirm_title = '清空确认';
-            $scope.confirm_body = '<p>清空回收站后，回收站中的所有文件都将被删除且不可恢复！<p>\
-								<p>确认要清空回收站吗？</p>';
+            $scope.confirm_body = '<p>清空回收站后，回收站中的所有文件都将被删除且不可恢复！<p><p>确认要清空回收站吗？</p>';
             $('#confirm').modal();
             $scope.confirm = function() {
                 $scope.tclean();

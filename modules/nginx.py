@@ -1300,7 +1300,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
     We create new config file for each server under /etc/nginx/conf.d/.
     Config file name depends on the first of server_names.
     
-	Parameter examples:
+    Parameter examples:
     * server_names: ['example.com', 'www.example.com']
     * listens:
       [
@@ -1334,7 +1334,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             'urlpath': '/redirect',
             'redirect_url': 'http://test.com/',
             'redirect_type': '301',
-			'redirect_option': 'keep',
+            'redirect_option': 'keep',
         },
         {
             'urlpath': '/proxy',
@@ -1347,22 +1347,22 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             'proxy_backends': [
                 {'server':'www.baidu.com'}
             ],
-			'proxy_cache': 'proxycache',
-			'proxy_cache_min_uses': '5',
-			'proxy_cache_methods': 'POST',
-			'proxy_cache_key': '$scheme$proxy_host$request_uri',
-			'proxy_cache_valid': [
+            'proxy_cache': 'proxycache',
+            'proxy_cache_min_uses': '5',
+            'proxy_cache_methods': 'POST',
+            'proxy_cache_key': '$scheme$proxy_host$request_uri',
+            'proxy_cache_valid': [
                 {
                     'code': '200',
                     'time': '1m',
                 }
             ],
-			'proxy_cache_use_stale': [
-				'error', 'timeout', 'invalid_header', 'updating',
+            'proxy_cache_use_stale': [
+                'error', 'timeout', 'invalid_header', 'updating',
                 'http_500', 'http_502', 'http_503', 'http_504', 'http_404'
-			],
-			'proxy_cache_lock': True,
-			'proxy_cache_lock_timeout': '5',
+            ],
+            'proxy_cache_lock': True,
+            'proxy_cache_lock_timeout': '5',
         },
         {
             'urlpath': '/error',

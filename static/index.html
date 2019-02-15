@@ -2,32 +2,32 @@
 <html lang="en" ng-app="intranet">
 
 <head>
-	<meta charset="utf-8"/>
-	<title ng-bind-template="{{ htmlTitle }} - InPanel">InPanel</title>
-	<meta name="renderer" content="webkit"/>
+    <meta charset="utf-8"/>
+    <title ng-bind-template="{{ htmlTitle }} - InPanel">InPanel</title>
+    <meta name="renderer" content="webkit"/>
     <meta name="force-rendering" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css"/>
-	<!-- <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-responsive.min.css"/> -->
-	<link rel="stylesheet" href="lib/codemirror/codemirror.css"/>
-	<!--[if lt IE 9]>
-	<script src="lib/html5shim/html5shiv-printshiv.min.js"></script>
-	<![endif]-->
-	<link rel="stylesheet" href="css/global.css"/>
-	<!--[if lte IE 8]>
-	<link rel="stylesheet" href="css/ie-patch.css"/>
-	<![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css"/>
+    <!-- <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-responsive.min.css"/> -->
+    <link rel="stylesheet" href="lib/codemirror/codemirror.css"/>
+    <!--[if lt IE 9]>
+    <script src="lib/html5shim/html5shiv-printshiv.min.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" href="css/global.css"/>
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="css/ie-patch.css"/>
+    <![endif]-->
 </head>
 
 <body>
 
-	<div message></div>
+    <div message></div>
 
-	<div class="container" style="display:none" ng-show="navbar_loaded">
-		<div ng-view></div>
-		<div id="_authconfirm" class="modal fade" role="dialog">
-			<div class="modal-dialog" role="document">
+    <div class="container" style="display:none" ng-show="navbar_loaded">
+        <div ng-view></div>
+        <div id="_authconfirm" class="modal fade" role="dialog">
+            <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -41,50 +41,50 @@
                         <button class="btn btn-primary" onclick="$('#_authconfirm').modal('hide')" ng-click="_authrenew()">继续访问</button>
                     </div>
                 </div>
-			</div>
-		</div>
-	</div>
-	<footer id="footer" style="display:none" ng-show="navbar_loaded">
-		<div class="container">
-			<div class="text-muted pull-left">Powered by <a href="https://intranet.pub" target="_blank">InPanel</a></div>
-			<div class="text-muted pull-right">
-				<a href="https://intranet.pub/" target="_blank"><span class="glyphicon glyphicon-comment"></span> 社区</a>
-			</div>
-		</div>
-	</footer>
-	<div class="well" style="width:300px; margin:100px auto auto;" ng-show="!navbar_loaded">
-		<img src="images/loading.gif" style="margin-right:5px"> 正在加载，请稍候...
-	</div>
+            </div>
+        </div>
+    </div>
+    <footer id="footer" style="display:none" ng-show="navbar_loaded">
+        <div class="container">
+            <div class="text-muted pull-left">Powered by <a href="https://inpanel.org" target="_blank">InPanel</a></div>
+            <div class="text-muted pull-right">
+                <a href="https://inpanel.org/" target="_blank"><span class="glyphicon glyphicon-comment"></span> 社区</a>
+            </div>
+        </div>
+    </footer>
+    <div class="well" style="width:300px; margin:100px auto auto;" ng-show="!navbar_loaded">
+        <img src="images/loading.gif" style="margin-right:5px"> 正在加载，请稍候...
+    </div>
 
-	<!--[if lte IE 6]>
-	<script src="lib/ie6warning/warning.js"></script>
-	<script>document.body.innerHTML='';e("lib/ie6warning/")</script>
-	<![endif]-->
-	<script src="lib/angular/1.0.2/angular.min.js"></script>
-	<script src="lib/jquery/jquery-1.12.4.min.js"></script>
-	<script src="lib/bootstrap/js/bootstrap.min.js"></script>
-	<script src="lib/codemirror/codemirror-compressed.js"></script>
-	<script src="lib/md5/md5.min.js"></script>
-	<script>
-		var location_path = location.pathname.replace(/(\s+)?\/$/, '');
-		var template_path = '';
-	</script>
-	<!-- <script src="js.min/intranet.all.js"></script> -->
-	<!-- Uncomment it in dev mode -->
+    <!--[if lte IE 6]>
+    <script src="lib/ie6warning/warning.js"></script>
+    <script>document.body.innerHTML='';e("lib/ie6warning/")</script>
+    <![endif]-->
+    <script src="lib/angular/1.0.2/angular.min.js"></script>
+    <script src="lib/jquery/jquery-1.12.4.min.js"></script>
+    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="lib/codemirror/codemirror-compressed.js"></script>
+    <script src="lib/md5/md5.min.js"></script>
+    <script>
+        var location_path = location.pathname.replace(/(\s+)?\/$/, '');
+        var template_path = '';
+    </script>
+    <!-- <script src="js.min/intranet.all.js"></script> -->
+    <!-- Uncomment it in dev mode -->
 
-	<script src="js/intranet.js"></script>
-	<script src="js/directives.js"></script>
-	<script src="js/filters.js"></script>
-	<script src="js/services.js"></script>
-	<script src="js/controllers/controllers.js"></script>
-	<script src="js/controllers/service.js"></script>
-	<script src="js/controllers/file.js"></script>
-	<script src="js/controllers/site.js"></script>
-	<script src="js/controllers/task.js"></script>
-	<script src="js/controllers/ecs.js"></script>
-	<script src="js/controllers/utils.js"></script>
-	<script src="js/controllers/database.js"></script>
-	<script src="js/controllers/application.js"></script>
+    <script src="js/intranet.js"></script>
+    <script src="js/directives.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/controllers/controllers.js"></script>
+    <script src="js/controllers/service.js"></script>
+    <script src="js/controllers/file.js"></script>
+    <script src="js/controllers/site.js"></script>
+    <script src="js/controllers/task.js"></script>
+    <script src="js/controllers/ecs.js"></script>
+    <script src="js/controllers/utils.js"></script>
+    <script src="js/controllers/database.js"></script>
+    <script src="js/controllers/application.js"></script>
 
 </body>
 

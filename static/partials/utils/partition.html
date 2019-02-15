@@ -1,78 +1,80 @@
 <div navbar ng-init="currentItem='utils.partition'"></div>
-<div ng-show="!loaded"><div loading></div></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
 
 <div id="main" ng-show="loaded" style="display:none">
-	<div class="module-header">
-		<h3>磁盘分区</h3>
-	</div>
+    <div class="module-header">
+        <h3>磁盘分区</h3>
+    </div>
 
-	<div style="display:none" ng-init="loadDiskinfo()" ng-show="diskinfo['count'] > 0">
-		<h5>物理分区管理</h5>
-		<table class="table table-bordered table-hover">
-			<tbody ng-repeat="partition in diskinfo['partitions']">
-				<tr class="warning">
-					<td style="width:80px;">设备{{$index+1}}</td>
-					<td style="width:60px;">分区</td>
-					<td style="width:70px;">大小</td>
-					<td style="width:70px;">文件系统</td>
-					<td style="width:90px;">挂载点</td>
-					<td style="width:200px;">操作</td>
+    <div style="display:none" ng-init="loadDiskinfo()" ng-show="diskinfo['count'] > 0">
+        <h5>物理分区管理</h5>
+        <table class="table table-bordered table-hover">
+            <tbody ng-repeat="partition in diskinfo['partitions']">
+                <tr class="warning">
+                    <td style="width:80px;">设备{{$index+1}}</td>
+                    <td style="width:60px;">分区</td>
+                    <td style="width:70px;">大小</td>
+                    <td style="width:70px;">文件系统</td>
+                    <td style="width:90px;">挂载点</td>
+                    <td style="width:200px;">操作</td>
                 </tr>
-				<tr>
-					<td>{{ partition['name'] | iftrue:partition['is_hw'] }}</td>
-					<td>{{ partition['name'] | iftrue:!partition['is_hw'] }}</td>
-					<td>{{ partition['size'] }}</td>
-					<td>{{ partition['fstype'] | iftrue:!partition['is_pv']&&partition['partcount']==0 }}{{ 'LVM卷' | iftrue:partition['is_pv'] }}</td>
-					<td>{{ partition['mount'] }}</td>
-					<td>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['fstype']=='swap'&&partition['partcount']==0" ng-click="swaponconfirm(partition['name'])">启用</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&partition['mount']&&partition['fstype']=='swap'&&partition['partcount']==0" ng-click="swapoffconfirm(partition['name'])">停用</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['fstype']!='swap'&&partition['fstype']&&partition['partcount']==0" ng-click="mountconfirm(partition['name'], partition['fstype'])">挂载</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&partition['mount']&&partition['fstype']!='swap'&&partition['partcount']==0" ng-click="umountconfirm(partition['name'])">卸载</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['partcount']==0" ng-click="formatconfirm(partition['name'])">格式化</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="partition['is_hw']&&!partition['is_pv']&&!partition['mount']" ng-click="scanpartconfirm(partition['name'])">扫描</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="partition['is_hw']&&!partition['is_pv']&&!partition['mount']&&partition['unpartition']!='0'&&partition['partcount']<4" ng-click="addpartconfirm(partition['name'], partition['unpartition'])">新建分区</button>
-					</td>
-				</tr>
-				<tr ng-repeat="subpart in partition['partitions'] | filter: {'is_lv': false}">
-					<td>{{ subpart['name'] | iftrue:subpart['is_hw'] }}</td>
-					<td>{{ subpart['name'] | iftrue:!subpart['is_hw'] }}</td>
-					<td>{{ subpart['size'] }}</td>
-					<td>{{ subpart['fstype'] | iftrue:!subpart['is_pv'] }}{{ 'LVM卷' | iftrue: subpart['is_pv'] }}</td>
-					<td>{{ subpart['mount'] }}</td>
-					<td>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['fstype']=='swap'&&subpart['partcount']==0" ng-click="swaponconfirm(subpart['name'])">启用</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&subpart['mount']&&subpart['fstype']=='swap'&&subpart['partcount']==0" ng-click="swapoffconfirm(subpart['name'])">停用</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['fstype']!='swap'&&subpart['fstype']&&subpart['partcount']==0" ng-click="mountconfirm(subpart['name'], subpart['fstype'])">挂载</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&subpart['mount']&&subpart['fstype']!='swap'&&subpart['partcount']==0" ng-click="umountconfirm(subpart['name'])">卸载</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['partcount']==0" ng-click="formatconfirm(subpart['name'])">格式化</button>
-						<button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_hw']&&!subpart['is_pv']&&!subpart['mount']" ng-click="delpartconfirm(subpart['name'])">删除分区</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+                <tr>
+                    <td>{{ partition['name'] | iftrue:partition['is_hw'] }}</td>
+                    <td>{{ partition['name'] | iftrue:!partition['is_hw'] }}</td>
+                    <td>{{ partition['size'] }}</td>
+                    <td>{{ partition['fstype'] | iftrue:!partition['is_pv']&&partition['partcount']==0 }}{{ 'LVM卷' | iftrue:partition['is_pv'] }}</td>
+                    <td>{{ partition['mount'] }}</td>
+                    <td>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['fstype']=='swap'&&partition['partcount']==0" ng-click="swaponconfirm(partition['name'])">启用</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&partition['mount']&&partition['fstype']=='swap'&&partition['partcount']==0" ng-click="swapoffconfirm(partition['name'])">停用</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['fstype']!='swap'&&partition['fstype']&&partition['partcount']==0" ng-click="mountconfirm(partition['name'], partition['fstype'])">挂载</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&partition['mount']&&partition['fstype']!='swap'&&partition['partcount']==0" ng-click="umountconfirm(partition['name'])">卸载</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!partition['is_pv']&&!partition['mount']&&partition['partcount']==0" ng-click="formatconfirm(partition['name'])">格式化</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="partition['is_hw']&&!partition['is_pv']&&!partition['mount']" ng-click="scanpartconfirm(partition['name'])">扫描</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="partition['is_hw']&&!partition['is_pv']&&!partition['mount']&&partition['unpartition']!='0'&&partition['partcount']<4" ng-click="addpartconfirm(partition['name'], partition['unpartition'])">新建分区</button>
+                    </td>
+                </tr>
+                <tr ng-repeat="subpart in partition['partitions'] | filter: {'is_lv': false}">
+                    <td>{{ subpart['name'] | iftrue:subpart['is_hw'] }}</td>
+                    <td>{{ subpart['name'] | iftrue:!subpart['is_hw'] }}</td>
+                    <td>{{ subpart['size'] }}</td>
+                    <td>{{ subpart['fstype'] | iftrue:!subpart['is_pv'] }}{{ 'LVM卷' | iftrue: subpart['is_pv'] }}</td>
+                    <td>{{ subpart['mount'] }}</td>
+                    <td>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['fstype']=='swap'&&subpart['partcount']==0" ng-click="swaponconfirm(subpart['name'])">启用</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&subpart['mount']&&subpart['fstype']=='swap'&&subpart['partcount']==0" ng-click="swapoffconfirm(subpart['name'])">停用</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['fstype']!='swap'&&subpart['fstype']&&subpart['partcount']==0" ng-click="mountconfirm(subpart['name'], subpart['fstype'])">挂载</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&subpart['mount']&&subpart['fstype']!='swap'&&subpart['partcount']==0" ng-click="umountconfirm(subpart['name'])">卸载</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_pv']&&!subpart['mount']&&subpart['partcount']==0" ng-click="formatconfirm(subpart['name'])">格式化</button>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-show="!subpart['is_hw']&&!subpart['is_pv']&&!subpart['mount']" ng-click="delpartconfirm(subpart['name'])">删除分区</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-	<div style="margin-top:40px;display:none" ng-show="diskinfo['lvscount'] > 0">
-		<h5>LVM逻辑卷（只读）</h5>
-		<table class="table table-bordered table-hover">
-			<tbody>
-				<tr class="warning">
-					<td style="width:100px;">设备</td>
-					<td>卷名</td>
-					<td style="width:100px;">大小</td>
-					<td style="width:100px;">文件系统</td>
-					<td style="width:200px;">挂载点</td>
-				</tr>
-				<tr ng-repeat="partition in diskinfo['lvm']['partitions']">
-					<td>{{ partition['name'] }}</td>
-					<td>{{ partition['vname'] }}</td>
-					<td>{{ partition['size'] }}</td>
-					<td>{{ partition['fstype'] }}</td>
-					<td>{{ partition['mount'] }}</td>
-				</tr>
-			</tbody>
-		</table>
+    <div style="margin-top:40px;display:none" ng-show="diskinfo['lvscount'] > 0">
+        <h5>LVM逻辑卷（只读）</h5>
+        <table class="table table-bordered table-hover">
+            <tbody>
+                <tr class="warning">
+                    <td style="width:100px;">设备</td>
+                    <td>卷名</td>
+                    <td style="width:100px;">大小</td>
+                    <td style="width:100px;">文件系统</td>
+                    <td style="width:200px;">挂载点</td>
+                </tr>
+                <tr ng-repeat="partition in diskinfo['lvm']['partitions']">
+                    <td>{{ partition['name'] }}</td>
+                    <td>{{ partition['vname'] }}</td>
+                    <td>{{ partition['size'] }}</td>
+                    <td>{{ partition['fstype'] }}</td>
+                    <td>{{ partition['mount'] }}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
 </div>
@@ -201,7 +203,7 @@
                         <li>如果分区大小超过可连续分配的空间，则将使用可连续分配的空间大小。</li>
                         <li>每个设备下最多可创建4个分区。</li>
                         <li>请在分区前先卸载该设备上已挂载的分区，否则分区的修改将不可见。</li>
-                    </li>
+                    </ul>
                 </div>
                 <form class="form-horizontal" onsubmit="return false">
                     <div class="form-group form-inline">

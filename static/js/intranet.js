@@ -1,6 +1,6 @@
 var releasetime = '2018-12-20 18:57:43 CST';
 var _v = new Date(releasetime.replace(/-/g, '/')).getTime() / 1000;
-//if (1) _v += Math.random();	// ie test mode
+//if (1) _v += Math.random(); // ie test mode
 angular.module('intranet', ['intranet.services', 'intranet.directives', 'intranet.filters']).
 config(['$routeProvider', function ($routeProvider) {
     var _r = function (t, c, a) {
@@ -96,10 +96,10 @@ run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Requ
         'password_validated': false
     };
 
-	$rootScope.$ecs = {
+    $rootScope.$ecs = {
         'access_key_id': '',
-		'page_size': 10,
-		'page_number': 1
+        'page_size': 10,
+        'page_number': 1
     };
     $rootScope.$proxyroot = location_path;
 }]).
@@ -107,7 +107,7 @@ value('version', {
     'version': '1.1.1',
     'build': '17',
     'releasetime': releasetime,
-    'changelog': 'https://intranet.pub/changelog.html'
+    'changelog': 'http://inpanel.org/changelog.html'
 });
 
 var Auth = {
