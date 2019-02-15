@@ -3,7 +3,7 @@
 # intranet - this script starts and stops the intranet daemon
 #
 # chkconfig:   - 85 15
-# description: Intranet is a web-based linux VPS management tools
+# description: InPanel is a web-based linux VPS management tools
 # processname: intranet
 # pidfile:     /var/run/intranet.pid
 
@@ -23,7 +23,7 @@ lockfile=/var/lock/subsys/intranet
 
 start() {
     [ -x $intranet ] || exit 5
-    echo -n $"Starting Intranet: "
+    echo -n $"Starting InPanel: "
     daemon --pidfile="$pidfile" "$exec &"
     retval=$?
     echo
@@ -32,7 +32,7 @@ start() {
 }
 
 stop() {
-    echo -n $"Stopping Intranet: "
+    echo -n $"Stopping InPanel: "
     killproc -p "$pidfile" $exec
     #killproc $prog -TERM
     retval=$?
@@ -57,15 +57,15 @@ restart() {
 }
 
 uninstall() {
-    echo -n $"Deleting Intranet: "
+    echo -n $"Deleting InPanel: "
     stop
     rm -f /etc/init.d/intranet
-    echo -n $"Intranet Daemon Deleted "
+    echo -n $"InPanel Daemon Deleted "
     mkdir /root/intranet_backup_data
     cp /usr/local/intranet/data /root/intranet_backup_data
-    echo -n $"Backup Intranet Data to /root/intranet_backup_data"
+    echo -n $"Backup InPanel Data to /root/intranet_backup_data"
     rm -rf /usr/local/intranet
-    echo -n $"Intranet Deleted !"
+    echo -n $"InPanel Deleted !"
 }
 
 rh_status() {

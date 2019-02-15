@@ -4,7 +4,7 @@
 # Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
-# Intranet is distributed under the terms of The New BSD License.
+# InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
 '''Module for ssh Management'''

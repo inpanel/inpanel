@@ -4,10 +4,10 @@
 # Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
-# Intranet is distributed under the terms of the (new) BSD License.
+# InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""The Intranet web server and tools."""
+"""The InPanel web server and tools."""
 
 __all__ = [
     'web'

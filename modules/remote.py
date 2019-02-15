@@ -4,10 +4,10 @@
 # Copyright (c) 2012, ECSMate development team
 # All rights reserved.
 #
-# Intranet is distributed under the terms of the (new) BSD License.
+# InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for Intranet operations for remote server.'''
+'''Package for InPanel operations for remote server.'''
 
 
 import base64
@@ -18,7 +18,7 @@ import lib.pxssh as pxssh
 
 
 def intranet_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, intranet_ip=None, intranet_port=None):
-    '''Install Intranet on a remote server.'''
+    '''Install InPanel on a remote server.'''
     try:
         s = pxssh.pxssh()
         s.login(ssh_ip, ssh_user, ssh_password, port=ssh_port)
@@ -54,7 +54,7 @@ def intranet_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, i
 
 
 def intranet_uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
-    '''Uninstall Intranet on a remote server.'''
+    '''Uninstall InPanel on a remote server.'''
     try:
         s = pxssh.pxssh()
         s.login(ssh_ip, ssh_user, ssh_password, port=ssh_port)

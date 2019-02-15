@@ -5,10 +5,10 @@
 # Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
-# Intranet is distributed under the terms of The New BSD License.
+# InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-""" Install Script for Intranet """
+""" Install Script for InPanel """
 
 import getpass
 import os
@@ -159,9 +159,9 @@ class Install(object):
         print('[ %s ]' % OK)
 
     def handle_intranet(self):
-        # handle Intranet
-        # get the latest Intranet version
-        print('* Installing Intranet')
+        # handle InPanel
+        # get the latest InPanel version
+        print('* Installing InPanel')
         # localpkg_found = False
         # if os.path.exists(os.path.join(os.path.dirname(__file__), 'intranet.tar.gz')):
         #     # local install package found
@@ -248,7 +248,7 @@ class Install(object):
         self.listen_port = start_port
         # self.listen_port = 8899
         self._run('%s/config.py port "%s"' % (self.installpath, self.listen_port))
-        print('* Intranet will work on port %s' % self.listen_port)
+        print('* InPanel will work on port %s' % self.listen_port)
 
     def find_free_port(self, port_number):
         # find an unuse port
@@ -296,12 +296,12 @@ class Install(object):
             print('* VPSMate will continue to work !')
             self.listen_port = 8899
             self._run('%s/config.py port "%s"' % (self.installpath, self.listen_port))
-            print('* Intranet will work on port %s' % self.listen_port)
+            print('* InPanel will work on port %s' % self.listen_port)
 
     def start_service(self):
         # start service
         if not os.path.exists(self.initd_script):
-            print('Starting Intranet [ %s ]' % FAILED)
+            print('Starting InPanel [ %s ]' % FAILED)
             return False
         if self.distname in ('centos', 'redhat'):
             self._run('chkconfig intranet on')
@@ -339,7 +339,7 @@ class Install(object):
         print('*                          *')
         print('============================')
         print
-        print('The URL of your Intranet Panel is:'),
+        print('The URL of your InPanel is:'),
         print('\033[4;34mhttp://%s:%s/\033[0m' % (self.detect_ip(), self.listen_port))
         print
         print('\033[5;32mWish you a happy life !\033[0m')

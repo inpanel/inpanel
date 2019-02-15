@@ -3,7 +3,7 @@
 # Copyright (c) 2017 - 2019, doudoudzj
 # All rights reserved.
 #
-# Intranet is distributed under the terms of the New BSD License.
+# InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
 """Module for named configuration management."""

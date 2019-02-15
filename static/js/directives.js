@@ -15,7 +15,7 @@ directive('navbar', function () {
                     <span class="icon-bar"></span>\
                     <span class="icon-bar"></span>\
                 </button>\
-                <a class="navbar-brand" href="#/main">Intranet</a>\
+                <a class="navbar-brand" href="#/main">InPanel</a>\
             </div>\
             <div id="navbar" class="navbar-collapse collapse">\
                 <ul class="nav navbar-nav">\

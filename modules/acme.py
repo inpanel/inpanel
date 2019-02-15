@@ -3,7 +3,7 @@
 # Copyright (c) 2017 - 2019, doudoudzj
 # All rights reserved.
 #
-# Intranet is distributed under the terms of the New BSD License.
+# InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
 '''Module for getting a signed TLS certificate by ACME protocol from Let's Encrypt.'''
@@ -41,7 +41,7 @@ class ACME():
         self.certificate = None
 
         # Contact details (e.g. mailto:aaa@bbb.com) for your account-key
-        self.contact = contact  # 'a client of the Intranet Control Panel'
+        self.contact = contact  # 'a client of the InPanel'
         # self.ca = "https://acme-v02.api.letsencrypt.org"
         # self.ca_directory = = "https://acme-v02.api.letsencrypt.org/directory"
         # dev
