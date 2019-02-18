@@ -359,10 +359,10 @@ var SettingCtrl = [
                             $scope.upverMessage = '正在重启 InPanel...';
                             Timeout(function () {
                                 Request.post('/backend/service_restart', {
-                                    service: 'intranet'
+                                    service: 'inpanel'
                                 }, function (data) {
                                     var getRestartStatus = function () {
-                                        Request.get('backend/service_restart_intranet', function (data) {
+                                        Request.get('backend/service_restart_inpanel', function (data) {
                                             Message.setInfo('')
                                             if (data.msg) $scope.upverMessage = data.msg;
                                             Timeout(getRestartStatus, 500, module);
@@ -392,10 +392,10 @@ var SettingCtrl = [
             $scope.showRestartBtn = false;
             Timeout(function () {
                 Request.post('/backend/service_restart', {
-                    service: 'intranet'
+                    service: 'inpanel'
                 }, function (data) {
                     var getRestartStatus = function () {
-                        Request.get('backend/service_restart_intranet', function (data) {
+                        Request.get('backend/service_restart_inpanel', function (data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             Timeout(getRestartStatus, 500, module);
                         }, function (data, status) { // error occur because server is terminate
@@ -459,18 +459,22 @@ var SettingCtrl = [
             $scope.version['releasetime'] = $scope.newReleasetime;
             releasetime = $scope.newReleasetime;
             _v = new Date($scope.newReleasetime.replace(/-/g, '/')).getTime() / 1000;
-            $.getScript('/js/intranet.js');
-            $.getScript('/js/services.js');
-            $.getScript('/js/controllers/controllers.js');
-            $.getScript('/js/controllers/service.js');
-            $.getScript('/js/controllers/file.js');
-            $.getScript('/js/controllers/site.js');
-            $.getScript('/js/controllers/task.js');
-            $.getScript('/js/controllers/database.js');
-            $.getScript('/js/controllers/ecs.js');
-            $.getScript('/js/controllers/utils.js');
-            $.getScript('/js/directives.js');
-            $.getScript('/js/filters.js');
+            [
+                'core',
+                'services',
+                'controllers/controllers',
+                'controllers/service',
+                'controllers/file',
+                'controllers/site',
+                'controllers/task',
+                'controllers/database',
+                'controllers/ecs',
+                'controllers/utils',
+                'directives',
+                'filters'
+            ].forEach(function (item) {
+                $.getScript('/js/' + item + '.js');
+            });
         };
     }
 ];

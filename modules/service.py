@@ -18,7 +18,7 @@ import subprocess
 class Service(object):
     '''supported service operate script'''
     support_services = [
-        'intranet',
+        'inpanel',
         'nginx',
         'httpd',
         'vsftpd',

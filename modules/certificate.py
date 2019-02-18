@@ -13,16 +13,15 @@ import subprocess
 import shutil
 
 from acme import ACME
-from modules.mfile import listfile
+from modules.files import listfile
 
 
 class Certificate():
 
     def __init__(self):
         # self.path_current = os.path.dirname(os.path.realpath(__file__))
-        self.path_home = '/usr/local/intranet/data/certificate/'
-        # self.path_home = '/Users/douzhenjiang/Projects/intranet-panel/data/certificate/'
-        self.path_acc = os.path.join(self.path_home, 'account.key')
+        self.path_home = '/usr/local/inpanel/data/certificate/'
+        self.path_acc = os.path.join(self.path_home, 'client.key')
         self.path_crt = os.path.join(self.path_home, 'crt')
         self.path_key = os.path.join(self.path_home, 'key')
         self.path_csr = os.path.join(self.path_home, 'csr')

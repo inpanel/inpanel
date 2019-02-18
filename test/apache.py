@@ -26,7 +26,7 @@ DEBUG = False
 
 
 # HTTPD_CONF_DIR = '/etc/httpd/'
-HTTPD_CONF_DIR = '/Users/douzhenjiang/Projects/intranet-panel/'
+HTTPD_CONF_DIR = '/Users/douzhenjiang/Projects/inpanel/'
 HTTPD_CONF = '/etc/httpd/conf/httpd.conf'
 SERVER_CONF = '/etc/httpd/conf.d/'
 COMMENTFLAG = '#v#'
@@ -201,7 +201,7 @@ def getservers(config=None):
     },
         {
         "server_names": [
-            "api.intranet.pub"
+            "api.inpanel.pub"
         ],
         "status": "on",
         "engines": [
@@ -217,7 +217,7 @@ def getservers(config=None):
     },
         {
         "server_names": [
-            "web.intranet.pub"
+            "web.inpanel.pub"
         ],
         "status": "on",
         "engines": [

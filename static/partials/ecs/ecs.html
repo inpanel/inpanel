@@ -56,7 +56,7 @@
                         </td>
                         <td>{{instance.Image.ImageCode}}</td>
                         <td ng-bind-html-unsafe="instance.Status | instance.status"></td>
-                        <td ng-bind-html-unsafe="instance.InPanelStatus | instance.intranetstatus"></td>
+                        <td ng-bind-html-unsafe="instance.InPanelStatus | instance.inpanelstatus"></td>
                         <td>
                             <a class="btn btn-small" href="#/ecs/{{instance.InstanceName|urlencode}},{{$ecs.access_key_id|urlencode}}">
                                 <i class="icon-wrench"></i> 管理
@@ -71,7 +71,7 @@
                                 target="_blank">
                                 <i class="icon-home"></i> 打开 InPanel
                             </a>
-                            <a ng-show="!instance.InPanelStatus" class="btn btn-small" href="#/ecs/{{instance.InstanceName|urlencode}},{{$ecs.access_key_id|urlencode}}?s=intranet">
+                            <a ng-show="!instance.InPanelStatus" class="btn btn-small" href="#/ecs/{{instance.InstanceName|urlencode}},{{$ecs.access_key_id|urlencode}}?s=inpanel">
                                 <i class="icon-plus-sign"></i> 安装 InPanel
                             </a>
                         </td>

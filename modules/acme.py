@@ -278,13 +278,13 @@ class ACME():
 #     # cert = certificate.Certificate()
 #     # # # cert.create_domain_key('test.com')
 #     # cert.generate_domain_csr(['test.com', 'aaa.com'], forced=True)
-#     account_key = '/Users/douzhenjiang/Projects/intranet-panel/data/certificate/account.key'
-#     csr = '/Users/douzhenjiang/Projects/intranet-panel/data/certificate/csr/test.com.csr'
-#     acme_check_dir = '/Users/douzhenjiang/Projects/intranet-panel/data'
+#     account_key = '/Users/douzhenjiang/Projects/inpanel/data/certificate/client.key'
+#     csr = '/Users/douzhenjiang/Projects/inpanel/data/certificate/csr/test.com.csr'
+#     acme_check_dir = '/Users/douzhenjiang/Projects/inpanel/data'
 #     # aaa = ACME(account_key, csr, acme_check_dir)
 
-#     key = '/Users/douzhenjiang/Projects/intranet-panel/test/example_com.key'
-#     csr = '/Users/douzhenjiang/Projects/intranet-panel/test/example_com.csr'
+#     key = '/Users/douzhenjiang/Projects/inpanel/test/example_com.key'
+#     csr = '/Users/douzhenjiang/Projects/inpanel/test/example_com.csr'
 #     aaa = ACME(key, csr, acme_check_dir)
 
 #     # C=CN, ST=Beijing, L=Beijing, O=Example Inc, OU=Network Dept,

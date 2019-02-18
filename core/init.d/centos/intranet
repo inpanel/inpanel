@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# intranet - this script starts and stops the intranet daemon
+# inpanel - this script starts and stops the inpanel daemon
 #
 # chkconfig:   - 85 15
 # description: InPanel is a web-based linux VPS management tools
-# processname: intranet
-# pidfile:     /var/run/intranet.pid
+# processname: inpanel
+# pidfile:     /var/run/inpanel.pid
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -16,13 +16,13 @@
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
-exec="/usr/local/intranet/server.py"
-pidfile="/var/run/intranet.pid"
+exec="/usr/local/inpanel/server.py"
+pidfile="/var/run/inpanel.pid"
 
-lockfile=/var/lock/subsys/intranet
+lockfile=/var/lock/subsys/inpanel
 
 start() {
-    [ -x $intranet ] || exit 5
+    [ -x $inpanel ] || exit 5
     echo -n $"Starting InPanel: "
     daemon --pidfile="$pidfile" "$exec &"
     retval=$?
@@ -59,12 +59,12 @@ restart() {
 uninstall() {
     echo -n $"Deleting InPanel: "
     stop
-    rm -f /etc/init.d/intranet
+    rm -f /etc/init.d/inpanel
     echo -n $"InPanel Daemon Deleted "
-    mkdir /root/intranet_backup_data
-    cp /usr/local/intranet/data /root/intranet_backup_data
-    echo -n $"Backup InPanel Data to /root/intranet_backup_data"
-    rm -rf /usr/local/intranet
+    mkdir /root/inpanel_backup_data
+    cp /usr/local/inpanel/data /root/inpanel_backup_data
+    echo -n $"Backup InPanel Data to /root/inpanel_backup_data"
+    rm -rf /usr/local/inpanel
     echo -n $"InPanel Deleted !"
 }
 

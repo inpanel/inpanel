@@ -1,4 +1,4 @@
-angular.module('intranet.directives', []).
+angular.module('inpanel.directives', []).
 directive('navbar', function () {
     return {
         restrict: 'A',

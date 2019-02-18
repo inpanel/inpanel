@@ -17,14 +17,14 @@ import shlex
 import lib.pxssh as pxssh
 
 
-def intranet_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, intranet_ip=None, intranet_port=None):
+def inpanel_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, inpanel_ip=None, inpanel_port=None):
     '''Install InPanel on a remote server.'''
     try:
         s = pxssh.pxssh()
         s.login(ssh_ip, ssh_user, ssh_password, port=ssh_port)
         s.sendline('rm -f install.py')
         s.prompt()
-        s.sendline('wget https://raw.githubusercontent.com/intranet-panel/intranet/master/install.py')
+        s.sendline('wget https://raw.githubusercontent.com/inpanel/inpanel/master/install.py')
         s.prompt()
         s.sendline('python install.py')
         s.expect('INSTALL COMPLETED!')
@@ -32,20 +32,20 @@ def intranet_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, i
         s.prompt()
         s.sendline('rm -f install.py')
         s.prompt()
-        s.sendline('/usr/local/intranet/config.py loginlock on')
+        s.sendline('/usr/local/inpanel/config.py loginlock on')
         s.prompt()
         if accesskey != None:
-            s.sendline('/usr/local/intranet/config.py accesskey %s' % accesskey)
+            s.sendline('/usr/local/inpanel/config.py accesskey %s' % accesskey)
             s.prompt()
-            s.sendline('/usr/local/intranet/config.py accesskeyenable on')
+            s.sendline('/usr/local/inpanel/config.py accesskeyenable on')
             s.prompt()
-        if intranet_ip != None:
-            s.sendline('/usr/local/intranet/config.py ip %s' % intranet_ip)
+        if inpanel_ip != None:
+            s.sendline('/usr/local/inpanel/config.py ip %s' % inpanel_ip)
             s.prompt()
-        if intranet_port != None:
-            s.sendline('/usr/local/intranet/config.py port %s' % intranet_port)
+        if inpanel_port != None:
+            s.sendline('/usr/local/inpanel/config.py port %s' % inpanel_port)
             s.prompt()
-        s.sendline('service intranet restart')
+        s.sendline('service inpanel restart')
         s.prompt()
         s.logout()
         return True
@@ -53,14 +53,14 @@ def intranet_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, i
         return False
 
 
-def intranet_uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
+def inpanel_uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
     '''Uninstall InPanel on a remote server.'''
     try:
         s = pxssh.pxssh()
         s.login(ssh_ip, ssh_user, ssh_password, port=ssh_port)
-        s.sendline('service intranet stop')
+        s.sendline('service inpanel stop')
         s.prompt()
-        s.sendline('rm -rf /usr/local/intranet /etc/init.d/intranet')
+        s.sendline('rm -rf /usr/local/inpanel /etc/init.d/inpanel')
         s.prompt()
         s.logout()
         return True
@@ -68,33 +68,33 @@ def intranet_uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
         return False
 
 
-def intranet_config(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, accesskeyenable=None, username=None, password=None, loginlock=None, intranet_ip=None, intranet_port=None):
+def inpanel_config(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, accesskeyenable=None, username=None, password=None, loginlock=None, inpanel_ip=None, inpanel_port=None):
     '''Update config on remote server.'''
     try:
         s = pxssh.pxssh()
         s.login(ssh_ip, ssh_user, ssh_password, port=ssh_port)
-        s.sendline('service intranet stop')
+        s.sendline('service inpanel stop')
         s.prompt()
         if accesskey != None:
-            s.sendline('/usr/local/intranet/config.py accesskey %s' % accesskey)
+            s.sendline('/usr/local/inpanel/config.py accesskey %s' % accesskey)
             s.prompt()
         if accesskeyenable != None:
-            s.sendline('/usr/local/intranet/config.py accesskeyenable %s' % (accesskeyenable and 'on' or 'off'))
+            s.sendline('/usr/local/inpanel/config.py accesskeyenable %s' % (accesskeyenable and 'on' or 'off'))
             s.prompt()
         if username != None:
-            s.sendline('/usr/local/intranet/config.py username %s' % username)
+            s.sendline('/usr/local/inpanel/config.py username %s' % username)
             s.prompt()
         if password != None:
-            s.sendline('/usr/local/intranet/config.py password %s' % password)
+            s.sendline('/usr/local/inpanel/config.py password %s' % password)
             s.prompt()
         if loginlock != None:
-            s.sendline('/usr/local/intranet/config.py loginlock %s' % (loginlock and 'on' or 'off'))
+            s.sendline('/usr/local/inpanel/config.py loginlock %s' % (loginlock and 'on' or 'off'))
             s.prompt()
-        if intranet_ip != None:
-            s.sendline('/usr/local/intranet/config.py ip %s' % intranet_ip)
+        if inpanel_ip != None:
+            s.sendline('/usr/local/inpanel/config.py ip %s' % inpanel_ip)
             s.prompt()
-        if intranet_port != None:
-            s.sendline('/usr/local/intranet/config.py port %s' % intranet_port)
+        if inpanel_port != None:
+            s.sendline('/usr/local/inpanel/config.py port %s' % inpanel_port)
             s.prompt()
         s.logout()
         return True

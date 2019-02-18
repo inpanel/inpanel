@@ -385,7 +385,7 @@ var ECSSettingCtrl = [
             });
         };
 
-        $scope.loadintranet = function (quiet) {
+        $scope.loadinpanel = function (quiet) {
             Request.get('/ecs/accessinfo?instance_name=' + $scope.instance_name, function (data) {
                 if (data.code == 0) {
                     $scope.accessinfo = data.data;
@@ -393,7 +393,7 @@ var ECSSettingCtrl = [
             }, false, quiet);
         };
 
-        $scope.saveintranet = function () {
+        $scope.saveinpanel = function () {
             Request.post('/ecs/accessinfo', {
                 'instance_name': $scope.instance_name,
                 'accesskey': $scope.accessinfo.accesskey,
@@ -401,7 +401,7 @@ var ECSSettingCtrl = [
                 'accessport': $scope.accessinfo.accessport
             }, function (data) {
                 if (data.code == 0) {
-                    $scope.loadintranet(true);
+                    $scope.loadinpanel(true);
                 }
             });
         };
@@ -447,23 +447,23 @@ var ECSSettingCtrl = [
             $scope.accessinfo.accesskey = b64encode(randstring);
         };
 
-        $scope.intranet_install = function () {
+        $scope.inpanel_install = function () {
             if (!$scope.ssh_ip) $scope.ssh_ip = $scope.instance.PublicIpAddress.AllocateIpAddress;
             if (!$scope.ssh_port) $scope.ssh_port = '22';
             if (!$scope.ssh_user) $scope.ssh_user = 'root';
             $scope.sshconfirm_title = '安装/升级 InPanel 到此服务器上';
             $scope.sshconfirm_button = '安装或升级';
-            $scope.sshconfirm = doinstallintranet;
+            $scope.sshconfirm = doinstallinpanel;
             $('#sshconfirm').modal();
         };
-        var doinstallintranet = function () {
+        var doinstallinpanel = function () {
             $scope.processing = true;
             Message.setInfo('正在安装 InPanel 到远程服务器，请稍候...');
             Backend.call(
                 $scope,
                 module,
-                '/backend/intranet_install',
-                '/backend/intranet_install_' + $scope.ssh_ip, {
+                '/backend/inpanel_install',
+                '/backend/inpanel_install_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -472,7 +472,7 @@ var ECSSettingCtrl = [
                     'accessnet': $scope.ssh_ip == $scope.instance.PublicIpAddress.AllocateIpAddress ? 'public' : 'inner'
                 }, {
                     'success': function (data) {
-                        $scope.loadintranet(true);
+                        $scope.loadinpanel(true);
                         $scope.processing = false;
                     },
                     'error': function () {
@@ -482,23 +482,23 @@ var ECSSettingCtrl = [
             );
         };
 
-        $scope.intranet_uninstall = function () {
+        $scope.inpanel_uninstall = function () {
             if (!$scope.ssh_ip) $scope.ssh_ip = $scope.instance.PublicIpAddress.AllocateIpAddress;
             if (!$scope.ssh_port) $scope.ssh_port = '22';
             if (!$scope.ssh_user) $scope.ssh_user = 'root';
             $scope.sshconfirm_title = '在此服务器上卸载 InPanel';
             $scope.sshconfirm_button = '开始卸载';
-            $scope.sshconfirm = douninstallintranet;
+            $scope.sshconfirm = douninstallinpanel;
             $('#sshconfirm').modal();
         };
-        var douninstallintranet = function () {
+        var douninstallinpanel = function () {
             $scope.processing = true;
             Message.setInfo('正在从远程服务器卸载 InPanel，请稍候...');
             Backend.call(
                 $scope,
                 module,
-                '/backend/intranet_uninstall',
-                '/backend/intranet_uninstall_' + $scope.ssh_ip, {
+                '/backend/inpanel_uninstall',
+                '/backend/inpanel_uninstall_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -506,7 +506,7 @@ var ECSSettingCtrl = [
                     'instance_name': $scope.instance_name
                 }, {
                     'success': function (data) {
-                        $scope.loadintranet(true);
+                        $scope.loadinpanel(true);
                         $scope.processing = false;
                     },
                     'error': function () {
@@ -522,17 +522,17 @@ var ECSSettingCtrl = [
             if (!$scope.ssh_user) $scope.ssh_user = 'root';
             $scope.sshconfirm_title = '同步密钥到远程服务器';
             $scope.sshconfirm_button = '开始同步';
-            $scope.sshconfirm = doupdateintranet;
+            $scope.sshconfirm = doupdateinpanel;
             $('#sshconfirm').modal();
         };
-        var doupdateintranet = function () {
+        var doupdateinpanel = function () {
             $scope.processing = true;
             Message.setInfo('正在同步密钥到远程，请稍候...');
             Backend.call(
                 $scope,
                 module,
-                '/backend/intranet_config',
-                '/backend/intranet_config_' + $scope.ssh_ip, {
+                '/backend/inpanel_config',
+                '/backend/inpanel_config_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -540,7 +540,7 @@ var ECSSettingCtrl = [
                     'instance_name': $scope.instance_name
                 }, {
                     'success': function (data) {
-                        $scope.loadintranet(true);
+                        $scope.loadinpanel(true);
                         $scope.processing = false;
                     },
                     'error': function () {

@@ -27,7 +27,7 @@ except:
 DEBUG = False
 
 HTTPD_CONF_DIR = '/etc/httpd/'
-# HTTPD_CONF_DIR = '/Users/douzhenjiang/Projects/intranet-panel/lib/intranet/'
+# HTTPD_CONF_DIR = '/Users/douzhenjiang/Projects/inpanel/'
 HTTPD_CONF = '/etc/httpd/conf/httpd.conf'
 SERVERCONF = '/etc/httpd/conf.d/'
 COMMENTFLAG = '#v#'
@@ -110,7 +110,7 @@ def getservers(config=None):
     '''
 
     servers = []
-    # SERVERCONF = '/Users/douzhenjiang/Projects/intranet-panel/test'
+    # SERVERCONF = '/Users/douzhenjiang/Projects/inpanel/test'
     # aaa = '/etc/httpd/conf.d/aaa.com.conf'
     # bbb = '/etc/httpd/conf.d/bbb.com.conf'
 
@@ -150,7 +150,7 @@ def _load_virtualhost(conf=''):
     result_d = {}
     directorys = {}  # 附加信息
     line_disabled = False
-    gen_by_intranet = False
+    gen_by_inpanel = False
     match_start = re.compile(r'<VirtualHost(\s+)(\S+)>')
     match_end = re.compile(r'</VirtualHost>')
     match_start_d = re.compile(r'<Directory(\s+)(\S+)>')
@@ -168,11 +168,11 @@ def _load_virtualhost(conf=''):
         if not out or out.startswith('#'):
             continue
 
-        # deal with comment and detect intranet flag in comment
+        # deal with comment and detect inpanel flag in comment
         fields = out.split('#', 1)
         out = fields[0].strip()
         if len(fields) > 1 and fields[1].strip() == GENBY:
-            gen_by_intranet = True
+            gen_by_inpanel = True
 
         # start of VirtualHost
         match = match_start.search(out)
@@ -416,12 +416,12 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
     # for line in replace_docroot('aaa.com', 'docroot'):
     #     print(line)
 
-    # aaa = '/Users/douzhenjiang/Projects/intranet-panel/aaa.com.conf'
-    # bbb = '/Users/douzhenjiang/Projects/intranet-panel/httpd.conf'
+    # aaa = '/Users/douzhenjiang/Projects/inpanel/test/aaa.com.conf'
+    # bbb = '/Users/douzhenjiang/Projects/inpanel/test/httpd.conf'
     # print _load_virtualhost(aaa)
 
     # # print _load_virtualhost('/etc/httpd/conf.d/bbb.com.conf')
     # print getservers()
 
     # path = os.path.join(SERVERCONF, clist[i])
-    # print os.path.splitext('/Users/douzhenjiang/Projects/intranet-panel/lib/intranet/test/aaa.com')
+    # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
