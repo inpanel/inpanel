@@ -1,7 +1,7 @@
 var releasetime = '2018-12-20 18:57:43 CST';
 var _v = new Date(releasetime.replace(/-/g, '/')).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
-angular.module('intranet', ['intranet.services', 'intranet.directives', 'intranet.filters']).
+angular.module('inpanel', ['inpanel.services', 'inpanel.directives', 'inpanel.filters']).
 config(['$routeProvider', function ($routeProvider) {
     var _r = function (t, c, a) {
         var r = {

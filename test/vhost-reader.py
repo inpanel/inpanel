@@ -71,7 +71,7 @@ def _load_virtualhost(conf=''):
     result_d = {}
     directorys = {}  # 附加信息
     line_disabled = False
-    gen_by_intranet = False
+    gen_by_inpanel = False
     match_start = re.compile(r'<VirtualHost(\s+)(\S+)>')
     match_end = re.compile(r'</VirtualHost>')
     match_start_d = re.compile(r'<Directory(\s+)(\S+)>')
@@ -89,11 +89,11 @@ def _load_virtualhost(conf=''):
         if not out or out.startswith('#'):
             continue
 
-        # deal with comment and detect intranet flag in comment
+        # deal with comment and detect inpanel flag in comment
         fields = out.split('#', 1)
         out = fields[0].strip()
         if len(fields) > 1 and fields[1].strip() == GENBY:
-            gen_by_intranet = True
+            gen_by_inpanel = True
 
         # start of VirtualHost
         match = match_start.search(out)
@@ -200,8 +200,8 @@ def _append_directory(res):
 
 
 if __name__ == '__main__':
-    aaa = '/Users/douzhenjiang/Projects/intranet-panel/aaa.com.conf'
-    bbb = '/Users/douzhenjiang/Projects/intranet-panel/httpd.conf'
+    aaa = '/Users/douzhenjiang/Projects/inpanel/test/aaa.com.conf'
+    bbb = '/Users/douzhenjiang/Projects/inpanel/test/httpd.conf'
     print _load_virtualhost(aaa)
     # _load_virtualhost(aaa)
 

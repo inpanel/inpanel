@@ -19,7 +19,7 @@ __all__ = [
     'configloader',
     'cron',
     'fdisk',
-    'mfile',
+    'files',
     'lighttpd',
     'mysql',
     'named',

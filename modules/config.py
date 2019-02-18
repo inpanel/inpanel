@@ -60,7 +60,7 @@ class Config(object):
                 'ecs': {
                     'accounts': ''
                 },
-                'intranet': {
+                'inpanel': {
                     # format: Instance Name = Access key
                 }
             }

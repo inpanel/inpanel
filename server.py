@@ -25,7 +25,7 @@ from modules.utils import make_cookie_secret
 
 
 def write_pid():
-    pidfile = '/var/run/intranet.pid'
+    pidfile = '/var/run/inpanel.pid'
     pidfp = open(pidfile, 'w')
     pidfp.write(str(os.getpid()))
     pidfp.close()

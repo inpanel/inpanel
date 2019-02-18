@@ -41,10 +41,10 @@ class Install(object):
         self.arch = platform.machine()
         if self.arch != 'x86_64':
             self.arch = 'i386'
-        self.initd_script = '/etc/init.d/intranet'
-        self.installpath = '/usr/local/intranet'
+        self.initd_script = '/etc/init.d/inpanel'
+        self.installpath = '/usr/local/inpanel'
         self.listen_port = 8888
-        self.repository = 'https://github.com/intranet-panel/intranet.git'
+        self.repository = 'https://github.com/inpanel/inpanel.git'
         self.distname = self.dist[0].lower()
         self.version = self.dist[1]
         self.version = self.version[0:self.version.find('.', self.version.index('.') + 1)]
@@ -158,27 +158,27 @@ class Install(object):
             self._run('apt-get -y install python')
         print('[ %s ]' % OK)
 
-    def handle_intranet(self):
+    def handle_inpanel(self):
         # handle InPanel
         # get the latest InPanel version
         print('* Installing InPanel')
         # localpkg_found = False
-        # if os.path.exists(os.path.join(os.path.dirname(__file__), 'intranet.tar.gz')):
+        # if os.path.exists(os.path.join(os.path.dirname(__file__), 'inpanel.tar.gz')):
         #     # local install package found
         #     localpkg_found = True
         # else:
         #     # or else install online
-        #     print('* Downloading install package from intranet.pub')
-        #     f = urllib2.urlopen('http://api.intranet.pub/?s=latest')
+        #     print('* Downloading install package from inpanel.pub')
+        #     f = urllib2.urlopen('http://api.inpanel.org/?s=latest')
         #     data = f.read()
         #     f.close()
         #     downloadurl = re.search('"download":"([^"]+)"', data).group(1).replace('\/', '/')
-        #     self._run('wget -nv -c "%s" -O intranet.tar.gz' % downloadurl)
+        #     self._run('wget -nv -c "%s" -O inpanel.tar.gz' % downloadurl)
 
         # # uncompress and install it
-        # self._run('mkdir intranet')
-        # self._run('tar zxmf intranet.tar.gz -C intranet  --strip-components 1')
-        # if not localpkg_found: os.remove('intranet.tar.gz')
+        # self._run('mkdir inpanel')
+        # self._run('tar zxmf inpanel.tar.gz -C inpanel  --strip-components 1')
+        # if not localpkg_found: os.remove('inpanel.tar.gz')
 
         # stop service
         if os.path.exists(self.initd_script):
@@ -186,8 +186,8 @@ class Install(object):
 
         # backup data and remove old code
         # if os.path.exists('%s/data/' % self.installpath):
-        #     self._run('mkdir /tmp/intranet_panel_data', True)
-        #     self._run('/bin/cp -rf %s/data/* /tmp/intranet_panel_data/' % self.installpath, True)
+        #     self._run('mkdir /tmp/inpanel_data', True)
+        #     self._run('/bin/cp -rf %s/data/* /tmp/inpanel_data/' % self.installpath, True)
 
         self._run('rm -rf %s' % self.installpath)
         branch = 'master'
@@ -196,11 +196,11 @@ class Install(object):
         self._run('git clone -b %s %s %s' % (branch, self.repository, self.installpath))
 
         # install new code
-        # self._run('mv intranet %s' % self.installpath)
+        # self._run('mv inpanel %s' % self.installpath)
         self._run('chmod +x %s/config.py %s/server.py' % (self.installpath, self.installpath))
 
         # install service
-        initscript = '%s/core/init.d/%s/intranet' % (self.installpath, self.distname)
+        initscript = '%s/core/init.d/%s/inpanel' % (self.installpath, self.distname)
         self._run('cp %s %s' % (initscript, self.initd_script))
         self._run('chmod +x %s' % self.initd_script)
 
@@ -304,8 +304,8 @@ class Install(object):
             print('Starting InPanel [ %s ]' % FAILED)
             return False
         if self.distname in ('centos', 'redhat'):
-            self._run('chkconfig intranet on')
-            self._run('service intranet start')
+            self._run('chkconfig inpanel on')
+            self._run('service inpanel start')
         elif self.distname == 'ubuntu':
             pass
         elif self.distname == 'debian':
@@ -326,7 +326,7 @@ class Install(object):
         self.handle_dependent()
         self.handle_python()
         self.handle_git()
-        self.handle_intranet()
+        self.handle_inpanel()
         self.handle_vpsmate()
         # self.handle_port()
         self.config_account()

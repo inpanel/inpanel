@@ -1,4 +1,4 @@
-angular.module('intranet.filters', []).
+angular.module('inpanel.filters', []).
 filter('iftrue', function () {
     return function (input, cond) {
         return cond ? input : '';
@@ -315,7 +315,7 @@ filter('instance.status', function () {
         if (input == 'resetfailure') return '<span class="label label-important">重置失败</span>';
     };
 }).
-filter('instance.intranetstatus', function () {
+filter('instance.inpanelstatus', function () {
     return function (input) {
         return input ? '<span class="label label-success">已配置</span>' :
             '<span class="label">未配置</span>';

@@ -29,8 +29,8 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 from async_process import call_subprocess, callbackable
-from modules import (aliyuncs, apache, certificate, cron, fdisk, lighttpd,
-                     mfile, mysql, named, nginx, php, process, proftpd,
+from modules import (aliyuncs, apache, certificate, cron, fdisk, files,
+                     lighttpd, mysql, named, nginx, php, process, proftpd,
                      pureftpd, remote, ssh, user, utils, vsftpd, yum)
 from modules.config import Config
 from modules.sc import ServerSet
@@ -44,9 +44,9 @@ APP_VERSION = '1.1.1'
 APP_BUILD = '18'
 APP_RELEASETIME = '2018-12-20 18:57:43 CST'
 PUB_API = {
-    'latest': 'http://api.intranet.pub/?s=latest',
-    'site_packages': 'http://api.intranet.pub/?s=site_packages',
-    'download_package': 'http://api.intranet.pub/?s=site_packages&a=download'
+    'latest': 'http://api.inpanel.org/?s=latest',
+    'site_packages': 'http://api.inpanel.org/?s=site_packages',
+    'download_package': 'http://api.inpanel.org/?s=site_packages&a=download'
 }
 
 
@@ -266,7 +266,7 @@ class LoginHandler(RequestHandler):
                 self.write({'code': -1,
                     'msg': u'登录已被锁定，请在 %s 后重试登录。<br>'\
                         u'如需立即解除锁定，请在服务器上执行以下命令：<br>'\
-                        u'/usr/local/intranet/config.py loginlock off' %
+                        u'/usr/local/inpanel/config.py loginlock off' %
                         datetime.datetime.fromtimestamp(loginlockexpire)
                             .strftime('%Y-%m-%d %H:%M:%S')})
                 return
@@ -280,7 +280,7 @@ class LoginHandler(RequestHandler):
         if cfg_password == '':
             self.write({'code': -1,
                 'msg': u'登录密码还未设置，请在服务器上执行以下命令进行设置：<br>'\
-                    u'/usr/local/intranet/config.py password \'您的密码\''})
+                    u'/usr/local/inpanel/config.py password \'您的密码\''})
         elif username != cfg_username:  # wrong with username
             self.write({'code': -1, 'msg': u'用户不存在！'})
         else:   # username is corret
@@ -465,7 +465,7 @@ class QueryHandler(RequestHandler):
             'virt'          : False,
         }
         service_items = {
-            'intranet'      : False,
+            'inpanel'      : False,
             'nginx'         : False,
             'httpd'         : False,
             'vsftpd'        : False,
@@ -1040,7 +1040,7 @@ class OperationHandler(RequestHandler):
             showhidden = self.get_argument('showhidden', 'off')
             remember = self.get_argument('remember', 'on')
             onlydir = self.get_argument('onlydir', 'off')
-            items = mfile.listdir(_u(path), showhidden=='on', onlydir=='on')
+            items = files.listdir(_u(path), showhidden=='on', onlydir=='on')
             if items == False:
                 self.write({'code': -1, 'msg': u'目录 %s 不存在！' % path})
             else:
@@ -1049,7 +1049,7 @@ class OperationHandler(RequestHandler):
 
         elif action == 'getitem':
             path = self.get_argument('path', '')
-            item = mfile.getitem(_u(path))
+            item = files.getitem(_u(path))
             if item == False:
                 self.write({'code': -1, 'msg': u'%s 不存在！' % path})
             else:
@@ -1058,24 +1058,24 @@ class OperationHandler(RequestHandler):
         elif action == 'fread':
             path = self.get_argument('path', '')
             remember = self.get_argument('remember', 'on')
-            size = mfile.fsize(_u(path))
+            size = files.fsize(_u(path))
             if size == None:
                 self.write({'code': -1, 'msg': u'文件 %s 不存在！' % path})
             elif size > 1024*1024: # support 1MB of file at max
                 self.write({'code': -1, 'msg': u'读取 %s 失败！不允许在线编辑超过1MB的文件！' % path})
-            elif not mfile.istext(_u(path)):
+            elif not files.istext(_u(path)):
                 self.write({'code': -1, 'msg': u'读取 %s 失败！无法识别文件类型！' % path})
             else:
                 if remember == 'on': self.config.set('file', 'lastfile', path)
                 with open(path) as f: content = f.read()
-                charset, content = mfile.decode(content)
+                charset, content = files.decode(content)
                 if not charset:
                     self.write({'code': -1, 'msg': u'不可识别的文件编码！'})
                     return
                 data = {
                     'filename': os.path.basename(path),
                     'filepath': path,
-                    'mimetype': mfile.mimetype(_u(path)),
+                    'mimetype': files.mimetype(_u(path)),
                     'charset': charset,
                     'content': content,
                 }
@@ -1095,14 +1095,14 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if not charset in mfile.charsets:
+            if not charset in files.charsets:
                 self.write({'code': -1, 'msg': u'不可识别的文件编码！'})
                 return
-            content = mfile.encode(content, charset)
+            content = files.encode(content, charset)
             if not content:
                 self.write({'code': -1, 'msg': u'文件编码转换出错，保存失败！'})
                 return
-            if mfile.fsave(_u(path), content):
+            if files.fsave(_u(path), content):
                 self.write({'code': 0, 'msg': u'文件保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'文件保存失败！'})
@@ -1116,7 +1116,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if mfile.dadd(_u(path), _u(name)):
+            if files.dadd(_u(path), _u(name)):
                 self.write({'code': 0, 'msg': u'文件夹创建成功！'})
             else:
                 self.write({'code': -1, 'msg': u'文件夹创建失败！'})
@@ -1130,7 +1130,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if mfile.fadd(_u(path), _u(name)):
+            if files.fadd(_u(path), _u(name)):
                 self.write({'code': 0, 'msg': u'文件创建成功！'})
             else:
                 self.write({'code': -1, 'msg': u'文件创建失败！'})
@@ -1144,7 +1144,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if mfile.rename(_u(path), _u(name)):
+            if files.rename(_u(path), _u(name)):
                 self.write({'code': 0, 'msg': u'重命名成功！'})
             else:
                 self.write({'code': -1, 'msg': u'重命名失败！'})
@@ -1163,7 +1163,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许在除 /var/www 以外的目录下创建链接！'})
                     return
 
-            if mfile.link(_u(srcpath), _u(despath)):
+            if files.link(_u(srcpath), _u(despath)):
                 self.write({'code': 0, 'msg': u'链接 %s 创建成功！' % despath})
             else:
                 self.write({'code': -1, 'msg': u'链接 %s 创建失败！' % despath})
@@ -1180,27 +1180,27 @@ class OperationHandler(RequestHandler):
 
             if len(paths) == 1:
                 path = paths[0]
-                if mfile.delete(_u(path)):
+                if files.delete(_u(path)):
                     self.write({'code': 0, 'msg': u'已将 %s 移入回收站！' % path})
                 else:
                     self.write({'code': -1, 'msg': u'将 %s 移入回收站失败！' % path})
             else:
                 for path in paths:
-                    if not mfile.delete(_u(path)):
+                    if not files.delete(_u(path)):
                         self.write({'code': -1, 'msg': u'将 %s 移入回收站失败！' % path})
                         return
                 self.write({'code': 0, 'msg': u'批量移入回收站成功！'})
 
         elif action == 'tlist':
-            self.write({'code': 0, 'msg': '', 'data': mfile.tlist()})
+            self.write({'code': 0, 'msg': '', 'data': files.tlist()})
 
         elif action == 'trashs':
-            self.write({'code': 0, 'msg': '', 'data': mfile.trashs()})
+            self.write({'code': 0, 'msg': '', 'data': files.trashs()})
 
         elif action == 'titem':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = mfile.titem(_u(mount), _u(uuid))
+            info = files.titem(_u(mount), _u(uuid))
             if info:
                 self.write({'code': 0, 'msg': '', 'data': info})
             else:
@@ -1209,8 +1209,8 @@ class OperationHandler(RequestHandler):
         elif action == 'trestore':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = mfile.titem(_u(mount), _u(uuid))
-            if info and mfile.trestore(_u(mount), _u(uuid)):
+            info = files.titem(_u(mount), _u(uuid))
+            if info and files.trestore(_u(mount), _u(uuid)):
                 self.write({'code': 0, 'msg': u'已还原 %s 到 %s！' % \
                     (_d(info['name']), _d(info['path']))})
             else:
@@ -1219,8 +1219,8 @@ class OperationHandler(RequestHandler):
         elif action == 'tdelete':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = mfile.titem(_u(mount), _u(uuid))
-            if info and mfile.tdelete(_u(mount), _u(uuid)):
+            info = files.titem(_u(mount), _u(uuid))
+            if info and files.tdelete(_u(mount), _u(uuid)):
                 self.write({'code': 0, 'msg': u'已删除 %s！' % _d(info['name'])})
             else:
                 self.write({'code': -1, 'msg': u'删除失败！'})
@@ -2059,8 +2059,8 @@ class OperationHandler(RequestHandler):
             enable_pubkauth = ssh.cfg_get('PubkeyAuthentication') == 'yes'
             subsystem = ssh.cfg_get('Subsystem')
             enable_sftp = subsystem and 'sftp' in subsystem
-            pubkey_path = '/root/.ssh/sshkey_intranet.pub'
-            prvkey_path = '/root/.ssh/sshkey_intranet'
+            pubkey_path = '/root/.ssh/sshkey_inpanel.pub'
+            prvkey_path = '/root/.ssh/sshkey_inpanel'
             self.write({'code': 0, 'msg': '获取 SSH 服务配置信息成功！', 'data': {
                'port': port,
                'enable_pwdauth': enable_pwdauth,
@@ -2222,7 +2222,7 @@ class BackendHandler(RequestHandler):
             service = self.get_argument('service', '')
 
             if self.config.get('runtime', 'mode') == 'demo':
-                if service in ('network', 'sshd', 'intranet', 'iptables'):
+                if service in ('network', 'sshd', 'inpanel', 'iptables'):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
                     return
 
@@ -2558,15 +2558,15 @@ class BackendHandler(RequestHandler):
         elif jobname == 'ssh_genkey':
             path = _u(self.get_argument('path', ''))
             password = _u(self.get_argument('password', ''))
-            if not path: path = '/root/.ssh/sshkey_intranet'
+            if not path: path = '/root/.ssh/sshkey_inpanel'
             self._call(functools.partial(self.ssh_genkey, path, password))
         elif jobname == 'ssh_chpasswd':
             path = _u(self.get_argument('path', ''))
             oldpassword = _u(self.get_argument('oldpassword', ''))
             newpassword = _u(self.get_argument('newpassword', ''))
-            if not path: path = '/root/.ssh/sshkey_intranet'
+            if not path: path = '/root/.ssh/sshkey_inpanel'
             self._call(functools.partial(self.ssh_chpasswd, path, oldpassword, newpassword))
-        elif jobname in ('intranet_install', 'intranet_uninstall', 'intranet_config'):
+        elif jobname in ('inpanel_install', 'inpanel_uninstall', 'inpanel_config'):
             if self.config.get('runtime', 'mode') == 'demo':
                 self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
                 return
@@ -2575,27 +2575,27 @@ class BackendHandler(RequestHandler):
             ssh_user = self.get_argument('ssh_user', '')
             ssh_password = self.get_argument('ssh_password', '')
             instance_name = self.get_argument('instance_name', '')
-            if jobname == 'intranet_install':
+            if jobname == 'inpanel_install':
                 accessnet = self.get_argument('accessnet', 'public')
                 accesskey = utils.gen_accesskey()
                 accessport = '8888'
-            elif jobname == 'intranet_config':
-                if not self.config.has_option('intranet', instance_name):
+            elif jobname == 'inpanel_config':
+                if not self.config.has_option('inpanel', instance_name):
                     self.write({'code': -1, 'msg': u'该服务器还未配置远程控制！'})
                     return
-                accessdata = self.config.get('intranet', instance_name)
+                accessdata = self.config.get('inpanel', instance_name)
                 accessdata = accessdata.split('|')
                 accesskey = accessdata[0]
-            if jobname == 'intranet_install':
-                self._call(functools.partial(self.intranet_install,
+            if jobname == 'inpanel_install':
+                self._call(functools.partial(self.inpanel_install,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(instance_name), _u(accessnet), _u(accessport), _u(accesskey)))
-            elif jobname == 'intranet_uninstall':
-                self._call(functools.partial(self.intranet_uninstall,
+            elif jobname == 'inpanel_uninstall':
+                self._call(functools.partial(self.inpanel_uninstall,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(instance_name)))
-            elif jobname == 'intranet_config':
-                self._call(functools.partial(self.intranet_config,
+            elif jobname == 'inpanel_config':
+                self._call(functools.partial(self.inpanel_config,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(accesskey)))
         else:   # undefined job
@@ -2625,44 +2625,44 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = u'%s/core/init.d/%s/intranet' % (root_path, distname)
+        initscript = u'%s/core/init.d/%s/inpanel' % (root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
-                'cmd': u'/bin/cp -f %s/config.ini /tmp/intranet_panel_config.ini' % data_path,
+                'cmd': u'/bin/cp -f %s/config.ini /tmp/inpanel_config.ini' % data_path,
             }, {
                 'desc': u'正在下载安装包...',
-                'cmd': u'wget -q "%s" -O %s/intranet.tar.gz' % (downloadurl, data_path),
+                'cmd': u'wget -q "%s" -O %s/inpanel.tar.gz' % (downloadurl, data_path),
             }, {
                 'desc': u'正在创建解压目录...',
-                'cmd': u'mkdir %s/intranet' % data_path,
+                'cmd': u'mkdir %s/inpanel' % data_path,
             }, {
                 'desc': u'正在解压安装包...',
-                'cmd': u'tar zxmf %s/intranet.tar.gz -C %s/intranet --strip-components 1' % (data_path, data_path),
+                'cmd': u'tar zxmf %s/inpanel.tar.gz -C %s/inpanel --strip-components 1' % (data_path, data_path),
             }, {
                 'desc': u'正在删除旧版本...',
                 'cmd': u'find %s -mindepth 1 -maxdepth 1 -path %s -prune -o -exec rm -rf {} \;' % (root_path, data_path),
             }, {
                 'desc': u'正在复制新版本...',
-                'cmd': u'find %s/intranet -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
+                'cmd': u'find %s/inpanel -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
             }, {
                 'desc': u'正在删除旧的服务脚本...',
-                'cmd': u'rm -f /etc/init.d/intranet',
+                'cmd': u'rm -f /etc/init.d/inpanel',
             }, {
                 'desc': u'正在安装新的服务脚本...',
-                'cmd': u'cp %s /etc/init.d/intranet' % initscript
+                'cmd': u'cp %s /etc/init.d/inpanel' % initscript
             }, {
                 'desc': u'正在更改脚本权限...',
-                'cmd': u'chmod +x /etc/init.d/intranet %s/config.py %s/server.py' % (root_path, root_path),
+                'cmd': u'chmod +x /etc/init.d/inpanel %s/config.py %s/server.py' % (root_path, root_path),
             }, {
                 'desc': u'正在删除安装临时文件...',
-                'cmd': u'rm -rf %s/intranet %s/intranet.tar.gz' % (data_path, data_path)
+                'cmd': u'rm -rf %s/inpanel %s/inpanel.tar.gz' % (data_path, data_path)
             }, {
                 'desc': u'正在恢复旧的配置文件...',
-                'cmd': u'/bin/cp -f /tmp/intranet_panel_config.ini %s/config.ini' % data_path
+                'cmd': u'/bin/cp -f /tmp/inpanel_config.ini %s/config.ini' % data_path
             }, {
                 'desc': u'正在删除旧的配置文件...',
-                'cmd': u'rm -f /tmp/intranet_panel_config.ini'
+                'cmd': u'rm -f /tmp/inpanel_config.ini'
             }
         ]
         for step in steps:
@@ -2914,18 +2914,18 @@ class BackendHandler(RequestHandler):
             if dist_verint == 5:
                 if self.settings['dist_name'] == 'redhat':
                     # backup system version info
-                    cmds.append('cp -f /etc/redhat-release /etc/redhat-release.intranet')
-                    cmds.append('cp -f /etc/issue /etc/issue.intranet')
+                    cmds.append('cp -f /etc/redhat-release /etc/redhat-release.inpanel')
+                    cmds.append('cp -f /etc/issue /etc/issue.inpanel')
                     #cmds.append('rpm -e redhat-release-notes-5Server --nodeps')
                     cmds.append('rpm -e redhat-release-5Server --nodeps')
 
             for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
                 cmds.append('rpm -U %s' % rpm)
 
-            if os.path.exists('/etc/issue.intranet'):
-                cmds.append('cp -f /etc/issue.intranet /etc/issue')
-            if os.path.exists('/etc/redhat-release.intranet'):
-                cmds.append('cp -f /etc/redhat-release.intranet /etc/redhat-release')
+            if os.path.exists('/etc/issue.inpanel'):
+                cmds.append('cp -f /etc/issue.inpanel /etc/issue')
+            if os.path.exists('/etc/redhat-release.inpanel'):
+                cmds.append('cp -f /etc/redhat-release.inpanel /etc/redhat-release')
 
         elif repo in ('epel', 'CentALT'):
             # elif repo in ('epel', 'CentALT', 'ius'):
@@ -2978,7 +2978,7 @@ class BackendHandler(RequestHandler):
                             line = '#%s' % line
                             lines.append(line)
                             # # add a mirrorlist line
-                            # metalink = 'https://intranet.pub/mirrorlist?'\
+                            # metalink = 'https://inpanel.org/mirrorlist?'\
                             #     'repo=centalt-%s&arch=$basearch' % self.settings['dist_verint']
                             # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)
@@ -3459,7 +3459,7 @@ class BackendHandler(RequestHandler):
         #cmd = 'chown %s %s:%s %s' % (option, user, group, ' '.join(paths))
 
         for path in paths:
-            result = yield tornado.gen.Task(callbackable(mfile.chown), path, user, group, option=='-R')
+            result = yield tornado.gen.Task(callbackable(files.chown), path, user, group, option=='-R')
             if result == True:
                 code = 0
                 msg = u'设置用户和用户组成功！'
@@ -3488,7 +3488,7 @@ class BackendHandler(RequestHandler):
             return
 
         for path in paths:
-            result = yield tornado.gen.Task(callbackable(mfile.chmod), path, perms, option=='-R')
+            result = yield tornado.gen.Task(callbackable(files.chmod), path, perms, option=='-R')
             if result == True:
                 code = 0
                 msg = u'权限修改成功！'
@@ -3920,19 +3920,19 @@ class BackendHandler(RequestHandler):
 
     @tornado.web.asynchronous
     @tornado.gen.engine
-    def intranet_install(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport=None, accesskey=None):
+    def inpanel_install(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport=None, accesskey=None):
         """Install InPanel"""
-        jobname = 'intranet_install_%s' % ssh_ip
+        jobname = 'inpanel_install_%s' % ssh_ip
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, u'正在将 InPanel 安装到 %s...' % ssh_ip)
 
-        result = yield tornado.gen.Task(callbackable(remote.intranet_install),
-                    ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey, intranet_port=accessport)
+        result = yield tornado.gen.Task(callbackable(remote.inpanel_install),
+                    ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey, inpanel_port=accessport)
         if result == True:
             code = 0
             msg = u'InPanel 安装成功！'
-            self.config.set('intranet', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
+            self.config.set('inpanel', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
         else:
             code = -1
             msg = u'InPanel 安装过程中发生错误！'
@@ -3941,19 +3941,19 @@ class BackendHandler(RequestHandler):
 
     @tornado.web.asynchronous
     @tornado.gen.engine
-    def intranet_uninstall(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name):
+    def inpanel_uninstall(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name):
         """Uninstall InPanel"""
-        jobname = 'intranet_uninstall_%s' % ssh_ip
+        jobname = 'inpanel_uninstall_%s' % ssh_ip
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, u'正在卸载 %s 上的 InPanel...' % ssh_ip)
-        result = yield tornado.gen.Task(callbackable(remote.intranet_uninstall),
+        result = yield tornado.gen.Task(callbackable(remote.inpanel_uninstall),
                     ssh_ip, ssh_port, ssh_user, ssh_password)
         if result == True:
             code = 0
             msg = u'InPanel 卸载成功！'
             try:
-                self.config.remove_option('intranet', instance_name)
+                self.config.remove_option('inpanel', instance_name)
             except:
                 pass
         else:
@@ -3964,14 +3964,14 @@ class BackendHandler(RequestHandler):
 
     @tornado.web.asynchronous
     @tornado.gen.engine
-    def intranet_config(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
+    def inpanel_config(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
         """Update InPanel Config"""
-        jobname = 'intranet_config%s' % ssh_ip
+        jobname = 'inpanel_config%s' % ssh_ip
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, u'正在更新 %s 上的 InPanel 配置...' % ssh_ip)
 
-        result = yield tornado.gen.Task(callbackable(remote.intranet_config),
+        result = yield tornado.gen.Task(callbackable(remote.inpanel_config),
                     ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey)
         if result == True:
             code = 0
@@ -3994,7 +3994,7 @@ class BackupHandler(RequestHandler):
         path = os.path.join(self.settings['data_path'], 'config.ini')
         if os.path.isfile(path):
             self.set_header('Content-Type', 'application/octet-stream')
-            self.set_header('Content-disposition', 'attachment; filename=intranet_backup_%s.bak' % time.strftime('%Y%m%d'))
+            self.set_header('Content-disposition', 'attachment; filename=inpanel_backup_%s.bak' % time.strftime('%Y%m%d'))
             self.set_header('Content-Transfer-Encoding', 'binary')
             with open(path) as f: self.write(f.read())
         else:
@@ -4200,10 +4200,10 @@ class ECSHandler(RequestHandler):
 
             # get access info for InPanel
             for instance in instances:
-                if not self.config.has_option('intranet', instance['InstanceName']):
+                if not self.config.has_option('inpanel', instance['InstanceName']):
                     instance['InPanelStatus'] = False
                 else:
-                    accessdata = self.config.get('intranet', instance['InstanceName'])
+                    accessdata = self.config.get('inpanel', instance['InstanceName'])
                     accessdata = accessdata.split('|')
                     accessinfo = {
                         'accesskey': accessdata[0],
@@ -4335,10 +4335,10 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            if not self.config.has_option('intranet', instance_name):
+            if not self.config.has_option('inpanel', instance_name):
                 accessinfo = {'accesskey': '', 'accessnet': 'public', 'accessport': '8888'}
             else:
-                data = self.config.get('intranet', instance_name)
+                data = self.config.get('inpanel', instance_name)
                 data = data.split('|')
                 accessinfo = {
                     'accesskey': data[0],
@@ -4452,7 +4452,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            self.config.set('intranet', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
+            self.config.set('inpanel', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
 
             self.write({'code': 0, 'msg': u'InPanel 远程控制设置保存成功！'})
             self.finish()
@@ -4466,11 +4466,11 @@ class InPanelIndexHandler(RequestHandler):
     """Index page of InPanel.
     """
     def get(self, instance_name, ip, port):
-        with open(os.path.join(self.settings['intranet_path'], 'index.html')) as f:
+        with open(os.path.join(self.settings['inpanel_path'], 'index.html')) as f:
             html = f.read()
-        html = html.replace('<link rel="stylesheet" href="', '<link rel="stylesheet" href="/intranet/')
-        html = html.replace('<script src="', '<script src="/intranet/')
-        html = html.replace("var template_path = '';", "var template_path = '/intranet';")
+        html = html.replace('<link rel="stylesheet" href="', '<link rel="stylesheet" href="/inpanel/')
+        html = html.replace('<script src="', '<script src="/inpanel/')
+        html = html.replace("var template_path = '';", "var template_path = '/inpanel';")
         self.write(html)
 
 
@@ -4517,12 +4517,12 @@ class InPanelHandler(RequestHandler):
             self.finish()
     
     def gen_token(self, instance_name):
-        if not self.config.has_option('intranet', instance_name):
+        if not self.config.has_option('inpanel', instance_name):
             self.set_status(403)
             self.finish()
             return
         else:
-            data = self.config.get('intranet', instance_name)
+            data = self.config.get('inpanel', instance_name)
             data = data.split('|')
             accesskey = data[0]
 

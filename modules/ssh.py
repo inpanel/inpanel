@@ -228,5 +228,5 @@ if __name__ == '__main__':
     #print cfg_set('Protocol', '2', commented=False)
     #print cfg_set('Subsystem', 'sftp\t/usr/libexec/openssh/sftp-server', commented=True)
 
-    #print genkey('/root/.ssh/sshkey_intranet')
-    #print chpasswd('/root/.ssh/sshkey_intranet', '', 'aaaaaa')
+    #print genkey('/root/.ssh/sshkey_inpanel')
+    #print chpasswd('/root/.ssh/sshkey_inpanel', '', 'aaaaaa')

@@ -14,7 +14,7 @@
             <li ng-class="'active' | iftrue:activeTabName=='operation'"><a href="#operation" ng-click="sec('operation')" data-toggle="tab">基本操作</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='disks'"><a href="#disks" ng-click="sec('disks')" data-toggle="tab">磁盘管理</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='reset'"><a href="#reset" ng-click="sec('reset')" data-toggle="tab">重置系统</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='intranet'"><a href="#intranet" ng-click="sec('intranet')" data-toggle="tab">控制面板</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='inpanel'"><a href="#inpanel ng-click="sec('inpanel')" data-toggle="tab">控制面板</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
@@ -277,7 +277,7 @@
                 </table>
             </div>
 
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='intranet'" id="intranet" ng-init="loadintranet()">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='inpanel'" id="inpanel ng-init="loadinpanel()">
                 <table class="table table-button" style="width:500px;">
                     <thead>
                         <tr>
@@ -288,9 +288,9 @@
                         <tr>
                             <td style="width:100px;">基本操作：</td>
                             <td>
-                                <button class="btn btn-small" ng-disabled="processing" ng-click="intranet_install()"><i
+                                <button class="btn btn-small" ng-disabled="processing" ng-click="inpanel_install()"><i
                                         class="icon-briefcase"></i> 安装或升级</button>
-                                <button class="btn btn-small" ng-disabled="processing" ng-click="intranet_uninstall()"
+                                <button class="btn btn-small" ng-disabled="processing" ng-click="inpanel_uninstall()"
                                     style="margin-left:5px"><i class="icon-remove"></i> 卸载 InPanel</button>
                             </td>
                         </tr>
@@ -335,7 +335,7 @@
                         <tr>
                             <td></td>
                             <td>
-                                <button class="btn btn-primary" ng-click="saveintranet()">保存配置</button>
+                                <button class="btn btn-primary" ng-click="saveinpanel()">保存配置</button>
                             </td>
                         </tr>
                     </tbody>

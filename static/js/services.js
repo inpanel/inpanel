@@ -1,4 +1,4 @@
-angular.module('intranet.services', []).
+angular.module('inpanel.services', []).
 factory('Auth', ['$rootScope', '$http', '$location', function ($scope, $http, $location) {
     var Auth = {};
     Auth.required = function (callback, errCallback) {
