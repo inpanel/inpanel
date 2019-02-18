@@ -158,7 +158,7 @@ class ServerSet(object):
             dist = ServerInfo.dist()
             if dist['name'] in ('centos', 'redhat'):
                 clockinfo = raw_loadconfig('/etc/sysconfig/clock')
-                if clockinfo and clockinfo.has_key('ZONE'):
+                if clockinfo and 'ZONE' in clockinfo:
                     timezone = clockinfo['ZONE']
                     return timezone
             else:
@@ -220,7 +220,7 @@ class ServerSet(object):
     @classmethod
     def _write_fstab(self, line, **params):
         config = params['config']
-        if not config.has_key('mount') or config['mount'] == None:
+        if not 'mount' in config or config['mount'] == None:
             return None   # remove line
         if line == None:  # new line
             return '/dev/%s %s                %s    defaults        1 2' %\
@@ -229,8 +229,7 @@ class ServerSet(object):
             fields = line.split()
             return '%s %s                %s    %s        %s %s' %\
                 (fields[0], config['mount'],
-                 config.has_key(
-                    'fstype') and config['fstype'] or fields[2],
+                 'fstype' in config and config['fstype'] or fields[2],
                  fields[3], fields[4], fields[5])
 
     @classmethod
@@ -258,83 +257,83 @@ class ServerSet(object):
 
 
 if __name__ == '__main__':
-    print
+    print('')
 
     config = ServerSet.ifconfig('eth0')
-    print '* Config of eth0:'
-    if config.has_key('mac'):
-        print '  HWADDR: %s' % config['mac']
-    if config.has_key('ip'):
-        print '  IPADDR: %s' % config['ip']
-    if config.has_key('mask'):
-        print '  NETMASK: %s' % config['mask']
-    if config.has_key('gw'):
-        print '  GATEWAY: %s' % config['gw']
-    print
+    print('* Config of eth0:')
+    if 'mac' in config:
+        print('  HWADDR: %s' % config['mac'])
+    if 'ip' in config:
+        print('  IPADDR: %s' % config['ip'])
+    if 'mask' in config:
+        print('  NETMASK: %s' % config['mask'])
+    if 'gw' in config:
+        print('  GATEWAY: %s' % config['gw'])
+    print('')
 
-    print '* Write back config of eth0:'
-    print '  Return: %s ' % str(ServerSet.ifconfig('eth0', config))
-    print
+    print('* Write back config of eth0:')
+    print('  Return: %s ' % str(ServerSet.ifconfig('eth0', config)))
+    print('')
 
     configs = ServerSet.ifconfigs()
     for ifname, config in configs.iteritems():
-        print '* Config of %s:' % ifname
-        if config.has_key('mac'):
-            print '  HWADDR: %s' % config['mac']
-        if config.has_key('ip'):
-            print '  IPADDR: %s' % config['ip']
-        if config.has_key('mask'):
-            print '  NETMASK: %s' % config['mask']
-        if config.has_key('gw'):
-            print '  GATEWAY: %s' % config['gw']
-        print
+        print('* Config of %s:' % ifname)
+        if 'mac' in config:
+            print('  HWADDR: %s' % config['mac'])
+        if 'ip' in config:
+            print('  IPADDR: %s' % config['ip'])
+        if 'mask' in config:
+            print('  NETMASK: %s' % config['mask'])
+        if 'gw' in config:
+            print('  GATEWAY: %s' % config['gw'])
+        print('')
 
     nameservers = ServerSet.nameservers()
-    print '* Nameservers:'
+    print('* Nameservers:')
     for nameserver in nameservers:
-        print '  %s' % nameserver
-    print
+        print('  %s' % nameserver)
+    print('')
 
-    print '* Write back nameservers:'
-    print '  Return: %s ' % str(ServerSet.nameservers(nameservers))
-    print
+    print('* Write back nameservers:')
+    print('  Return: %s ' % str(ServerSet.nameservers(nameservers)))
+    print('')
 
     timezones = ServerSet.timezone_list()
-    print '* Timezone fullname list (first 10):'
+    print('* Timezone fullname list (first 10):')
     for i, timezone in enumerate(timezones):
-        print '  %s' % timezone
+        print('  %s' % timezone)
         if i == 9:
             break
-    print
+    print('')
 
     timezones = ServerSet.timezone_list('Asia')
-    print '* Timezone list in Asia (first 10):'
+    print('* Timezone list in Asia (first 10):')
     for i, timezone in enumerate(timezones):
-        print '  %s' % timezone
+        print('  %s' % timezone)
         if i == 9:
             break
-    print
+    print('')
 
     inifile = os.path.join(os.path.dirname(__file__), '../../data/config.ini')
     timezone = ServerSet.timezone(inifile)
-    print '* Timezone: %s' % timezone
-    print
+    print('* Timezone: %s' % timezone)
+    print('')
 
-    print '* Set timezone: %s' % timezone
-    print '  Return: %s ' % str(ServerSet.timezone(inifile, timezone))
-    print
+    print('* Set timezone: %s' % timezone)
+    print('  Return: %s ' % str(ServerSet.timezone(inifile, timezone)))
+    print('')
 
     config = ServerSet.fstab('sda1')
-    print '* Read sda1 fstab info:'
-    print '  dev: %s' % config['dev']
-    print '  mount: %s' % config['mount']
-    print '  fstype: %s' % config['fstype']
-    print
+    print('* Read sda1 fstab info:')
+    print('  dev: %s' % config['dev'])
+    print('  mount: %s' % config['mount'])
+    print('  fstype: %s' % config['fstype'])
+    print('')
 
-    print '* Delete sda1 from /etc/fstab'
-    print '  Return: %s ' % str(ServerSet.fstab('sda1', {}))
-    print
+    print('* Delete sda1 from /etc/fstab')
+    print('  Return: %s ' % str(ServerSet.fstab('sda1', {})))
+    print('')
 
-    print '* Write back to /etc/fstab'
-    print '  Return: %s ' % str(ServerSet.fstab('sda1', config))
-    print
+    print('* Write back to /etc/fstab')
+    print('  Return: %s ' % str(ServerSet.fstab('sda1', config)))
+    print('')

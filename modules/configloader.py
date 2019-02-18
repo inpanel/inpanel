@@ -31,7 +31,7 @@ def raw_loadconfig(filepath, return_sort=False, delimiter='=', quoter=' "\'', ov
             if overwrite:
                 config[k] = v
             else:
-                if not config.has_key(k):
+                if not k in config:
                     config[k] = []
                 config[k].append(v)
     if return_sort:
@@ -50,7 +50,7 @@ def raw_saveconfig(filepath, config, sortlist=[], delimiter='=', quoter='"'):
     # write the item in sortlist first
     if len(sortlist) > 0:
         for k in sortlist:
-            if config.has_key(k):
+            if k in config:
                 line = '%s%s%s%s%s\n' % (k, delimiter, quoter, config[k], quoter)
                 del config[k]
                 lines.append(line)
@@ -81,7 +81,7 @@ def loadconfig(filepath, keymap=None, delimiter='=', quoter=' "\''):
         # return raw_config
         config = dict((k, v) for k, v in raw_config.iteritems())
     else:
-        config = dict((keymap[k], v) for k, v in raw_config.iteritems() if keymap.has_key(k))
+        config = dict((keymap[k], v) for k, v in raw_config.iteritems() if k in keymap)
     return config
 
 
@@ -98,7 +98,7 @@ def saveconfig(filepath, config, keymap=None, delimiter='=', read_quoter=' "\'',
             raw_config[k] = v
         else:
             # Specify a range of key-value pairs
-            if keymap.has_key(k):
+            if k in keymap:
                 raw_config[keymap[k]] = v
             else:
                 return False

@@ -398,7 +398,7 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
     if not config or config['_isdirty']:
         config = loadconfig(HTTPD_CONF, getlineinfo)
     http = config['_'][0]['http'][0]
-    if not http.has_key('server'):
+    if not 'server' in http:
         return []
     servers = http['server']
     if disabled == None or not getlineinfo:

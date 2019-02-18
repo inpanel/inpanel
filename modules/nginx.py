@@ -545,16 +545,16 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
             #value = ' '.join(fields[1:]).strip()
             value = ' '.join(fields[1:]).strip(';')
 
-            if DIRECTIVES.has_key(key) and context in DIRECTIVES[key]:
-                if (not MODULES.has_key(key)    # not in module name list
-                     or MODULES.has_key(key)    # or in module name list
+            if key in DIRECTIVES and context in DIRECTIVES[key]:
+                if (not key in MODULES    # not in module name list
+                     or key in MODULES    # or in module name list
                         and not MODULES[key]    # and this module can't has param
                         and value != '{'):      # but actually it has
                     if getlineinfo:
                         v = {'file': file_i, 'line': [line_i-line_count+1, line_count], 'value': value}
                     else:
                         v = value
-                    if cconfig.has_key(key):
+                    if key in cconfig:
                         cconfig[key].append(v)
                     else:
                         cconfig[key] = [v]
@@ -575,7 +575,7 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
                     if DEBUG: print context_stack, '+', context,
                     context_stack.append(context)
                     if DEBUG: print '=', context_stack
-                    if cconfig.has_key(context):
+                    if context in cconfig:
                         cconfig[context].append({})
                     else:
                         cconfig[context] = [{}]
@@ -606,7 +606,8 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
     if not config or config['_isdirty']:
         config = loadconfig(NGINXCONF, getlineinfo)
     http = config['_'][0]['http'][0]
-    if not http.has_key('server'): return []
+    if not 'server' in http:
+        return []
     servers = http['server']
     if disabled == None or not getlineinfo:
         return servers
@@ -872,7 +873,7 @@ def _replace(positions, lines):
     files = {}
     for pos in positions:
         filepath, line_start, line_count = pos
-        if not files.has_key(filepath): files[filepath] = []
+        if not filepath in files: files[filepath] = []
         for i in range(line_count):
             files[filepath].append(line_start+i)
     # replace line by line
@@ -953,7 +954,7 @@ def _detect_engines(context):
 
     engines = []
     for k, v in context.iteritems():
-        if engine_flags.has_key(k):
+        if k in engine_flags:
             if k == 'rewrite':
                 engines.extend([x and 'redirect' or 'rewrite' for x in _isredirect(v)])
             else:
@@ -1053,9 +1054,9 @@ def http_get(directive, config=None):
     if not config or config['_isdirty']:
         config = loadconfig(NGINXCONF)
     hcontext = _context_gethttp(config)
-    if hcontext.has_key(directive):
+    if directive in hcontext:
         return hcontext[directive]
-    elif DEFAULTVALS.has_key(directive):
+    elif directive in DEFAULTVALS:
         return DEFAULTVALS[directive]
     else:
         return None

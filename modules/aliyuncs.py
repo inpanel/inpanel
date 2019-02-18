@@ -69,7 +69,7 @@ class ECS(object):
         return json.loads(data)
 
     def _parse_response(self, apiname, response):
-        if response.has_key('Error'):
+        if 'Error' in response:
             respdata = response['Error']
             reqid = respdata['RequestID']
             del respdata['RequestID']
