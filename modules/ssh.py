@@ -47,7 +47,7 @@ def loadconfig(cfgfile=None, detail=False):
             item = fs[0].strip()
             value = fs[1].strip()
 
-            if settings.has_key(item):
+            if item in settings:
                 if detail:
                     count = settings[item]['count']+1
                 if not commented:
@@ -76,7 +76,7 @@ def cfg_get(item, detail=False, config=None):
     """
     if not config:
         config = loadconfig(detail=detail)
-    if config.has_key(item):
+    if item in config:
         return config[item]
     else:
         return None

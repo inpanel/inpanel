@@ -73,7 +73,7 @@ def loadconfig(initype='php', inifile=None, detail=False):
                 for incfile in sorted(glob.glob(value)):
                     settings.update(loadconfig(initype, incfile, detail))
             else:
-                if settings.has_key(item):
+                if item in settings:
                     if detail:
                         count = settings[item]['count']+1
                     if not commented:
@@ -102,7 +102,7 @@ def ini_get(item, detail=False, config=None, initype='php'):
     """
     if not config:
         config = loadconfig(initype=initype, detail=detail)
-    if config.has_key(item):
+    if item in config:
         return config[item]
     else:
         return None

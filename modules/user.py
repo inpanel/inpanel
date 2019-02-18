@@ -65,13 +65,13 @@ def passwd(username, password):
 def useradd(username, options):
     # command like: useradd -c 'New User' -g newgroup -s /bin/bash -m newuser
     cmd = ['useradd']
-    if options.has_key('pw_gname') and options['pw_gname']:
+    if 'pw_gname' in options and options['pw_gname']:
         cmd.extend(['-g', options['pw_gname']])
-    if options.has_key('pw_gecos'):
+    if 'pw_gecos' in options:
         cmd.extend(['-c', options['pw_gecos']])
-    if options.has_key('pw_shell'):
+    if 'pw_shell' in options:
         cmd.extend(['-s', options['pw_shell']])
-    if options.has_key('createhome') and options['createhome']:
+    if 'createhome' in options and options['createhome']:
         cmd.append('-m')
     else:
         cmd.append('-M')
@@ -89,7 +89,7 @@ def useradd(username, options):
             return False
 
     # check if need to set passwd
-    if options.has_key('pw_passwd'):
+    if 'pw_passwd' in options:
         if not passwd(username, options['pw_passwd']):
             return False
 
@@ -100,15 +100,15 @@ def usermod(username, options):
     user = pwd.getpwnam(username)
     # command like: usermod -c 'I am root' -g root -d /root/ -s /bin/bash -U root
     cmd = ['usermod']
-    if options.has_key('pw_gname'):
+    if 'pw_gname' in options:
         cmd.extend(['-g', options['pw_gname']])
-    if options.has_key('pw_gecos') and options['pw_gecos'] != user.pw_gecos:
+    if 'pw_gecos' in options and options['pw_gecos'] != user.pw_gecos:
         cmd.extend(['-c', options['pw_gecos']])
-    if options.has_key('pw_dir') and options['pw_dir'] != user.pw_dir:
+    if 'pw_dir' in options and options['pw_dir'] != user.pw_dir:
         cmd.extend(['-d', options['pw_dir']])
-    if options.has_key('pw_shell') and options['pw_shell'] != user.pw_shell:
+    if 'pw_shell' in options and options['pw_shell'] != user.pw_shell:
         cmd.extend(['-s', options['pw_shell']])
-    if options.has_key('lock') and options['lock']:
+    if 'lock' in options and options['lock']:
         cmd.append('-L')
     else:
         cmd.append('-U')
@@ -123,7 +123,7 @@ def usermod(username, options):
                 return False
 
     # check if need to change passwd
-    if options.has_key('pw_passwd'):
+    if 'pw_passwd' in options:
         if not passwd(username, options['pw_passwd']):
             return False
 

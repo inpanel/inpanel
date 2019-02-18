@@ -292,8 +292,8 @@ class ServerInfo(object):
                 except:
                     #netifaces[i] = None
                     break
-                
-        netifaces = [ iface for iface in netifaces if iface.has_key('mac') ]
+
+        netifaces = [ iface for iface in netifaces if 'mac' in iface ]
         return netifaces
 
     @classmethod
@@ -454,11 +454,11 @@ class ServerInfo(object):
         has_busy_part = False
         for i, part in enumerate(parts):
             # check if it appears in blkid list
-            if not blks.has_key(part['name']):
+            if not part['name'] in blks:
                 # don't check the part with child partition
                 if i+1<len(parts) and parts[i+1]['name'].startswith(part['name']):
                     continue
-                
+
                 # if dev name doesn't match, check the major and minor of the dev
                 devfound = False
                 for devname, blkinfo in blks.iteritems():
@@ -526,7 +526,7 @@ class ServerInfo(object):
             if not is_hw and not parent_part_found:
                 parent_part = disks['lvm']
 
-            if blks.has_key(name) and blks[name]['fstype'].startswith('LVM'):
+            if name in blks and blks[name]['fstype'].startswith('LVM'):
                 is_pv = True
             else:
                 is_pv = False
@@ -541,10 +541,10 @@ class ServerInfo(object):
                 'partcount': partcount,
             }
 
-            if blks.has_key(name):
+            if name in blks:
                 partition['fstype'] = blks[name]['fstype']
                 partition['uuid'] = blks[name]['uuid']
-            
+
             if name in lvmlvs:
                 partition['is_lv'] = True
                 partition['vname'] = lvmlvs_vname[name]
@@ -583,7 +583,6 @@ class ServerInfo(object):
     @classmethod
     def virt(self):
         """ Detect the virtual tech of system.
-        
         REF: http://www.dmo.ca/blog/detecting-virtualization-on-linux/
         """
         # detect from dmesg first
@@ -621,106 +620,107 @@ class ServerTool(object):
 
 
 if __name__ == '__main__':
-    print
-    print '* Hostname: %s' % ServerInfo.hostname()
-    print
+    print('')
+    print('* Hostname: %s' % ServerInfo.hostname())
+    print('')
 
-    print '* Server time: %s' % ServerInfo.datetime()
-    print
-    
+    print('* Server time: %s' % ServerInfo.datetime())
+    print('')
+
     uptime = ServerInfo.uptime()
-    print '* Uptime: %s' % uptime['up']
-    print '* Idletime: %s' % uptime['idle']
-    print '* Idlerate: %s' % uptime['idle_rate']
-    print
+    print('* Uptime: %s' % uptime['up'])
+    print('* Idletime: %s' % uptime['idle'])
+    print('* Idlerate: %s' % uptime['idle_rate'])
+    print('')
 
     loadavg = ServerInfo.loadavg()
-    print '* Last 1 min processes: %s' % loadavg['1min']
-    print '* Last 15 min processes: %s' % loadavg['5min']
-    print '* Last 15 min processes: %s' % loadavg['15min']
-    print
+    print('* Last 1 min processes: %s' % loadavg['1min'])
+    print('* Last 15 min processes: %s' % loadavg['5min'])
+    print('* Last 15 min processes: %s' % loadavg['15min'])
+    print('')
 
     cpustat = ServerInfo.cpustat()
     tstat = cpustat['total']
-    print '* Total CPU stats:'
+    print('* Total CPU stats:')
     for k, v in tstat.iteritems():
-        print '  %s: %d' % (k, v)
+        print('  %s: %d' % (k, v))
     for i, tstat in enumerate(cpustat['cpus']):
-        print '* CPU-%d stats:' % i
+        print('* CPU-%d stats:' % i)
         for k, v in tstat.iteritems():
-            print '  %s: %d' % (k, v)
-    print
-    
+            print('  %s: %d' % (k, v))
+    print('')
+
     meminfo = ServerInfo.meminfo()
-    print '* Memory total: %s' % meminfo['mem_total']
-    print '* Memory used: %s (%s)' % (meminfo['mem_used'], meminfo['mem_used_rate'])
-    print '* Memory free: %s (%s)' % (meminfo['mem_free'], meminfo['mem_free_rate'])
-    print '* Memory buffers: %s' % meminfo['mem_buffers']
-    print '* Memory cached: %s' % meminfo['mem_cached']
-    print '* Swap total: %s' % meminfo['swap_total']
-    print '* Swap used: %s (%s)' % (meminfo['swap_used'], meminfo['swap_used_rate'])
-    print '* Swap free: %s (%s)' % (meminfo['swap_free'], meminfo['swap_free_rate'])
+    print('* Memory total: %s' % meminfo['mem_total'])
+    print('* Memory used: %s (%s)' % (meminfo['mem_used'], meminfo['mem_used_rate']))
+    print('* Memory free: %s (%s)' % (meminfo['mem_free'], meminfo['mem_free_rate']))
+    print('* Memory buffers: %s' % meminfo['mem_buffers'])
+    print('* Memory cached: %s' % meminfo['mem_cached'])
+    print('* Swap total: %s' % meminfo['swap_total'])
+    print('* Swap used: %s (%s)' % (meminfo['swap_used'], meminfo['swap_used_rate']))
+    print('* Swap free: %s (%s)' % (meminfo['swap_free'], meminfo['swap_free_rate']))
     print
     
     mounts = ServerInfo.mounts(True)
     for mount in mounts:
-        print '* Mount device: %s' % mount['dev']
-        if mount.has_key('major'): print '* Dev node: (%d, %d)' % (mount['major'], mount['minor'])
-        print '* Mount point: %s' % mount['path']
-        print '* Total space: %s' % mount['total']
-        print '* Free space: %s' % mount['free']
-        print '* Used space: %s (%s)' % (mount['used'], mount['used_rate'])
-        print 
+        print('* Mount device: %s' % mount['dev'])
+        if 'major' in mount:
+            print('* Dev node: (%d, %d)' % (mount['major'], mount['minor']))
+        print('* Mount point: %s' % mount['path'])
+        print('* Total space: %s' % mount['total'])
+        print('* Free space: %s' % mount['free'])
+        print('* Used space: %s (%s)' % (mount['used'], mount['used_rate']))
+        print('')
     
     netifaces = ServerInfo.netifaces()
     for netiface in netifaces:
-        print '* Interface name: %s' % netiface['name']
-        print '* Interface status: %s' % netiface['status']
-        print '* Link encap: %s' % netiface['encap']
-        print '* IP address: %s' % netiface['ip']
-        print '* Broadcast: %s' % netiface['bcast']
-        print '* Network mask: %s' % netiface['mask']
-        if netiface.has_key('gw'): print '* Default gateway: %s' % netiface['gw']
-        print '* MAC address: %s' % netiface['mac']
-        print '* Data receive: %s' % netiface['rx']
-        print '* Data transmit: %s' % netiface['tx']
-        print 
+        print('* Interface name: %s' % netiface['name'])
+        print('* Interface status: %s' % netiface['status'])
+        print('* Link encap: %s' % netiface['encap'])
+        print('* IP address: %s' % netiface['ip'])
+        print('* Broadcast: %s' % netiface['bcast'])
+        print('* Network mask: %s' % netiface['mask'])
+        if netiface.has_key('gw'):
+            print('* Default gateway: %s' % netiface['gw'])
+        print('* MAC address: %s' % netiface['mac'])
+        print('* Data receive: %s' % netiface['rx'])
+        print('* Data transmit: %s' % netiface['tx'])
+        print('')
 
     nameservers = ServerInfo.nameservers()
-    print '* Name servers:'
+    print('* Name servers:')
     for nameserver in nameservers:
-        print '  %s' % nameserver
-    print 
+        print('  %s' % nameserver)
+    print('')
 
     distribution = ServerInfo.distribution()
-    print '* Linux distribution: %s' % distribution
-    print 
+    print('* Linux distribution: %s' % distribution)
+    print('')
 
     uname = ServerInfo.uname()
-    print '* Kernel name: %s' % uname['kernel_name']
-    print '* Kernel release: %s' % uname['kernel_release']
-    print '* Kernel version: %s' % uname['kernel_version']
-    print '* Machine: %s' % uname['machine']
-    print 
+    print('* Kernel name: %s' % uname['kernel_name'])
+    print('* Kernel release: %s' % uname['kernel_release'])
+    print('* Kernel version: %s' % uname['kernel_version'])
+    print('* Machine: %s' % uname['machine'])
+    print('')
 
     cpuinfo = ServerInfo.cpuinfo()
-    print '* CPU count: %d' % cpuinfo['cpu_count']
-    print '* CPU cores: %d' % cpuinfo['core_count']
+    print('* CPU count: %d' % cpuinfo['cpu_count'])
+    print('* CPU cores: %d' % cpuinfo['core_count'])
     for core in cpuinfo['cores']:
-        print '* CPU core: %s (%s)' % (core['model'], core['bits'])
-    print 
+        print('* CPU core: %s (%s)' % (core['model'], core['bits']))
+    print('')
 
     diskinfo = ServerInfo.diskinfo()
     count = diskinfo['count']
     totalsize = diskinfo['totalsize']
     partitions = diskinfo['partitions']
-    print '* %d disks detected, total size: %s' % (count, totalsize)
-    print 
+    print('* %d disks detected, total size: %s' % (count, totalsize))
+    print('')
     for partition in partitions:
-        print '* Partition name: %s (%d, %d)' % \
-                (partition['name'], partition['major'], partition['minor'])
+        print('* Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor']))
         if partition.has_key('vname'): print '  Volumn name: %s' % partition['vname']
-        print '  Partition size: %s (%s free)' % (partition['size'], partition['unpartition'])
+        print('  Partition size: %s (%s free)' % (partition['size'], partition['unpartition']))
         if partition.has_key('uuid'): print '  Partition UUID: %s' % partition['uuid']
         if partition.has_key('fstype'): print '  Partition fstype: %s' % partition['fstype']
         print '  Partition is PV: %s' % partition['is_pv']

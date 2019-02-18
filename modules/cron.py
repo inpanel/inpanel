@@ -57,7 +57,7 @@ def load_config():
             continue
 
         k = out.strip().split('=')[0]
-        if k and CRON_CONFIG_MAP.has_key(k):
+        if k and k in CRON_CONFIG_MAP:
             config[CRON_CONFIG_MAP[k]] = out.split('=')[1]
 
     return config
@@ -67,7 +67,7 @@ def update_config(configs):
     cmap_reverse = dict((v, k) for k, v in CRON_CONFIG_MAP.iteritems())
     new_config = {}
     for k, v in configs.iteritems():
-        if cmap_reverse.has_key(k):
+        if k in cmap_reverse:
             new_config[cmap_reverse[k]] = v
     return save_config(CRONTAB, new_config)
 
@@ -92,7 +92,7 @@ def save_config(filepath, config):
 
         k = out.split('=')[0]
         if k:
-            if config.has_key(k):
+            if k in config:
                 output.append('%s=%s\n' % (k, config[k]))
             else:
                 output.append('%s' % (line))

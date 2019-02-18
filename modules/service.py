@@ -58,7 +58,7 @@ class Service(object):
                 pidfile = p[0]
             else:
                 # some services have special pid filename
-                if Service.pidnames.has_key(service):
+                if service in Service.pidnames:
                     for pidname in Service.pidnames[service]:
                         pidfile = '/var/run/%s.pid' % pidname
                         if os.path.exists(pidfile):

@@ -728,4 +728,4 @@ yum_pkg_noarchitecture = [
 # if 'updates' not in yum_repolist + ['installed', '*']:
 #     print({'code': -1, 'msg': u'未知的软件源 updates ！'})
 
-# print yum_pkg_alias.has_key('pure-ftpd')
+# print('pure-ftpd' in yum_pkg_alias)

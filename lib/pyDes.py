@@ -598,17 +598,17 @@ class des(_baseDes):
 
         # Split the data into blocks, crypting each one seperately
         i = 0
-        dict = {}
+        tdict = {}
         result = []
         #cached = 0
         #lines = 0
         while i < len(data):
             # Test code for caching encryption results
             #lines += 1
-            # if dict.has_key(data[i:i+8]):
+            # if data[i:i+8] in tdict:
                 #print "Cached result for: %s" % data[i:i+8]
             #    cached += 1
-            #    result.append(dict[data[i:i+8]])
+            #    result.append(tdict[data[i:i+8]])
             #    i += 8
             #    continue
 
@@ -642,7 +642,7 @@ class des(_baseDes):
             #d = self.__BitList_to_String(processed_block)
             # result.append(d)
             result.append(self.__BitList_to_String(processed_block))
-            #dict[data[i:i+8]] = d
+            #tdict[data[i:i+8]] = d
             i += 8
 
         # print "Lines: %d, cached: %d" % (lines, cached)
