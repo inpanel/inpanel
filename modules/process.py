@@ -78,7 +78,7 @@ def kill_process(name):
     if not name:
         return None
     pids = get_pids(name)
-    print('pid', pids)
+    # print('pid', pids)
     if pids:
         return kill_pids(pids)
     else:
@@ -95,7 +95,7 @@ def kill_pids(pids):
     if os_type in ('Linux', 'Darwin'):
         s_cmd = '/bin/kill -9 %s' % pids
         status, result = getso(s_cmd)
-        print('kill_pids', status, result)
+        # print('kill_pids', status, result)
         if status == 0:
             return True
         else:

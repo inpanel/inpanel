@@ -190,11 +190,13 @@ var UtilsProcessCtrl = [
     function ($scope, $routeParams, Module, Timeout, Request) {
         var module = 'utils.process';
         var section = Module.getSection();
-        var enabled_sections = ['process', 'other'];
+        var enabled_sections = ['list', 'other'];
         Module.init(module, '进程管理');
         Module.initSection(enabled_sections[0]);
         $scope.loaded = false;
         $scope.init_process = true;
+        $scope.current_process = {};
+        $scope.time_interval = 1000;
         $scope.process = {
             process: [],
             total: 0
@@ -214,7 +216,7 @@ var UtilsProcessCtrl = [
         };
 
         var getProcess = function() {
-            Request.get('/utils/process/process', function (res) {
+            Request.get('/utils/process/list', function (res) {
                 $scope.process.process = res.process;
                 $scope.process.total = res.total;
                 if (!$scope.loaded) {
@@ -223,12 +225,12 @@ var UtilsProcessCtrl = [
                 if ($scope.init_process) {
                     $scope.init_process = false;
                 }
-                if (Module.getSection() == 'process') {
-                    Timeout(getProcess, 1000, module);
+                if (Module.getSection() == 'list') {
+                    Timeout(getProcess, $scope.time_interval, module);
                 }
             });
         };
-        $scope.load_process = function (init) {
+        $scope.load_list = function (init) {
             if (!init && !$scope.init_process) {
                 return; // Prevent duplicate requests
             }
@@ -237,6 +239,15 @@ var UtilsProcessCtrl = [
         $scope.load_other = function (init) {
             console.log('待开发功能', init)
         }
+        $scope.processkillconfirm = function(i) {
+            $scope.current_process = i;
+            $('#processkillconfirm').modal();
+        };
+        $scope.processkill = function () {
+            if ($scope.current_process['pid']) {
+                Request.post('/utils/process/kill/' + $scope.current_process['pid']);
+            }
+        };
     }
 ]
 
