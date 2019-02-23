@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.join(root_path, 'lib'))
 
 import tornado.httpserver
 import tornado.ioloop
-from core import web
+from modules import web
 from modules.config import Config
 from modules.utils import make_cookie_secret
 

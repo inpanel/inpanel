@@ -65,7 +65,7 @@ uninstall() {
     cp /usr/local/inpanel/data /root/inpanel_backup_data
     echo -n $"Backup InPanel Data to /root/inpanel_backup_data"
     rm -rf /usr/local/inpanel
-    echo -n $"InPanel Deleted !"
+    echo -n $"InPanel Removed !"
 }
 
 rh_status() {

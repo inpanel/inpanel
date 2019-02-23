@@ -37,5 +37,6 @@ __all__ = [
     'user',
     'utils',
     'vsftpd',
+    'web',
     'yum'
 ]
