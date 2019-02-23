@@ -703,9 +703,10 @@ class UtilsSSLHandler(RequestHandler):
 
         if sec == 'keys':
             if action == 'add_domain_keys':
-                for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
-                    certs.create_domain_key(domain)
-                self.write({'code': 0, 'msg': u'创建测试私钥成功！'})
+                # this is a test
+                # for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
+                #     certs.create_domain_key(domain)
+                self.write({'code': 0, 'msg': u'创建测试私钥成功！(正在测试的功能)'})
 
 class SettingHandler(RequestHandler):
     """Settings for InPanel
