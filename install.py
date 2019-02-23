@@ -189,7 +189,8 @@ class Install(object):
         #     self._run('mkdir /tmp/inpanel_data', True)
         #     self._run('/bin/cp -rf %s/data/* /tmp/inpanel_data/' % self.installpath, True)
 
-        self._run('rm -rf %s' % self.installpath)
+        if self.installpath:
+            self._run('rm -rf %s' % self.installpath)
         branch = 'master'
         if len(sys.argv) == 2 and sys.argv[1] == '--dev':
             branch = 'dev'
@@ -289,7 +290,8 @@ class Install(object):
             self._run('%s stop' % v_script)
             self._run('rm -f %s' % v_script)
             print('* VPSMate has been deleted')
-            self._run('rm -rf %s' % v_path)
+            if v_path:
+                self._run('rm -rf %s' % v_path)
         else:
             if not isdel == 'no':
                 print('* The command you entered is incorrect !')
