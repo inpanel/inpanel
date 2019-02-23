@@ -324,9 +324,8 @@ var SettingCtrl = [
                     $scope.upverMessage = data.msg;
                 } else if (data.code == 0) {
                     var v = data.data;
-                    if (parseFloat(v.version) > parseFloat(version.version) ||
-                        (parseFloat(v.version) == parseFloat(version.version) &&
-                            parseInt(v.build) > parseInt(version.build))) {
+                    if (parseFloat(v.version.split('.').join('')) > parseFloat(version.version.split('.').join('')) ||
+                        (v.version == version.version && parseInt(v.build) > parseInt(version.build))) {
                         $scope.upverMessage = '<table class="table table-hover table-bordered">' +
                             '<thead><tr><th colspan="2">有可用的新版本</th></tr></thead>' +
                             '<tbody><tr><td style="width: 200px;">版本信息：</td><td>v' + v.version + ' b' + v.build + '</td></tr>' +
