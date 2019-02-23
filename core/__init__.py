@@ -7,8 +7,4 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""The InPanel web server and tools."""
-
-__all__ = [
-    'web'
-]
+"""The InPanel Core."""

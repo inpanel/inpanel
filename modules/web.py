@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''The Web Server Module for InPanel.'''
+'''The Web Module for InPanel.'''
 
 import base64
 import binascii
