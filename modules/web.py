@@ -2644,6 +2644,7 @@ class BackendHandler(RequestHandler):
             old_script = '/etc/init.d/intranet'
             new_root_path = '/usr/local/panel'
             new_data_path = '/usr/local/panel/data'
+            initscript = '%s/core/init.d/%s/inpanel' % (new_root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
