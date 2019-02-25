@@ -2636,15 +2636,7 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = '%s/core/init.d/%s/inpanel' % (root_path, distname)
-        old_script = '/etc/init.d/inpanel'
-        new_root_path = root_path
-        new_data_path = data_path
-        if APP_VERSION == '1.1.1' and int(APP_BUILD) < 18:
-            old_script = '/etc/init.d/intranet'
-            new_root_path = '/usr/local/panel'
-            new_data_path = '/usr/local/panel/data'
-            initscript = '%s/core/init.d/%s/inpanel' % (new_root_path, distname)
+        initscript = u'%s/tools/init.d/%s/inpanel' % (root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
@@ -2663,22 +2655,22 @@ class BackendHandler(RequestHandler):
                 'cmd': u'find %s -mindepth 1 -maxdepth 1 -path %s -prune -o -exec rm -rf {} \;' % (root_path, data_path),
             }, {
                 'desc': u'正在复制新版本...',
-                'cmd': u'find %s/inpanel -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, new_root_path),
+                'cmd': u'find %s/inpanel -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
             }, {
                 'desc': u'正在删除旧的服务脚本...',
-                'cmd': u'rm -f %s' % old_script,
+                'cmd': u'rm -f /etc/init.d/inpanel',
             }, {
                 'desc': u'正在安装新的服务脚本...',
                 'cmd': u'cp %s /etc/init.d/inpanel' % initscript
             }, {
-                'desc': u'正在添加脚本权限...',
-                'cmd': u'chmod +x /etc/init.d/inpanel %s/config.py %s/server.py' % (new_root_path, new_root_path),
+                'desc': u'正在更改脚本权限...',
+                'cmd': u'chmod +x /etc/init.d/inpanel %s/config.py %s/server.py' % (root_path, root_path),
             }, {
                 'desc': u'正在删除安装临时文件...',
                 'cmd': u'rm -rf %s/inpanel %s/inpanel.tar.gz' % (data_path, data_path)
             }, {
                 'desc': u'正在恢复旧的配置文件...',
-                'cmd': u'/bin/cp -f /tmp/inpanel_config.ini %s/config.ini' % new_data_path
+                'cmd': u'/bin/cp -f /tmp/inpanel_config.ini %s/config.ini' % data_path
             }, {
                 'desc': u'正在删除旧的配置文件...',
                 'cmd': u'rm -f /tmp/inpanel_config.ini'
