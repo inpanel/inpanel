@@ -8,7 +8,7 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-""" Install Script for InPanel """
+''' Install Script for InPanel '''
 
 import getpass
 import os
@@ -24,14 +24,15 @@ OK = '\033[1;32mOK\033[0m'
 FAILED = '\033[1;31mFAILED\033[0m'
 INSTALL_COMPLETED = '\033[1;32mINSTALL COMPLETED\033[0m'
 
+
 class Install(object):
     def __init__(self):
 
         self.user = getpass.getuser()
         if (self.user != 'root'):
-            print
+            print('')
             print('\033[7;31mThis script must be run as root !\033[0m')
-            print
+            print('')
             sys.exit()
 
         if hasattr(platform, 'linux_distribution'):
@@ -68,11 +69,11 @@ class Install(object):
         elif self.os == 'Darwin':
             supported = True
         elif self.distname == 'ubuntu':
-           if float(self.version) < 10.10:
-               supported = False
+            if float(self.version) < 10.10:
+                supported = False
         elif self.distname == 'debian':
-           if float(self.version) < 6.0:
-               supported = False
+            if float(self.version) < 6.0:
+                supported = False
         else:
             supported = False
         return supported
@@ -83,9 +84,9 @@ class Install(object):
         print('* Install GIT ...'),
         try:
             if self.distname in ('centos', 'redhat'):
-                self._run("yum install -y git")
+                self._run('yum install -y git')
             if self.distname in ('ubuntu', 'debian'):
-                self._run("apt-get -y install git")
+                self._run('apt-get -y install git')
             success = True
             print('[ %s ]' % OK)
         except:
@@ -205,6 +206,15 @@ class Install(object):
         self._run('cp %s %s' % (initscript, self.initd_script))
         self._run('chmod +x %s' % self.initd_script)
 
+    def handle_intranet(self):
+        '''handle the old version Intranet Panel'''
+        if os.path.exists('/etc/init.d/intranet'):
+            print('* Found Intranet')
+            self._run('/etc/init.d/intranet stop')
+            self._run('rm -rf /etc/init.d/intranet')
+            self._run('rm -rf /usr/local/intranet')
+            print('* Intranet has been deleted')
+
     def config_firewall(self):
         '''config firewall'''
         print('* Config firewall...'),
@@ -264,15 +274,15 @@ class Install(object):
                 res = skt.connect_ex((str(ip), int(port_number)))
                 # res = skt.connect_ex(('127.0.0.1', port_number))
                 if res == 0:
-                    # print("Port %d is open" % port_number)
+                    # print('Port %d is open' % port_number)
                     enabled = True
                 else:
-                    # print("Port %d is not open" % port_number)
+                    # print('Port %d is not open' % port_number)
                     enabled = False
                 skt.close()
             except:
                 enabled = False
-            
+
         return enabled
 
     def handle_vpsmate(self):
@@ -324,35 +334,32 @@ class Install(object):
             print(self.distname),
             print('...%s' % OK)
 
-        self.handle_repository()
         self.handle_dependent()
+        self.handle_repository()
         self.handle_python()
         self.handle_git()
+        self.handle_intranet()
         self.handle_inpanel()
         self.handle_vpsmate()
         # self.handle_port()
         self.config_account()
         self.config_firewall()
         self.start_service()
-        print
+        print('')
         print('============================')
         print('*                          *')
         print('*     %s    *' % INSTALL_COMPLETED)
         print('*                          *')
         print('============================')
-        print
+        print('')
         print('The URL of your InPanel is:'),
         print('\033[4;34mhttp://%s:%s/\033[0m' % (self.detect_ip(), self.listen_port))
-        print
+        print('')
         print('\033[5;32mWish you a happy life !\033[0m')
-        print
-        print
+        print('')
+        print('')
 
 
-def main():
+if __name__ == '__main__':
     install = Install()
     install.install()
-
-
-if __name__ == "__main__":
-    main()
