@@ -51,6 +51,6 @@ rm -f /etc/init.d/inpanel
 
 从版本 v1.1.1b16 开始，不再使用 vpsmate 进程名，改用进程名为 intranet，在全新安装面板时，可以对已安装的 VPSMate 进行保留（或者删除）操作
 
-从版本 v1.1.2b18 开始，不再使用 intranet 进程名，改用进程名为 inpanel，统一标识为"inpanel"
+从版本 v1.1.1b18 开始，不再使用 intranet 进程名，改用进程名为 inpanel，统一标识为"inpanel"
 
 > 希望你用得愉快 ！
