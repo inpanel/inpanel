@@ -6,47 +6,43 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for process management."""
+'''Module for process Management.'''
 
 import os
 import platform
-from commands import getstatusoutput as getso
+
+try:
+    from commands import getstatusoutput
+except:
+    from subprocess import getstatusoutput
+
+os_type = platform.system()
 
 
-def get_process_list():
-
-    p = []
-    os_type = platform.system()
+def get_list():
+    '''get process list'''
+    res = []
     if os_type == 'Linux':
-        for subdir in os.listdir('/proc'):
-            if subdir.isdigit():
-                pn = get_process_name(subdir)
-                if pn:
-                    p.append({'pid': int(subdir), 'name': pn})
+        for pid in os.listdir('/proc'):
+            if pid.isdigit():
+                res.append(get_base(pid))
     elif os_type == 'Darwin':
         pass
     elif os_type == 'Windows':
         pass
-    return {'process': p, 'total': len(p)}
+    return res
 
 
-def get_process_name(pid):
+def get_name(pid):
     if not pid:
         return False
     name = None
-    os_type = platform.system()
     if os_type == 'Linux':
         comm = '/proc/%s/comm' % pid
         if os.path.exists(comm):
             with open(comm, 'r') as f:
                 line = f.readline()
                 name = line.strip()
-        if not name:
-            sched = '/proc/%s/sched' % pid
-            if os.path.exists(sched):
-                with open(sched, 'r') as f:
-                    line = f.readline()
-                    name = line.split()[0]
         if not name:
             status = '/proc/%s/status' % pid
             if os.path.exists(status):
@@ -57,8 +53,6 @@ def get_process_name(pid):
             stat = '/proc/%s/stat' % pid
             if os.path.exists(stat):
                 with open(stat, 'r') as f:
-                    # name = line.strip()
-                    # name = line.replace('(','').replace(')','')
                     line = f.readline()
                     line = line.split()[1]
                     if line[0] == '(':
@@ -76,7 +70,7 @@ def get_process_name(pid):
 def kill_process(name):
     '''kill process by name'''
     if not name:
-        return None
+        return
     pids = get_pids(name)
     # print('pid', pids)
     if pids:
@@ -88,71 +82,141 @@ def kill_process(name):
 def kill_pids(pids):
     '''kill process by pids'''
     if not pids:
-        return None
+        return
     if isinstance(pids, list):
         pids = ' '.join(pids)  # to string
-    os_type = platform.system()
     if os_type in ('Linux', 'Darwin'):
-        s_cmd = '/bin/kill -9 %s' % pids
-        status, result = getso(s_cmd)
-        # print('kill_pids', status, result)
-        if status == 0:
-            return True
-        else:
-            return False
-    elif os_type == 'Windows':
-        try:
-            import ctypes
-            for i in pids:
-                handle = ctypes.windll.kernel32.OpenProcess(1, False, i)
-                ctypes.windll.kernel32.TerminateProcess(handle, 0)
-            return True
-        except Exception, e:
-            return False
+        s_cmd = u'/bin/kill -9 %s' % pids
+        status, result = getstatusoutput(s_cmd)
+        return status == 0
+    else:
+        return False
 
 
 def get_pids(name):
     '''get pids of a process'''
-    os_type = platform.system()
+    if not name:
+        return
     if os_type in ('Linux', 'Darwin'):
-        s_cmd = "/bin/ps auxww | grep %s | grep -v grep | awk '{print $2}'" % name
-        status, result = getso(s_cmd)
-        print(status, result)
+        s_cmd = u"/bin/ps auxww | grep %s | grep -v grep | awk '{print $2}'" % name
+        status, result = getstatusoutput(s_cmd)
         if status == 0 and result:
             return ' '.join(result.split()).split(' ')  # list
         else:
             return []
-    elif os_type == 'Windows':
-        if type(name) == int:
-            str_cmd = "netstat -ano|find \"%s\"" % name
-            try:
-                result = os.popen(str_cmd, 'r').read()
-                result = result.split('\n')[0].strip()
-                if result.find('WAIT') != -1:
-                    return 0
-                pid = int(result[result.rfind(' '):].strip())
-                return [pid]
-            except Exception, e:
-                return 0
+    else:
+        return []
+
+
+def get_cmdline(pid):
+    if not pid:
+        return
+    if os_type == 'Linux':
+        if os.path.exists('/proc/%s/cmdline' % pid):
+            with open('/proc/%s/cmdline' % pid, 'r') as f:
+                line = f.readline()
+                return line.strip()
         else:
-            import win32con
-            import win32api
-            import win32process
-            pids = []
-            for pid in win32process.EnumProcesses():
-                try:
-                    hProcess = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, False, pid)
-                    hProcessFirstModule = win32process.EnumProcessModules(hProcess)[0]
-                    processName = os.path.splitext(os.path.split(win32process.GetModuleFileNameEx(hProcess, hProcessFirstModule))[1])[0]
-                    if processName == name:
-                        pids.append(pid)
-                except Exception, e:
-                    pass
-            return pids
+            return ''
+
+
+def get_base(pid):
+    '''get base info'''
+    if not pid:
+        return
+    res = {
+        'Name': '',
+        'State': '',
+        'Pid': '',
+        'PPid': '',
+        'FDSize': '',
+        'VmPeak': '',
+        'VmSize': ''
+    }
+    if os_type == 'Linux':
+        if os.path.exists('/proc/%s/status' % pid):
+            f = open('/proc/%s/status' % pid, 'r')
+            line = f.readline()
+            while line:
+                out = line.strip()
+                if out.startswith('Name'):
+                    res['Name'] = out.split()[1]
+                if out.startswith('State'):
+                    res['State'] = out.split()[1]
+                if out.startswith('Pid'):
+                    res['Pid'] = out.split()[1]
+                if out.startswith('PPid'):
+                    res['PPid'] = out.split()[1]
+                if out.startswith('FDSize'):
+                    res['FDSize'] = out.split()[1]
+                if out.startswith('VmPeak'):
+                    res['VmPeak'] = out.split()[1]
+                if out.startswith('VmSize'):
+                    res['VmSize'] = out.split()[1]
+                # print(line),
+                line = f.readline()
+                if res['Name'] and res['State'] and res['Pid'] and res['PPid'] and res['FDSize'] and res['VmPeak'] and res['VmSize']:
+                    break
+            f.close()
+        return res
+    else:
+        return res
+
+
+def get_detail(pid):
+    '''get process detail'''
+    if not pid:
+        return
+    return {'Name': 'test', 'Pid': pid}
+
+
+def get_environ(pid):
+    if not pid:
+        return
+    if os_type == 'Linux':
+        if os.path.exists('/proc/%s/environ' % pid):
+            with open('/proc/%s/environ' % pid, 'r') as f:
+                line = f.readline()
+                return line.strip()
+        else:
+            return ''
+
+
+def get_status(pid):
+    '''return the all status info'''
+    if not pid:
+        return
+    res = {}
+    if os_type == 'Linux':
+        if os.path.exists('/proc/%s/status' % pid):
+            f = open('/proc/%s/status' % pid, 'r')
+            line = f.readlines()
+            while line:
+                out = line.strip()
+                if out.startswith('Name'):
+                    res['Name'] = out.split()[1]
+                if out.startswith('State'):
+                    res['State'] = out.split()[1]
+                if out.startswith('Pid'):
+                    res['Pid'] = out.split()[1]
+                if out.startswith('PPid'):
+                    res['PPid'] = out.split()[1]
+                if out.startswith('FDSize'):
+                    res['FDSize'] = out.split()[1]
+                if out.startswith('VmPeak'):
+                    res['VmPeak'] = out.split()[1]
+                if out.startswith('VmSize'):
+                    res['VmSize'] = out.split()[1]
+            f.close()
+        return res
+    else:
+        return res
 
 
 if __name__ == '__main__':
-    # pids = get_process_list()
-    # print(pids)
-    print('kill_process', kill_process('sshd'))
+    pids = get_list()
+    print(pids)
+    # print('kill_process', kill_process('sshd'))
     # print('kill_pid00', kill_pids(11587))
+    # print(get_pids('php'))
+    # get_state(4105)

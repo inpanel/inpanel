@@ -611,22 +611,34 @@ class UtilsNetworkHandler(RequestHandler):
 
 
 class UtilsProcessHandler(RequestHandler):
-    """Handler for load process list.
-    """
-    def get(self, sec, x=None):
+    '''Handler for load process list.'''
+    def get(self, sec, pid=None):
         self.authed()
         if sec == 'list':
-            self.write(process.get_process_list())
+            res = process.get_list()
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程列表失败！'})
+
+        if sec == 'detail':
+            res = process.get_detail(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程详情失败！'})
+
     def post(self, sec, pids):
         self.authed()
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': u'DEMO状态不允许操作进程！'})
             return
+
         if sec == 'kill':
             if process.kill_pids(pids):
-                self.write({'code': 0, 'msg': u'进程停止成功！'})
+                self.write({'code': 0, 'msg': u'进程终止成功！'})
             else:
-                self.write({'code': -1, 'msg': u'进程停止失败！'})
+                self.write({'code': -1, 'msg': u'进程终止失败！'})
 
 class UtilsTimeHandler(RequestHandler):
     """Handler for system datetime setting.

@@ -140,9 +140,19 @@ filter('user.lock', function () {
 }).
 filter('process.status', function () {
     return function (input) {
-        return input ?
-            '<span class="label label-default">锁定</span>' :
-            '<span class="label label-success">运行中</span>';
+        var status_type = {
+            'R': '<span class="label label-success">运行</span>',
+            'S': '<span class="label label-primary">休眠</span>',
+            'D': '<span class="label label-warning">等待</span>',
+            'T': '<span class="label label-info">停止</span>',
+            'Z': '<span class="label label-danger">退出</span>',
+            'X': '<span class="label label-default">已退出</span>'
+        };
+        if (status_type.hasOwnProperty(input)) {
+            return status_type[input];
+        } else {
+            return '<span class="label label-default">未知</span>';
+        }
     };
 }).
 filter('site.status', function () {

@@ -196,7 +196,9 @@ var UtilsProcessCtrl = [
         $scope.loaded = false;
         $scope.init_process = true;
         $scope.current_process = {};
+        $scope.delete_process = {};
         $scope.time_interval = 1000;
+        $scope.auto_refresh = false;
         $scope.process = {
             process: [],
             total: 0
@@ -217,15 +219,17 @@ var UtilsProcessCtrl = [
 
         var getProcess = function() {
             Request.get('/utils/process/list', function (res) {
-                $scope.process.process = res.process;
-                $scope.process.total = res.total;
+                if (res && res.code == 0) {
+                    $scope.process.process = res.data;
+                    $scope.process.total = res.data.length;
+                }
                 if (!$scope.loaded) {
                     $scope.loaded = true;
                 }
                 if ($scope.init_process) {
                     $scope.init_process = false;
                 }
-                if (Module.getSection() == 'list') {
+                if (Module.getSection() == 'list' && $scope.auto_refresh) {
                     Timeout(getProcess, $scope.time_interval, module);
                 }
             });
@@ -240,13 +244,47 @@ var UtilsProcessCtrl = [
             console.log('待开发功能', init)
         }
         $scope.processkillconfirm = function(i) {
-            $scope.current_process = i;
+            $scope.delete_process = i || {};
             $('#processkillconfirm').modal();
         };
         $scope.processkill = function () {
-            if ($scope.current_process['pid']) {
-                Request.post('/utils/process/kill/' + $scope.current_process['pid']);
+            if ($scope.delete_process && $scope.delete_process['Pid']) {
+                Request.post('/utils/process/kill/' + $scope.delete_process['Pid']);
             }
+        };
+        $scope.process_detail = function (p) {
+            if (p && p['Pid']) {
+                $('#process_detail_dialog').modal();
+                $scope.current_process = p;
+                $scope.load_detial(p['Pid']);
+            }
+        };
+        $scope.load_detial = function (pid) {
+            if (pid) {
+                Request.get('/utils/process/detail/' + pid, function (res) {
+                    if (res && res.code == 0) {
+                        $scope.current_process = res.data;
+                    }
+                });
+            }
+        };
+        $scope.process_detail_close = function () {
+            Timeout(function() {
+                $scope.current_process = {};
+            }, 600, module);
+        }
+        $scope.refresh = function () {
+            console.log('刷新列表');
+            getProcess();
+        };
+        $scope.auto_refresh_open = function () {
+            console.log('打开自动刷新');
+            $scope.auto_refresh = true;
+            getProcess();
+        };
+        $scope.auto_refresh_close = function () {
+            console.log('关闭自动刷新');
+            $scope.auto_refresh = false;
         };
     }
 ]

@@ -22,30 +22,39 @@
                     <div class="pull-left">
                         <h5>进程列表</h5>
                     </div>
-                    <div class="pull-right" ng-show="process && process.total">数量：{{process.total}}</div>
+                    <div class="pull-right">
+                        <button class="btn btn-default btn-sm" title="当前进程数量" ng-show="process && process.total">数量: {{process.total}}</button>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新进程列表" ng-click="refresh()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="开启自动刷新" ng-click="auto_refresh_open()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-play"></i></button>
+                            <button class="btn btn-default" title="关闭自动刷新" ng-click="auto_refresh_close()" ng-disabled="!auto_refresh"><i class="glyphicon glyphicon-stop"></i></button>
+                        </div>
+                    </div>
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
-                                <th style="width:50px;" class="text-right">PID</th>
                                 <th style="width:50px;">状态</th>
+                                <th style="width:50px;" class="text-right">PID</th>
                                 <th>名称</th>
-                                <th>用户组</th>
-                                <th>主目录</th>
-                                <th>shell路径</th>
+                                <th>父进程</th>
+                                <th>FDSize</th>
+                                <th>峰值内存</th>
+                                <th>使用内存</th>
                                 <th style="width:130px">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="info in process.process">
-                                <td class="text-right">{{info.pid}}</td>
-                                <td ng-bind-html-unsafe="info.pid | process.status"></td>
-                                <td>{{info.name}}</td>
-                                <td>{{info.pid}}</td>
-                                <td>{{info.pid}}</td>
-                                <td>{{info.pid}}</td>
+                                <td ng-bind-html-unsafe="info.State | process.status"></td>
+                                <td class="text-right">{{info.Pid}}</td>
+                                <td>{{info.Name}}</td>
+                                <td>{{info.PPid}}</td>
+                                <td>{{info.FDSize}}</td>
+                                <td>{{info.VmPeak}}</td>
+                                <td>{{info.VmSize}}</td>
                                 <td>
-                                    <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">详情</button>
-                                    <button class="btn btn-default btn-xs" ng-click="processkillconfirm(info)">停止</button>
+                                    <button class="btn btn-default btn-xs" ng-click="process_detail(info)">查看</button>
+                                    <button class="btn btn-default btn-xs" ng-click="processkillconfirm(info)">终止</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -66,14 +75,56 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>停止进程 {{current_process.name}}</h3>
+                <h3>终止进程 {{delete_process.Name}}</h3>
             </div>
             <div class="modal-body">
-                <p>确定要停止进程 {{current_process.name}} [进程ID: {{current_process.pid}}] 吗？</p>
+                <p>确定终止进程 {{delete_process.Name}} [PID: {{delete_process.Pid}}] 吗？</p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
-                <button class="btn btn-danger" onclick="$('#processkillconfirm').modal('hide')" ng-click="processkill()">确认停止</button>
+                <button class="btn btn-danger" onclick="$('#processkillconfirm').modal('hide')" ng-click="processkill()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="process_detail_dialog" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>查看进程 {{current_process.Name}} (正在开发中)</h3>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">状态</th>
+                            <th style="width:50px;" class="text-right">PID</th>
+                            <th>名称</th>
+                            <th>父进程</th>
+                            <th>FDSize</th>
+                            <th>峰值内存</th>
+                            <th>使用内存</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td ng-bind-html-unsafe="current_process.State | process.status"></td>
+                            <td class="text-right">{{current_process.Pid}}</td>
+                            <td>{{current_process.Name}}</td>
+                            <td>{{current_process.PPid}}</td>
+                            <td>{{current_process.FDSize}}</td>
+                            <td>{{current_process.VmPeak}}</td>
+                            <td>{{current_process.VmSize}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <!-- <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button> -->
+                <button class="btn btn-default" onclick="$('#process_detail_dialog').modal('hide')" ng-click="process_detail_close()">关闭</button>
             </div>
         </div>
     </div>
