@@ -49,17 +49,6 @@ def get_name(pid):
                 with open(status, 'r') as f:
                     line = f.readline()
                     name = line.split()[1]
-        if not name:
-            stat = '/proc/%s/stat' % pid
-            if os.path.exists(stat):
-                with open(stat, 'r') as f:
-                    line = f.readline()
-                    line = line.split()[1]
-                    if line[0] == '(':
-                        line = line[1:]
-                    if line[-1] == ')':
-                        line = line[:-1]
-                    name = line
     elif os_type == 'Darwin':
         pass
     elif os_type == 'Windows':
@@ -97,18 +86,17 @@ def get_pids(name):
     '''get pids of a process'''
     if not name:
         return
+    res = []
     if os_type in ('Linux', 'Darwin'):
         s_cmd = u"/bin/ps auxww | grep %s | grep -v grep | awk '{print $2}'" % name
         status, result = getstatusoutput(s_cmd)
         if status == 0 and result:
-            return ' '.join(result.split()).split(' ')  # list
-        else:
-            return []
-    else:
-        return []
+            res = ' '.join(result.split()).split(' ')  # list
+    return res
 
 
 def get_cmdline(pid):
+    '''parse cmdline'''
     if not pid:
         return
     if os_type == 'Linux':
@@ -125,13 +113,13 @@ def get_base(pid):
     if not pid:
         return
     res = {
-        'Name': '',
-        'State': '',
-        'Pid': '',
-        'PPid': '',
-        'FDSize': '',
-        'VmPeak': '',
-        'VmSize': ''
+        'name': '',
+        'state': '',
+        'pid': '',
+        'ppid': '',
+        'fdsize': '',
+        'vmpeak': '',
+        'vmsize': ''
     }
     if os_type == 'Linux':
         if os.path.exists('/proc/%s/status' % pid):
@@ -140,83 +128,153 @@ def get_base(pid):
             while line:
                 out = line.strip()
                 if out.startswith('Name'):
-                    res['Name'] = out.split()[1]
+                    res['name'] = out.split()[1]
                 if out.startswith('State'):
-                    res['State'] = out.split()[1]
+                    res['state'] = out.split()[1]
                 if out.startswith('Pid'):
-                    res['Pid'] = out.split()[1]
+                    res['pid'] = out.split()[1]
                 if out.startswith('PPid'):
-                    res['PPid'] = out.split()[1]
+                    res['ppid'] = out.split()[1]
                 if out.startswith('FDSize'):
-                    res['FDSize'] = out.split()[1]
+                    res['fdsize'] = out.split()[1]
                 if out.startswith('VmPeak'):
-                    res['VmPeak'] = out.split()[1]
+                    res['vmpeak'] = out.split()[1]
                 if out.startswith('VmSize'):
-                    res['VmSize'] = out.split()[1]
+                    res['vmsize'] = out.split()[1]
                 # print(line),
                 line = f.readline()
-                if res['Name'] and res['State'] and res['Pid'] and res['PPid'] and res['FDSize'] and res['VmPeak'] and res['VmSize']:
+                if res['name'] and res['state'] and res['pid'] and res['ppid'] and res['fdsize'] and res['vmpeak'] and res['vmsize']:
                     break
             f.close()
-        return res
-    else:
-        return res
+    return res
 
 
-def get_detail(pid):
-    '''get process detail'''
+def get_file(pid):
+    '''get process file'''
     if not pid:
         return
-    return {'Name': 'test', 'Pid': pid}
+    return {'name': 'test', 'pid': pid}
 
 
 def get_environ(pid):
+    '''parse environ'''
     if not pid:
         return
+    res = ''
     if os_type == 'Linux':
         if os.path.exists('/proc/%s/environ' % pid):
             with open('/proc/%s/environ' % pid, 'r') as f:
                 line = f.readline()
-                return line.strip()
-        else:
-            return ''
+                res = line.strip()
+    return res
 
 
 def get_status(pid):
-    '''return the all status info'''
+    '''parse status'''
     if not pid:
         return
     res = {}
     if os_type == 'Linux':
-        if os.path.exists('/proc/%s/status' % pid):
-            f = open('/proc/%s/status' % pid, 'r')
-            line = f.readlines()
+        sts = '/proc/%s/status' % pid
+        # sts = '/Users/douzhenjiang/test/inpanel/test/proc_status.txt'
+        # if os_type in ('Linux', 'Darwin'):
+        if os.path.exists(sts):
+            f = open(sts, 'r')
+            line = f.readline()
             while line:
                 out = line.strip()
-                if out.startswith('Name'):
-                    res['Name'] = out.split()[1]
-                if out.startswith('State'):
-                    res['State'] = out.split()[1]
-                if out.startswith('Pid'):
-                    res['Pid'] = out.split()[1]
-                if out.startswith('PPid'):
-                    res['PPid'] = out.split()[1]
-                if out.startswith('FDSize'):
-                    res['FDSize'] = out.split()[1]
-                if out.startswith('VmPeak'):
-                    res['VmPeak'] = out.split()[1]
-                if out.startswith('VmSize'):
-                    res['VmSize'] = out.split()[1]
+                # print('aaaaaaasplit', out.split())
+                tmp = out.split()
+                if out.startswith('Uid') or out.startswith('Gid') or out.startswith('Vm'):
+                    res[tmp[0].split(':')[0].lower()] = tmp[1:]
+                elif out.startswith('State'):
+                    res[tmp[0].split(':')[0].lower()] = [tmp[1], tmp[2][1:-1].lower()]
+                else:
+                    res[tmp[0].split(':')[0].lower()] = tmp[1] if len(tmp) > 1 else ''
+                line = f.readline()
             f.close()
-        return res
-    else:
-        return res
+    return res
+
+
+def get_io(pid):
+    '''parse io'''
+    if not pid:
+        return
+    res = {}
+    if os_type == 'Linux':
+        sts = '/proc/%s/io' % pid
+        # sts = '/Users/douzhenjiang/test/inpanel/test/proc_io.txt'
+        # if os_type in ('Linux', 'Darwin'):
+        if os.path.exists(sts):
+            f = open(sts, 'r')
+            line = f.readline()
+            while line:
+                out = line.strip()
+                res[out.split()[0].split(':')[0].lower()] = out.split()[1]
+                line = f.readline()
+            f.close()
+    return res
+
+
+def get_memory(pid):
+    '''get memory, parse statm'''
+    if not pid:
+        return
+    res = ''
+    if os_type == 'Linux':
+        if os.path.exists('/proc/%s/statm' % pid):
+            with open('/proc/%s/statm' % pid, 'r') as f:
+                line = f.readline()
+                line = line.strip()
+                res = line.split()
+    return res
+
+
+def get_info(pid):
+    '''parse stat'''
+    if not pid:
+        return
+    res = {}
+    if os_type == 'Linux':
+        sts = '/proc/%s/stat' % pid
+        # sts = '/Users/douzhenjiang/test/inpanel/test/proc_stat.txt'
+        # if os_type in ('Linux', 'Darwin'):
+        if os.path.exists(sts):
+            f = open(sts, 'r')
+            line = f.readline()
+            while line:
+                out = line.strip()
+                res = out.split()
+                line = f.readline()
+            f.close()
+    return res
+
+
+def get_network(pid):
+    '''parse network'''
+    if not pid:
+        return
+    res = {}
+    if os_type == 'Linux':
+        sts = '/proc/%s/stat' % pid
+        # sts = '/Users/douzhenjiang/test/inpanel/test/proc_stat.txt'
+        # if os_type in ('Linux', 'Darwin'):
+        if os.path.exists(sts):
+            f = open(sts, 'r')
+            line = f.readline()
+            while line:
+                out = line.strip()
+                res = out.split()
+                line = f.readline()
+            f.close()
+    return res
 
 
 if __name__ == '__main__':
-    pids = get_list()
-    print(pids)
+    # pids = get_list()
+    # print(pids)
     # print('kill_process', kill_process('sshd'))
     # print('kill_pid00', kill_pids(11587))
     # print(get_pids('php'))
-    # get_state(4105)
+    print(get_status(1))
+    # print(get_base(2345))

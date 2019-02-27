@@ -621,12 +621,42 @@ class UtilsProcessHandler(RequestHandler):
             else:
                 self.write({'code': -1, 'msg': u'获取进程列表失败！'})
 
-        if sec == 'detail':
-            res = process.get_detail(pid)
+        if sec == 'info':
+            res = process.get_info(pid)
             if res:
                 self.write({'code': 0, 'data': res})
             else:
-                self.write({'code': -1, 'msg': u'获取进程详情失败！'})
+                self.write({'code': -1, 'msg': u'获取进程信息失败！'})
+        if sec == 'status':
+            res = process.get_status(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程状态信息失败！'})
+        if sec == 'file':
+            res = process.get_file(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程文件使用情况失败！'})
+        if sec == 'io':
+            res = process.get_io(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程IO状态失败！'})
+        if sec == 'memory':
+            res = process.get_memory(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程内存使用情况失败！'})
+        if sec == 'network':
+            res = process.get_network(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程网络状态失败！'})
 
     def post(self, sec, pids):
         self.authed()

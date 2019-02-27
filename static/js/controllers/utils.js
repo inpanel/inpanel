@@ -195,14 +195,15 @@ var UtilsProcessCtrl = [
         Module.initSection(enabled_sections[0]);
         $scope.loaded = false;
         $scope.init_process = true;
-        $scope.current_process = {};
-        $scope.delete_process = {};
+        $scope.delete_process = '';
         $scope.time_interval = 1000;
         $scope.auto_refresh = false;
         $scope.process = {
             process: [],
             total: 0
         };
+        $scope.current_process = {};
+        $scope.current_process_loaded = {'info': false, 'status': false, 'file': false, 'io': false, 'memory': false, 'network': false}
 
         $scope.load = function () {
             $scope.loaded = true;
@@ -244,26 +245,62 @@ var UtilsProcessCtrl = [
             console.log('待开发功能', init)
         }
         $scope.processkillconfirm = function(i) {
-            $scope.delete_process = i || {};
+            $scope.delete_process = i || '';
             $('#processkillconfirm').modal();
         };
         $scope.processkill = function () {
-            if ($scope.delete_process && $scope.delete_process['Pid']) {
-                Request.post('/utils/process/kill/' + $scope.delete_process['Pid']);
+            if ($scope.delete_process && $scope.delete_process['pid']) {
+                Request.post('/utils/process/kill/' + $scope.delete_process['pid'], function (res) {
+                    $scope.delete_process = '';
+                    $scope.refresh();
+                });
             }
         };
         $scope.process_detail = function (p) {
-            if (p && p['Pid']) {
+            if (p && p['pid']) {
                 $('#process_detail_dialog').modal();
-                $scope.current_process = p;
-                $scope.load_detial(p['Pid']);
+                $scope.current_process.name = p['name'];
+                $scope.current_process.pid = p['pid'];
+                $scope.load_detial(p['pid']);
             }
         };
         $scope.load_detial = function (pid) {
             if (pid) {
-                Request.get('/utils/process/detail/' + pid, function (res) {
+                $scope.current_process_loaded = {'info': false, 'status': false, 'file': false, 'io': false, 'memory': false, 'network': false}
+                Request.get('/utils/process/info/' + pid, function (res) {
+                    $scope.current_process_loaded.info = true;
                     if (res && res.code == 0) {
-                        $scope.current_process = res.data;
+                        $scope.current_process.info = res.data;
+                    }
+                });
+                Request.get('/utils/process/status/' + pid, function (res) {
+                    $scope.current_process_loaded.status = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.status = res.data;
+                    }
+                });
+                Request.get('/utils/process/file/' + pid, function (res) {
+                    $scope.current_process_loaded.file = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.file = res.data;
+                    }
+                });
+                Request.get('/utils/process/io/' + pid, function (res) {
+                    $scope.current_process_loaded.io = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.io = res.data;
+                    }
+                });
+                Request.get('/utils/process/memory/' + pid, function (res) {
+                    $scope.current_process_loaded.memory = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.memory = res.data;
+                    }
+                });
+                Request.get('/utils/process/network/' + pid, function (res) {
+                    $scope.current_process_loaded.network = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.network = res.data;
                     }
                 });
             }

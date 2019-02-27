@@ -10,88 +10,80 @@
 
     <div class="tabbable">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='user'"><a href="#user" ng-click="sec('user')" data-toggle="tab">用户管理</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='group'"><a href="#group" ng-click="sec('group')" data-toggle="tab">用户组管理</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='user'"><a href="#user" ng-click="sec('user')" data-toggle="tab">用户</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='group'"><a href="#group" ng-click="sec('group')" data-toggle="tab">用户组</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='user'" id="user" ng-init="loadUsers()">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <div class="panel-title">
-                            <i class="glyphicon glyphicon-list-alt"></i>
-                            <span> 用户管理</span>
-                            <div class="pull-right">
-                                <button class="btn btn-default btn-xs" ng-click="useraddconfirm()"><i class="glyphicon glyphicon-plus"></i> 添加新用户</button>
-                            </div>
-                        </div>
+                <div>
+                    <div class="pull-left"><h5><i class="glyphicon glyphicon-list-alt"></i> 用户列表</h5></div>
+                    <div class="pull-right">
+                        <button class="btn btn-default btn-sm" title="当前用户数量" ng-show="users && users.length">数量: {{users.length}}</button>
+                        <button class="btn btn-default btn-sm" ng-click="useraddconfirm()" title="添加新用户"><i class="glyphicon glyphicon-plus"></i></button>
                     </div>
-                    <table class="table table-hover table-bordered">
-                        <thead>
-                            <tr>
-                                <th style="width:50px" class="text-right">ID</th>
-                                <th style="width:40px">状态</th>
-                                <th>用户名</th>
-                                <th>备注</th>
-                                <th>用户组</th>
-                                <th>主目录</th>
-                                <th>SHELL路径</th>
-                                <th style="width:130px">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="user in users">
-                                <td class="text-right">{{user.pw_uid}}</td>
-                                <td ng-bind-html-unsafe="user.lock | user.lock"></td>
-                                <td>{{user.pw_name}}</td>
-                                <td>{{user.pw_gecos}}</td>
-                                <td>{{user.pw_gname}}</td>
-                                <td>{{user.pw_dir}}</td>
-                                <td>{{user.pw_shell}}</td>
-                                <td>
-                                    <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
-                                    <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="width:50px" class="text-right">ID</th>
+                            <th style="width:40px">状态</th>
+                            <th>用户名</th>
+                            <th>备注</th>
+                            <th>用户组</th>
+                            <th>主目录</th>
+                            <th>SHELL路径</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="user in users">
+                            <td class="text-right">{{user.pw_uid}}</td>
+                            <td ng-bind-html-unsafe="user.lock | user.lock"></td>
+                            <td>{{user.pw_name}}</td>
+                            <td>{{user.pw_gecos}}</td>
+                            <td>{{user.pw_gname}}</td>
+                            <td>{{user.pw_dir}}</td>
+                            <td>{{user.pw_shell}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='group'" id="group" ng-init="loadGroups()">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <div class="panel-title">
-                            <i class="glyphicon glyphicon-list-alt"></i>
-                            <span> 用户组管理</span>
-                            <div class="pull-right">
-                                <button class="btn btn-default btn-xs" ng-click="groupaddconfirm()"><i class="glyphicon glyphicon-plus"></i> 添加新用户组</button>
-                            </div>
-                        </div>
+                <div>
+                    <div class="pull-left"><h5><i class="glyphicon glyphicon-list-alt"></i> 用户组列表</h5></div>
+                    <div class="pull-right">
+                        <button class="btn btn-default btn-sm" title="当前用户组数量" ng-show="groups && groups.length">数量: {{groups.length}}</button>
+                        <button class="btn btn-default btn-sm" ng-click="groupaddconfirm()" title="添加新用户组"><i class="glyphicon glyphicon-plus"></i></button>
                     </div>
-                    <table class="table table-hover table-bordered">
-                        <thead>
-                            <tr>
-                                <th style="width:50px" class="text-right">ID</th>
-                                <th>用户组</th>
-                                <th>组成员</th>
-                                <th style="width:260px">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="group in groups">
-                                <td class="text-right">{{group.gr_gid}}</td>
-                                <td>{{group.gr_name}}</td>
-                                <td><span ng-repeat="member in group.gr_mem">{{member}}<span ng-show="$index<group.gr_mem.length-1">, </span></span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-default btn-xs" ng-click="groupmodconfirm($index)">修改</button>
-                                    <button class="btn btn-default btn-xs" ng-click="groupdelconfirm($index)">删除</button>
-                                    <button class="btn btn-default btn-xs" ng-click="groupmemsaddconfirm($index)">添加成员</button>
-                                    <button class="btn btn-default btn-xs" ng-click="groupmemsdelconfirm($index)" ng-disabled="group.gr_mem.length==0">删除成员</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="width:50px" class="text-right">ID</th>
+                            <th>用户组</th>
+                            <th>组成员</th>
+                            <th style="width:260px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="group in groups">
+                            <td class="text-right">{{group.gr_gid}}</td>
+                            <td>{{group.gr_name}}</td>
+                            <td><span ng-repeat="member in group.gr_mem">{{member}}<span ng-show="$index<group.gr_mem.length-1">, </span></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="groupmodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="groupdelconfirm($index)">删除</button>
+                                <button class="btn btn-default btn-xs" ng-click="groupmemsaddconfirm($index)">添加成员</button>
+                                <button class="btn btn-default btn-xs" ng-click="groupmemsdelconfirm($index)" ng-disabled="group.gr_mem.length==0">删除成员</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
