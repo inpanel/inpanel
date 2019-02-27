@@ -1,4 +1,4 @@
-<div navbar ng-init="currentItem='utils.partition'"></div>
+<div navbar ng-init="currentItem='utils.storage'"></div>
 <div ng-show="!loaded">
     <div loading></div>
 </div>
@@ -20,7 +20,10 @@
                 </div>
                 <div style="display:none;" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
                     <div style="display:none" ng-show="diskinfo['count'] > 0">
-                        <h5>物理分区管理</h5>
+                        <div>
+                            <h5 class="pull-left">物理分区管理</h5>
+                            <button class="btn btn-default btn-sm pull-right" title="刷新磁盘列表" ng-click="get_diskinfo()" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
+                        </div>
                         <table class="table table-bordered table-hover">
                             <tbody ng-repeat="partition in diskinfo['partitions']">
                                 <tr class="warning">
@@ -97,7 +100,7 @@
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-default" title="刷新磁盘列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加网络磁盘" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></button>
+                            <a class="btn btn-default" href="#/storage/remote/new" title="添加网络磁盘" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></a>
                         </div>
                     </div>
                     <table class="table table-hover table-bordered">
@@ -121,7 +124,7 @@
                                 <td>10.4G</td>
                                 <td>/data</td>
                                 <td>
-                                    <button class="btn btn-default btn-xs">编辑</button>
+                                    <a class="btn btn-default btn-xs" href="#/storage/remote/edit">编辑</a>
                                     <button class="btn btn-default btn-xs">删除</button>
                                 </td>
                             </tr>
@@ -133,7 +136,7 @@
                                 <td>500M/1G</td>
                                 <td>/important/backup</td>
                                 <td>
-                                    <button class="btn btn-default btn-xs">编辑</button>
+                                    <a class="btn btn-default btn-xs" href="#/storage/remote/edit_webdav_abc.com">编辑</a>
                                     <button class="btn btn-default btn-xs">删除</button>
                                 </td>
                             </tr>

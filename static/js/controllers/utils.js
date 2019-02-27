@@ -645,13 +645,14 @@ var UtilsTimeCtrl = [
     }
 ];
 
-var UtilsPartitionCtrl = [
+var StorageCtrl = [
     '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
     function($scope, Module, Timeout, Request, Message, Backend) {
-        var module = 'utils.partition';
+        var module = 'utils.storage';
         Module.init(module, '磁盘管理');
         $scope.loaded = false;
         $scope.waiting = true;
+        $scope.init_local = true;
         var section = Module.getSection();
         var enabled_sections = ['local', 'remote'];
         Module.initSection(enabled_sections[0]);
@@ -662,23 +663,32 @@ var UtilsPartitionCtrl = [
         };
 
         $scope.tab_sec = function (section) {
-            var init = Module.getSection() != section
+            console.log(Module.getSection(), section);
             section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            var init = Module.getSection() != section
             $scope.sec(section);
             Module.setSection(section);
             $scope['load_' + section](init);
         };
 
         $scope.load_local = function(init) {
-            console.log('加载本地磁盘', init);
+            if (!init && !$scope.init_local) {
+                return; // Prevent duplicate requests
+            }
+            $scope.get_diskinfo();
+        };
+        $scope.load_remote = function(init) {
+            console.log('加载网络磁盘', init);
+        };
+        $scope.get_diskinfo = function () {
             Request.get('/query/server.diskinfo', function(data) {
                 if (!$scope.loaded) $scope.loaded = true;
                 $scope.diskinfo = data['server.diskinfo'];
                 $scope.waiting = false;
+                if ($scope.init_local) {
+                    $scope.init_local = false;
+                }
             });
-        };
-        $scope.load_remote = function(init) {
-            console.log('加载网络磁盘', init);
         };
         $scope.swaponconfirm = function(devname) {
             $scope.devname = devname;
@@ -689,7 +699,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/swapon',
-                '/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.load_local }
+                '/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.swapoffconfirm = function(devname) {
@@ -701,7 +711,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/swapoff',
-                '/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.load_local }
+                '/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.umountconfirm = function(devname) {
@@ -713,7 +723,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/umount',
-                '/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.load_local }
+                '/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.mountconfirm = function(devname, fstype) {
@@ -747,7 +757,7 @@ var UtilsPartitionCtrl = [
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
                     'fstype': $scope.fstype
-                }, { 'success': $scope.load_local }
+                }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.formatconfirm = function(devname) {
@@ -765,7 +775,7 @@ var UtilsPartitionCtrl = [
                 '/backend/format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
-                }, { 'success': $scope.load_local }
+                }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.addpartconfirm = function(devname, unpartition) {
@@ -783,7 +793,7 @@ var UtilsPartitionCtrl = [
                 'unit': $scope.unit
             }, function(data) {
                 if (data.code == 0)
-                    $scope.load_local();
+                    $scope.get_diskinfo();
                 else
                     $scope.waiting = false;
             });
@@ -800,7 +810,7 @@ var UtilsPartitionCtrl = [
                 'devname': $scope.devname
             }, function(data) {
                 if (data.code == 0)
-                    $scope.load_local();
+                    $scope.get_diskinfo();
                 else
                     $scope.waiting = false;
             });
@@ -817,7 +827,7 @@ var UtilsPartitionCtrl = [
                 'devname': $scope.devname
             }, function(data) {
                 if (data.code == 0)
-                    Timeout($scope.load_local, 1000, module);
+                    Timeout($scope.get_diskinfo, 1000, module);
                 else
                     $scope.waiting = false;
             });
@@ -825,7 +835,7 @@ var UtilsPartitionCtrl = [
     }
 ];
 
-var UtilsAutoFMCtrl = [
+var StorageAutoFMCtrl = [
     '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
     function($scope, Module, Timeout, Request, Message, Backend) {
         var module = 'utils.autofm';
@@ -972,7 +982,7 @@ var UtilsAutoFMCtrl = [
     }
 ];
 
-var UtilsMoveDataCtrl = [
+var StorageMoveDataCtrl = [
     '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
     function($scope, Module, Timeout, Request, Message, Backend) {
         var module = 'utils.movedata';
@@ -1256,3 +1266,41 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
     }
 ];
+
+var StorageRemoteCtrl = [
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend',
+    function($scope, Module, $routeParams,Timeout, Request, Message, Backend) {
+        var module = 'utils.remote';
+        Module.init(module, '网络磁盘');
+        $scope.loaded = false;
+        $scope.loading_info = true;
+        $scope.action = '';
+        $scope.storage_info = {};
+        console.log('action', $routeParams.action)
+        if ($routeParams.section && $routeParams.section.indexOf('edit_') == 0) {
+            $scope.action = 'edit';
+        } else {
+            $scope.action = 'new';
+            $scope.loading_info = false;
+        }
+        $scope.load = function () {
+            $scope.loaded = true;
+            if ($scope.action == 'edit') {
+                var tmp = $routeParams.section.split('_');
+                console.log(tmp);
+                $scope.storage_info = {
+                    'type': tmp[1],
+                    'name': tmp[2]
+                };
+                $scope.load_info();
+            }
+        };
+        $scope.load_info = function () {
+            Timeout(function() {
+                $scope.loading_info = false;
+                $scope.storage_info['name'] = '_test';
+            }, 600, module);
+        };
+    }
+];
+

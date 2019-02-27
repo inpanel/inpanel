@@ -212,7 +212,8 @@ yum_pkg_alias = {
     'GeoIP'         : ['GeoIP'],
     'mono'          : ['mono'],
     'ntfs-3g'       : ['ntfs-3g'],
-    'ntfsprogs'     : ['ntfsprogs']
+    'ntfsprogs'     : ['ntfsprogs'],
+    'davfs2'        : ['davfs2']
 }
 
 # Relative available packages.
@@ -704,6 +705,9 @@ yum_pkg_relatives = {
         'ntfsprogs'                     : {'default': True, 'base': True},
         'ntfsprogs-devel'               : {'default': False, 'isext': True},
         'ntfsprogs-gnomevfs'            : {'default': False, 'isext': True}
+    },
+    'davfs2'                        : {
+        'davfs2'                        : {'default': True, 'base': True}
     }
 }
 

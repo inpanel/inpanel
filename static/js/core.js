@@ -55,16 +55,17 @@ config(['$routeProvider', function ($routeProvider) {
     when('/utils/process', _r('utils/process', UtilsProcessCtrl)).
     when('/utils/network', _r('utils/network', UtilsNetworkCtrl)).
     when('/utils/time', _r('utils/time', UtilsTimeCtrl)).
-    when('/utils/partition', _r('utils/partition', UtilsPartitionCtrl)).
-    when('/utils/autofm', _r('utils/autofm', UtilsAutoFMCtrl)).
-    when('/utils/movedata', _r('utils/movedata', UtilsMoveDataCtrl)).
+    when('/storage', _r('storage/index', StorageCtrl)).
+    when('/storage/remote/:section', _r('storage/remote', StorageRemoteCtrl)).
+    when('/storage/autofm', _r('storage/autofm', StorageAutoFMCtrl)).
+    when('/storage/movedata', _r('storage/movedata', StorageMoveDataCtrl)).
+    when('/storage/backup', _r('storage/backup', BackupCtrl)).
     when('/utils/ssl', _r('utils/ssl', UtilsSSLCtrl)).
     when('/ecs', _r('ecs/ecs', ECSCtrl)).
     when('/ecs/index', _r('ecs/index', ECSIndexCtrl)).
     when('/ecs/account', _r('ecs/account', ECSAccountCtrl)).
     when('/ecs/:section', _r('ecs/setting', ECSSettingCtrl)).
     when('/setting', _r('setting', SettingCtrl)).
-    when('/backup', _r('backup', BackupCtrl)).
     when('/secure', _r('secure', SecureCtrl)).
     when('/application', _r('application/index', ApplicationCtrl)).
     when('/application/shadowsocks', _r('application/shadowsocks', ApplicationShadowsocksCtrl)).
