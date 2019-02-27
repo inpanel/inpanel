@@ -649,16 +649,36 @@ var UtilsPartitionCtrl = [
     '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
     function($scope, Module, Timeout, Request, Message, Backend) {
         var module = 'utils.partition';
-        Module.init(module, '磁盘分区');
+        Module.init(module, '磁盘管理');
         $scope.loaded = false;
         $scope.waiting = true;
+        var section = Module.getSection();
+        var enabled_sections = ['local', 'remote'];
+        Module.initSection(enabled_sections[0]);
 
-        $scope.loadDiskinfo = function() {
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+
+        $scope.load_local = function(init) {
+            console.log('加载本地磁盘', init);
             Request.get('/query/server.diskinfo', function(data) {
                 if (!$scope.loaded) $scope.loaded = true;
                 $scope.diskinfo = data['server.diskinfo'];
                 $scope.waiting = false;
             });
+        };
+        $scope.load_remote = function(init) {
+            console.log('加载网络磁盘', init);
         };
         $scope.swaponconfirm = function(devname) {
             $scope.devname = devname;
@@ -669,7 +689,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/swapon',
-                '/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.loadDiskinfo }
+                '/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.load_local }
             );
         };
         $scope.swapoffconfirm = function(devname) {
@@ -681,7 +701,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/swapoff',
-                '/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.loadDiskinfo }
+                '/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.load_local }
             );
         };
         $scope.umountconfirm = function(devname) {
@@ -693,7 +713,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/umount',
-                '/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.loadDiskinfo }
+                '/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.load_local }
             );
         };
         $scope.mountconfirm = function(devname, fstype) {
@@ -727,7 +747,7 @@ var UtilsPartitionCtrl = [
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
                     'fstype': $scope.fstype
-                }, { 'success': $scope.loadDiskinfo }
+                }, { 'success': $scope.load_local }
             );
         };
         $scope.formatconfirm = function(devname) {
@@ -745,7 +765,7 @@ var UtilsPartitionCtrl = [
                 '/backend/format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
-                }, { 'success': $scope.loadDiskinfo }
+                }, { 'success': $scope.load_local }
             );
         };
         $scope.addpartconfirm = function(devname, unpartition) {
@@ -763,7 +783,7 @@ var UtilsPartitionCtrl = [
                 'unit': $scope.unit
             }, function(data) {
                 if (data.code == 0)
-                    $scope.loadDiskinfo();
+                    $scope.load_local();
                 else
                     $scope.waiting = false;
             });
@@ -780,7 +800,7 @@ var UtilsPartitionCtrl = [
                 'devname': $scope.devname
             }, function(data) {
                 if (data.code == 0)
-                    $scope.loadDiskinfo();
+                    $scope.load_local();
                 else
                     $scope.waiting = false;
             });
@@ -797,7 +817,7 @@ var UtilsPartitionCtrl = [
                 'devname': $scope.devname
             }, function(data) {
                 if (data.code == 0)
-                    Timeout($scope.loadDiskinfo, 1000, module);
+                    Timeout($scope.load_local, 1000, module);
                 else
                     $scope.waiting = false;
             });
