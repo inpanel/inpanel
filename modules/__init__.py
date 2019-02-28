@@ -14,6 +14,7 @@ __all__ = [
     'acme',
     'aliyuncs',
     'apache',
+    'apt',
     'certificate',
     'config',
     'configloader',
