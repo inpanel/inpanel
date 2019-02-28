@@ -14,24 +14,26 @@
         <div class="well" ng-show="loading_info">
             <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载详情，请稍候...
         </div>
-        <div class="form-group" ng-show="!loading_info">
-            类型：{{storage_info.type}}
-            名称：{{storage_info.name}}
-            <div class="form-inline">
+        <div class="form-horizontal form-horizontal-small" ng-show="!loading_info">
+            <hr/>
+            <p>类型：{{storage_info.type}}, 名称：{{storage_info.name}}</p>
+            <div class="form-group form-inline">
                 <label class="col-sm-2 control-label">磁盘类别</label>
-                <div class="controls">
+                <div class="col-sm-10">
                     <select class="form-control" ng-model="storage_info.type">
                         <option value="ftp">FTP</option>
+                        <option value="nfs">NFS</option>
                         <option value="webdav">WebDAV</option>
                     </select>
                 </div>
             </div>
-            <div class="form-inline">
+            <div class="form-group form-inline">
                 <label class="col-sm-2 control-label">磁盘名称</label>
-                <div class="controls">
+                <div class="col-sm-10">
                     <input class="form-control" ng-model="storage_info.name" type="text" placeholder="名称">
                 </div>
             </div>
+            <hr/>
             <p>
                 <button class="btn btn-primary" ng-show="action=='new'">保存新增</button>
                 <button class="btn btn-primary" ng-show="action=='edit'">保存修改</button>
@@ -39,7 +41,6 @@
                 <a class="btn btn-default" href="#/storage?s=remote">取消返回</a>
             </p>
         </div>
-
     </div>
 
 </div>

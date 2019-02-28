@@ -56,7 +56,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/utils/network', _r('utils/network', UtilsNetworkCtrl)).
     when('/utils/time', _r('utils/time', UtilsTimeCtrl)).
     when('/storage', _r('storage/index', StorageCtrl)).
-    when('/storage/remote/:section', _r('storage/remote', StorageRemoteCtrl)).
+    when('/storage/remote/:section', _r('storage/remote/index', StorageRemoteCtrl)).
     when('/storage/autofm', _r('storage/autofm', StorageAutoFMCtrl)).
     when('/storage/movedata', _r('storage/movedata', StorageMoveDataCtrl)).
     when('/storage/backup', _r('storage/backup', BackupCtrl)).
