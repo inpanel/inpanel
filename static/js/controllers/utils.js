@@ -1268,14 +1268,23 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
 ];
 
 var StorageRemoteCtrl = [
-    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend',
-    function($scope, Module, $routeParams,Timeout, Request, Message, Backend) {
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
+    function($scope, Module, $routeParams,Timeout, Request, Message, Backend, $location) {
         var module = 'utils.remote';
         Module.init(module, '网络磁盘');
         $scope.loaded = false;
         $scope.loading_info = true;
         $scope.action = '';
-        $scope.storage_info = {};
+        $scope.protocol = 'ftp';
+        $scope.storage_info = {
+            'name': '',
+            'address': '',
+            'account': '',
+            'password': '',
+            'protocol': ''
+        };
+        $scope.checking_davfs2 = true;
+        $scope.status_davfs2 = null;
         console.log('action', $routeParams.action)
         if ($routeParams.section && $routeParams.section.indexOf('edit_') == 0) {
             $scope.action = 'edit';
@@ -1286,21 +1295,120 @@ var StorageRemoteCtrl = [
         $scope.load = function () {
             $scope.loaded = true;
             if ($scope.action == 'edit') {
-                var tmp = $routeParams.section.split('_');
-                console.log(tmp);
-                $scope.storage_info = {
-                    'type': tmp[1],
-                    'name': tmp[2]
-                };
                 $scope.load_info();
             }
         };
         $scope.load_info = function () {
+            var tmp = $routeParams.section.split('_');
+            // console.log(tmp);
+            $scope.protocol = tmp[1];
             Timeout(function() {
                 $scope.loading_info = false;
-                $scope.storage_info['name'] = '_test';
+                // $scope.storage_info['name'] = '坚果云测试用';
             }, 600, module);
         };
+        $scope.storage_add = function () {
+            if ($scope.protocol == 'webdav') {
+                console.log('storage_add/webdav');
+                // if (!$scope.status_davfs2) {
+                //     $scope.loadDavfs2($scope.storage_add);
+                //     return;
+                // }
+                if (!$scope.protocol || !$scope.storage_info['address']) {
+                    return;
+                }
+                var data = {
+                    'name': $scope.storage_info['name'],
+                    'address': $scope.storage_info['address'],
+                    'account': $scope.storage_info['account'],
+                    'password': $scope.storage_info['password'],
+                    'protocol': $scope.protocol,
+                };
+                console.log('提交数据', data);
+                Timeout(function() {
+                    $scope.loading_info = false;
+                    // $scope.storage_info['name'] = '_test';
+                    $location.path('/storage/remote/edit_' + encodeURIComponent(data.protocol + '_' + data.address));
+                }, 600, module);
+            }
+        };
+        $scope.storage_update = function () {
+            console.log('保存');
+        };
+
+        $scope.loadDavfs2 = function(callback) {
+            Request.get('/query/service.davfs2', function(data) {
+                $scope.checking_davfs2 = false;
+                if (data['service.davfs2']) {
+                    $scope.status_davfs2 = data['service.davfs2']['status'];
+                    if (callback) {
+                        callback();
+                    };
+                } else {
+                    $scope.installMessage = 'WebDAV 需要使用 davfs2 服务，您当前尚未安装该服务。<br>是否安装 ？';
+                    $scope.showInstallBtn = true;
+                }
+            });
+        };
+        $scope.install_davfs2 = function() {
+            $scope.installMessage = '正在安装支持，请稍候...'
+            $scope.showInstallBtn = false;
+            Backend.call(
+                $scope,
+                module,
+                '/backend/yum_install',
+                '/backend/yum_install_epel_davfs2', {
+                    'repo': 'epel',
+                    'pkg': 'davfs2'
+                }, {
+                    'wait': function(data) {
+                        $scope.installMessage = data.msg;
+                    },
+                    'success': function(data) {
+                        $scope.installMessage = data.msg;
+                        Timeout($scope.loadDavfs2, 3000, module);
+                    },
+                    'error': function(data) {
+                        $scope.installMessage = data.msg;
+                        Timeout($scope.loadDavfs2, 3000, module);
+                    }
+                },
+                true
+            );
+        };
+        $scope.start_davfs2 = function() {
+            $scope.startMessage = '正在启动，请稍候...'
+            $scope.showStartBtn = false;
+            Backend.call(
+                $scope,
+                module,
+                '/backend/service_start',
+                '/backend/service_start_davfs2', {
+                    name: 'Davfs2',
+                    service: 'davfs2'
+                }, {
+                    'wait': function(data) {
+                        $scope.startMessage = data.msg;
+                    },
+                    'success': function(data) {
+                        $scope.startMessage = data.msg;
+                        Timeout(function() {
+                            // startInit();
+                            $scope.loadDavfs2();
+                        }, 3000, module);
+                    },
+                    'error': function(data) {
+                        $scope.startMessage = data.msg;
+                        Timeout(function() {
+                            // startInit();
+                            $scope.loadDavfs2();
+                        }, 3000, module);
+                    }
+                },
+                true
+            );
+        };
+
     }
 ];
 
