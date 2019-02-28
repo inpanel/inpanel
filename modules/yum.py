@@ -214,7 +214,9 @@ yum_pkg_alias = {
     'ntfs-3g': ['ntfs-3g'],
     'ntfsprogs': ['ntfsprogs'],
     'davfs2': ['davfs2'],
-    'nfs': ['nfs', 'nfs-utils']
+    'nfs': ['nfs'],
+    'cifs': ['cifs'],
+    'samba': ['samba', 'samba4']
 }
 
 # Relative available packages.
@@ -715,6 +717,34 @@ yum_pkg_relatives = {
         'nfs-utils': {'default': True, 'base': True},
         'nfs-utils-lib': {'default': False, 'isext': True},
         'nfs-utils-lib-devel': {'default': True, 'isext': True},
+    },
+    'cifs': {
+        'cifs-utils': {'default': True, 'base': True},
+    },
+    'samba': {
+        'samba':            {'default': True, 'base': True},
+        'samba-client':     {'default': True, 'isext': True},
+        'samba-common':     {'default': True, 'base': True},
+        'samba-doc':        {'default': False, 'isext': True},
+        'samba-glusterfs':  {'default': False, 'isext': True},
+        'samba-swat':       {'default': False, 'isext': True},
+        'samba-winbind':    {'default': False, 'isext': True},
+        'samba-winbind-clients': {'default': False, 'isext': True},
+        'samba-winbind-krb5-locator': {'default': False, 'isext': True},
+    },
+    'samba4': {
+        'samba4':           {'default': True, 'base': True},
+        'samba4-client':    {'default': True, 'isext': True},
+        'samba4-common':    {'default': True, 'base': True},
+        'samba4-devel':     {'default': False, 'isext': True},
+        'samba4-libs':      {'default': False, 'isext': True},
+        'samba4-python':    {'default': False, 'isext': True},
+        'samba4-doc':       {'default': False, 'isext': True},
+        'samba4-glusterfs': {'default': False, 'isext': True},
+        'samba4-swat':      {'default': False, 'isext': True},
+        'samba4-winbind':   {'default': False, 'isext': True},
+        'samba4-winbind-clients': {'default': False, 'isext': True},
+        'samba4-winbind-krb5-locator': {'default': False, 'isext': True},
     }
 }
 

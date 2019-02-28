@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for service management.'''
+'''Module for Service Management.'''
 
 import glob
 import os
@@ -16,31 +16,34 @@ import subprocess
 
 
 class Service(object):
+
     '''supported service operate script'''
-    support_services = [
-        'inpanel',
-        'nginx',
-        'httpd',
-        'vsftpd',
-        'mysqld',
-        'redis',
-        'memcached',
-        'mongod',
-        'php-fpm',
-        'postfix',
-        'sendmail',
-        'sshd',
-        'iptables',
-        'crond',
-        'ntpd',
-        'named',
-        'lighttpd',
-        'proftpd',
-        'pure-ftpd'
-    ]
+    service_items = {
+        'inpanel'       : False,
+        'nginx'         : False,
+        'httpd'         : False,
+        'vsftpd'        : False,
+        'mysqld'        : False,
+        'redis'         : False,
+        'memcached'     : False,
+        'mongod'        : False,
+        'php-fpm'       : False,
+        'sendmail'      : False,
+        'postfix'       : False,
+        'sshd'          : False,
+        'iptables'      : False,
+        'crond'         : False,
+        'ntpd'          : False,
+        'named'         : False,
+        'lighttpd'      : False,
+        'proftpd'       : False,
+        'pure-ftpd'     : False,
+        'smb'           : False
+    }
 
     pidnames = {
-        'sendmail': ('sm-client', ),
+        'sendmail': ['sm-client'],
+        'smb': ['smbd']
     }
 
     @classmethod
@@ -83,12 +86,11 @@ class Service(object):
                 return 'stopped'
 
         if pidfile:
-            with file(pidfile) as f:
+            with open(pidfile) as f:
                 pid = f.readline().strip()
             if not pid:
                 return 'stopped'
-            proc = '/proc/%s' % pid
-            if not os.path.exists(proc):
+            if not os.path.exists('/proc/%s' % pid):
                 return 'stopped'
 
         return 'running'

@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''The Web Module for InPanel.'''
+'''Module for Web Querying'''
 
 import base64
 import binascii
@@ -321,7 +321,7 @@ class LogoutHandler(RequestHandler):
 
 
 class SitePackageHandler(RequestHandler):
-    """Interface for quering site packages information.
+    """Interface for querying site packages information.
     """
 
     def get(self, op):
@@ -410,7 +410,7 @@ class SitePackageHandler(RequestHandler):
 
 
 class QueryHandler(RequestHandler):
-    """Interface for quering server information.
+    """Interface for querying server information.
     
     Query one or more items, seperated by comma.
     Examples:
@@ -422,7 +422,7 @@ class QueryHandler(RequestHandler):
     """
     def get(self, items):
         self.authed()
-        
+
         items = items.split(',')
         qdict = {'server': [], 'service': [], 'config': [], 'tool': []}
         for item in items:
@@ -447,44 +447,6 @@ class QueryHandler(RequestHandler):
                 if qdict[sec] == '**': continue
                 qdict[sec].append(q)
 
-        # item : realtime update
-        server_items = {
-            'hostname'      : False,
-            'datetime'      : True,
-            'uptime'        : True,
-            'loadavg'       : True,
-            'cpustat'       : True,
-            'meminfo'       : True,
-            'mounts'        : True, 
-            'netifaces'     : True,
-            'nameservers'   : True,
-            'distribution'  : False,
-            'uname'         : False, 
-            'cpuinfo'       : False,
-            'diskinfo'      : False,
-            'virt'          : False,
-        }
-        service_items = {
-            'inpanel'      : False,
-            'nginx'         : False,
-            'httpd'         : False,
-            'vsftpd'        : False,
-            'mysqld'        : False,
-            'redis'         : False,
-            'memcached'     : False,
-            'mongod'        : False,
-            'php-fpm'       : False,
-            'sendmail'      : False,
-            'postfix'       : False,
-            'sshd'          : False,
-            'iptables'      : False,
-            'crond'         : False,
-            'ntpd'          : False,
-            'named'         : False,
-            'lighttpd'      : False,
-            'proftpd'       : False,
-            'pure-ftpd'     : False,
-        }
         config_items = {
             'fstab'         : False,
         }
@@ -495,25 +457,26 @@ class QueryHandler(RequestHandler):
         result = {}
         for sec, qs in qdict.iteritems():
             if sec == 'server':
+                server_items = ServerInfo.server_items
                 if qs == '**':
                     qs = server_items.keys()
                 elif qs == '*':
                     qs = [item for item, relup in server_items.iteritems() if relup==True]
                 for q in qs:
-                    if not server_items.has_key(q): continue
+                    if q not in server_items: continue
                     result['%s.%s' % (sec, q)] = getattr(ServerInfo, q)()
             elif sec == 'service':
+                service_items = Service.service_items
                 autostart_services = Service.autostart_list()
                 if qs == '**':
                     qs = service_items.keys()
                 elif qs == '*':
                     qs = [item for item, relup in service_items.iteritems() if relup==True]
                 for q in qs:
-                    if not service_items.has_key(q): continue
+                    if q not in service_items:
+                        continue
                     status = Service.status(q)
-                    result['%s.%s' % (sec, q)] = status and {        'status': status,
-                        'autostart': q in autostart_services,
-                    } or None
+                    result['%s.%s' % (sec, q)] = status and { 'status': status, 'autostart': q in autostart_services,} or None
             elif sec == 'config':
                 for q in qs:
                     params = []
@@ -2279,7 +2242,7 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
                     return
 
-            if service not in Service.support_services:
+            if service not in Service.service_items:
                 self.write({'code': -1, 'msg': u'未支持的服务！'})
                 return
             if not name: name = service

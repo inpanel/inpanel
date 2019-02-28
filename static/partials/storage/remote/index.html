@@ -18,11 +18,12 @@
             <hr/>
             <p>类型：{{storage_info.type}}, 名称：{{storage_info.name}}</p>
             <div class="form-group form-inline">
-                <label class="col-sm-2 control-label">磁盘类别</label>
+                <label class="col-sm-2 control-label">协议类别</label>
                 <div class="col-sm-10">
                     <select class="form-control" ng-model="storage_info.type">
                         <option value="ftp">FTP</option>
                         <option value="nfs">NFS</option>
+                        <option value="nfs">CIFS（Windows）</option>
                         <option value="webdav">WebDAV</option>
                     </select>
                 </div>

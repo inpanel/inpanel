@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for quering server info'''
+'''Module for Querying Server Information'''
 
 import datetime
 import fcntl
@@ -38,6 +38,25 @@ def div_percent(a, b):
 
 
 class ServerInfo(object):
+
+    # item : realtime update
+    server_items = {
+        'hostname'      : False,
+        'datetime'      : True,
+        'uptime'        : True,
+        'loadavg'       : True,
+        'cpustat'       : True,
+        'meminfo'       : True,
+        'mounts'        : True, 
+        'netifaces'     : True,
+        'nameservers'   : True,
+        'distribution'  : False,
+        'uname'         : False, 
+        'cpuinfo'       : False,
+        'diskinfo'      : False,
+        'virt'          : False,
+    }
+
     @classmethod
     def hostname(self):
         with open('/proc/sys/kernel/hostname', 'r') as f:

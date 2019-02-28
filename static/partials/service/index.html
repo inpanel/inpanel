@@ -233,6 +233,14 @@
                                 <div srvminiop ng-init="name='named';service='named';urlname='named'"></div>
                             </td>
                         </tr>
+                        <tr>
+                            <td style="width:100px">Samba</td>
+                            <td style="width:60px" ng-bind-html-unsafe="info['service.smb']['status'] | service.status"></td>
+                            <td class="muted">文件资源共享服务器</td>
+                            <td style="width:100px">
+                                <div srvminiop ng-init="name='samba';service='smb';urlname='samba'"></div>
+                            </td>
+                        </tr>
                         <tr style="display:none" ng-show="info['server.virt'] != 'Virtuozzo/OpenVZ'">
                             <td>NTP</td>
                             <td ng-bind-html-unsafe="info['service.ntpd']['status'] | service.status"></td>
