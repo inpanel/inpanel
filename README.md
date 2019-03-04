@@ -5,6 +5,8 @@
 
 Official Website: [inpanel.org](https://inpanel.org "InPanel")
 
+Developer: [doudoudzj](https://github.com/doudoudzj "doudoudzj")
+
 #### Installation
 
 ```shell
