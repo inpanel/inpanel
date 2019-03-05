@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for nginx Management'''
+'''Module for Nginx Management'''
 
 import os
 import re
@@ -1087,7 +1087,7 @@ def http_set(directive, values, config=None):
         values = [values]
     values = ['%s %s;' % (directive, v) for v in values]
 
-    if hcontext.has_key(directive):
+    if directive in hcontext:
         # update or delete value
         dvalues = hcontext[directive]
         lines = [(config['_files'][dvalue['file']], dvalue['line'][0], dvalue['line'][1]) for dvalue in dvalues]
@@ -1137,12 +1137,12 @@ def getserver(ip, port, server_name, config=None):
     server = {}
     server['_inpanel'] = scontext['_inpanel']
     server['server_names'] = []
-    if scontext.has_key('server_name'):
+    if 'server_name' in scontext:
         for name in scontext['server_name']:
             server['server_names'].extend(name.split())
 
     server['listens'] = []
-    if scontext.has_key('listen'):
+    if 'listen' in scontext:
         cnflistens = scontext['listen']
         for cnflisten in cnflistens:
             listen = {}
@@ -1158,42 +1158,44 @@ def getserver(ip, port, server_name, config=None):
                 listen['port'] = ipport[1]
             server['listens'].append(listen)
     
-    if scontext.has_key('charset'): server['charset'] = scontext['charset'][-1]
-    if scontext.has_key('index'): server['index'] = scontext['index'][-1]
-    if scontext.has_key('limit_rate'): server['limit_rate'] = scontext['limit_rate'][-1].replace('k','')
-    if scontext.has_key('limit_conn'): server['limit_conn'] = scontext['limit_conn'][-1].split()[-1]
-    if scontext.has_key('ssl') and scontext['ssl'][-1] == 'on': # deal with old config file
+    if 'charset' in scontext: server['charset'] = scontext['charset'][-1]
+    if 'index' in scontext: server['index'] = scontext['index'][-1]
+    if 'limit_rate' in scontext: server['limit_rate'] = scontext['limit_rate'][-1].replace('k','')
+    if 'limit_conn' in scontext: server['limit_conn'] = scontext['limit_conn'][-1].split()[-1]
+    if 'ssl' in scontext and scontext['ssl'][-1] == 'on': # deal with old config file
         for listen in server['listens']: listen['ssl'] = True
-    if scontext.has_key('ssl_certificate'): server['ssl_crt'] = scontext['ssl_certificate'][-1]
-    if scontext.has_key('ssl_certificate_key'): server['ssl_key'] = scontext['ssl_certificate_key'][-1]
-    if scontext.has_key('rewrite'):
+    if 'ssl_certificate' in scontext: server['ssl_crt'] = scontext['ssl_certificate'][-1]
+    if 'ssl_certificate_key' in scontext: server['ssl_key'] = scontext['ssl_certificate_key'][-1]
+    if 'rewrite' in scontext:
         server['rewrite_rules'] = ['rewrite %s' % rule for rule in scontext['rewrite']]
-    
+
     server['locations'] = []
-    if scontext.has_key('location'):
+    if 'location' in scontext:
         locs = scontext['location']
         for loc in locs:
             location = {}
             location['urlpath'] = loc['_param']
-            if loc.has_key('root'):
+            if 'root' in loc:
                 location['root'] = loc['root'][-1]
-            elif scontext.has_key('root'): # deal with old config file
+            elif 'root' in scontext: # deal with old config file
                 location['root'] = scontext['root'][-1]
-            if loc.has_key('alias'): location['root'] = loc['alias'][-1]
-            if loc.has_key('autoindex'): location['autoindex'] = loc['autoindex'][-1] == 'on'
+            if 'alias' in loc:
+                location['root'] = loc['alias'][-1]
+            if 'autoindex' in loc:
+                location['autoindex'] = loc['autoindex'][-1] == 'on'
 
             # detect redirect and rewrite
             # we treat redirect and rewrite conflict
             rewrites = []
-            if loc.has_key('rewrite'):
+            if 'rewrite' in loc:
                 rewrites = loc['rewrite']
-            if loc.has_key('if'):
+            if 'if' in loc:
                 for ifstm in loc['if']:
                     if re.sub('\s', '', ifstm['_param']) == '(!-e$request_filename)':
                         location['rewrite_detect_file'] = True
-                    if ifstm.has_key('rewrite'):
+                    if 'rewrite' in ifstm:
                         rewrites.extend(ifstm['rewrite'])
-            
+
             for rule in rewrites:
                 rwinfo = rule.split()
                 if rwinfo[-1] in ('permanent', 'redirect'):
@@ -1208,25 +1210,26 @@ def getserver(ip, port, server_name, config=None):
                     location['redirect_type'] = redirect_type
                     location['redirect_option'] = redirect_option
                 else:
-                    if not location.has_key('rewrite_rules'): location['rewrite_rules'] = []
+                    if not 'rewrite_rules' in location:
+                        location['rewrite_rules'] = []
                     location['rewrite_rules'].append('rewrite %s' % rule)
 
             # detect fastcgi
-            if loc.has_key('fastcgi_pass'):
+            if 'fastcgi_pass' in loc:
                 location['fastcgi_pass'] = loc['fastcgi_pass'][-1]
-            elif loc.has_key('location'):
+            elif 'location' in loc:
                 for l in loc['location']:
-                    if l.has_key('fastcgi_pass'):
+                    if 'fastcgi_pass' in l:
                         location['fastcgi_pass'] = l['fastcgi_pass'][-1]
                     break   # only recoginze the first fastcgi setting
 
             # detect proxy 
-            if loc.has_key('proxy_pass'):
+            if 'proxy_pass' in loc:
                 backend = loc['proxy_pass'][-1]
                 if backend.startswith('http'): location['proxy_protocol'] = 'http'
                 if backend.startswith('https'): location['proxy_protocol'] = 'https'
-                if location.has_key('proxy_protocol'):
-                    if loc.has_key('proxy_set_header'):
+                if 'proxy_protocol' in location:
+                    if 'proxy_set_header' in loc:
                         headers = loc['proxy_set_header']
                         for header in headers:
                             hinfo = re.split(r'\s+', header, 1)
@@ -1242,11 +1245,11 @@ def getserver(ip, port, server_name, config=None):
                         upstreams = http_get('upstream', config)
                         for upstream in upstreams:
                             if upstream['_param'] == upstream_name:
-                                if upstream.has_key('ip_hash'): location['proxy_balance'] = 'ip_hash'
-                                if upstream.has_key('least_conn'): location['proxy_balance'] = 'least_conn'
-                                if not location.has_key('proxy_balance'): location['proxy_balance'] = 'weight'
-                                if upstream.has_key('keepalive'): location['proxy_keepalive'] = upstream['keepalive'][-1]
-                                if upstream.has_key('server'):
+                                if 'ip_hash' in upstream: location['proxy_balance'] = 'ip_hash'
+                                if 'least_conn' in upstream: location['proxy_balance'] = 'least_conn'
+                                if not 'proxy_balance' in location: location['proxy_balance'] = 'weight'
+                                if 'keepalive' in upstream: location['proxy_keepalive'] = upstream['keepalive'][-1]
+                                if 'server' in upstream:
                                     location['proxy_backends'] = []
                                     for s in upstream['server']:
                                         sinfo = s.split()
@@ -1262,45 +1265,45 @@ def getserver(ip, port, server_name, config=None):
                                         location['proxy_backends'].append(backend)
                                 break # found the right upstream
                 # detect proxy cache
-                if loc.has_key('proxy_cache'):
+                if 'proxy_cache' in loc:
                     cachename = loc['proxy_cache'][-1]
                     if cachename.lower() != 'off':
                         location['proxy_cache'] = cachename
-                        if loc.has_key('proxy_cache_min_uses'):
+                        if 'proxy_cache_min_uses' in loc:
                             location['proxy_cache_min_uses'] = loc['proxy_cache_min_uses'][-1]
-                        if loc.has_key('proxy_cache_methods') and 'POST' in loc['proxy_cache_methods'][-1].upper().split():
+                        if 'proxy_cache_methods' in loc and 'POST' in loc['proxy_cache_methods'][-1].upper().split():
                             location['proxy_cache_methods'] = 'POST'
-                        if loc.has_key('proxy_cache_key'):
+                        if 'proxy_cache_key' in loc:
                             location['proxy_cache_key'] = loc['proxy_cache_key'][-1]
-                        if loc.has_key('proxy_cache_use_stale'):
+                        if 'proxy_cache_use_stale' in loc:
                             location['proxy_cache_use_stale'] = loc['proxy_cache_use_stale'][-1].split()
-                        if loc.has_key('proxy_cache_valid'):
+                        if 'proxy_cache_valid' in loc:
                             location['proxy_cache_valid'] = []
                             for valid in loc['proxy_cache_valid']:
                                 fields = valid.split()
                                 for i in range(0, len(fields)-1):
                                     location['proxy_cache_valid'].append({'code': fields[i], 'time': fields[-1]})
-                        if loc.has_key('proxy_cache_lock'):
+                        if 'proxy_cache_lock' in loc:
                             location['proxy_cache_lock'] = loc['proxy_cache_lock'][-1].lower() == 'on'
-                        if loc.has_key('proxy_cache_lock_timeout'):
+                        if 'proxy_cache_lock_timeout' in loc:
                             location['proxy_cache_lock_timeout'] = loc['proxy_cache_lock_timeout'][-1].replace('s', '')
 
             # detect error code
-            if loc.has_key('return'):
+            if 'return' in loc:
                 location['error_code'] = loc['return'][-1]
 
             server['locations'].append(location)
-    
+
     return server
-    
+
 def addserver(server_names, listens, charset=None, index=None, locations=None,
     limit_rate=None, limit_conn=None, ssl_crt=None, ssl_key=None,
     rewrite_rules=None, conflict_check=True, version=None):
     """Add a new server.
-    
+
     We create new config file for each server under /etc/nginx/conf.d/.
     Config file name depends on the first of server_names.
-    
+
     Parameter examples:
     * server_names: ['example.com', 'www.example.com']
     * listens:
@@ -1383,7 +1386,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
     if conflict_check:
         for server_name in server_names:
             for listen in listens:
-                ip = listen.has_key('ip') and listen['ip'] or ''
+                ip = 'ip' in listen and listen['ip'] or ''
                 if servername_exists(ip, listen['port'], server_name):
                     return False
 
@@ -1396,9 +1399,9 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
         servercfg.append('    limit_conn addr %s;' % limit_conn)
 
     for listen in listens:
-        flag_ds = listen.has_key('default_server') and listen['default_server'] and ' default_server' or ''
-        flag_ssl = listen.has_key('ssl') and listen['ssl'] and ' ssl' or ''
-        ip = listen.has_key('ip') and listen['ip'] or ''
+        flag_ds = 'default_server' in listen and listen['default_server'] and ' default_server' or ''
+        flag_ssl = 'ssl' in listen and listen['ssl'] and ' ssl' or ''
+        ip = 'ip' in listen and listen['ip'] or ''
         port = listen['port']
         if ip:
             servercfg.append('    listen %s:%s%s%s;' % (ip, port, flag_ds, flag_ssl))
@@ -1435,7 +1438,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             urlpaths.append(urlpath)
 
             servercfg.append('    location %s {' % urlpath)
-            if location.has_key('root'):
+            if 'root' in location:
                 if urlpath.startswith('~'):  # deal with old config
                     servercfg.append('        root    %s;' % location['root'])
                 else:
@@ -1444,10 +1447,10 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                     else:
                         servercfg.append('        alias   %s;' % location['root'])
 
-            if location.has_key('autoindex'):
+            if 'autoindex' in location:
                 servercfg.append('        autoindex   %s;' % (location['autoindex'] and 'on' or 'off'))
 
-            if location.has_key('fastcgi_pass'):
+            if 'fastcgi_pass' in location:
                 if urlpath.startswith('~'):  # deal with old config
                     servercfg.append('        fastcgi_index  index.php;')
                     servercfg.append('        fastcgi_split_path_info ^(.+\.php)(/?.+)$;')
@@ -1472,10 +1475,10 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                     servercfg.append('            include        fastcgi_params;')
                     servercfg.append('            fastcgi_pass   %s;' % location['fastcgi_pass'])
                     servercfg.append('        }')
-            
-            if location.has_key('rewrite_rules'):
+
+            if 'rewrite_rules' in location:
                 rules = location['rewrite_rules']
-                if location.has_key('rewrite_detect_file') and location['rewrite_detect_file']:
+                if 'rewrite_detect_file' in location and location['rewrite_detect_file']:
                     servercfg.append('        if (!-e $request_filename)')
                     servercfg.append('        {')
                     for rule in rules:
@@ -1485,11 +1488,11 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                     for rule in rules:
                         servercfg.append('        %s;' % rule)
 
-            if location.has_key('redirect_url'):
+            if 'redirect_url' in location:
                 redirect_url = location['redirect_url']
                 if redirect_url:
-                    redirect_type = location.has_key('redirect_type') and location['redirect_type'] or '302'
-                    redirect_option = location.has_key('redirect_option') and location['redirect_option'] or 'ignore'
+                    redirect_type = 'redirect_type' in location and location['redirect_type'] or '302'
+                    redirect_option = 'redirect_option' in location and location['redirect_option'] or 'ignore'
                     if urlpath == '/' or redirect_option == 'ignore':
                         servercfg.append('        rewrite ^ %s%s %s;' % (redirect_url,
                                 redirect_option=='keep' and '$request_uri?' or '',
@@ -1501,44 +1504,44 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                                 redirect_type=='301' and 'permanent' or 'redirect'))
                         servercfg.append('        }')
 
-            if location.has_key('proxy_backends') and location['proxy_backends']:
+            if 'proxy_backends' in location and location['proxy_backends']:
                 if urlpath != '/':
                     servercfg.append('        rewrite %s(.*) / break;' % urlpath)
-                if location.has_key('proxy_charset') and location['proxy_charset']:
+                if 'proxy_charset' in location and location['proxy_charset']:
                     servercfg.append('        charset %s;' % location['proxy_charset'])
-                if location.has_key('proxy_host') and location['proxy_host']:
+                if 'proxy_host' in location and location['proxy_host']:
                     servercfg.append('        proxy_set_header Host %s;' % location['proxy_host'])
-                if location.has_key('proxy_realip') and location['proxy_realip']:
+                if 'proxy_realip' in location and location['proxy_realip']:
                     servercfg.append('        proxy_set_header X-Real-IP  $remote_addr;')
-                proxy_protocol = location.has_key('proxy_protocol') and location['proxy_protocol'] or 'http'
-                upstream_name = "backend_of_%s_%s" % (server_names[0], urlpath.replace('/', '_'))
+                proxy_protocol = 'proxy_protocol' in location and location['proxy_protocol'] or 'http'
+                upstream_name = 'backend_of_%s_%s' % (server_names[0], urlpath.replace('/', '_'))
                 servercfg.append('        proxy_pass %s://%s;' % (proxy_protocol, upstream_name))
-                proxy_balance = location.has_key('proxy_balance') and location['proxy_balance'] or 'ip_hash'
+                proxy_balance = 'proxy_balance' in location and location['proxy_balance'] or 'ip_hash'
                 upstreams[upstream_name] = {
                     'balance': proxy_balance,
-                    'keepalive': location.has_key('proxy_keepalive') and location['proxy_keepalive'] or None,
+                    'keepalive': 'proxy_keepalive' in location and location['proxy_keepalive'] or None,
                     'backends': location['proxy_backends']
                 }
 
-            if location.has_key('proxy_cache') and location['proxy_cache']:
+            if 'proxy_cache' in location and location['proxy_cache']:
                 servercfg.append('        proxy_cache %s;' % location['proxy_cache'])
-                if location.has_key('proxy_cache_min_uses'):
+                if 'proxy_cache_min_uses' in location:
                     servercfg.append('        proxy_cache_min_uses %s;' % location['proxy_cache_min_uses'])
-                if location.has_key('proxy_cache_methods'):
+                if 'proxy_cache_methods' in location:
                     servercfg.append('        proxy_cache_methods %s;' % location['proxy_cache_methods'])
-                if location.has_key('proxy_cache_key'):
+                if 'proxy_cache_key' in location:
                     servercfg.append('        proxy_cache_key %s;' % location['proxy_cache_key'])
-                if location.has_key('proxy_cache_valid'):
+                if 'proxy_cache_valid' in location:
                     for v in location['proxy_cache_valid']:
                         servercfg.append('        proxy_cache_valid %s %s;' % (v['code'], v['time']))
-                if location.has_key('proxy_cache_use_stale'):
+                if 'proxy_cache_use_stale' in location:
                     servercfg.append('        proxy_cache_use_stale %s;' % (' '.join(location['proxy_cache_use_stale'])))
-                if location.has_key('proxy_cache_lock') and location['proxy_cache_lock']:
+                if 'proxy_cache_lock' in location and location['proxy_cache_lock']:
                     servercfg.append('        proxy_cache_lock on;')
-                    if location.has_key('proxy_cache_lock_timeout'):
+                    if 'proxy_cache_lock_timeout' in location:
                         servercfg.append('        proxy_cache_lock_timeout %ss;' % location['proxy_cache_lock_timeout'])
 
-            if location.has_key('error_code'): servercfg.append('        return %s;' % location['error_code'])
+            if 'error_code' in location: servercfg.append('        return %s;' % location['error_code'])
 
             servercfg.append('    }')
             servercfg.append('')
@@ -1562,11 +1565,11 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             if upstream['keepalive']: servercfg.append('    keepalive %s;' % upstream['keepalive'])
             for backend in backends:
                 weight = fail_timeout = max_fails = ''
-                if balance == 'weight' and backend.has_key('weight') and backend['weight']:
+                if balance == 'weight' and 'weight' in backend and backend['weight']:
                     weight = ' weight=%s' % backend['weight']
-                if backend.has_key('fail_timeout') and backend['fail_timeout']:
+                if 'fail_timeout' in backend and backend['fail_timeout']:
                     fail_timeout = ' fail_timeout=%ss' % backend['fail_timeout']
-                if backend.has_key('max_fails') and backend['max_fails']:
+                if 'max_fails' in backend and backend['max_fails']:
                     max_fails = ' max_fails=%s' % backend['max_fails']
                 servercfg.append('    server %s%s%s%s;' % (backend['server'],
                             weight, fail_timeout, max_fails))
@@ -1574,7 +1577,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             servercfg.append('    server %s;' % backends[0]['server'])
 
         servercfg.append('}')
-    
+
     #print '\n'.join(servercfg)
     configfile = os.path.join(SERVERCONF, '%s.conf' % server_names[0])
     configfile_exists = os.path.exists(configfile)
@@ -1594,7 +1597,7 @@ def updateserver(old_ip, old_port, old_server_name,
     limit_rate=None, limit_conn=None, ssl_crt=None, ssl_key=None,
     rewrite_rules=None, version=None):
     """Update a existing server.
-    
+
     If the old config is not in the right place, we would automatically delete it and
     create the new config to coresponding config file under /etc/nginx/conf.d/.
     """
@@ -1605,7 +1608,7 @@ def updateserver(old_ip, old_port, old_server_name,
     if not oldscontext: return False
     for server_name in server_names:
         for listen in listens:
-            ip = listen.has_key('ip') and listen['ip'] or ''
+            ip = 'ip' in listen and listen['ip'] or ''
             scontext = _context_getserver(ip, listen['port'], server_name)
             # server context found, but not equals to the old
             # this means conflict occur
@@ -1617,7 +1620,7 @@ def updateserver(old_ip, old_port, old_server_name,
     if limit_conn:
         if _context_http_init_limit_conn(version=version):
             config = loadconfig(NGINXCONF, True)
-    
+
     # disable the old server and relative upstreams
     if not _context_commentserver(old_ip, old_port, old_server_name, config=config): return False
     if not _context_commentupstreams(old_server_name, config=config): return False
