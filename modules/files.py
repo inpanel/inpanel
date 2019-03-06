@@ -296,7 +296,7 @@ def tlist():
     for mount in mounts:
         db = anydbm.open(os.path.join(
             mount, '.deleted_files', '.fileinfo'), 'c')
-        for uuid, info in db.iteritems():
+        for uuid, info in db.items():
             fields = info.split('\t')
             item = {
                 'uuid': uuid,

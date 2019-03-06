@@ -73,14 +73,14 @@ class RequestHandler(tornado.web.RequestHandler):
     def initialize(self):
         """Parse JSON data to argument list.
         """
-        self.inifile = os.path.join(self.settings['data_path'], 'config.ini')
+        self.inifile = os.path.join(self.settings['conf_path'])
         self.config = Config(self.inifile)
 
         content_type = self.request.headers.get("Content-Type", "")
         if content_type.startswith("application/json"):
             try:
                 arguments = json.loads(tornado.escape.native_str(self.request.body))
-                for name, value in arguments.iteritems():
+                for name, value in arguments.items():
                     name = _u(name)
                     if isinstance(value, unicode):
                         value = _u(value)
@@ -455,13 +455,13 @@ class QueryHandler(RequestHandler):
         }
 
         result = {}
-        for sec, qs in qdict.iteritems():
+        for sec, qs in qdict.items():
             if sec == 'server':
                 server_items = ServerInfo.server_items
                 if qs == '**':
                     qs = server_items.keys()
                 elif qs == '*':
-                    qs = [item for item, relup in server_items.iteritems() if relup==True]
+                    qs = [item for item, relup in server_items.items() if relup==True]
                 for q in qs:
                     if q not in server_items: continue
                     result['%s.%s' % (sec, q)] = getattr(ServerInfo, q)()
@@ -471,7 +471,7 @@ class QueryHandler(RequestHandler):
                 if qs == '**':
                     qs = service_items.keys()
                 elif qs == '*':
-                    qs = [item for item, relup in service_items.iteritems() if relup==True]
+                    qs = [item for item, relup in service_items.items() if relup==True]
                 for q in qs:
                     if q not in service_items:
                         continue
@@ -1893,7 +1893,7 @@ class OperationHandler(RequestHandler):
                             if 'proxy_cache_use_stale' in locsetting:
                                 t = []
                                 cus = locsetting['proxy_cache_use_stale']
-                                for k,v in cus.iteritems():
+                                for k,v in cus.items():
                                     if not k in ('error', 'timeout', 'invalid_header', 'updating',
                                         'http_500', 'http_502', 'http_503', 'http_504', 'http_404') or not v: continue
                                     t.append(k)
@@ -2314,7 +2314,7 @@ class BackendHandler(RequestHandler):
             repo = self.get_argument('repo', '*')
             option = self.get_argument('option', '')
             if option == 'update':
-                if not pkg in [v for k,vv in yum.yum_pkg_alias.iteritems() for v in vv]:
+                if not pkg in [v for k,vv in yum.yum_pkg_alias.items() for v in vv]:
                     self.write({'code': -1, 'msg': u'未支持的软件包！'})
                     return
             else:
@@ -2561,7 +2561,7 @@ class BackendHandler(RequestHandler):
                     .replace('SHOW DB', 'SHOW DATABASES')
                     .replace('REPL CLIENT', 'REPLICATION CLIENT')
                     .replace('REPL SLAVE', 'REPLICATION SLAVE')
-                for priv, value in privs.iteritems() if '_priv' in priv and value == 'Y']
+                for priv, value in privs.items() if '_priv' in priv and value == 'Y']
             self._call(functools.partial(self.mysql_updateuserprivs, password, user, host, privs, dbname))
         elif jobname == 'mysql_setuserpassword':
             password = _u(self.get_argument('password', ''))
@@ -3110,13 +3110,13 @@ class BackendHandler(RequestHandler):
             if version: # install special version
                 if release:
                     pkgs = ['%s-%s-%s.%s' % (p, version, release, arch)
-                        for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
+                        for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
                 else:
                     pkgs = ['%s-%s.%s' % (p, version, arch)
-                        for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
+                        for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
             else:   # or judge by the system
                 pkgs = ['%s.%s' % (p, arch)
-                    for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
+                    for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
         repos = [repo, ]
         if repo in ('CentALT', 'ius', 'atomic', '10gen', 'mariadb'):
             repos.extend(['base', 'updates', 'epel'])
@@ -3205,10 +3205,10 @@ class BackendHandler(RequestHandler):
             pkgs = ['%s-%s-%s.%s' % (ext, version, release, arch)]
         else:
             pkgs = ['%s-%s-%s.%s' % (p, version, release, arch)
-                for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems()
+                for p, pinfo in yum.yum_pkg_relatives[pkg].items()
                 if 'base' in pinfo and pinfo['base']]
         ## also remove depends pkgs
-        #for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems():
+        #for p, pinfo in yum.yum_pkg_relatives[pkg].items():
         #    if 'depends' in pinfo:
         #        pkgs += pinfo['depends']
         cmd = 'yum erase -y %s' % (' '.join(pkgs), )
@@ -3274,7 +3274,7 @@ class BackendHandler(RequestHandler):
  
         self._update_job(jobname, 2, u'正在收集扩展信息...')
 
-        exts = [k for k, v in yum.yum_pkg_relatives[pkg].iteritems() if 'isext' in v and v['isext']]
+        exts = [k for k, v in yum.yum_pkg_relatives[pkg].items() if 'isext' in v and v['isext']]
         cmd = 'yum info %s --disableplugin=fastestmirror' % (' '.join(['%s.%s' % (ext, self.settings['arch']) for ext in exts]))
 
         data = []

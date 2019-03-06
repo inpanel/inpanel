@@ -56,7 +56,7 @@ def raw_saveconfig(filepath, config, sortlist=[], delimiter='=', quoter='"'):
                 lines.append(line)
 
     # then write the rest items
-    for k, v in config.iteritems():
+    for k, v in config.items():
         if isinstance(v, list):
             for vv in v:
                 line = '%s%s%s%s%s\n' % (k, delimiter, quoter, vv, quoter)
@@ -79,9 +79,9 @@ def loadconfig(filepath, keymap=None, delimiter='=', quoter=' "\''):
         return None
     if keymap == None:
         # return raw_config
-        config = dict((k, v) for k, v in raw_config.iteritems())
+        config = dict((k, v) for k, v in raw_config.items())
     else:
-        config = dict((keymap[k], v) for k, v in raw_config.iteritems() if k in keymap)
+        config = dict((keymap[k], v) for k, v in raw_config.items() if k in keymap)
     return config
 
 
@@ -91,7 +91,7 @@ def saveconfig(filepath, config, keymap=None, delimiter='=', read_quoter=' "\'',
     raw_config, sortlist = raw_loadconfig(filepath, return_sort=True, delimiter=delimiter, quoter=read_quoter)
     if raw_config == None:
         return False
-    for k, v in config.iteritems():
+    for k, v in config.items():
         if keymap == None:
             # Unspecified range of key-value pairs
             # Modify the specified field

@@ -877,7 +877,7 @@ def _replace(positions, lines):
         for i in range(line_count):
             files[filepath].append(line_start+i)
     # replace line by line
-    for filepath, line_nums in files.iteritems():
+    for filepath, line_nums in files.items():
         flines = []
         with open(filepath) as f:
             for i, fline in enumerate(f):
@@ -953,7 +953,7 @@ def _detect_engines(context):
     contexts = ['location', 'if', 'limit_except']
 
     engines = []
-    for k, v in context.iteritems():
+    for k, v in context.items():
         if k in engine_flags:
             if k == 'rewrite':
                 engines.extend([x and 'redirect' or 'rewrite' for x in _isredirect(v)])
@@ -1553,7 +1553,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
     # end of server context
     servercfg.append('}')
 
-    for upstream_name, upstream in upstreams.iteritems():
+    for upstream_name, upstream in upstreams.items():
         balance = upstream['balance']
         backends = upstream['backends']
 

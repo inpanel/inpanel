@@ -64,9 +64,9 @@ def load_config():
 
 
 def update_config(configs):
-    cmap_reverse = dict((v, k) for k, v in CRON_CONFIG_MAP.iteritems())
+    cmap_reverse = dict((v, k) for k, v in CRON_CONFIG_MAP.items())
     new_config = {}
-    for k, v in configs.iteritems():
+    for k, v in configs.items():
         if k in cmap_reverse:
             new_config[cmap_reverse[k]] = v
     return save_config(CRONTAB, new_config)
@@ -120,6 +120,6 @@ if __name__ == "__main__":
     # os.system("top")
     # print loadconfig(CRONTAB, CRON_CONFIG_MAP)
     # print raw_loadconfig(CRONTAB)
-    print load_config()
+    print(load_config())
     # print update_config({'shell': 'shelshelshel', 'home': 'homehomehome', 'path':'abc'})
-    # print dict((v, k) for k, v in CRON_CONFIG_MAP.iteritems())
+    # print dict((v, k) for k, v in CRON_CONFIG_MAP.items())

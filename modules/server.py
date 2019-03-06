@@ -459,7 +459,7 @@ class ServerInfo(object):
         if not blks:
             return disks
 
-        for devname, blkinfo in blks.iteritems():
+        for devname, blkinfo in blks.items():
             dev = os.stat('/dev/%s' % devname).st_rdev
             major, minor = os.major(dev), os.minor(dev)
             blks[devname]['major'] = major
@@ -493,7 +493,7 @@ class ServerInfo(object):
 
                 # if dev name doesn't match, check the major and minor of the dev
                 devfound = False
-                for devname, blkinfo in blks.iteritems():
+                for devname, blkinfo in blks.items():
                     if blkinfo['major'] == part['major'] and blkinfo['minor'] == part['minor']:
                         devfound = True
                         break
@@ -680,11 +680,11 @@ if __name__ == '__main__':
     cpustat = ServerInfo.cpustat()
     tstat = cpustat['total']
     print('* Total CPU stats:')
-    for k, v in tstat.iteritems():
+    for k, v in tstat.items():
         print('  %s: %d' % (k, v))
     for i, tstat in enumerate(cpustat['cpus']):
         print('* CPU-%d stats:' % i)
-        for k, v in tstat.iteritems():
+        for k, v in tstat.items():
             print('  %s: %d' % (k, v))
     print('')
 

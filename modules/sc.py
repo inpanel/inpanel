@@ -58,7 +58,7 @@ class ServerSet(object):
             if config == None:
                 return loadconfig(cfile, cmap)
             else:
-                cmap_reverse = dict((v, k) for k, v in cmap.iteritems())
+                cmap_reverse = dict((v, k) for k, v in cmap.items())
                 return saveconfig(cfile, config, cmap_reverse)
         else:
             return None
@@ -276,7 +276,7 @@ if __name__ == '__main__':
     print('')
 
     configs = ServerSet.ifconfigs()
-    for ifname, config in configs.iteritems():
+    for ifname, config in configs.items():
         print('* Config of %s:' % ifname)
         if 'mac' in config:
             print('  HWADDR: %s' % config['mac'])
