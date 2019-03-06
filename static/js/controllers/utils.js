@@ -1412,3 +1412,60 @@ var StorageRemoteCtrl = [
     }
 ];
 
+
+var UtilsRepositoryCtrl = [
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
+    function($scope, Module, $routeParams, Timeout, Request, Message, Backend, $location) {
+        var module = 'utils.repository';
+        Module.init(module, '软件仓库');
+        $scope.loaded = false;
+        $scope.action = '';
+        var section = Module.getSection();
+        var enabled_sections = ['yum', 'apt', 'pacman', 'dnf', 'zypper'];
+        Module.initSection(enabled_sections[0]);
+        $scope.loading = false;
+
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+        $scope.load_yum = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+        $scope.load_apt = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+        $scope.load_pacman = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+        $scope.load_dnf = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+        $scope.load_zypper = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+    }
+];

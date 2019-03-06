@@ -56,12 +56,13 @@ config(['$routeProvider', function ($routeProvider) {
     when('/utils/process', _r('utils/process', UtilsProcessCtrl)).
     when('/utils/network', _r('utils/network', UtilsNetworkCtrl)).
     when('/utils/time', _r('utils/time', UtilsTimeCtrl)).
+    when('/utils/ssl', _r('utils/ssl', UtilsSSLCtrl)).
+    when('/utils/repository', _r('utils/repository', UtilsRepositoryCtrl)).
     when('/storage', _r('storage/index', StorageCtrl)).
     when('/storage/remote/:section', _r('storage/remote/index', StorageRemoteCtrl)).
     when('/storage/autofm', _r('storage/autofm', StorageAutoFMCtrl)).
     when('/storage/movedata', _r('storage/movedata', StorageMoveDataCtrl)).
     when('/storage/backup', _r('storage/backup', BackupCtrl)).
-    when('/utils/ssl', _r('utils/ssl', UtilsSSLCtrl)).
     when('/ecs', _r('ecs/ecs', ECSCtrl)).
     when('/ecs/index', _r('ecs/index', ECSIndexCtrl)).
     when('/ecs/account', _r('ecs/account', ECSAccountCtrl)).
