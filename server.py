@@ -43,6 +43,11 @@ def main():
         'cookie_secret': make_cookie_secret(),
     }
 
+    # read configuration from config.ini
+    cfg = Config(settings['conf_path'])
+    server_ip = cfg.get('server', 'ip')
+    server_port = cfg.get('server', 'port')
+
     application = web.Application([
         (r'/xsrf', web.XsrfHandler),
         (r'/authstatus', web.AuthStatusHandler),
@@ -67,11 +72,6 @@ def main():
         (r'/version', web.VersionHandler),
         (r'/.*', web.ErrorHandler, {'status_code': 404}),
     ], **settings)
-
-    # read configuration from config.ini
-    cfg = Config(settings['conf_path'])
-    server_ip = cfg.get('server', 'ip')
-    server_port = cfg.get('server', 'port')
 
     server = tornado.httpserver.HTTPServer(application)
     server.listen(server_port, address=server_ip)
