@@ -93,41 +93,14 @@ class Install(object):
             success = False
             print('[ %s ]' % FAILED)
         return success
-
-    def handle_repository(self):
-        '''install software repository'''
-        if self.distname in ('centos', 'redhat'):
-            print('* Install epel-release...')
-            if int(float(self.version)) == 5:
-                epelrpm = 'epel-release-5-4.noarch.rpm'
-                epelurl = 'http://download.fedoraproject.org/pub/epel/5/%s/%s' % (self.arch, epelrpm)
-                # install fastestmirror plugin for yum
-                fastestmirror = 'http://mirror.centos.org/centos/5/os/%s/CentOS/yum-fastestmirror-1.1.16-21.el5.centos.noarch.rpm' % (self.arch)
-                self._run('rpm -Uvh %s' % fastestmirror)
-            elif int(float(self.version)) == 6:
-                epelrpm = 'epel-release-6-8.noarch.rpm'
-                epelurl = 'https://mirrors.aliyun.com/epel/6/%s/%s' % (self.arch, epelrpm)
-                fastestmirror = 'https://mirrors.aliyun.com/centos/6/os/%s/Packages/yum-plugin-fastestmirror-1.1.30-41.el6.noarch.rpm' % (self.arch)
-                # fastestmirror = 'http://mirror.centos.org/centos/6/os/%s/Packages/yum-plugin-fastestmirror-1.1.30-41.el6.noarch.rpm' % (self.arch)
-                self._run('rpm -Uvh %s' % fastestmirror)
-            elif int(float(self.version)) == 7:
-                epelrpm = 'epel-release-7-11.noarch.rpm'
-                epelurl = 'https://mirrors.aliyun.com/epel/7/%s/Packages/e/%s' % (self.arch, epelrpm)
-                fastestmirror = 'https://mirrors.aliyun.com/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-50.el7.noarch.rpm' % (self.arch)
-                # fastestmirror = 'http://mirror.centos.org/centos/7/os/%s/Packages/yum-plugin-fastestmirror-1.1.31-50.el7.noarch.rpm' % (self.arch)
-                self._run('rpm -Uvh %s' % fastestmirror)
-            self._run('wget -nv -c %s' % epelurl)
-            self._run('rpm -Uvh %s' % epelrpm)
-            print('[ %s ]' % OK)
-        elif self.distname in ('ubuntu', 'debian'):
-            pass
-
+    
     def handle_dependent(self):
         '''Install dependent software'''
         success = True
         print('* Install Dependent Software...'),
         try:
-            self._run('yum install -y wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
+            self._run('yum install -y -q epel-release')
+            self._run('yum install -y -q wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
             success = True
             print('[ %s ]' % OK)
         except:
