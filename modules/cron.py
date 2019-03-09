@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for cron management."""
+"""Module for Cron Jobs Management."""
 
 import os
 import shlex
@@ -23,20 +23,6 @@ CRON_CONFIG_MAP = {
     'HOME': 'home',
     'PATH': 'path'
 }
-
-
-def web_response(self):
-    action = self.get_argument('action', '')
-
-    if action == 'get_settings':
-        self.write({'code': 0, 'msg': u'获取 Cron 服务配置信息成功！', 'data': load_config()})
-    if action == 'save_settings':
-        mailto = self.get_argument('mailto', '')
-        rt = update_config({'mailto': _u(mailto)})
-        if rt:
-            self.write({'code': 0, 'msg': u'设置保存成功！'})
-        else:
-            self.write({'code': -1, 'msg': u'设置保存失败！'})
 
 
 def load_config():
@@ -102,6 +88,29 @@ def save_config(filepath, config):
         return True
 
     return False
+
+
+def cron_list():
+    # return a test list
+    return [
+        {
+            'minute': '*/5',
+            'hour': '*',
+            'day': '*',
+            'month': '*',
+            'weekday': '*',
+            'user': 'root',
+            'command': '/usr/local/bin/php /var/www/public_html/path/to/cron/script',
+        }, {
+            'minute': '0',
+            'hour': '0',
+            'day': '1,15',
+            'month': '*',
+            'weekday': '*',
+            'user': 'root',
+            'command': '/usr/local/bin/ea-php56 /var/www/domain_path/path/to/cron/script',
+        }
+    ]
 
 
 def listCron():

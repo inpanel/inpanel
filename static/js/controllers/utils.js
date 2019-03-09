@@ -1475,12 +1475,20 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
         Module.init(module, '定时任务');
         $scope.loaded = false;
         $scope.cron_list = [];
+        $scope.loading_cron_list = true;
+        $scope.has_cron_service = false;
         var section = Module.getSection();
         var enabled_sections = ['base', 'cron'];
         Module.initSection(enabled_sections[0]);
 
         $scope.load = function () {
-            $scope.loaded = true;
+            Request.get('/query/service.crond', function(data) {
+                console.log(data);
+                if (data['service.crond'] && data['service.crond'].status) {
+                    $scope.has_cron_service = true;
+                }
+                $scope.loaded = true;
+            });
             $scope.tab_sec(section);
         };
 
@@ -1513,39 +1521,18 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
         $scope.task_email = '';
         $scope.task_command = '';
 
-        $scope.load_base = function () {
-            $scope.sec('base');
-            Module.setSection('base');
-        };
-        $scope.load_cron = function () {
-            $scope.sec('cron');
-            Module.setSection('cron');
+        $scope.load_base = function (init) {};
+        $scope.load_cron = function (init) {
+            if (!init && !$scope.init_process) {
+                return; // Prevent duplicate requests
+            }
             $scope.load_cron_list();
         };
         $scope.load_cron_list = function () {
-            $scope.cron_list = [
-                {
-                    'minute': '*/5',
-                    'hour': '*',
-                    'day': '*',
-                    'month': '*',
-                    'weekday': '*',
-                    'user': '*',
-                    'command': '/usr/local/bin/php /home/uiiecn/public_html/path/to/cron/script',
-                }, {
-                    'minute': '0',
-                    'hour': '0',
-                    'day': '1,15',
-                    'month': '*',
-                    'weekday': '*',
-                    'user': '*',
-                    'command': '/usr/local/bin/ea-php56 /home/uiiecn/domain_path/path/to/cron/script',
-                }
-            ];
-            Request.post('/operation/user', {
-                'action': 'listuser',
-                'fullinfo': false
-            }, function (data) {
+            if (!$scope.has_cron_service) return;
+            $scope.loading_cron_list = true;
+            Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
+                $scope.loading_cron_list = false;
                 if (data.code == 0) {
                     $scope.cron_list = data.data;
                 }

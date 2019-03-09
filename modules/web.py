@@ -2122,7 +2122,20 @@ class OperationHandler(RequestHandler):
             self.write({'code': 0, 'msg': 'SSH 服务配置保存成功！'})
 
     def cron(self):
-        cron.web_response(self)
+        # cron jobs management
+        action = self.get_argument('action', '')
+
+        if action == 'get_settings':
+            self.write({'code': 0, 'msg': u'获取 Cron 服务配置信息成功！', 'data': cron.load_config()})
+        if action == 'save_settings':
+            mailto = self.get_argument('mailto', '')
+            rt = cron.update_config({'mailto': _u(mailto)})
+            if rt:
+                self.write({'code': 0, 'msg': u'设置保存成功！'})
+            else:
+                self.write({'code': -1, 'msg': u'设置保存失败！'})
+        if action == 'cron_list':
+            self.write({'code': 0, 'msg': u'获取 Cron 定时任务成功！', 'data': cron.cron_list()})
 
     def vsftpd(self):
         action = self.get_argument('action', '')

@@ -5,13 +5,13 @@
 
 <div id="main" ng-init="load()">
     <div class="module-header">
-        <h3>任务管理</h3>
+        <h3>任务管理(In Development)</h3>
     </div>
 
     <div class="tabbable" ng-show="loaded">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="sec('base')" data-toggle="tab">常规计划</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='cron'"><a href="#cron" ng-click="sec('cron')" data-toggle="tab">CRON 定时任务</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="tab_sec('base')" data-toggle="tab">常规计划</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='cron'"><a href="#cron" ng-click="tab_sec('cron')" data-toggle="tab">定时任务</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
@@ -26,47 +26,54 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='cron'" id="cron">
-                <div class="well" ng-hidden="has_cron_service" style="display:none">
+                <div class="well" ng-hide="has_cron_service">
                     <p>系统检测到 Cron 当前尚未安装。</p>
                     <p>是否要开始安装？</p>
-                    <p><a class="btn btn-default" href="#/service?s=cron">立即安装</a></p>
+                    <p><a class="btn btn-default" href="#/service/cron">立即安装</a></p>
                 </div>
-                <div class="pull-left">
-                    <h5>CRON 定时任务</h5>
+                <div class="well" ng-show="has_cron_service && loading_cron_list">
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
                 </div>
-                <div class="pull-right">
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-default" title="刷新磁盘列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
-                        <button class="btn btn-default" title="添加CRON 定时任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                <div ng-show="has_cron_service && !loading_cron_list">
+                    <div class="pull-left">
+                        <h5>CRON 定时任务</h5>
                     </div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新磁盘列表" ng-disabled="!loaded" ng-click="load_cron_list()"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加CRON 定时任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
+                    <table class="table table-hover table-bordered responsive-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">分钟</th>
+                                <th style="width: 50px;">小时</th>
+                                <th style="width: 50px;">天</th>
+                                <th style="width: 50px;">月份</th>
+                                <th style="width: 65px;">工作日</th>
+                                <th style="width: 65px;">用户</th>
+                                <th>命令</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="info in cron_list">
+                                <td>{{info.minute}}</td>
+                                <td>{{info.hour}}</td>
+                                <td>{{info.day}}</td>
+                                <td>{{info.month}}</td>
+                                <td>{{info.weekday}}</td>
+                                <td>{{info.user}}</td>
+                                <td><code>{{info.command}}</code></td>
+                                <td>
+                                    <button class="btn btn-default btn-xs" ng-click="cron_detail(info)">查看</button>
+                                    <button class="btn btn-default btn-xs" ng-click="cron_delete_confirm(info)">删除</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <table class="table table-hover table-bordered responsive-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">分钟</th>
-                            <th style="width: 50px;">小时</th>
-                            <th style="width: 50px;">天</th>
-                            <th style="width: 50px;">月份</th>
-                            <th style="width: 65px;">工作日</th>
-                            <th>命令</th>
-                            <th style="width: 100px;">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="info in cron_list">
-                            <td>{{info.minute}}</td>
-                            <td>{{info.hour}}</td>
-                            <td>{{info.day}}</td>
-                            <td>{{info.month}}</td>
-                            <td>{{info.weekday}}</td>
-                            <td><code>{{info.command}}</code></td>
-                            <td>
-                                <button class="btn btn-default btn-xs" ng-click="cron_detail(info)">查看</button>
-                                <button class="btn btn-default btn-xs" ng-click="cron_delete_confirm(info)">删除</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
