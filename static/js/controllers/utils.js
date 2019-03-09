@@ -1412,7 +1412,6 @@ var StorageRemoteCtrl = [
     }
 ];
 
-
 var UtilsRepositoryCtrl = [
     '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
     function($scope, Module, $routeParams, Timeout, Request, Message, Backend, $location) {
@@ -1466,6 +1465,164 @@ var UtilsRepositoryCtrl = [
             Timeout(function() {
                 $scope.loading = false;
             }, 1000, module);
+        };
+    }
+];
+
+var UtilsCronCtrl = ['$scope', 'Module', 'Request',
+    function ($scope, Module, Request) {
+        var module = 'utils.cron';
+        Module.init(module, '定时任务');
+        $scope.loaded = false;
+        $scope.cron_list = [];
+        var section = Module.getSection();
+        var enabled_sections = ['base', 'cron'];
+        Module.initSection(enabled_sections[0]);
+
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+
+        $scope.common_options = '';
+        $scope.cron_time = {
+            minute: '',
+            hour: '',
+            day: '',
+            month: '',
+            weekday: ''
+        };
+        $scope.options = {
+            minute: '',
+            hour: '',
+            day: '',
+            month: '',
+            weekday: ''
+        };
+
+        $scope.task_time = '';
+        $scope.task_user = '';
+        $scope.task_email = '';
+        $scope.task_command = '';
+
+        $scope.load_base = function () {
+            $scope.sec('base');
+            Module.setSection('base');
+        };
+        $scope.load_cron = function () {
+            $scope.sec('cron');
+            Module.setSection('cron');
+            $scope.load_cron_list();
+        };
+        $scope.load_cron_list = function () {
+            $scope.cron_list = [
+                {
+                    'minute': '*/5',
+                    'hour': '*',
+                    'day': '*',
+                    'month': '*',
+                    'weekday': '*',
+                    'user': '*',
+                    'command': '/usr/local/bin/php /home/uiiecn/public_html/path/to/cron/script',
+                }, {
+                    'minute': '0',
+                    'hour': '0',
+                    'day': '1,15',
+                    'month': '*',
+                    'weekday': '*',
+                    'user': '*',
+                    'command': '/usr/local/bin/ea-php56 /home/uiiecn/domain_path/path/to/cron/script',
+                }
+            ];
+            Request.post('/operation/user', {
+                'action': 'listuser',
+                'fullinfo': false
+            }, function (data) {
+                if (data.code == 0) {
+                    $scope.cron_list = data.data;
+                }
+            }, false, true);
+        };
+        $scope.cron_add_confirm = function() {
+            $scope.load_user();
+            $('#cron-add-confirm').modal();
+        };
+        $scope.load_user = function () {
+            if (!$scope.users) {
+                Request.post('/operation/user', {
+                    'action': 'listuser',
+                    'fullinfo': false
+                }, function (data) {
+                    if (data.code == 0) {
+                        $scope.users = data.data;
+                    }
+                }, false, true);
+            }
+        };
+        $scope.$watch('cron_time', function (n) {
+            $scope.task_time = n.minute + ' ' + n.hour + ' ' + n.day + ' ' + n.month + ' ' + n.weekday;
+        }, true);
+        $scope.select_common_option = function () {
+            var option = $scope.common_options;
+            console.log($scope.common_options);
+            if (option && option != '') {
+                var option_array = option.split(' ');
+
+                $scope.cron_time.minute = option_array[0];
+                $scope.cron_time.hour = option_array[1];
+                $scope.cron_time.day = option_array[2];
+                $scope.cron_time.month = option_array[3];
+                $scope.cron_time.weekday = option_array[4];
+
+                $scope.options.minute = option_array[0];
+                $scope.options.hour = option_array[1];
+                $scope.options.day = option_array[2];
+                $scope.options.month = option_array[3];
+                $scope.options.weekday = option_array[4];
+            } else {
+                for (var i in $scope.cron_time) {
+                    $scope.cron_time[i] = ''
+                }
+                for (var j in $scope.options) {
+                    $scope.options[j] = ''
+                }
+            }
+        };
+        $scope.input_single_option = function (type) {
+            if (typeof type === 'undefined' || type === '') {
+                return
+            };
+            $scope.options[type] = $scope.cron_time[type];
+        };
+        $scope.select_single_option = function (type) {
+            if (typeof type === 'undefined' || type === '') {
+                return
+            };
+            $scope.cron_time[type] = $scope.options[type];
+        };
+        $scope.addCronJobs = function () {
+            var data = {
+                action: 'add_cron_jobs',
+                command: $scope.task_time + ' ' + $scope.task_command
+            }
+            console.log(data)
+            // Request.post('/operation/task', {
+            //     action: 'add',
+            //     username: $scope.username,
+            //     password: $scope.password ? hex_md5($scope.password) : '',
+            //     passwordc: $scope.passwordc ? hex_md5($scope.passwordc) : '',
+            //     passwordcheck: $scope.passwordcheck
+            // }, function(data) {
+            //     if (data.code == 0) $scope.loadAuthInfo();
+            // });
         };
     }
 ];
