@@ -6,13 +6,14 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for Apache configuration management.'''
+'''Module for Apache Management.'''
 
 
 import os
 import os.path
 import re
 import string
+# import json
 
 try:
     from io import StringIO
@@ -55,10 +56,16 @@ CONFIGS = {
     'TypesConfig': '/etc/mime.types',
     'HostnameLookups': 'Off',
     'ErrorLog': 'logs/error_log',
-    'LogLevel': 'debug, info, notice, warn, error, crit, alert, emerg',
+    'LogLevel': 'debug',  # info, notice, warn, error, crit, alert, emerg
     'ServerSignature': 'On',
     'IndexOptions': 'FancyIndexing VersionSort NameWidth=* HTMLTable Charset=UTF-8',
-    'Alias': '',
+    'Alias': 'alias',
+    'AddLanguage': '',
+    'LoadModule': '',
+    'ScriptAlias': '',
+    'AddType': '',
+    'AddIcon': '',
+    'AddIconByType': ''
 }
 
 DIRECTIVES = {
@@ -364,31 +371,54 @@ def loadconfig(conf=None, getlineinfo=False):
 
 
 def _loadconfig(conf, getlineinfo):
-    '''load Apache httpd.conf'''
+    '''parse Apache httpd.conf'''
 
     # if key not in CONFIGS or not val:
     #     return False
-    conf = HTTPD_CONF
+    # conf = HTTPD_CONF
     # conf = HTTPD_CONF_DIR + '/httpd.conf'
     try:
         os.stat(conf)
     except OSError:
-        print('site config file not exist')
-        return False
+        return None
 
     configs = {}
+    Alias = []
+    AddLanguage = []
+    LoadModule = []
+    AddIcon = []
     with open(conf) as f:
-        for line_index, line in enumerate(f):
+        for line in f:
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
             for i in CONFIGS:
                 if line.startswith(i):
+                    ll = line.split()
                     if i in ['IndexOptions', 'DirectoryIndex']:
                         configs[i] = ' '.join(str(n) for n in line.split()[1:])
+                    elif i == 'AddIcon':
+                        AddIcon.append([ll[1], ll[2:]])
+                    elif i == 'AddIconByType':
+                        configs[i] = ' '.join(str(n) for n in ll[1:])
+                    elif i == 'Alias':
+                        Alias.append([ll[1], ll[2].strip('"')])
+                    elif i == 'AddLanguage':
+                        AddLanguage.append(ll[1:])
+                    elif i == 'LoadModule':
+                        LoadModule.append(ll[1:])
                     else:
+                        # print(line.split()[1].strip(string.punctuation))
                         configs[i] = line.split()[1].strip(string.punctuation)
-                    print(line_index, i, line)
+                    # print(line_index, i, line)
+        # print(Alias)
+        # print(AddLanguage)
+        # print(LoadModule)
+        # print(AddIcon)
+        configs['Alias'] = Alias
+        configs['AddLanguage'] = AddLanguage
+        configs['AddIcon'] = AddIcon
+        configs['LoadModule'] = LoadModule
         return configs
 
 
@@ -408,7 +438,11 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
                 if server['_param']['disabled'] == disabled]
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    test_path = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
+    tmp = loadconfig(test_path)
+    print(tmp)
+    # print(json.dumps(tmp))
     # virtual_host_config('aaa.com', 'DocumentRoot', '/v/asfs34535')
     # virtual_host_config('aaa.com', 'ServerAdmin', '4567896543')
     # virtual_host_config('aaa.com', 'VirtualHost', 'bbb.com', 567)
