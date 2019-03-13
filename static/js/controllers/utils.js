@@ -250,7 +250,7 @@ var UtilsProcessCtrl = [
         };
         $scope.processkill = function () {
             if ($scope.delete_process && $scope.delete_process['pid']) {
-                Request.post('/utils/process/kill/' + $scope.delete_process['pid'], function (res) {
+                Request.post('/utils/process/kill/' + $scope.delete_process['pid'], null, function () {
                     $scope.delete_process = '';
                     $scope.refresh();
                 });
