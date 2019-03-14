@@ -13,7 +13,7 @@ import os
 import os.path
 import re
 import string
-# import json
+import json
 
 try:
     from io import StringIO
@@ -68,7 +68,7 @@ CONFIGS = {
     'AddIconByType': ''
 }
 
-DIRECTIVES = {
+CON_DIRECTIVES = {
     'Directory': '',
     'Files': '',
     'Limit': '',
@@ -76,10 +76,12 @@ DIRECTIVES = {
     'VirtualHost': ''
 }
 
-OPTIONS = {
+VH_OPTIONS = {
+    'CustomLog': '',
     'ServerAdmin': 'admin@localhost',
     'ServerName': 'www',
     'DocumentRoot': '/var/www',
+    'ErrorLog': '',
     'Indexs': '',
     'Options': '',
     'ServerAlias': '',
@@ -95,7 +97,7 @@ DIRECTORY = {
 }
 
 
-vHostTemplate = '''<VirtualHost *:80>
+VH_TMP = '''<VirtualHost *:80>
     ServerAdmin webmaster@localhost
     DocumentRoot /var/www
     <Directory />
@@ -111,6 +113,11 @@ vHostTemplate = '''<VirtualHost *:80>
 </VirtualHost>
 '''
 
+RE_VH_START = re.compile(r'<VirtualHost(\s+)(\S+)>')
+RE_VH_CLOSE = re.compile(r'</VirtualHost>')
+RE_DT_START = re.compile(r'<Directory(\s+)(\S+)>')
+RE_DT_CLOSE = re.compile(r'</Directory>')
+
 
 def getservers(config=None):
     '''Get servers from apache configuration files.
@@ -125,15 +132,15 @@ def getservers(config=None):
     for i in range(0, len(clist)):
         path = os.path.join(SERVERCONF, clist[i])
         if os.path.isfile(path) and os.path.splitext(path)[1] == '.conf':
-            v = _load_virtualhost(path)
+            v = _parse_virtualhost_config(path)
             if v is not False:
                 servers.extend(v)
 
-    # servers = _load_virtualhost(aaa) + _load_virtualhost(bbb)
+    # servers = _parse_virtualhost_config(aaa) + _parse_virtualhost_config(bbb)
     return servers
 
 
-def _load_virtualhost(conf=''):
+def _parse_virtualhost_config(conf=''):
     '''parser VirtualHost config to python object (array)
     '''
     try:
@@ -158,10 +165,6 @@ def _load_virtualhost(conf=''):
     directorys = {}  # 附加信息
     line_disabled = False
     gen_by_inpanel = False
-    match_start = re.compile(r'<VirtualHost(\s+)(\S+)>')
-    match_end = re.compile(r'</VirtualHost>')
-    match_start_d = re.compile(r'<Directory(\s+)(\S+)>')
-    match_end_d = re.compile(r'</Directory>')
     while len(data) > 0:
         out = data.pop(0)
 
@@ -182,14 +185,16 @@ def _load_virtualhost(conf=''):
             gen_by_inpanel = True
 
         # start of VirtualHost
-        match = match_start.search(out)
+        match = RE_VH_START.search(out)
         if match:  # if '<VirtualHost' in out:
             id_d = 0
             v_dirs = {}
             result_d[id_v] = []
             directorys[id_v] = []
             name_port = match.groups()[1].strip(' ').strip('"').strip('\'')
-            ip, port = name_port.split(':')
+            port = name_port.split(':')[-1]
+            ip = name_port[0:-(len(port) + 1)]
+            ip = ip.lstrip('[').rstrip(']') # for IPv6
             vhost.append(ip)
             vhost.append(port)
             enable = True
@@ -197,7 +202,7 @@ def _load_virtualhost(conf=''):
             continue
 
         # start of Directory in VirtualHost
-        match_d = match_start_d.search(out)
+        match_d = RE_DT_START.search(out)
         if enable is True and match_d:
             v_dirs = {}
             path = match_d.groups()[1].strip()
@@ -208,7 +213,7 @@ def _load_virtualhost(conf=''):
 
         # end of Directory in VirtualHost
         # if '</Directory>' in out:
-        if enable_d is True and match_end_d.search(out):
+        if enable_d is True and RE_DT_CLOSE.search(out):
             result_d[id_v].append(v_dirs[id_d])
             id_d += 1
             enable_d = False
@@ -221,7 +226,7 @@ def _load_virtualhost(conf=''):
             continue
 
         # end of VirtualHost
-        if match_end.search(out):
+        if RE_VH_CLOSE.search(out):
             enable_d = False
 
             result[id_v] = vhost
@@ -248,7 +253,7 @@ def _load_virtualhost(conf=''):
             'Directory': directorys[i]
         }
         for line in result[i]:
-            for i in OPTIONS:
+            for i in VH_OPTIONS:
                 if i in line:
                     if i in ['ServerAlias', 'DirectoryIndex']:
                         server[i] = ' '.join(str(n) for n in line.split()[1:])
@@ -367,10 +372,10 @@ def loadconfig(conf=None, getlineinfo=False):
         conf = HTTPD_CONF
     if not os.path.exists(conf):
         return False
-    return _loadconfig(conf, getlineinfo)
+    return _parse_apache_config(conf, getlineinfo)
 
 
-def _loadconfig(conf, getlineinfo):
+def _parse_apache_config(conf, getlineinfo):
     '''parse Apache httpd.conf'''
 
     # if key not in CONFIGS or not val:
@@ -439,9 +444,9 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
 
 
 if __name__ == '__main__':
-    test_path = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
-    tmp = loadconfig(test_path)
-    print(tmp)
+    # test_path = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
+    # tmp = loadconfig(test_path)
+    # print(tmp)
     # print(json.dumps(tmp))
     # virtual_host_config('aaa.com', 'DocumentRoot', '/v/asfs34535')
     # virtual_host_config('aaa.com', 'ServerAdmin', '4567896543')
@@ -450,11 +455,10 @@ if __name__ == '__main__':
     # for line in replace_docroot('aaa.com', 'docroot'):
     #     print(line)
 
-    # aaa = '/Users/douzhenjiang/Projects/inpanel/test/aaa.com.conf'
-    # bbb = '/Users/douzhenjiang/Projects/inpanel/test/httpd.conf'
-    # print _load_virtualhost(aaa)
+    aaa = '/Users/douzhenjiang/test/inpanel/test/aaa.com.conf'
+    tmp1 = _parse_virtualhost_config(aaa)
+    print(json.dumps(tmp1))
 
-    # # print _load_virtualhost('/etc/httpd/conf.d/bbb.com.conf')
     # print getservers()
 
     # path = os.path.join(SERVERCONF, clist[i])
