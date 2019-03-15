@@ -73,7 +73,8 @@ CON_DIRECTIVES = {
     'Files': '',
     'Limit': '',
     'Location': '',
-    'VirtualHost': ''
+    'VirtualHost': '',
+    'IfModule': ''
 }
 
 VH_OPTIONS = {
@@ -194,7 +195,7 @@ def _parse_virtualhost_config(conf=''):
             name_port = match.groups()[1].strip(' ').strip('"').strip('\'')
             port = name_port.split(':')[-1]
             ip = name_port[0:-(len(port) + 1)]
-            ip = ip.lstrip('[').rstrip(']') # for IPv6
+            ip = ip.lstrip('[').rstrip(']')  # for IPv6
             vhost.append(ip)
             vhost.append(port)
             enable = True
@@ -265,29 +266,25 @@ def _parse_virtualhost_config(conf=''):
     return virtualHosts
 
 
-def _append_directory(res):
-    if not res:
+def _append_directory(directory):
+    if not directory:
         return []
 
-    directorys = []
-    for r in res:
-        directory = {'Path': r[0]}
+    results = []
+    for r in directory:
+        drct = {'Path': r[0]}
         for line in r:
             for i in DIRECTORY:
                 if i in line:
-                    if i in ['Order']:
-                        directory[i] = ','.join(
-                            str(n) for n in line.split()[1:])
-                    elif i in ['Options', 'Allow']:
-                        directory[i] = ' '.join(
-                            str(n) for n in line.split()[1:])
+                    if i == 'Order':
+                        drct[i] = ','.join(str(n) for n in line.split()[1:])
+                    elif i in ('Options', 'Allow'):
+                        drct[i] = ' '.join(str(n) for n in line.split()[1:])
                     else:
-                        directory[i] = line.split()[1].strip(
-                            string.punctuation)
+                        drct[i] = line.split()[1].strip(string.punctuation)
                     continue
-        directorys.append(directory)
-
-    return directorys
+        results.append(drct)
+    return results
 
 
 def virtual_host_config(site, key, val, port=80):
@@ -392,6 +389,7 @@ def _parse_apache_config(conf, getlineinfo):
     AddLanguage = []
     LoadModule = []
     AddIcon = []
+    Listen = []
     with open(conf) as f:
         for line in f:
             line = line.strip()
@@ -401,7 +399,7 @@ def _parse_apache_config(conf, getlineinfo):
                 if line.startswith(i):
                     ll = line.split()
                     if i in ['IndexOptions', 'DirectoryIndex']:
-                        configs[i] = ' '.join(str(n) for n in line.split()[1:])
+                        configs[i] = ' '.join(str(n) for n in ll[1:])
                     elif i == 'AddIcon':
                         AddIcon.append([ll[1], ll[2:]])
                     elif i == 'AddIconByType':
@@ -412,18 +410,18 @@ def _parse_apache_config(conf, getlineinfo):
                         AddLanguage.append(ll[1:])
                     elif i == 'LoadModule':
                         LoadModule.append(ll[1:])
+                    elif i == 'Listen':
+                        port = ll[1].split(':')[-1]
+                        ip = ll[1][0:-(len(port) + 1)].lstrip('[').rstrip(']')
+                        Listen.append({'port': port, 'ip': ip})
                     else:
-                        # print(line.split()[1].strip(string.punctuation))
-                        configs[i] = line.split()[1].strip(string.punctuation)
-                    # print(line_index, i, line)
-        # print(Alias)
-        # print(AddLanguage)
-        # print(LoadModule)
-        # print(AddIcon)
+                        # print(ll[1].strip(string.punctuation))
+                        configs[i] = ll[1].strip(string.punctuation)
         configs['Alias'] = Alias
-        configs['AddLanguage'] = AddLanguage
+        configs['Listen'] = Listen
         configs['AddIcon'] = AddIcon
         configs['LoadModule'] = LoadModule
+        configs['AddLanguage'] = AddLanguage
         return configs
 
 
@@ -443,7 +441,7 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
                 if server['_param']['disabled'] == disabled]
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # test_path = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
     # tmp = loadconfig(test_path)
     # print(tmp)
@@ -455,9 +453,9 @@ if __name__ == '__main__':
     # for line in replace_docroot('aaa.com', 'docroot'):
     #     print(line)
 
-    aaa = '/Users/douzhenjiang/test/inpanel/test/aaa.com.conf'
-    tmp1 = _parse_virtualhost_config(aaa)
-    print(json.dumps(tmp1))
+    # aaa = '/Users/douzhenjiang/test/inpanel/test/aaa.com.conf'
+    # tmp1 = _parse_virtualhost_config(aaa)
+    # print(json.dumps(tmp1))
 
     # print getservers()
 
