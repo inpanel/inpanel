@@ -1017,7 +1017,7 @@ def getservers(config=None):
             port_ip = listen.split()[0]
             port = port_ip.split(':')[-1]
             ip = port_ip[0:-(len(port) + 1)]
-            # ip = ip.lstrip('[').rstrip(']')  # for IPv6
+            ip = ip.lstrip('[').rstrip(']')  # for IPv6
             server['listens'].append({
                 'ip': ip or '*',
                 'port': port,
