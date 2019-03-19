@@ -184,6 +184,11 @@ filter('site.engine', function () {
             return input;
     };
 }).
+filter('site.ip', function () {
+    return function (input) {
+        return input && input.indexOf(':') > -1 ? '[' + input + ']' : input;
+    };
+}).
 filter('site.port', function () {
     return function (input) {
         if (input == '80')

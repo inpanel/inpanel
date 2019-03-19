@@ -57,7 +57,7 @@
                                 </td>
                                 <td>
                                     <span ng-repeat="listen in server.listens">
-                                    {{listen.ip}}:{{listen.port}}
+                                    {{listen.ip | site.ip}}:{{listen.port}}
                                     <span ng-show="listen.port==443||listen.port==80">({{listen.port | site.port}})</span>
                                     <span ng-show="listen.default_server">(默认)</span>
                                     <br>

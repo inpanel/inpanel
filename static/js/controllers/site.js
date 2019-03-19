@@ -327,10 +327,11 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
 var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Backend', 'Timeout',
     function($scope, Module, $routeParams, $location, Request, Message, Backend, Timeout) {
         var section = $routeParams.section;
-        var action = section == 'new' ? 'new' : 'edit';
-        var site = action == 'edit' ? section.substr(5) : '';
+        $scope.action = section == 'new' ? 'new' : 'edit';
+        $scope.module_header = $scope.action == 'new' ? '新建站点' : '编辑站点';
+        var site = $scope.action == 'edit' ? section.substr(5) : '';
         var server_ip, server_port, server_name;
-        if (action == 'edit') {
+        if ($scope.action == 'edit') {
             site = site.split('_');
             if (site.length == 3) {
                 server_ip = site[0];
@@ -349,12 +350,11 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         var module = 'site.nginx';
         var tab_section = Module.getSection();
         var tab_section_enabled = ['basic', 'ssl', 'rewrite', 'advanced'];
-        Module.init(module, action == 'new' ? '新建站点（Nginx）' : '编辑站点（Nginx）');
+        Module.init(module, $scope.module_header);
         $scope.loaded = false;
         $scope.showglobaladv = false;
         $scope.curloc = -1;
         $scope.setloc = function(i) { $scope.curloc = i; };
-        $scope.action = action;
         $scope.proxy_caches = [];
         $scope.ssl_enabled = false;
 
@@ -454,7 +454,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             time_unit: 'h'
         };
         $scope.setting = angular.copy(server_tmpl);
-        $scope.gen_by_inpanel = action == 'new' ? true : false;
+        $scope.gen_by_inpanel = $scope.action == 'new' ? true : false;
 
         var global_rewrite_templates = {
             '301_1': 'rewrite ^ http://example.com$request_uri? permanent',
@@ -472,7 +472,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             $scope.sec(tab_section);
             Module.setSection(tab_section);
             // nginx version check may take too long time, so we don't want to wait for it
-            if (action == 'new') {
+            if ($scope.action == 'new') {
                 $scope.loaded = true;
             } else {
                 $scope.getserver();
@@ -800,7 +800,14 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         };
 
         // submit
-        $scope.addserver = function() {
+        $scope.submit = function (active) {
+            if ($scope.action == 'new') {
+                $scope.addserver(active);
+            } else if($scope.action == 'edit') {
+                $scope.updateserver(active);
+            }
+        };
+        $scope.addserver = function(active) {
             Request.post('/operation/nginx', {
                 'action': 'addserver',
                 'version': $scope.nginx_version,
@@ -810,13 +817,14 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
-                    Timeout(function() {
-                        $location.path('/site/nginx/edit_' + encodeURIComponent(name));
-                    }, 1000, module);
+                    $location.path('/site/nginx/edit_' + name);
+                    if (active && active == 'active') {
+                        $scope.nginx_set_status('restart');
+                    }
                 }
             });
         };
-        $scope.updateserver = function(restart) {
+        $scope.updateserver = function(active) {
             Request.post('/operation/nginx', {
                 'action': 'updateserver',
                 'ip': server_ip,
@@ -829,22 +837,24 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
-                    var new_path = '/site/nginx/edit_' + encodeURIComponent(name);
+                    var new_path = '/site/nginx/edit_' + name;
                     if (new_path != $location.path()) {
                         $location.path(new_path);
                         console.log('修改成功')
                     } else {
                         $scope.restore();
-                        if (restart && restart == 'restart') {
+                        if (active && active == 'active') {
                             $scope.nginx_set_status('restart');
                         }
                     }
                 }
             });
         };
-        $scope.restore = function(callback) {
+        $scope.restore = function () {
             $scope.setting = angular.copy(server_tmpl);
-            $scope.getserver();
+            if ($scope.action == 'edit') {
+                $scope.getserver();
+            }
         };
         $scope.nginx_set_status = function (status) {
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
@@ -860,7 +870,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             }, true);
         };
         // initially add
-        if (section == 'new') {
+        if ($scope.action == 'new') {
             $scope.addservername();
             $scope.addlisten();
             $scope.addlocation();

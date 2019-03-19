@@ -5,10 +5,7 @@
 
 <div id="main" ng-show="loaded" style="display:none;">
     <div class="module-header">
-        <h3>
-            <span ng-show="action=='new'">新建站点（Nginx）</span>
-            <span ng-show="action=='edit'">编辑站点（Nginx）</span>
-        </h3>
+        <h3>{{module_header}}</h3>
     </div>
 
     <div class="alert alert-danger" ng-show="!gen_by_inpanel" style="display:none;">
@@ -535,11 +532,10 @@
         </div>
         <hr/>
         <p>
-            <button class="btn btn-primary" ng-show="action=='new'" ng-click="addserver()">提交站点</button>
-            <button class="btn btn-primary" ng-show="action=='edit'" ng-click="updateserver()">保存修改</button>
-            <button class="btn btn-success" ng-click="updateserver('restart')">立即生效</button>
-            <button class="btn btn-warning" ng-show="action=='edit'" ng-click="restore()">重置表单</button>
-            <a class="btn btn-default" href="#/site?s=nginx">取消返回</a>
+            <button class="btn btn-primary" ng-click="submit()">提交</button>
+            <button class="btn btn-success" ng-click="submit('active')">生效</button>
+            <button class="btn btn-warning" ng-show="action=='edit'" ng-click="restore()">重置</button>
+            <a class="btn btn-default" href="#/site?s=nginx">取消</a>
         </p>
     </div>
 </div>
