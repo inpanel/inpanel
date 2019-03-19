@@ -1,5 +1,5 @@
 var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backend',
-    function($scope, Module, $routeParams, Request, Message, Backend) {
+    function ($scope, Module, $routeParams, Request, Message, Backend) {
         var module = 'site';
         Module.init(module, '网站管理');
         var section = Module.getSection();
@@ -17,7 +17,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         $scope.packageloading = false;
         $scope.site_packages = [];
 
-        $scope.load = function() {
+        $scope.load = function () {
             $scope.load_status(function () {
                 $scope.loaded = true;
                 if (!$scope.has_httpserver) {
@@ -28,7 +28,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         };
 
         $scope.load_status = function (callback) {
-            Request.get('/query/service.nginx,service.httpd', function(res) {
+            Request.get('/query/service.nginx,service.httpd', function (res) {
                 if (res['service.nginx'] && res['service.nginx'].status) {
                     $scope.nginx_status = res['service.nginx'].status;
                     $scope.nginx_supported = true;
@@ -68,7 +68,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
-                'success': function(res) {
+                'success': function (res) {
                     if (res.code == 0) {
                         Message.setInfo(res.msg);
                     }
@@ -78,7 +78,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 }
             }, true);
         };
-        $scope.loadnginx = function(init, reload) {
+        $scope.loadnginx = function (init, reload) {
             if (!init && Module.getSection() == 'nginx' && !reload) {
                 return;
             }
@@ -90,7 +90,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             $scope.nginxloading = true;
             Request.post('/operation/nginx', {
                 'action': 'getservers'
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     $scope.nginxservers = res.data;
                     $scope.nginxloading = false;
@@ -98,7 +98,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             });
         };
 
-        $scope.loadapache = function(init, reload) {
+        $scope.loadapache = function (init, reload) {
             if (!init && Module.getSection() == 'apache' && !reload) {
                 return;
             }
@@ -110,7 +110,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             $scope.apacheloading = true;
             Request.post('/operation/apache', {
                 'action': 'getservers'
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     $scope.apacheservers = res.data;
                     $scope.apacheloading = false;
@@ -118,7 +118,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             });
         };
 
-        $scope.loadpackage = function(init, reload) {
+        $scope.loadpackage = function (init, reload) {
             if (!init && Module.getSection() == 'package' && !reload) {
                 return;
             }
@@ -128,7 +128,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 return;
             }
             $scope.packageloading = true;
-            Request.get('/sitepackage/getlist', function(res) {
+            Request.get('/sitepackage/getlist', function (res) {
                 $scope.packageloading = false;
                 if (res.code == 0) {
                     $scope.site_packages = res.data;
@@ -136,29 +136,29 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             });
         };
 
-        $scope.package_install_setting = function(pkg) {
+        $scope.package_install_setting = function (pkg) {
             $scope.curpkg = pkg;
             $scope.curver = pkg.versions[0];
             $scope.pkgver = $scope.curver.code;
             $scope.installpath = '/var/www';
             $('#pkg_install_setting').modal();
         };
-        $scope.package_version_select = function(v) {
+        $scope.package_version_select = function (v) {
             $scope.pkgver = v.code;
             $scope.curver = v;
         };
-        $scope.selectinstallpath = function(i) {
+        $scope.selectinstallpath = function (i) {
             $scope.selector_title = '请选择安装目录';
             $scope.selector.onlydir = true;
             $scope.selector.onlyfile = false;
             $scope.selector.load($scope.installpath);
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.installpath = path;
             };
             $('#selector').modal();
         };
-        $scope.package_install = function() {
+        $scope.package_install = function () {
             // check whether the installpath is exists and whether it is empty
             Message.setInfo('正在检测安装目录...', true);
             Request.post('/operation/file', {
@@ -166,7 +166,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'path': $scope.installpath,
                 'showhidden': true,
                 'remember': false
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     Message.setInfo('');
                     if (res.data.length > 0) {
@@ -186,136 +186,136 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         function package_get_downloadurl() {
             Message.setInfo('正在请求安装文件...');
             Request.get(
-            '/sitepackage/getdownloadtask?name=' + $scope.curpkg.code + '&version=' + $scope.pkgver,
-            function(res) {
-                if (res.code == 0) {
-                    $scope.downloadurl = res.data.url;
-                    $scope.downloadpath = res.data.path;
-                    $scope.extractpath = res.data.temp;
+                '/sitepackage/getdownloadtask?name=' + $scope.curpkg.code + '&version=' + $scope.pkgver,
+                function (res) {
+                    if (res.code == 0) {
+                        $scope.downloadurl = res.data.url;
+                        $scope.downloadpath = res.data.path;
+                        $scope.extractpath = res.data.temp;
 
-                    Backend.call(
-                        $scope,
-                        module,
-                        '/backend/wget',
-                        '/backend/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
-                            'url': $scope.downloadurl,
-                            'path': $scope.downloadpath
-                        }, {
-                            'success': function(data) {
-                                // decompress it
-                                var zippath = $scope.downloadpath;
-                                var despath = $scope.extractpath;
-                                Backend.call(
-                                    $scope,
-                                    module,
-                                    '/backend/decompress',
-                                    '/backend/decompress_' + zippath + '_' + despath, {
-                                        'zippath': zippath,
-                                        'despath': despath
-                                    }, {
-                                        'success': function(data) {
-                                            // move the right folder to site path
-                                            var corepath = $scope.curver.core_path;
-                                            var srcpath = $scope.extractpath + '/' + corepath + '/*';
-                                            var despath = $scope.installpath;
-                                            Backend.call(
-                                                $scope,
-                                                module,
-                                                '/backend/copy',
-                                                '/backend/copy_' + srcpath + '_' + despath, {
-                                                    'srcpath': srcpath,
-                                                    'despath': despath
-                                                }, {
-                                                    'success': function(data) {
-                                                        // install ok, remove the temp folder
-                                                        Message.setInfo('正在清理安装临时文件...');
-                                                        Backend.call(
-                                                            $scope,
-                                                            module,
-                                                            '/backend/remove',
-                                                            '/backend/remove_' + $scope.extractpath, {
-                                                                'paths': $scope.extractpath
-                                                            },
-                                                            function() {
-                                                                // set user.group to apache.apache
-                                                                Message.setInfo('正在设置目录权限...');
-                                                                Backend.call(
-                                                                    $scope,
-                                                                    module,
-                                                                    '/backend/chown',
-                                                                    '/backend/chown_' + $scope.installpath, {
-                                                                        'paths': $scope.installpath,
-                                                                        'user': 'apache',
-                                                                        'group': 'apache',
-                                                                        'recursively': true
-                                                                    }, {
-                                                                        'success': function(data) {
-                                                                            Message.setSuccess($scope.curpkg.name + ' v' + $scope.pkgver + ' 安装完成！');
+                        Backend.call(
+                            $scope,
+                            module,
+                            '/backend/wget',
+                            '/backend/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
+                                'url': $scope.downloadurl,
+                                'path': $scope.downloadpath
+                            }, {
+                                'success': function (data) {
+                                    // decompress it
+                                    var zippath = $scope.downloadpath;
+                                    var despath = $scope.extractpath;
+                                    Backend.call(
+                                        $scope,
+                                        module,
+                                        '/backend/decompress',
+                                        '/backend/decompress_' + zippath + '_' + despath, {
+                                            'zippath': zippath,
+                                            'despath': despath
+                                        }, {
+                                            'success': function (data) {
+                                                // move the right folder to site path
+                                                var corepath = $scope.curver.core_path;
+                                                var srcpath = $scope.extractpath + '/' + corepath + '/*';
+                                                var despath = $scope.installpath;
+                                                Backend.call(
+                                                    $scope,
+                                                    module,
+                                                    '/backend/copy',
+                                                    '/backend/copy_' + srcpath + '_' + despath, {
+                                                        'srcpath': srcpath,
+                                                        'despath': despath
+                                                    }, {
+                                                        'success': function (data) {
+                                                            // install ok, remove the temp folder
+                                                            Message.setInfo('正在清理安装临时文件...');
+                                                            Backend.call(
+                                                                $scope,
+                                                                module,
+                                                                '/backend/remove',
+                                                                '/backend/remove_' + $scope.extractpath, {
+                                                                    'paths': $scope.extractpath
+                                                                },
+                                                                function () {
+                                                                    // set user.group to apache.apache
+                                                                    Message.setInfo('正在设置目录权限...');
+                                                                    Backend.call(
+                                                                        $scope,
+                                                                        module,
+                                                                        '/backend/chown',
+                                                                        '/backend/chown_' + $scope.installpath, {
+                                                                            'paths': $scope.installpath,
+                                                                            'user': 'apache',
+                                                                            'group': 'apache',
+                                                                            'recursively': true
+                                                                        }, {
+                                                                            'success': function (data) {
+                                                                                Message.setSuccess($scope.curpkg.name + ' v' + $scope.pkgver + ' 安装完成！');
+                                                                            }
                                                                         }
-                                                                    }
-                                                                );
-                                                            },
-                                                            true
-                                                        );
-                                                    },
-                                                    'error': function(data) {
-                                                        Message.setError('复制安装文件过程中出现错误，安装取消！')
+                                                                    );
+                                                                },
+                                                                true
+                                                            );
+                                                        },
+                                                        'error': function (data) {
+                                                            Message.setError('复制安装文件过程中出现错误，安装取消！')
+                                                        }
                                                     }
-                                                }
-                                            );
+                                                );
 
+                                            }
                                         }
-                                    }
-                                );
+                                    );
+                                },
+                                'error': function (error) {
+                                    Message.setError('下载安装包过程中出现错误，安装取消！')
+                                }
                             },
-                            'error': function(error) {
-                                Message.setError('下载安装包过程中出现错误，安装取消！')
-                            }
-                        },
-                        false
-                    );
-                }
-            });
+                            false
+                        );
+                    }
+                });
 
         }
 
-        $scope.nginx_enableserver = function(ip, port, server_name) {
+        $scope.nginx_enableserver = function (ip, port, server_name) {
             Request.post('/operation/nginx', {
                 'action': 'enableserver',
                 'ip': ip,
                 'port': port,
                 'server_name': server_name
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     $scope.loadnginx(0, 1);
                 }
             });
         };
-        $scope.nginx_disableserver = function(ip, port, server_name) {
+        $scope.nginx_disableserver = function (ip, port, server_name) {
             Request.post('/operation/nginx', {
                 'action': 'disableserver',
                 'ip': ip,
                 'port': port,
                 'server_name': server_name
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     $scope.loadnginx(0, 1);
                 }
             });
         };
-        $scope.nginx_deleteserverconfirm = function(ip, port, server_name) {
+        $scope.nginx_deleteserverconfirm = function (ip, port, server_name) {
             $scope.nginx_ip = ip;
             $scope.nginx_port = port;
             $scope.nginx_server_name = server_name;
             $('#nginx_deleteserverconfirm').modal();
         };
-        $scope.nginx_deleteserver = function() {
+        $scope.nginx_deleteserver = function () {
             Request.post('/operation/nginx', {
                 'action': 'deleteserver',
                 'ip': $scope.nginx_ip,
                 'port': $scope.nginx_port,
                 'server_name': $scope.nginx_server_name
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     $scope.loadnginx(0, 1);
                 }
@@ -325,7 +325,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
 ];
 
 var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Backend', 'Timeout',
-    function($scope, Module, $routeParams, $location, Request, Message, Backend, Timeout) {
+    function ($scope, Module, $routeParams, $location, Request, Message, Backend, Timeout) {
         var section = $routeParams.section;
         $scope.action = section == 'new' ? 'new' : 'edit';
         $scope.module_header = $scope.action == 'new' ? '新建站点' : '编辑站点';
@@ -354,7 +354,9 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         $scope.loaded = false;
         $scope.showglobaladv = false;
         $scope.curloc = -1;
-        $scope.setloc = function(i) { $scope.curloc = i; };
+        $scope.setloc = function (i) {
+            $scope.curloc = i;
+        };
         $scope.proxy_caches = [];
         $scope.ssl_enabled = false;
 
@@ -462,11 +464,11 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             '302_1': 'rewrite ^ http://example.com$request_uri? redirect',
             '302_2': 'rewrite ^ http://example.com/ redirect'
         };
-        $scope.$watch('rewrite_template', function(value) {
+        $scope.$watch('rewrite_template', function (value) {
             $scope.setting.rewrite_rules = value ? global_rewrite_templates[value] : '';
         });
 
-        $scope.load = function() {
+        $scope.load = function () {
             // check nginx version
             tab_section = (tab_section && tab_section_enabled.indexOf(tab_section) > -1) ? tab_section : tab_section_enabled[0];
             $scope.sec(tab_section);
@@ -487,21 +489,21 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 'pkg': 'nginx',
                 'repo': 'installed'
             }, {
-                'success': function(res) {
+                'success': function (res) {
                     $scope.nginx_version = res.data[0].version;
                 },
-                'error': function(error) {
+                'error': function (error) {
                     $scope.nginx_version = '';
                     //$scope.loaded = true;
                 }
             }, true);
         };
-        $scope.load_proxy_caches = function() {
+        $scope.load_proxy_caches = function () {
             // load proxy cache list
             Request.post('/operation/nginx', {
                 'action': 'gethttpsettings',
                 'items': 'proxy_cache_path[]'
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     var proxy_caches = [];
                     if (/msie/.test(navigator.userAgent.toLowerCase())) proxy_caches = ['']; // temp patch for ie8
@@ -515,14 +517,14 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 }
             }, false, true);
         };
-        $scope.getserver = function(quiet) {
+        $scope.getserver = function (quiet) {
             // get server info (in edit mode)
             Request.post('/operation/nginx', {
                 'action': 'getserver',
                 'ip': server_ip,
                 'port': server_port,
                 'server_name': server_name
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     var d = res.data;
                     // init setting
@@ -530,7 +532,10 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                     $scope.gen_by_inpanel = d._inpanel;
                     for (i in d.server_names) {
                         var name = d.server_names[i];
-                        s.server_names.push({ 'name': name, 'default_name': name == '_' });
+                        s.server_names.push({
+                            'name': name,
+                            'default_name': name == '_'
+                        });
                     }
                     for (i in d.listens) {
                         var listen = d.listens[i];
@@ -662,7 +667,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                     $scope.curloc = 0;
                     $scope.loaded = true;
                 } else {
-                    Timeout(function() {
+                    Timeout(function () {
                         $location.path('/site');
                     }, 1000, module);
                 }
@@ -670,28 +675,28 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         };
 
         // server name operation
-        $scope.deleteservername = function(i) {
+        $scope.deleteservername = function (i) {
             $scope.setting.server_names.splice(i, 1);
         };
-        $scope.addservername = function() {
+        $scope.addservername = function () {
             $scope.setting.server_names.push(angular.copy(server_name_tmpl));
         };
 
         // listen operation
-        $scope.deletelisten = function(i) {
+        $scope.deletelisten = function (i) {
             $scope.setting.listens.splice(i, 1);
         };
-        $scope.addlisten = function() {
+        $scope.addlisten = function () {
             $scope.setting.listens.push(angular.copy(listen_tmpl));
         };
 
         // location operation
-        $scope.deletelocation = function(i) {
+        $scope.deletelocation = function (i) {
             $scope.setting.locations.splice(i, 1);
             $scope.curloc--;
             if ($scope.curloc < 0 && $scope.setting.locations.length > 0) $scope.curloc = 0;
         };
-        $scope.addlocation = function() {
+        $scope.addlocation = function () {
             var locs = $scope.setting.locations;
             locs.splice($scope.curloc + 1, 0, angular.copy(location_tmpl));
             $scope.proxy_addbackend($scope.curloc + 1);
@@ -699,22 +704,22 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         };
 
         // proxy operation
-        $scope.proxy_deletebackend = function(loc_i, i) {
+        $scope.proxy_deletebackend = function (loc_i, i) {
             $scope.setting.locations[loc_i].proxy.backends.splice(i, 1);
         };
-        $scope.proxy_addbackend = function(loc_i) {
+        $scope.proxy_addbackend = function (loc_i) {
             $scope.setting.locations[loc_i].proxy.backends.push(angular.copy(backend_tmpl));
             $scope.proxy_addvalid(loc_i);
         };
-        $scope.proxy_deletevalid = function(loc_i, i) {
+        $scope.proxy_deletevalid = function (loc_i, i) {
             $scope.setting.locations[loc_i].proxy.proxy_cache_valid.splice(i, 1);
         };
-        $scope.proxy_addvalid = function(loc_i) {
+        $scope.proxy_addvalid = function (loc_i) {
             $scope.setting.locations[loc_i].proxy.proxy_cache_valid.push(angular.copy(proxy_cache_valid_tmpl));
         };
 
         // automatically set the root path of static and fastcgi engine
-        $scope.$watch('setting.server_names[0].name', function(value, oldvalue) {
+        $scope.$watch('setting.server_names[0].name', function (value, oldvalue) {
             var server_name = value;
             var old_server_name = oldvalue;
             var locs = $scope.setting.locations;
@@ -739,7 +744,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         });
 
         // operations when url path change
-        $scope.urlpathchange = function(loc) {
+        $scope.urlpathchange = function (loc) {
             if (loc.urlpath.length == 0) loc.urlpath = '/';
             if (loc.engine == 'fastcgi' && loc.fastcgi.rewrite_enable) {
                 // parse rewrite rules and automatically replace the path start with the old path
@@ -750,49 +755,49 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         };
 
         // site folder selector
-        $scope.selectstaticfolder = function(i) {
+        $scope.selectstaticfolder = function (i) {
             $scope.selector_title = '请选择站点目录';
             $scope.selector.onlydir = true;
             $scope.selector.onlyfile = false;
             $scope.selector.load($scope.setting.locations[i]['static'].root);
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.setting.locations[i]['static'].root = path;
             };
             $('#selector').modal();
         };
-        $scope.selectfastcgifolder = function(i) {
+        $scope.selectfastcgifolder = function (i) {
             $scope.selector_title = '请选择站点目录';
             $scope.selector.onlydir = true;
             $scope.selector.onlyfile = false;
             $scope.selector.load($scope.setting.locations[i].fastcgi.root);
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.setting.locations[i].fastcgi.root = path;
             };
             $('#selector').modal();
         };
-        $scope.ssl_status_set = function(i) {
+        $scope.ssl_status_set = function (i) {
             $scope.ssl_enabled = i || false;
         };
         // ssl selector
-        $scope.selectsslcrt = function(i) {
+        $scope.selectsslcrt = function (i) {
             $scope.selector_title = '请选择证书文件（*.crt）';
             $scope.selector.onlydir = false;
             $scope.selector.onlyfile = true;
             $scope.selector.load('/etc/nginx');
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.setting.ssl_crt = path;
             };
             $('#selector').modal();
         };
-        $scope.selectsslkey = function(i) {
+        $scope.selectsslkey = function (i) {
             $scope.selector_title = '请选择密钥文件（*.key）';
             $scope.selector.onlydir = false;
             $scope.selector.onlyfile = true;
             $scope.selector.load('/etc/nginx');
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.setting.ssl_key = path;
             };
@@ -803,16 +808,16 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         $scope.submit = function (active) {
             if ($scope.action == 'new') {
                 $scope.addserver(active);
-            } else if($scope.action == 'edit') {
+            } else if ($scope.action == 'edit') {
                 $scope.updateserver(active);
             }
         };
-        $scope.addserver = function(active) {
+        $scope.addserver = function (active) {
             Request.post('/operation/nginx', {
                 'action': 'addserver',
                 'version': $scope.nginx_version,
                 'setting': angular.toJson($scope.setting)
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     var s = $scope.setting;
                     $scope.loaded = false;
@@ -824,7 +829,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 }
             });
         };
-        $scope.updateserver = function(active) {
+        $scope.updateserver = function (active) {
             Request.post('/operation/nginx', {
                 'action': 'updateserver',
                 'ip': server_ip,
@@ -832,7 +837,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 'server_name': server_name,
                 'version': $scope.nginx_version,
                 'setting': angular.toJson($scope.setting)
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     var s = $scope.setting;
                     $scope.loaded = false;
@@ -864,7 +869,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
-                'success': function(res) {
+                'success': function (res) {
                     Message.setInfo(res.msg);
                 }
             }, true);
@@ -878,15 +883,14 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
     }
 ];
 
-
-var SiteApacheCtrl = [
-    '$scope', 'Module', '$routeParams', '$location', 'Request', 'Backend', 'Timeout',
-    function($scope, Module, $routeParams, $location, Request, Backend, Timeout) {
+var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Backend', 'Timeout',
+    function ($scope, Module, $routeParams, $location, Request, Message, Backend, Timeout) {
         var section = $routeParams.section;
-        var action = section == 'new' ? 'new' : 'edit';
-        var site = action == 'edit' ? section.substr(5) : '';
+        $scope.action = section == 'new' ? 'new' : 'edit';
+        $scope.module_header = $scope.action == 'new' ? '新建站点' : '编辑站点';
+        var site = $scope.action == 'edit' ? section.substr(5) : '';
         var server_ip, server_port, server_name;
-        if (action == 'edit') {
+        if ($scope.action == 'edit') {
             site = site.split('_');
             if (site.length == 3) {
                 server_ip = site[0];
@@ -904,12 +908,13 @@ var SiteApacheCtrl = [
 
         var module = 'site.apache';
         var tab_section = Module.getSection();
-        Module.init(module, action == 'new' ? '新建站点（Apache）' : '编辑站点（Apache）');
+        Module.init(module, $scope.module_header);
         $scope.loaded = false;
         $scope.showglobaladv = false;
         $scope.curloc = -1;
-        $scope.setloc = function(i) { $scope.curloc = i; };
-        $scope.action = action;
+        $scope.setloc = function (i) {
+            $scope.curloc = i;
+        };
 
         var server_tmpl = {
             server_names: [],
@@ -1007,7 +1012,7 @@ var SiteApacheCtrl = [
             time_unit: 'h'
         };
         $scope.setting = angular.copy(server_tmpl);
-        $scope.gen_by_inpanel = action == 'new' ? true : false;
+        $scope.gen_by_inpanel = $scope.action == 'new' ? true : false;
 
         var global_rewrite_templates = {
             '301_1': 'rewrite ^ http://example.com$request_uri? permanent',
@@ -1015,13 +1020,13 @@ var SiteApacheCtrl = [
             '302_1': 'rewrite ^ http://example.com$request_uri? redirect',
             '302_2': 'rewrite ^ http://example.com/ redirect'
         };
-        $scope.$watch('rewrite_template', function(value) {
+        $scope.$watch('rewrite_template', function (value) {
             $scope.setting.rewrite_rules = value ? global_rewrite_templates[value] : '';
         });
 
 
         // check Apache version
-        $scope.load = function() {
+        $scope.load = function () {
             if (tab_section && tab_section == 'advanced') {
                 $scope.sec('advanced');
                 Module.setSection('advanced');
@@ -1030,38 +1035,31 @@ var SiteApacheCtrl = [
                 Module.setSection('basic');
             }
             // Apache version check may take too long time, so we don't want to wait for it
-            if (action == 'new') $scope.loaded = true;
+            if ($scope.action == 'new') $scope.loaded = true;
             else $scope.getserver();
 
-            Backend.call(
-                $scope,
-                module,
-                '/backend/yum_info',
-                '/backend/yum_info_apache', {
-                    'pkg': 'apache',
-                    'repo': 'installed'
-                }, {
-                    'success': function(res) {
-                        $scope.apache_version = res.data[0].version;
-                    },
-                    'error': function(error) {
-                        $scope.apache_version = '';
-                        //$scope.loaded = true;
-                    }
+            Backend.call($scope, module, '/backend/yum_info', '/backend/yum_info_apache', {
+                'pkg': 'apache',
+                'repo': 'installed'
+            }, {
+                'success': function (res) {
+                    $scope.apache_version = res.data[0].version;
                 },
-                true
-            );
-
+                'error': function (error) {
+                    $scope.apache_version = '';
+                    //$scope.loaded = true;
+                }
+            }, true);
             $scope.loadproxycaches();
         };
 
         // load proxy cache list
         $scope.proxy_caches = [];
-        $scope.loadproxycaches = function() {
+        $scope.loadproxycaches = function () {
             Request.post('/operation/apache', {
                 'action': 'gethttpsettings',
                 'items': 'proxy_cache_path[]'
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     var proxy_caches = [];
                     if (/msie/.test(navigator.userAgent.toLowerCase())) proxy_caches = ['']; // temp patch for ie8
@@ -1077,13 +1075,13 @@ var SiteApacheCtrl = [
         };
 
         // get server info (in edit mode)
-        $scope.getserver = function(quiet) {
+        $scope.getserver = function (quiet) {
             Request.post('/operation/apache', {
                 'action': 'getserver',
                 'ip': server_ip,
                 'port': server_port,
                 'server_name': server_name
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     var d = res.data;
                     // init setting
@@ -1091,7 +1089,10 @@ var SiteApacheCtrl = [
                     $scope.gen_by_inpanel = d._inpanel;
                     for (i in d.server_names) {
                         var name = d.server_names[i];
-                        s.server_names.push({ 'name': name, 'default_name': name == '_' });
+                        s.server_names.push({
+                            'name': name,
+                            'default_name': name == '_'
+                        });
                     }
                     for (i in d.listens) {
                         var listen = d.listens[i];
@@ -1223,7 +1224,7 @@ var SiteApacheCtrl = [
                     $scope.curloc = 0;
                     $scope.loaded = true;
                 } else {
-                    Timeout(function() {
+                    Timeout(function () {
                         $location.path('/site');
                     }, 1000, module);
                 }
@@ -1231,28 +1232,28 @@ var SiteApacheCtrl = [
         };
 
         // server name operation
-        $scope.deleteservername = function(i) {
+        $scope.deleteservername = function (i) {
             $scope.setting.server_names.splice(i, 1);
         };
-        $scope.addservername = function() {
+        $scope.addservername = function () {
             $scope.setting.server_names.push(angular.copy(server_name_tmpl));
         };
 
         // listen operation
-        $scope.deletelisten = function(i) {
+        $scope.deletelisten = function (i) {
             $scope.setting.listens.splice(i, 1);
         };
-        $scope.addlisten = function() {
+        $scope.addlisten = function () {
             $scope.setting.listens.push(angular.copy(listen_tmpl));
         };
 
         // location operation
-        $scope.deletelocation = function(i) {
+        $scope.deletelocation = function (i) {
             $scope.setting.locations.splice(i, 1);
             $scope.curloc--;
             if ($scope.curloc < 0 && $scope.setting.locations.length > 0) $scope.curloc = 0;
         };
-        $scope.addlocation = function() {
+        $scope.addlocation = function () {
             var locs = $scope.setting.locations;
             locs.splice($scope.curloc + 1, 0, angular.copy(location_tmpl));
             $scope.proxy_addbackend($scope.curloc + 1);
@@ -1260,22 +1261,22 @@ var SiteApacheCtrl = [
         };
 
         // proxy operation
-        $scope.proxy_deletebackend = function(loc_i, i) {
+        $scope.proxy_deletebackend = function (loc_i, i) {
             $scope.setting.locations[loc_i].proxy.backends.splice(i, 1);
         };
-        $scope.proxy_addbackend = function(loc_i) {
+        $scope.proxy_addbackend = function (loc_i) {
             $scope.setting.locations[loc_i].proxy.backends.push(angular.copy(backend_tmpl));
             $scope.proxy_addvalid(loc_i);
         };
-        $scope.proxy_deletevalid = function(loc_i, i) {
+        $scope.proxy_deletevalid = function (loc_i, i) {
             $scope.setting.locations[loc_i].proxy.proxy_cache_valid.splice(i, 1);
         };
-        $scope.proxy_addvalid = function(loc_i) {
+        $scope.proxy_addvalid = function (loc_i) {
             $scope.setting.locations[loc_i].proxy.proxy_cache_valid.push(angular.copy(proxy_cache_valid_tmpl));
         };
 
         // automatically set the root path of static and fastcgi engine
-        $scope.$watch('setting.server_names[0].name', function(value, oldvalue) {
+        $scope.$watch('setting.server_names[0].name', function (value, oldvalue) {
             var server_name = value;
             var old_server_name = oldvalue;
             var locs = $scope.setting.locations;
@@ -1300,7 +1301,7 @@ var SiteApacheCtrl = [
         });
 
         // operations when url path change
-        $scope.urlpathchange = function(loc) {
+        $scope.urlpathchange = function (loc) {
             if (loc.urlpath.length == 0) loc.urlpath = '/';
             if (loc.engine == 'fastcgi' && loc.fastcgi.rewrite_enable) {
                 // parse rewrite rules and automatically replace the path start with the old path
@@ -1311,46 +1312,46 @@ var SiteApacheCtrl = [
         };
 
         // site folder selector
-        $scope.selectstaticfolder = function(i) {
+        $scope.selectstaticfolder = function (i) {
             $scope.selector_title = '请选择站点目录';
             $scope.selector.onlydir = true;
             $scope.selector.onlyfile = false;
             $scope.selector.load($scope.setting.locations[i]['static'].root);
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.setting.locations[i]['static'].root = path;
             };
             $('#selector').modal();
         };
-        $scope.selectfastcgifolder = function(i) {
+        $scope.selectfastcgifolder = function (i) {
             $scope.selector_title = '请选择站点目录';
             $scope.selector.onlydir = true;
             $scope.selector.onlyfile = false;
             $scope.selector.load($scope.setting.locations[i].fastcgi.root);
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.setting.locations[i].fastcgi.root = path;
             };
             $('#selector').modal();
         };
         // ssl selector
-        $scope.selectsslcrt = function(i) {
+        $scope.selectsslcrt = function (i) {
             $scope.selector_title = '请选择CRT文件（*.crt）';
             $scope.selector.onlydir = false;
             $scope.selector.onlyfile = true;
             $scope.selector.load('/root');
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.setting.ssl_crt = path;
             };
             $('#selector').modal();
         };
-        $scope.selectsslkey = function(i) {
+        $scope.selectsslkey = function (i) {
             $scope.selector_title = '请选择密钥文件（*.key）';
             $scope.selector.onlydir = false;
             $scope.selector.onlyfile = true;
             $scope.selector.load('/root');
-            $scope.selector.selecthandler = function(path) {
+            $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
                 $scope.setting.ssl_key = path;
             };
@@ -1358,23 +1359,23 @@ var SiteApacheCtrl = [
         };
 
         // submit
-        $scope.addserver = function() {
+        $scope.addserver = function () {
             Request.post('/operation/apache', {
                 'action': 'addserver',
                 'version': $scope.apache_version,
                 'setting': angular.toJson($scope.setting)
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
-                    Timeout(function() {
+                    Timeout(function () {
                         $location.path('/site/apache/edit_' + encodeURIComponent(name));
                     }, 1000, module);
                 }
             });
         };
-        $scope.updateserver = function() {
+        $scope.updateserver = function () {
             Request.post('/operation/apache', {
                 'action': 'updateserver',
                 'ip': server_ip,
@@ -1382,12 +1383,12 @@ var SiteApacheCtrl = [
                 'server_name': server_name,
                 'version': $scope.apache_version,
                 'setting': angular.toJson($scope.setting)
-            }, function(res) {
+            }, function (res) {
                 if (res.code == 0) {
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
-                    Timeout(function() {
+                    Timeout(function () {
                         var new_path = '/site/apache/edit_' + encodeURIComponent(name);
                         if (new_path != $location.path()) $location.path(new_path);
                         else $scope.restore();
@@ -1395,7 +1396,7 @@ var SiteApacheCtrl = [
                 }
             });
         };
-        $scope.restore = function() {
+        $scope.restore = function () {
             $scope.setting = angular.copy(server_tmpl);
             $scope.getserver();
         };
