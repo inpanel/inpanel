@@ -9,10 +9,11 @@
 
 '''Module for Nginx Management'''
 
+import glob
 import os
 import re
-import glob
-from modules.utils import version_get
+
+from modules.utils import is_valid_ipv4, is_valid_ipv6, version_get
 
 DEBUG = False
 
@@ -626,6 +627,8 @@ def _context_getserver(ip, port, server_name, config=None, disabled=None, getlin
         config = loadconfig(NGINXCONF, getlineinfo)
     cnfservers = _context_getservers(disabled=disabled, config=config, getlineinfo=getlineinfo)
     if not ip or ip in ('*', '0.0.0.0'): ip = ''
+    if is_valid_ipv6(ip) and not is_valid_ipv4(ip):
+        ip = '[' + ip + ']'
     for s in cnfservers:
         if getlineinfo:
             server_names = ' '.join([v['value'] for v in s['server_name']]).split()
@@ -1008,43 +1011,25 @@ def getservers(config=None):
     for s in cnfservers:
         server = {}
         server['server_names'] = ' '.join(s['server_name']).split()
-
         # parse server and port, and check if is default server
         server['listens'] = []
         for listen in s['listen']:
-            default_server = False
-            if 'default_server' in listen: default_server = True
-            for item in listen.split():
-                fs = item.split(':', 1)
-                if len(fs) == 1:
-                    if fs[0].isdigit():
-                        server['listens'].append({
-                            'ip': '*',
-                            'port': fs[0],
-                            'default_server': default_server
-                        })
-                else:
-                    server['listens'].append({
-                        'ip': fs[0],
-                        'port': fs[1],
-                        'default_server': default_server
-                    })
-
+            port_ip = listen.split()[0]
+            port = port_ip.split(':')[-1]
+            ip = port_ip[0:-(len(port) + 1)]
+            # ip = ip.lstrip('[').rstrip(']')  # for IPv6
+            server['listens'].append({
+                'ip': ip or '*',
+                'port': port,
+                'default_server': 'default_server' in listen
+            })
         engines = _detect_engines(s)
         engine_orders = ['static', 'fastcgi', 'scgi', 'uwsgi', 'redirect', 'proxy', 'rewrite', 'return']
         engines = [(engine_orders.index(engine), engine) for engine in engines]
         engines.sort()
-        if engines:
-            server['engines'] = zip(*engines)[1]
-        else:
-            server['engines'] = []
-
+        server['engines'] = zip(*engines)[1] if engines else []
         # check the status of this server
-        if s['_disabled']:
-            server['status'] = 'off'
-        else:
-            server['status'] = 'on'
-
+        server['status'] = 'off' if s['_disabled'] else 'on'
         servers.append(server)
     return servers
 
@@ -1143,21 +1128,18 @@ def getserver(ip, port, server_name, config=None):
 
     server['listens'] = []
     if 'listen' in scontext:
-        cnflistens = scontext['listen']
-        for cnflisten in cnflistens:
-            listen = {}
-            fields = cnflisten.split()
-            listen['ssl'] = 'ssl' in fields
-            listen['default_server'] = 'default_server' in fields
-            ipport = fields[0].split(':', 1)
-            if len(ipport) == 1:
-                listen['ip'] = ''
-                listen['port'] = ipport[0]
-            else:
-                listen['ip'] = ipport[0]
-                listen['port'] = ipport[1]
-            server['listens'].append(listen)
-    
+        for listen in scontext['listen']:
+            port_ip = listen.split()[0]
+            port = port_ip.split(':')[-1]
+            ip = port_ip[0:-(len(port) + 1)]
+            ip = ip.lstrip('[').rstrip(']')  # for IPv6
+            server['listens'].append({
+                'ip': ip or '',
+                'port': port,
+                'ssl': 'ssl' in listen,
+                'default_server': 'default_server' in listen
+            })
+
     if 'charset' in scontext: server['charset'] = scontext['charset'][-1]
     if 'index' in scontext: server['index'] = scontext['index'][-1]
     if 'limit_rate' in scontext: server['limit_rate'] = scontext['limit_rate'][-1].replace('k','')
@@ -1402,6 +1384,8 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
         flag_ds = 'default_server' in listen and listen['default_server'] and ' default_server' or ''
         flag_ssl = 'ssl' in listen and listen['ssl'] and ' ssl' or ''
         ip = 'ip' in listen and listen['ip'] or ''
+        if is_valid_ipv6(ip) and not is_valid_ipv4(ip):
+            ip = '[' + ip + ']'
         port = listen['port']
         if ip:
             servercfg.append('    listen %s:%s%s%s;' % (ip, port, flag_ds, flag_ssl))
