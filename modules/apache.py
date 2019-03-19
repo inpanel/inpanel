@@ -80,12 +80,12 @@ CON_DIRECTIVES = {
 VH_OPTIONS = {
     'CustomLog': '',
     'ServerAdmin': 'admin@localhost',
-    'ServerName': 'www',
+    'ServerName': '',
     'DocumentRoot': '/var/www',
     'ErrorLog': '',
     'Indexs': '',
     'Options': '',
-    'ServerAlias': '',
+    'ServerAlias': [],
     'Location': '',
     'SuexecUserGroup': '',
 }
@@ -139,6 +139,23 @@ def getservers(config=None):
 
     # servers = _parse_virtualhost_config(aaa) + _parse_virtualhost_config(bbb)
     return servers
+
+
+def getserver(ip, port, server_name, config=None):
+    """Get server setting from nginx config files.
+    """
+    # if not config or config['_isdirty']:
+    #     config = loadconfig(NGINXCONF, False)
+    scontext = _parse_virtualhost_config(SERVERCONF + server_name + '.conf')
+    if not scontext:
+        return False
+    return scontext
+    # server = {}
+    # server['_inpanel'] = scontext['_inpanel']
+    # server['server_names'] = []
+    # if 'server_name' in scontext:
+    #     for name in scontext['server_name']:
+    #         server['server_names'].extend(name.split())
 
 
 def _parse_virtualhost_config(conf=''):
@@ -251,16 +268,21 @@ def _parse_virtualhost_config(conf=''):
         server = {
             'IP': result[i][0],  # IP
             'Port': result[i][1],  # Port
-            'Directory': directorys[i]
+            'Directory': directorys[i],
+            '_inpanel': gen_by_inpanel
         }
         for line in result[i]:
             for i in VH_OPTIONS:
                 if i in line:
-                    if i in ['ServerAlias', 'DirectoryIndex']:
+                    if i == 'DirectoryIndex':
                         server[i] = ' '.join(str(n) for n in line.split()[1:])
+                    elif i == 'ServerAlias':
+                        server[i] = line.split()[1:]
                     else:
                         server[i] = line.split()[1].strip(string.punctuation)
                     continue
+        if not server['ServerName']:
+            server['ServerName'] = server['ServerAlias'][0]
         virtualHosts.append(server)
 
     return virtualHosts

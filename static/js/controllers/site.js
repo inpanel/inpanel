@@ -97,7 +97,22 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 }
             });
         };
-
+        $scope.apache_set_status = function (status) {
+            if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
+                return;
+            }
+            Backend.call($scope, module, '/backend/service_' + status, '/backend/service_' + status + '_httpd', {
+                'name': 'Apache',
+                'service': 'httpd'
+            }, {
+                'success': function (res) {
+                    Message.setInfo(res.msg);
+                    if (res.status == 'finish') {
+                        $scope.load_status();
+                    }
+                }
+            }, true);
+        };
         $scope.loadapache = function (init, reload) {
             if (!init && Module.getSection() == 'apache' && !reload) {
                 return;
@@ -892,6 +907,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         var server_ip, server_port, server_name;
         if ($scope.action == 'edit') {
             site = site.split('_');
+            console.log(site);
             if (site.length == 3) {
                 server_ip = site[0];
                 server_port = site[1];
@@ -905,7 +921,6 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 return;
             }
         }
-
         var module = 'site.apache';
         var tab_section = Module.getSection();
         Module.init(module, $scope.module_header);
@@ -1359,7 +1374,14 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         };
 
         // submit
-        $scope.addserver = function () {
+        $scope.submit = function (active) {
+            if ($scope.action == 'new') {
+                $scope.addserver(active);
+            } else if ($scope.action == 'edit') {
+                $scope.updateserver(active);
+            }
+        };
+        $scope.addserver = function (active) {
             Request.post('/operation/apache', {
                 'action': 'addserver',
                 'version': $scope.apache_version,
@@ -1369,13 +1391,14 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
-                    Timeout(function () {
-                        $location.path('/site/apache/edit_' + encodeURIComponent(name));
-                    }, 1000, module);
+                    $location.path('/site/apache/edit_' + name);
+                    if (active && active == 'active') {
+                        $scope.apache_set_status('restart');
+                    }
                 }
             });
         };
-        $scope.updateserver = function () {
+        $scope.updateserver = function (active) {
             Request.post('/operation/apache', {
                 'action': 'updateserver',
                 'ip': server_ip,
@@ -1388,19 +1411,37 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                     var s = $scope.setting;
                     $scope.loaded = false;
                     var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
-                    Timeout(function () {
-                        var new_path = '/site/apache/edit_' + encodeURIComponent(name);
-                        if (new_path != $location.path()) $location.path(new_path);
-                        else $scope.restore();
-                    }, 1000, module);
+                    var new_path = '/site/apache/edit_' + name;
+                    if (new_path != $location.path()) {
+                        $location.path(new_path);
+                    } else {
+                        $scope.restore();
+                        if (active && active == 'active') {
+                            $scope.apache_set_status('restart');
+                        }
+                    }
                 }
             });
         };
         $scope.restore = function () {
             $scope.setting = angular.copy(server_tmpl);
-            $scope.getserver();
+            if ($scope.action == 'edit') {
+                $scope.getserver();
+            }
         };
-
+        $scope.apache_set_status = function (status) {
+            if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
+                return;
+            }
+            Backend.call($scope, module, '/backend/service_' + status, '/backend/service_' + status + '_httpd', {
+                'name': 'Apache',
+                'service': 'httpd'
+            }, {
+                'success': function (res) {
+                    Message.setInfo(res.msg);
+                }
+            }, true);
+        };
         // initially add
         if (section == 'new') {
             $scope.addservername();

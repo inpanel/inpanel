@@ -1272,6 +1272,17 @@ class OperationHandler(RequestHandler):
             config = apache.loadconfig()
             self.write({'code': 0, 'msg': '', 'data': config})
 
+        elif action == 'getserver':
+            ip = self.get_argument('ip', '')
+            port = self.get_argument('port', '')
+            server_name = self.get_argument('server_name', '')
+            serverinfo = apache.getserver(_u(ip), _u(port), _u(server_name))
+            if serverinfo:
+                self.write({'code': 0, 'msg': u'站点信息读取成功！', 'data': serverinfo})
+            else:
+                self.write({'code': -1, 'msg': u'站点不存在！'})
+
+
     def nginx(self):
         action = self.get_argument('action', '')
 

@@ -5,10 +5,7 @@
 
 <div id="main" ng-show="loaded" style="display:none;">
     <div class="module-header">
-        <h3>
-            <span ng-show="action=='new'">新建站点（Apache）</span>
-            <span ng-show="action=='edit'">编辑站点（Apache）</span>
-        </h3>
+        <h3>{{module_header}}</h3>
     </div>
 
     <div class="alert alert-danger" ng-show="!gen_by_inpanel" style="display:none;">
@@ -23,11 +20,11 @@
 
     <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='basic-settings'"><a href="#basic-settings" ng-click="sec('basic-settings')" data-toggle="tab">基本设置</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='advanced-settings'"><a href="#advanced-settings" ng-click="sec('advanced-settings')" data-toggle="tab">高级设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='basic'"><a href="#basic" ng-click="sec('basic')" data-toggle="tab">基本设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='advanced'"><a href="#advanced" ng-click="sec('advanced')" data-toggle="tab">高级设置</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='basic-settings'" id="basic-settings">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='basic'" id="basic">
                 <div class="form-horizontal form-horizontal-small">
                     <div class="form-group">
                         <label class="col-sm-2 control-label">站点域名</label>
@@ -405,7 +402,7 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='advanced-settings'" id="advanced-settings">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='advanced'" id="advanced">
                 <div class="form-horizontal form-horizontal-small">
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">下载限制</label>
@@ -512,10 +509,12 @@
                 </div>
             </div>
         </div>
+        <hr/>
         <p>
-            <button ng-show="action=='new'" class="btn btn-primary" ng-click="addserver()">填写完毕，提交新站点</button>
-            <button ng-show="action=='edit'" class="btn btn-primary" ng-click="updateserver()">保存站点配置</button>
-            <button ng-show="action=='edit'" class="btn btn-default" ng-click="restore()">撤销修改</button>
+            <button class="btn btn-primary" ng-click="submit()">提交</button>
+            <button class="btn btn-success" ng-click="submit('active')">生效</button>
+            <button class="btn btn-warning" ng-show="action=='edit'" ng-click="restore()">重置</button>
+            <a class="btn btn-default" href="#/site?s=apache">取消</a>
         </p>
     </div>
 </div>
