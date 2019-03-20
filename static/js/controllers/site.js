@@ -932,11 +932,14 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         };
 
         var server_tmpl = {
-            server_names: [],
-            listens: [],
-            charset: '',
-            index: 'index.html index.htm index.php',
-            locations: [],
+            ServerName: '',
+            ServerAlias: [],
+            IP: '',
+            Port: '',
+            ServerAdmin: '',
+            DocumentRoot: '',
+            DirectoryIndex: 'index.html index.htm index.php',
+            Directory: [],
             limit_rate: '',
             limit_conn: '',
             ssl_crt: '',
@@ -1039,8 +1042,6 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             $scope.setting.rewrite_rules = value ? global_rewrite_templates[value] : '';
         });
 
-
-        // check Apache version
         $scope.load = function () {
             if (tab_section && tab_section == 'advanced') {
                 $scope.sec('advanced');
@@ -1050,8 +1051,11 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 Module.setSection('basic');
             }
             // Apache version check may take too long time, so we don't want to wait for it
-            if ($scope.action == 'new') $scope.loaded = true;
-            else $scope.getserver();
+            if ($scope.action == 'new') {
+                $scope.loaded = true;
+            } else {
+                $scope.getserver();
+            }
 
             Backend.call($scope, module, '/backend/yum_info', '/backend/yum_info_apache', {
                 'pkg': 'apache',
@@ -1101,13 +1105,13 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                     var d = res.data;
                     // init setting
                     var s = $scope.setting;
+                    s.ServerName = d.ServerName;
+                    s.Port = d.Port;
+                    s.IP = d.IP;
+                    s.DocumentRoot = d.DocumentRoot;
                     $scope.gen_by_inpanel = d._inpanel;
-                    for (i in d.server_names) {
-                        var name = d.server_names[i];
-                        s.server_names.push({
-                            'name': name,
-                            'default_name': name == '_'
-                        });
+                    for (i in d.ServerAlias) {
+                        s.ServerAlias.push(d.ServerAlias[i]);
                     }
                     for (i in d.listens) {
                         var listen = d.listens[i];
@@ -1118,7 +1122,9 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                         if (typeof listen.default_server != 'undefined') t.default_server = listen.default_server;
                         s.listens.push(t);
                     }
-                    if (d.index) s.index = d.index;
+                    if (d.DirectoryIndex) {
+                        s.DirectoryIndex = d.DirectoryIndex;
+                    }
                     if (d.charset) s.charset = d.charset;
                     if (d.limit_rate) s.limit_rate = d.limit_rate;
                     if (d.limit_conn) s.limit_conn = d.limit_conn;

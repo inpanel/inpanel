@@ -27,20 +27,64 @@
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='basic'" id="basic">
                 <div class="form-horizontal form-horizontal-small">
                     <div class="form-group">
-                        <label class="col-sm-2 control-label">站点域名</label>
+                        <label class="col-sm-2 control-label">监听地址</label>
                         <div class="col-sm-10">
-                            <div class="form-inline" ng-repeat="server_name in setting.server_names">
-                                <input class="form-control" ng-model="server_name.name" type="text" ng-disabled="server_name.default_name" placeholder="请输入域名或IP">
-                                <button class="btn btn-default" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="glyphicon glyphicon-minus"></i></button>
-                                <button class="btn btn-default" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="glyphicon glyphicon-plus"></i></button>
-                                <label class="checkbox-inline">
-                                    <input type="checkbox" ng-model="server_name.default_name" ng-click="server_name.name='_'"> 设置为任意域名可访问
-                                </label>
+                            <div class="input-group">
+                                <input class="form-control" ng-model="setting.IP" type="text" placeholder="默认监听所有可用IP">
+                                <div class="input-group-addon" style="border-left: none;border-right:none;">:</div>
+                                <input class="form-control" ng-model="setting.Port" type="text" placeholder="端口">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">端口 <span class="caret"></span></button>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a href="javascript:void(0);" ng-click="setting.Port='80'">80</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.Port='81'">81</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.Port='443'">443</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.Port='8080'">8080</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.Port='8899'">8899</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.Port='9090'">9090</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-2 control-label">站点路径</label>
+                        <label class="col-sm-2 control-label">主域名</label>
+                        <div class="col-sm-10">
+                            <input ng-model="setting.ServerName" type="text" class="form-control" placeholder="站点主域名">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">副域名</label>
+                        <div class="col-sm-10">
+                            <div class="form-inline" ng-repeat="server_name in setting.ServerAlias">
+                                <input class="form-control" ng-model="server_name" type="text" placeholder="请输入域名或IP">
+                                <button class="btn btn-default" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="glyphicon glyphicon-minus"></i></button>
+                                <button class="btn btn-default" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="glyphicon glyphicon-plus"></i></button>
+                                <!-- <label class="checkbox-inline">
+                                    <input type="checkbox" ng-model="server_name.default_name" ng-click="server_name.name='_'"> 设置为任意域名可访问
+                                </label> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">站点目录</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input ng-model="setting.DocumentRoot" type="text" class="form-control" placeholder="站点所在目录">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-default" ng-click="selectsslcrt()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">首页文件</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.DirectoryIndex" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">路径设置</label>
                         <div class="col-sm-10">
                             <div class="form-inline">
                                 <button class="btn btn-default" ng-click="addlocation($index)" ng-show="setting.locations.length==0" style="display:none">
@@ -437,30 +481,6 @@
                                 <option value="iso-8859-2">ISO-8859-2</option>
                                 <option value="shift_jis">Shift_JIS</option>
                             </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">首页文件</label>
-                        <div class="col-sm-10">
-                            <input class="form-control" ng-model="setting.index" type="text">
-                        </div>
-                    </div>
-                    <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">监听地址</label>
-                        <div class="col-sm-10">
-                            <div ng-repeat="listen in setting.listens">
-                                <div class="input-group">
-                                    <input class="form-control" ng-model="listen.ip" type="text" placeholder="默认监听所有可用IP">
-                                    <span class="input-group-addon">:</span>
-                                    <input class="form-control" ng-model="listen.port" type="text" placeholder="端口" style="width: 80px;">
-                                </div>
-                                <button class="btn btn-default" ng-click="deletelisten()" ng-show="setting.listens.length>1" title="删除这个监听地址"><i class="glyphicon glyphicon-minus"></i></button>
-                                <button class="btn btn-default" ng-click="addlisten()" ng-show="$index==setting.listens.length-1" title="增加一个监听地址"><i class="glyphicon glyphicon-plus"></i></button>
-                                <p class="form-inline">
-                                    <label class="checkbox-inline"><input ng-model="listen.ssl" type="checkbox"> 启用SSL加密（https）</label>
-                                    <label class="checkbox-inline"><input ng-model="listen.default_server" type="checkbox"> 作为默认站点</label>
-                                </p>
-                            </div>
                         </div>
                     </div>
                     <div class="form-group">

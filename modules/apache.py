@@ -81,9 +81,9 @@ VH_OPTIONS = {
     'CustomLog': '',
     'ServerAdmin': 'admin@localhost',
     'ServerName': '',
+    'DirectoryIndex': 'index.html',
     'DocumentRoot': '/var/www',
     'ErrorLog': '',
-    'Indexs': '',
     'Options': '',
     'ServerAlias': [],
     'Location': '',
@@ -149,7 +149,7 @@ def getserver(ip, port, server_name, config=None):
     scontext = _parse_virtualhost_config(SERVERCONF + server_name + '.conf')
     if not scontext:
         return False
-    return scontext
+    return scontext[0]
     # server = {}
     # server['_inpanel'] = scontext['_inpanel']
     # server['server_names'] = []
@@ -169,7 +169,8 @@ def _parse_virtualhost_config(conf=''):
 
     with open(conf, 'r') as f:
         lines = f.readlines()
-        data = filter(lambda i: re.search('^((?!#).)*$', i), lines)
+        # lines = filter(lambda i: re.search('^((?!#).)*$', i), lines)
+        # print(lines)
 
     id_v = 0
     enable = False
@@ -183,11 +184,10 @@ def _parse_virtualhost_config(conf=''):
     directorys = {}  # 附加信息
     line_disabled = False
     gen_by_inpanel = False
-    while len(data) > 0:
-        out = data.pop(0)
-
-        # deal with our speical comment string
+    while len(lines) > 0:
+        out = lines.pop(0)
         if out.startswith(COMMENTFLAG):
+            # deal with our speical comment string
             while out.startswith(COMMENTFLAG):
                 out = out[3:]
             out = out.strip()
@@ -198,11 +198,10 @@ def _parse_virtualhost_config(conf=''):
 
         # deal with comment and detect inpanel flag in comment
         fields = out.split('#', 1)
-        out = fields[0].strip()
         if len(fields) > 1 and fields[1].strip() == GENBY:
             gen_by_inpanel = True
 
-        # start of VirtualHost
+        out = fields[0].strip()
         match = RE_VH_START.search(out)
         if match:  # if '<VirtualHost' in out:
             id_d = 0
@@ -210,6 +209,7 @@ def _parse_virtualhost_config(conf=''):
             result_d[id_v] = []
             directorys[id_v] = []
             name_port = match.groups()[1].strip(' ').strip('"').strip('\'')
+            print(name_port)
             port = name_port.split(':')[-1]
             ip = name_port[0:-(len(port) + 1)]
             ip = ip.lstrip('[').rstrip(']')  # for IPv6
@@ -246,14 +246,14 @@ def _parse_virtualhost_config(conf=''):
         # end of VirtualHost
         if RE_VH_CLOSE.search(out):
             enable_d = False
-
-            result[id_v] = vhost
-            if id_v in result_d:
-                d = _append_directory(result_d[id_v])
-                directorys[id_v] = d
-            else:
-                directorys[id_v] = []
-            id_v += 1
+            if len(vhost) > 0:
+                result[id_v] = vhost
+                if id_v in result_d:
+                    d = _append_directory(result_d[id_v])
+                    directorys[id_v] = d
+                else:
+                    directorys[id_v] = []
+                id_v += 1
             enable = False
             vhost = []
             continue
@@ -264,12 +264,15 @@ def _parse_virtualhost_config(conf=''):
             continue
 
     # print('directorys', directorys)
+    if len(result) == 0:
+        return []
     for i in result:
         server = {
             'IP': result[i][0],  # IP
             'Port': result[i][1],  # Port
             'Directory': directorys[i],
-            '_inpanel': gen_by_inpanel
+            '_inpanel': gen_by_inpanel,
+            'status': 'off' if line_disabled else 'on'
         }
         for line in result[i]:
             for i in VH_OPTIONS:
@@ -281,7 +284,7 @@ def _parse_virtualhost_config(conf=''):
                     else:
                         server[i] = line.split()[1].strip(string.punctuation)
                     continue
-        if not server['ServerName']:
+        if 'ServerName' not in server or not server['ServerName']:
             server['ServerName'] = server['ServerAlias'][0]
         virtualHosts.append(server)
 
