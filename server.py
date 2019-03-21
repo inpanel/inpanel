@@ -41,6 +41,7 @@ def main():
         'static_path': os.path.join(root_path, 'static'),
         'xsrf_cookies': True,
         'cookie_secret': make_cookie_secret(),
+        'gzip': True
     }
 
     # read configuration from config.ini
