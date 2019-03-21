@@ -917,7 +917,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 server_port = site[1];
                 server_name = '_';
             } else {
-                $location.path('/site');
+                $location.path('/site?s=apache');
                 return;
             }
         }
@@ -935,13 +935,14 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             ServerName: '',
             ServerAlias: [],
             IP: '',
-            Port: '',
+            Port: 80,
             ServerAdmin: '',
             DocumentRoot: '',
             DirectoryIndex: 'index.html index.htm index.php',
             Directory: [],
-            limit_rate: '',
-            limit_conn: '',
+            CustomLog: '',
+            ErrorLog: '',
+            Gzip: false,
             ssl_crt: '',
             ssl_key: '',
             rewrite_enable: false,
@@ -1105,29 +1106,18 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                     var d = res.data;
                     // init setting
                     var s = $scope.setting;
-                    s.ServerName = d.ServerName;
                     s.Port = d.Port;
                     s.IP = d.IP;
                     s.DocumentRoot = d.DocumentRoot;
                     $scope.gen_by_inpanel = d._inpanel;
-                    for (i in d.ServerAlias) {
-                        s.ServerAlias.push(d.ServerAlias[i]);
-                    }
-                    for (i in d.listens) {
-                        var listen = d.listens[i];
-                        var t = angular.copy(listen_tmpl);
-                        if (typeof listen.ip != 'undefined') t.ip = listen.ip;
-                        if (typeof listen.port != 'undefined') t.port = listen.port;
-                        if (typeof listen.ssl != 'undefined') t.ssl = listen.ssl;
-                        if (typeof listen.default_server != 'undefined') t.default_server = listen.default_server;
-                        s.listens.push(t);
-                    }
-                    if (d.DirectoryIndex) {
-                        s.DirectoryIndex = d.DirectoryIndex;
-                    }
                     if (d.charset) s.charset = d.charset;
-                    if (d.limit_rate) s.limit_rate = d.limit_rate;
-                    if (d.limit_conn) s.limit_conn = d.limit_conn;
+                    if (d.CustomLog) s.CustomLog = d.CustomLog;
+                    if (d.Directory) s.Directory = d.Directory;
+                    if (d.DirectoryIndex) s.DirectoryIndex = d.DirectoryIndex;
+                    if (d.ErrorLog) s.ErrorLog = d.ErrorLog;
+                    if (d.Gzip) s.Gzip = d.Gzip;
+                    if (d.ServerAlias) s.ServerAlias = d.ServerAlias;
+                    if (d.ServerName) s.ServerName = d.ServerName;
                     if (d.ssl_crt) s.ssl_crt = d.ssl_crt;
                     if (d.ssl_key) s.ssl_key = d.ssl_key;
                     if (d.rewrite_rules) {

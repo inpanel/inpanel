@@ -76,6 +76,12 @@
                         </div>
                     </div>
                     <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">Gzip压缩</label>
+                        <div class="col-sm-10">
+                            <label class="checkbox-inline"><input ng-model="settings.Gzip" type="checkbox" class="ng-valid ng-dirty"> 开启Gzip压缩</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_access_file_name">权限控制文件</label>
                         <div class="col-sm-10">
                             <input class="form-control" ng-model="settings.AccessFileName" ng-disabled="processing" type="text" id="setting_access_file_name" placeholder="AccessFileName">
