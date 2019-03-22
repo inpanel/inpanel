@@ -10,9 +10,15 @@
 
     <div style="display:none" ng-show="diskcount==0">
         <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">没有检测到未挂载的存储设备</div>
+            </div>
             <div class="panel-body">
-                <p>没有找到未挂载的存储设备，点击以下按钮进入磁盘存储管理。</p>
-                <p><a class="btn btn-default" href="#/utils/storage">存储管理</a></p>
+                <p>您可以点击磁盘管理按钮，查看所有存储设备。</p>
+                <p>
+                    <a class="btn btn-default" href="#/utils">取消返回</a>
+                    <a class="btn btn-default" href="#/storage">磁盘管理</a>
+                </p>
             </div>
         </div>
     </div>
@@ -23,8 +29,8 @@
             <thead>
                 <tr>
                     <th>设备名称</td>
-                        <th style="width:100px">存储空间</th>
-                        <th style="width:200px">操作</th>
+                    <th style="width:100px">存储空间</th>
+                    <th style="width:200px">操作</th>
                 </tr>
             </thead>
             <tbody>

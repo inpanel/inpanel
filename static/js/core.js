@@ -57,7 +57,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/utils/ssl', _r('utils/ssl', UtilsSSLCtrl)).
     when('/utils/repository', _r('utils/repository', UtilsRepositoryCtrl)).
     when('/storage', _r('storage/index', StorageCtrl)).
-    when('/storage/remote/:section', _r('storage/remote/index', StorageRemoteCtrl)).
+    when('/storage/remote/:section', _r('storage/remote', StorageRemoteCtrl)).
     when('/storage/autofm', _r('storage/autofm', StorageAutoFMCtrl)).
     when('/storage/movedata', _r('storage/movedata', StorageMoveDataCtrl)).
     when('/storage/backup', _r('storage/backup', BackupCtrl)).
