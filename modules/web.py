@@ -2610,7 +2610,7 @@ class BackendHandler(RequestHandler):
                 'cmd': u'wget -q "%s" -O %s/inpanel.tar.gz' % (downloadurl, data_path),
             }, {
                 'desc': u'正在创建解压目录...',
-                'cmd': u'mkdir %s/inpanel' % data_path,
+                'cmd': u'mkdir -p %s/inpanel' % data_path,
             }, {
                 'desc': u'正在解压安装包...',
                 'cmd': u'tar zxmf %s/inpanel.tar.gz -C %s/inpanel --strip-components 1' % (data_path, data_path),
