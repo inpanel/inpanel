@@ -1,14 +1,14 @@
 <div navbar ng-init="currentItem='site'"></div>
-<div ng-show="!loaded">
+<div ng-hide="loaded">
     <div loading></div>
 </div>
 
-<div id="main" ng-show="loaded" style="display:none">
+<div id="main" ng-init="load()" ng-show="loaded" style="display:none">
     <div class="module-header">
         <h3>网站管理</h3>
     </div>
 
-    <div class="tabbable" ng-init="load()" ng-show="has_httpserver">
+    <div class="tabbable" ng-show="has_httpserver">
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none"><a href="#nginx" ng-click="loadnginx()" data-toggle="tab">Nginx</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none"><a href="#apache" ng-click="loadapache()" data-toggle="tab">Apache</a></li>
@@ -25,6 +25,9 @@
                     <div class="pull-right">
                         <a class="btn btn-default btn-sm" href="#/site/nginx/new"><span class="glyphicon glyphicon-plus"></span> 新建站点</a>
                         <div class="btn-group btn-group-sm">
+                            <a class="btn btn-default btn-sm" role="button" href="#/service/nginx?s=setting" title="设置 Nginx" ng-disabled="nginxloading || !nginx_supported">
+                                <span class="glyphicon glyphicon-wrench"></span>
+                            </a>
                             <button class="btn btn-default" title="启动 Nginx" ng-click="nginx_set_status('start')" ng-disabled="nginxloading || !nginx_supported || nginx_status=='running'"><i class="glyphicon glyphicon-play"></i></button>
                             <button class="btn btn-default" title="停止 Nginx" ng-click="nginx_set_status('stop')" ng-disabled="nginxloading || !nginx_supported || nginx_status=='stopped'"><i class="glyphicon glyphicon-stop"></i></button>
                             <button class="btn btn-default" title="重启 Nginx" ng-click="nginx_set_status('restart')" ng-disabled="nginxloading || !nginx_supported || nginx_status=='stopped'"><i class="glyphicon glyphicon-refresh"></i></button>
@@ -95,6 +98,9 @@
                 <div class="pull-right" ng-show="!apacheloading">
                     <a class="btn btn-default btn-sm" href="#/site/apache/new"><i class="glyphicon glyphicon-plus"></i> 新建站点</a>
                     <div class="btn-group btn-group-sm">
+                        <a class="btn btn-default btn-sm" role="button" href="#/service/apache?s=setting" title="设置 Apache" ng-disabled="nginxloading || !nginx_supported">
+                            <span class="glyphicon glyphicon-wrench"></span>
+                        </a>
                         <button class="btn btn-default" title="启动 Apache" ng-click="apache_set_status('start')" ng-disabled="apacheloading || !apache_supported || apache_status=='running'"><i class="glyphicon glyphicon-play"></i></button>
                         <button class="btn btn-default" title="停止 Apache" ng-click="apache_set_status('stop')" ng-disabled="apacheloading || !apache_supported || apache_status=='stopped'"><i class="glyphicon glyphicon-stop"></i></button>
                         <button class="btn btn-default" title="重启 Apache" ng-click="apache_set_status('restart')" ng-disabled="apacheloading || !apache_supported || apache_status=='stopped'"><i class="glyphicon glyphicon-refresh"></i></button>
@@ -233,14 +239,14 @@
                 </div>
             </div>
         </div>
-        <div ng-hide="has_httpserver" value="install" style="display:none">
-            <div class="well">
-                <p>系统检测到您还未安装 HTTP 服务器。</p>
-                <p>请先安装任意一款 HTTP 服务器后继续操作。</p>
-                <p class="text-info">（当前仅支持 Nginx 站点的管理配置，如需管理 Apache 站点，请留意 InPanel 的新版本。<a href="#/setting/upversion">检测新版本</a>）</p>
-                <p style="padding-top: 10px;"><a class="btn btn-default" href="#/service?s=http">立即安装</a></p>
-            </div>
+    </div>
+    <div ng-hide="has_httpserver" value="install" style="display:none">
+        <div class="well">
+            <p>系统检测到您还未安装 HTTP 服务器。</p>
+            <p>请先安装任意一款 HTTP 服务器后继续操作。</p>
+            <p style="padding-top: 10px;"><a class="btn btn-default" href="#/service?s=http">立即安装</a></p>
         </div>
+    </div>
 </div>
 
 <div id="pkg_install_setting" class="modal fade">

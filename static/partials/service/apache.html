@@ -64,15 +64,33 @@
                         </div>
                     </div>
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label" for="setting_default_type">默认类型</label>
+                        <label class="col-sm-2 control-label" for="setting_default_type">MIME类型</label>
                         <div class="col-sm-10">
                             <input class="form-control" ng-model="settings.DefaultType" ng-disabled="processing" type="text" id="setting_default_type" placeholder="默认文件类型">
+                            <select class="form-control" ng-model="settings.DefaultType" ng-disabled="processing" type="text">
+                                <option value="text/plain">纯文本（默认）</option>
+                                <option value="text/html">HTML</option>
+                                <option value="text/xml">XML</option>
+                                <option value="application/octet-stream">流文件</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label" for="setting_default_charset">默认字符集</label>
+                        <label class="col-sm-2 control-label" for="setting_default_charset">默认编码</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="settings.AddDefaultCharset" ng-disabled="processing" type="text" id="setting_default_charset" placeholder="默认字符集">
+                            <input class="form-control" ng-model="settings.AddDefaultCharset" ng-disabled="processing" type="text" id="setting_default_charset" placeholder="默认编码">
+                            <select class="form-control" ng-model="settings.AddDefaultCharset" ng-disabled="processing" type="text">
+                                <option value="UTF-8">UTF-8（默认）</option>
+                                <option value="GB2312">GB2312</option>
+                                <option value="GBK">GBK</option>
+                                <option value="GB18030">GB18030</option>
+                                <option value="BIG5">BIG5</option>
+                                <option value="EUC-JP">EUC-JP</option>
+                                <option value="EUC-KR">EUC-KR</option>
+                                <option value="ISO-8859-1">ISO-8859-1</option>
+                                <option value="ISO-8859-2">ISO-8859-2</option>
+                                <option value="Shift_JIS">Shift_JIS</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-group form-inline">

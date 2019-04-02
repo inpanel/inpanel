@@ -241,12 +241,12 @@ var ServiceApacheCtrl = [
         };
 
         $scope.settings = {
-            'listen': 80,
-            'server_admin': 'root@localhost',
+            'Listen': 80,
+            'ServerAdmin': 'root@localhost',
             'server_name': 'localhost:80',
-            'document_root': '/var/www/html',
-            'directory_index': 'index.html index.htm',
-            'default_charset': 'UTF-8',
+            'DocumentRoot': '/var/www/html',
+            'DirectoryIndex': 'index.html index.htm',
+            'AddDefaultCharset': 'UTF-8',
             'limit_rate': '',
             'limit_conn': '',
             'limit_conn_zone': '',
@@ -255,7 +255,7 @@ var ServiceApacheCtrl = [
             'access_status': 'off',
             'allow': '',
             'deny': '',
-            'gzip': ''
+            'Gzip': ''
         };
 
         $scope.getSettings = function () {

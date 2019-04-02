@@ -48,21 +48,22 @@
                         </div>
                     </div>
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">主域名</label>
+                        <label class="col-sm-2 control-label">站点主域名</label>
                         <div class="col-sm-10">
                             <input ng-model="setting.ServerName" type="text" class="form-control" placeholder="站点主域名">
                         </div>
                     </div>
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">副域名</label>
+                        <label class="col-sm-2 control-label">站点别名</label>
                         <div class="col-sm-10">
-                            <div class="form-inline" ng-repeat="server_name in setting.ServerAlias">
-                                <input class="form-control" ng-model="server_name" type="text" placeholder="请输入域名或IP">
-                                <button class="btn btn-default" ng-click="deleteservername($index)" ng-show="setting.server_names.length>1" title="删除这个域名"><i class="glyphicon glyphicon-minus"></i></button>
-                                <button class="btn btn-default" ng-click="addservername()" ng-show="$index==setting.server_names.length-1" title="增加一个域名"><i class="glyphicon glyphicon-plus"></i></button>
-                                <!-- <label class="checkbox-inline">
-                                    <input type="checkbox" ng-model="server_name.default_name" ng-click="server_name.name='_'"> 设置为任意域名可访问
-                                </label> -->
+                            <div class="form-inline" ng-repeat="server_name in ServerAlias">
+                                <div class="input-group">
+                                    <input class="form-control" ng-model="server_name" type="text" placeholder="请输入域名">
+                                    <div class="input-group-btn">
+                                        <button class="btn btn-default" title="删除这个别名" ng-click="delete_server_alias($index)"><i class="glyphicon glyphicon-minus"></i></button>
+                                        <button class="btn btn-default" title="增加一个别名" ng-click="add_server_name()"><i class="glyphicon glyphicon-plus"></i></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -115,23 +116,6 @@
                                 <input class="form-control" ng-model="setting.limit_conn" type="text" placeholder="不限制">
                                 <span class="input-group-addon">个 / IP</span>
                             </div>
-                        </div>
-                    </div>
-                    <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">默认编码</label>
-                        <div class="col-sm-10">
-                            <select class="form-control" ng-model="setting.charset">
-                                <option value="">默认</option>
-                                <option value="utf-8">UTF-8</option>
-                                <option value="gb2312">GB2312</option>
-                                <option value="gbk">GBK</option>
-                                <option value="gb18030">GB18030</option>
-                                <option value="big5">BIG5</option>
-                                <option value="euc-jp">EUC-JP</option>
-                                <option value="euc-kr">EUC-KR</option>
-                                <option value="iso-8859-2">ISO-8859-2</option>
-                                <option value="shift_jis">Shift_JIS</option>
-                            </select>
                         </div>
                     </div>
                     <div class="form-group">

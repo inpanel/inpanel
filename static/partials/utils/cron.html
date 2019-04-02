@@ -1,14 +1,14 @@
 <div navbar ng-init="currentItem='utils.cron'"></div>
-<div ng-show="!loaded">
+<div ng-hide="loaded">
     <div loading></div>
 </div>
 
-<div id="main" ng-init="load()">
+<div id="main" ng-init="load()" ng-show="loaded">
     <div class="module-header">
         <h3>任务管理(In Development)</h3>
     </div>
 
-    <div class="tabbable" ng-show="loaded">
+    <div class="tabbable">
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="tab_sec('base')" data-toggle="tab">常规计划</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='cron'"><a href="#cron" ng-click="tab_sec('cron')" data-toggle="tab">定时任务</a></li>

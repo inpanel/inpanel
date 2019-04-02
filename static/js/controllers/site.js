@@ -930,7 +930,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         $scope.setloc = function (i) {
             $scope.curloc = i;
         };
-
+        $scope.ServerAlias = [];
         var server_tmpl = {
             ServerName: '',
             ServerAlias: [],
@@ -947,10 +947,6 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             ssl_key: '',
             rewrite_enable: false,
             rewrite_rules: ''
-        };
-        var server_name_tmpl = {
-            'name': '',
-            'default_name': false
         };
         var listen_tmpl = {
             'ip': '',
@@ -1071,6 +1067,12 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 }
             }, true);
             $scope.loadproxycaches();
+            // initially add
+            if (section == 'new') {
+                $scope.add_server_name();
+                // $scope.addlisten();
+                // $scope.addlocation();
+            }
         };
 
         // load proxy cache list
@@ -1243,13 +1245,15 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         };
 
         // server name operation
-        $scope.deleteservername = function (i) {
-            $scope.setting.server_names.splice(i, 1);
+        $scope.delete_server_alias = function (i) {
+            $scope.ServerAlias.splice(i, 1);
         };
-        $scope.addservername = function () {
-            $scope.setting.server_names.push(angular.copy(server_name_tmpl));
+        $scope.add_server_name = function () {
+            $scope.ServerAlias.push('');
         };
-
+        $scope.$watch('ServerAlias', function (value, oldvalue) {
+            console.log(value, oldvalue);
+        }, true);
         // listen operation
         $scope.deletelisten = function (i) {
             $scope.setting.listens.splice(i, 1);
@@ -1287,7 +1291,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         };
 
         // automatically set the root path of static and fastcgi engine
-        $scope.$watch('setting.server_names[0].name', function (value, oldvalue) {
+        $scope.$watch('ServerAlias[0]', function (value, oldvalue) {
             var server_name = value;
             var old_server_name = oldvalue;
             var locs = $scope.setting.locations;
@@ -1438,11 +1442,5 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 }
             }, true);
         };
-        // initially add
-        if (section == 'new') {
-            $scope.addservername();
-            $scope.addlisten();
-            $scope.addlocation();
-        }
     }
 ];
