@@ -19,32 +19,36 @@ class Service(object):
 
     '''supported service operate script'''
     service_items = {
-        'inpanel'       : False,
-        'nginx'         : False,
-        'httpd'         : False,
-        'vsftpd'        : False,
-        'mysqld'        : False,
-        'redis'         : False,
-        'memcached'     : False,
-        'mongod'        : False,
-        'php-fpm'       : False,
-        'sendmail'      : False,
-        'postfix'       : False,
-        'sshd'          : False,
-        'iptables'      : False,
-        'crond'         : False,
-        'ntpd'          : False,
-        'named'         : False,
-        'lighttpd'      : False,
-        'proftpd'       : False,
-        'pure-ftpd'     : False,
-        'smb'           : False
+        'inpanel': False,
+        'nginx': False,
+        'httpd': False,
+        'vsftpd': False,
+        'mysqld': False,
+        'redis': False,
+        'memcached': False,
+        'mongod': False,
+        'php-fpm': False,
+        'sendmail': False,
+        'postfix': False,
+        'sshd': False,
+        'iptables': False,
+        'crond': False,
+        'ntpd': False,
+        'named': False,
+        'lighttpd': False,
+        'proftpd': False,
+        'pure-ftpd': False,
+        'smb': False
     }
 
     pidnames = {
         'sendmail': ['sm-client'],
         'smb': ['smbd']
     }
+
+    subsys_locks = (
+        'iptables'
+    )
 
     @classmethod
     def status(self, service):
@@ -73,8 +77,9 @@ class Service(object):
         if not pidfile:
             # not always corrent, some services dead but the lock still exists
             # some services don't have the pidfile
-            # if os.path.exists('/var/lock/subsys/%s' % service):
-            #    return 'running'
+            if service in Service.subsys_locks:
+                if os.path.exists('/var/lock/subsys/%s' % service):
+                    return 'running'
 
             # try execute pidof to find the pidfile
             cmd_ = shlex.split('pidof -c -o %%PPID -x %s' % service)

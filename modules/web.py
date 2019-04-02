@@ -41,8 +41,8 @@ from tornado.escape import utf8 as _u
 
 APP_NAME = 'InPanel'
 APP_VERSION = '1.1.1'
-APP_BUILD = '18'
-APP_RELEASETIME = '2019-02-23 14:13:00 CST'
+APP_BUILD = '19'
+APP_RELEASETIME = '2019-04-02 15:49:23 GMT'
 PUB_API = {
     'latest': 'http://api.inpanel.org/?s=latest',
     'site_packages': 'http://api.inpanel.org/?s=site_packages',
@@ -2600,7 +2600,7 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = u'%s/tools/init.d/%s/inpanel' % (root_path, distname)
+        initscript = u'%s/core/init.d/%s/inpanel' % (root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
@@ -2610,7 +2610,7 @@ class BackendHandler(RequestHandler):
                 'cmd': u'wget -q "%s" -O %s/inpanel.tar.gz' % (downloadurl, data_path),
             }, {
                 'desc': u'正在创建解压目录...',
-                'cmd': u'mkdir %s/inpanel' % data_path,
+                'cmd': u'mkdir -p %s/inpanel' % data_path,
             }, {
                 'desc': u'正在解压安装包...',
                 'cmd': u'tar zxmf %s/inpanel.tar.gz -C %s/inpanel --strip-components 1' % (data_path, data_path),
