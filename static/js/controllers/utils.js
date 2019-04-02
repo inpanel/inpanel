@@ -195,12 +195,15 @@ var UtilsProcessCtrl = [
         Module.initSection(enabled_sections[0]);
         $scope.loaded = false;
         $scope.init_process = true;
-        $scope.current_process = {};
+        $scope.delete_process = '';
         $scope.time_interval = 1000;
+        $scope.auto_refresh = false;
         $scope.process = {
             process: [],
             total: 0
         };
+        $scope.current_process = {};
+        $scope.current_process_loaded = {'info': false, 'status': false, 'file': false, 'io': false, 'memory': false, 'network': false}
 
         $scope.load = function () {
             $scope.loaded = true;
@@ -217,15 +220,17 @@ var UtilsProcessCtrl = [
 
         var getProcess = function() {
             Request.get('/utils/process/list', function (res) {
-                $scope.process.process = res.process;
-                $scope.process.total = res.total;
+                if (res && res.code == 0) {
+                    $scope.process.process = res.data;
+                    $scope.process.total = res.data.length;
+                }
                 if (!$scope.loaded) {
                     $scope.loaded = true;
                 }
                 if ($scope.init_process) {
                     $scope.init_process = false;
                 }
-                if (Module.getSection() == 'list') {
+                if (Module.getSection() == 'list' && $scope.auto_refresh) {
                     Timeout(getProcess, $scope.time_interval, module);
                 }
             });
@@ -240,13 +245,83 @@ var UtilsProcessCtrl = [
             console.log('待开发功能', init)
         }
         $scope.processkillconfirm = function(i) {
-            $scope.current_process = i;
+            $scope.delete_process = i || '';
             $('#processkillconfirm').modal();
         };
         $scope.processkill = function () {
-            if ($scope.current_process['pid']) {
-                Request.post('/utils/process/kill/' + $scope.current_process['pid']);
+            if ($scope.delete_process && $scope.delete_process['pid']) {
+                Request.post('/utils/process/kill/' + $scope.delete_process['pid'], null, function () {
+                    $scope.delete_process = '';
+                    $scope.refresh();
+                });
             }
+        };
+        $scope.process_detail = function (p) {
+            if (p && p['pid']) {
+                $('#process_detail_dialog').modal();
+                $scope.current_process.name = p['name'];
+                $scope.current_process.pid = p['pid'];
+                $scope.load_detial(p['pid']);
+            }
+        };
+        $scope.load_detial = function (pid) {
+            if (pid) {
+                $scope.current_process_loaded = {'info': false, 'status': false, 'file': false, 'io': false, 'memory': false, 'network': false}
+                Request.get('/utils/process/info/' + pid, function (res) {
+                    $scope.current_process_loaded.info = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.info = res.data;
+                    }
+                });
+                Request.get('/utils/process/status/' + pid, function (res) {
+                    $scope.current_process_loaded.status = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.status = res.data;
+                    }
+                });
+                Request.get('/utils/process/file/' + pid, function (res) {
+                    $scope.current_process_loaded.file = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.file = res.data;
+                    }
+                });
+                Request.get('/utils/process/io/' + pid, function (res) {
+                    $scope.current_process_loaded.io = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.io = res.data;
+                    }
+                });
+                Request.get('/utils/process/memory/' + pid, function (res) {
+                    $scope.current_process_loaded.memory = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.memory = res.data;
+                    }
+                });
+                Request.get('/utils/process/network/' + pid, function (res) {
+                    $scope.current_process_loaded.network = true;
+                    if (res && res.code == 0) {
+                        $scope.current_process.network = res.data;
+                    }
+                });
+            }
+        };
+        $scope.process_detail_close = function () {
+            Timeout(function() {
+                $scope.current_process = {};
+            }, 600, module);
+        }
+        $scope.refresh = function () {
+            console.log('刷新列表');
+            getProcess();
+        };
+        $scope.auto_refresh_open = function () {
+            console.log('打开自动刷新');
+            $scope.auto_refresh = true;
+            getProcess();
+        };
+        $scope.auto_refresh_close = function () {
+            console.log('关闭自动刷新');
+            $scope.auto_refresh = false;
         };
     }
 ]
@@ -570,19 +645,49 @@ var UtilsTimeCtrl = [
     }
 ];
 
-var UtilsPartitionCtrl = [
+var StorageCtrl = [
     '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
     function($scope, Module, Timeout, Request, Message, Backend) {
-        var module = 'utils.partition';
-        Module.init(module, '磁盘分区');
+        var module = 'utils.storage';
+        Module.init(module, '磁盘管理');
         $scope.loaded = false;
         $scope.waiting = true;
+        $scope.init_local = true;
+        var section = Module.getSection();
+        var enabled_sections = ['local', 'remote'];
+        Module.initSection(enabled_sections[0]);
 
-        $scope.loadDiskinfo = function() {
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+
+        $scope.tab_sec = function (section) {
+            console.log(Module.getSection(), section);
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            var init = Module.getSection() != section
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+
+        $scope.load_local = function(init) {
+            if (!init && !$scope.init_local) {
+                return; // Prevent duplicate requests
+            }
+            $scope.get_diskinfo();
+        };
+        $scope.load_remote = function(init) {
+            console.log('加载网络磁盘', init);
+        };
+        $scope.get_diskinfo = function () {
             Request.get('/query/server.diskinfo', function(data) {
                 if (!$scope.loaded) $scope.loaded = true;
                 $scope.diskinfo = data['server.diskinfo'];
                 $scope.waiting = false;
+                if ($scope.init_local) {
+                    $scope.init_local = false;
+                }
             });
         };
         $scope.swaponconfirm = function(devname) {
@@ -594,7 +699,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/swapon',
-                '/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.loadDiskinfo }
+                '/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.swapoffconfirm = function(devname) {
@@ -606,7 +711,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/swapoff',
-                '/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.loadDiskinfo }
+                '/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.umountconfirm = function(devname) {
@@ -618,7 +723,7 @@ var UtilsPartitionCtrl = [
                 $scope,
                 module,
                 '/backend/umount',
-                '/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.loadDiskinfo }
+                '/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.mountconfirm = function(devname, fstype) {
@@ -652,7 +757,7 @@ var UtilsPartitionCtrl = [
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
                     'fstype': $scope.fstype
-                }, { 'success': $scope.loadDiskinfo }
+                }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.formatconfirm = function(devname) {
@@ -670,7 +775,7 @@ var UtilsPartitionCtrl = [
                 '/backend/format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
-                }, { 'success': $scope.loadDiskinfo }
+                }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.addpartconfirm = function(devname, unpartition) {
@@ -688,7 +793,7 @@ var UtilsPartitionCtrl = [
                 'unit': $scope.unit
             }, function(data) {
                 if (data.code == 0)
-                    $scope.loadDiskinfo();
+                    $scope.get_diskinfo();
                 else
                     $scope.waiting = false;
             });
@@ -705,7 +810,7 @@ var UtilsPartitionCtrl = [
                 'devname': $scope.devname
             }, function(data) {
                 if (data.code == 0)
-                    $scope.loadDiskinfo();
+                    $scope.get_diskinfo();
                 else
                     $scope.waiting = false;
             });
@@ -722,7 +827,7 @@ var UtilsPartitionCtrl = [
                 'devname': $scope.devname
             }, function(data) {
                 if (data.code == 0)
-                    Timeout($scope.loadDiskinfo, 1000, module);
+                    Timeout($scope.get_diskinfo, 1000, module);
                 else
                     $scope.waiting = false;
             });
@@ -730,7 +835,7 @@ var UtilsPartitionCtrl = [
     }
 ];
 
-var UtilsAutoFMCtrl = [
+var StorageAutoFMCtrl = [
     '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
     function($scope, Module, Timeout, Request, Message, Backend) {
         var module = 'utils.autofm';
@@ -877,7 +982,7 @@ var UtilsAutoFMCtrl = [
     }
 ];
 
-var UtilsMoveDataCtrl = [
+var StorageMoveDataCtrl = [
     '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
     function($scope, Module, Timeout, Request, Message, Backend) {
         var module = 'utils.movedata';
@@ -1158,6 +1263,353 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
             $scope.confirm = function() {
                 $scope.crts_delete(crts, true, callback);
             };
+        };
+    }
+];
+
+var StorageRemoteCtrl = [
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
+    function($scope, Module, $routeParams,Timeout, Request, Message, Backend, $location) {
+        var module = 'utils.remote';
+        Module.init(module, '网络磁盘');
+        $scope.loaded = false;
+        $scope.loading_info = true;
+        $scope.action = '';
+        $scope.protocol = 'ftp';
+        $scope.storage_info = {
+            'name': '',
+            'address': '',
+            'account': '',
+            'password': '',
+            'protocol': ''
+        };
+        $scope.checking_davfs2 = true;
+        $scope.status_davfs2 = null;
+        console.log('action', $routeParams.action)
+        if ($routeParams.section && $routeParams.section.indexOf('edit_') == 0) {
+            $scope.action = 'edit';
+        } else {
+            $scope.action = 'new';
+            $scope.loading_info = false;
+        }
+        $scope.load = function () {
+            $scope.loaded = true;
+            if ($scope.action == 'edit') {
+                $scope.load_info();
+            }
+        };
+        $scope.load_info = function () {
+            var tmp = $routeParams.section.split('_');
+            // console.log(tmp);
+            $scope.protocol = tmp[1];
+            Timeout(function() {
+                $scope.loading_info = false;
+                // $scope.storage_info['name'] = '坚果云测试用';
+            }, 600, module);
+        };
+        $scope.storage_add = function () {
+            if ($scope.protocol == 'webdav') {
+                console.log('storage_add/webdav');
+                // if (!$scope.status_davfs2) {
+                //     $scope.loadDavfs2($scope.storage_add);
+                //     return;
+                // }
+                if (!$scope.protocol || !$scope.storage_info['address']) {
+                    return;
+                }
+                var data = {
+                    'name': $scope.storage_info['name'],
+                    'address': $scope.storage_info['address'],
+                    'account': $scope.storage_info['account'],
+                    'password': $scope.storage_info['password'],
+                    'protocol': $scope.protocol,
+                };
+                console.log('提交数据', data);
+                Timeout(function() {
+                    $scope.loading_info = false;
+                    // $scope.storage_info['name'] = '_test';
+                    $location.path('/storage/remote/edit_' + encodeURIComponent(data.protocol + '_' + data.address));
+                }, 600, module);
+            }
+        };
+        $scope.storage_update = function () {
+            console.log('保存');
+        };
+
+        $scope.loadDavfs2 = function(callback) {
+            Request.get('/query/service.davfs2', function(data) {
+                $scope.checking_davfs2 = false;
+                if (data['service.davfs2']) {
+                    $scope.status_davfs2 = data['service.davfs2']['status'];
+                    if (callback) {
+                        callback();
+                    };
+                } else {
+                    $scope.installMessage = 'WebDAV 需要使用 davfs2 服务，您当前尚未安装该服务。<br>是否安装 ？';
+                    $scope.showInstallBtn = true;
+                }
+            });
+        };
+        $scope.install_davfs2 = function() {
+            $scope.installMessage = '正在安装支持，请稍候...'
+            $scope.showInstallBtn = false;
+            Backend.call(
+                $scope,
+                module,
+                '/backend/yum_install',
+                '/backend/yum_install_epel_davfs2', {
+                    'repo': 'epel',
+                    'pkg': 'davfs2'
+                }, {
+                    'wait': function(data) {
+                        $scope.installMessage = data.msg;
+                    },
+                    'success': function(data) {
+                        $scope.installMessage = data.msg;
+                        Timeout($scope.loadDavfs2, 3000, module);
+                    },
+                    'error': function(data) {
+                        $scope.installMessage = data.msg;
+                        Timeout($scope.loadDavfs2, 3000, module);
+                    }
+                },
+                true
+            );
+        };
+        $scope.start_davfs2 = function() {
+            $scope.startMessage = '正在启动，请稍候...'
+            $scope.showStartBtn = false;
+            Backend.call(
+                $scope,
+                module,
+                '/backend/service_start',
+                '/backend/service_start_davfs2', {
+                    name: 'Davfs2',
+                    service: 'davfs2'
+                }, {
+                    'wait': function(data) {
+                        $scope.startMessage = data.msg;
+                    },
+                    'success': function(data) {
+                        $scope.startMessage = data.msg;
+                        Timeout(function() {
+                            // startInit();
+                            $scope.loadDavfs2();
+                        }, 3000, module);
+                    },
+                    'error': function(data) {
+                        $scope.startMessage = data.msg;
+                        Timeout(function() {
+                            // startInit();
+                            $scope.loadDavfs2();
+                        }, 3000, module);
+                    }
+                },
+                true
+            );
+        };
+
+    }
+];
+
+var UtilsRepositoryCtrl = [
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
+    function($scope, Module, $routeParams, Timeout, Request, Message, Backend, $location) {
+        var module = 'utils.repository';
+        Module.init(module, '软件仓库');
+        $scope.loaded = false;
+        $scope.action = '';
+        var section = Module.getSection();
+        var enabled_sections = ['yum', 'apt', 'pacman', 'dnf', 'zypper'];
+        Module.initSection(enabled_sections[0]);
+        $scope.loading = false;
+
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+        $scope.load_yum = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+        $scope.load_apt = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+        $scope.load_pacman = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+        $scope.load_dnf = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+        $scope.load_zypper = function () {
+            $scope.loading = true;
+            Timeout(function() {
+                $scope.loading = false;
+            }, 1000, module);
+        };
+    }
+];
+
+var UtilsCronCtrl = ['$scope', 'Module', 'Request',
+    function ($scope, Module, Request) {
+        var module = 'utils.cron';
+        Module.init(module, '定时任务');
+        $scope.loaded = false;
+        $scope.cron_list = [];
+        $scope.loading_cron_list = true;
+        $scope.has_cron_service = false;
+        var section = Module.getSection();
+        var enabled_sections = ['base', 'cron'];
+        Module.initSection(enabled_sections[0]);
+
+        $scope.load = function () {
+            Request.get('/query/service.crond', function(data) {
+                console.log(data);
+                if (data['service.crond'] && data['service.crond'].status) {
+                    $scope.has_cron_service = true;
+                }
+                $scope.loaded = true;
+            });
+            $scope.tab_sec(section);
+        };
+
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+
+        $scope.common_options = '';
+        $scope.cron_time = {
+            minute: '',
+            hour: '',
+            day: '',
+            month: '',
+            weekday: ''
+        };
+        $scope.options = {
+            minute: '',
+            hour: '',
+            day: '',
+            month: '',
+            weekday: ''
+        };
+
+        $scope.task_time = '';
+        $scope.task_user = '';
+        $scope.task_email = '';
+        $scope.task_command = '';
+
+        $scope.load_base = function (init) {};
+        $scope.load_cron = function (init) {
+            if (!init && !$scope.init_process) {
+                return; // Prevent duplicate requests
+            }
+            $scope.load_cron_list();
+        };
+        $scope.load_cron_list = function () {
+            if (!$scope.has_cron_service) return;
+            $scope.loading_cron_list = true;
+            Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
+                $scope.loading_cron_list = false;
+                if (data.code == 0) {
+                    $scope.cron_list = data.data;
+                }
+            }, false, true);
+        };
+        $scope.cron_add_confirm = function() {
+            $scope.load_user();
+            $('#cron-add-confirm').modal();
+        };
+        $scope.load_user = function () {
+            if (!$scope.users) {
+                Request.post('/operation/user', {
+                    'action': 'listuser',
+                    'fullinfo': false
+                }, function (data) {
+                    if (data.code == 0) {
+                        $scope.users = data.data;
+                    }
+                }, false, true);
+            }
+        };
+        $scope.$watch('cron_time', function (n) {
+            $scope.task_time = n.minute + ' ' + n.hour + ' ' + n.day + ' ' + n.month + ' ' + n.weekday;
+        }, true);
+        $scope.select_common_option = function () {
+            var option = $scope.common_options;
+            console.log($scope.common_options);
+            if (option && option != '') {
+                var option_array = option.split(' ');
+
+                $scope.cron_time.minute = option_array[0];
+                $scope.cron_time.hour = option_array[1];
+                $scope.cron_time.day = option_array[2];
+                $scope.cron_time.month = option_array[3];
+                $scope.cron_time.weekday = option_array[4];
+
+                $scope.options.minute = option_array[0];
+                $scope.options.hour = option_array[1];
+                $scope.options.day = option_array[2];
+                $scope.options.month = option_array[3];
+                $scope.options.weekday = option_array[4];
+            } else {
+                for (var i in $scope.cron_time) {
+                    $scope.cron_time[i] = ''
+                }
+                for (var j in $scope.options) {
+                    $scope.options[j] = ''
+                }
+            }
+        };
+        $scope.input_single_option = function (type) {
+            if (typeof type === 'undefined' || type === '') {
+                return
+            };
+            $scope.options[type] = $scope.cron_time[type];
+        };
+        $scope.select_single_option = function (type) {
+            if (typeof type === 'undefined' || type === '') {
+                return
+            };
+            $scope.cron_time[type] = $scope.options[type];
+        };
+        $scope.addCronJobs = function () {
+            var data = {
+                action: 'add_cron_jobs',
+                command: $scope.task_time + ' ' + $scope.task_command
+            }
+            console.log(data)
+            // Request.post('/operation/task', {
+            //     action: 'add',
+            //     username: $scope.username,
+            //     password: $scope.password ? hex_md5($scope.password) : '',
+            //     passwordc: $scope.passwordc ? hex_md5($scope.passwordc) : '',
+            //     passwordcheck: $scope.passwordcheck
+            // }, function(data) {
+            //     if (data.code == 0) $scope.loadAuthInfo();
+            // });
         };
     }
 ];

@@ -1,14 +1,14 @@
-<div navbar ng-init="currentItem='service.named'"></div>
+<div navbar ng-init="currentItem='service.samba'"></div>
 <div ng-show="Auth.processing||!loaded">
     <div loading></div>
 </div>
 
 <div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
     <div class="module-header">
-        <h3>Named - DNS 域名解析服务器</h3>
+        <h3>Samba - 资源共享服务器</h3>
     </div>
 
-    <div srvinstall ng-init="name='named';pkg='bind';expected_repolist=['base'];"></div>
+    <div srvinstall ng-init="name='samba';pkg='samba';expected_repolist=['base'];"></div>
 
     <div class="tabbable" ng-show="installed">
         <ul class="nav nav-tabs">
@@ -22,7 +22,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
-                <div srvbase ng-init="name='named';pkg='bind';service='named';"></div>
+                <div srvbase ng-init="name='samba';pkg='samba';service='smb';"></div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='settings'" id="settings">
                 <table class="table">
@@ -36,24 +36,21 @@
                 <button class="btn btn-primary" style="margin-left:10px" ng-click="savesettings()">保存设置</button>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ext'" id="ext">
-                <div srvext ng-init="name='named';pkg='bind';"></div>
+                <div srvext ng-init="name='samba';pkg='samba';"></div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='configfile'" id="configfile">
-                <div srvfile ng-init="items=[
-                {name: '主配置', path: '/etc/named.conf', isfile: true},
-                {name: '解析配置', path: '/etc/resolv.conf', isfile: true},
-                {name: 'hosts', path: '/etc/hosts', isfile: true},
-                {name: '区域数据', path: '/var/named', isdir: true},
-                {name: '区域配置', path:'/etc/named.rfc1912.zones', isfile: true}];"></div>
+                <div srvfile ng-init="items=[{name: '主配置', path: '/etc/samba/smb.conf', isfile: true}];"></div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='logfile'" id="logfile">
-                <div srvlog ng-init="items=[{name:'日志文件', path:'/var/log/messages', isfile:true}];"></div>
+                <div srvlog ng-init="items=[
+                {name:'启动日志', path:'/var/log/messages', isfile:true},
+                {name:'日志文件', path:'/var/log/samba', isdir:true}];"></div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='update'" id="update">
-                <div srvupdate ng-init="name='named';pkg='bind';"></div>
+                <div srvupdate ng-init="name='samba';pkg='samba';"></div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='uninstall'" id="uninstall">
-                <div srvuninstall ng-init="name='named';pkg='bind';"></div>
+                <div srvuninstall ng-init="name='samba';pkg='samba';"></div>
             </div>
         </div>
     </div>

@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017 - 2019, doudoudzj
 # Copyright (c) 2012, VPSMate development team
@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for quering server info'''
+'''Module for Querying Server Information'''
 
 import datetime
 import fcntl
@@ -33,11 +33,31 @@ def strfdelta(tdelta, fmt):
 
 
 def div_percent(a, b):
-    if b == 0: return '0%'
+    if b == 0:
+        return '0%'
     return '%.2f%%' % (round(float(a)/b, 4) * 100)
 
 
 class ServerInfo(object):
+
+    # item : realtime update
+    server_items = {
+        'hostname'      : False,
+        'datetime'      : True,
+        'uptime'        : True,
+        'loadavg'       : True,
+        'cpustat'       : True,
+        'meminfo'       : True,
+        'mounts'        : True, 
+        'netifaces'     : True,
+        'nameservers'   : True,
+        'distribution'  : False,
+        'uname'         : False, 
+        'cpuinfo'       : False,
+        'diskinfo'      : False,
+        'virt'          : False,
+    }
+
     @classmethod
     def hostname(self):
         with open('/proc/sys/kernel/hostname', 'r') as f:
@@ -75,19 +95,19 @@ class ServerInfo(object):
                 # may be the domain 0 machine has more cores
                 # we calclate approximately for it
                 if idle_seconds > up_seconds:
-                    for n in range(2,10):
+                    for n in range(2, 10):
                         if idle_seconds/n < up_seconds:
                             idle_seconds = idle_seconds/n
                             break
             fmt = '{days} 天 {hours} 小时 {minutes} 分 {seconds} 秒'
-            uptime_string = strfdelta(datetime.timedelta(seconds = up_seconds), fmt)
-            idletime_string = strfdelta(datetime.timedelta(seconds = idle_seconds), fmt)
+            uptime_string = strfdelta(datetime.timedelta(seconds=up_seconds), fmt)
+            idletime_string = strfdelta(datetime.timedelta(seconds=idle_seconds), fmt)
         return {
             'up': uptime_string,
             'idle': idletime_string,
             'idle_rate': div_percent(idle_seconds, up_seconds),
         }
-    
+
     @classmethod
     def loadavg(self):
         with open('/proc/loadavg', 'r') as f:
@@ -97,14 +117,14 @@ class ServerInfo(object):
             '5min': load_5min,
             '15min': load_15min,
         }
-    
+
     @classmethod
     def cpustat(self, fullstat=False):
         cpustat = {}
         # REF: http://www.kernel.org/doc/Documentation/filesystems/proc.txt
         fname = ('used', 'idle')
         full_fname = ('user', 'nice', 'system', 'idle', 'iowait', 'irq',
-                'softirq', 'steal', 'guest', 'guest_nice')
+                      'softirq', 'steal', 'guest', 'guest_nice')
         cpustat['cpus'] = []
         with open('/proc/stat', 'r') as f:
             for line in f:
@@ -117,7 +137,8 @@ class ServerInfo(object):
                     stat = [int(i) for i in stat]
                     statall = sum(stat)
                     if fullstat:
-                        while len(stat) < 10: stat.append(0)
+                        while len(stat) < 10:
+                            stat.append(0)
                         stat = dict(zip(full_fname, stat))
                     else:
                         stat = [statall-stat[3], stat[3]]
@@ -130,7 +151,7 @@ class ServerInfo(object):
                 elif line.startswith('btime'):
                     btime = int(line.strip().split()[1])
                     cpustat['btime'] = time.strftime('%Y-%m-%d %X %Z',
-                                                    time.localtime(btime))
+                                                     time.localtime(btime))
         return cpustat
 
     @classmethod
@@ -141,7 +162,8 @@ class ServerInfo(object):
 
         with open('/proc/meminfo', 'r') as f:
             for line in f:
-                if ':' not in line: continue
+                if ':' not in line:
+                    continue
                 item, value = line.split(':')
                 value = int(value.split()[0]) * 1024
                 if item == 'MemTotal':
@@ -180,10 +202,12 @@ class ServerInfo(object):
         with open('/proc/mounts', 'r') as f:
             for line in f:
                 dev, path, fstype = line.split()[0:3]
+                # simfs: filesystem in OpenVZ
                 if fstype in ('ext2', 'ext3', 'ext4', 'xfs',
                               'jfs', 'reiserfs', 'btrfs',
-                              'simfs'): # simfs: filesystem in OpenVZ
-                    if not os.path.isdir(path): continue
+                              'simfs'):
+                    if not os.path.isdir(path):
+                        continue
                     mounts.append({'dev': dev, 'path': path, 'fstype': fstype})
         for mount in mounts:
             stat = os.statvfs(mount['path'])
@@ -204,7 +228,8 @@ class ServerInfo(object):
         netifaces = []
         with open('/proc/net/dev', 'r') as f:
             for line in f:
-                if not ':' in line: continue
+                if not ':' in line:
+                    continue
                 name, data = line.split(':')
                 name = name.strip()
                 data = data.split()
@@ -269,8 +294,9 @@ class ServerInfo(object):
                     hwtype = hwinfo[16:18]
                     netiface['encap'] = encaps[hwtype]
                     netiface['mac'] = ':'.join(['%02X' % ord(char) for char in hwinfo[18:24]])
-    
-                    if not netiface['name'].startswith('venet'): break
+
+                    if not netiface['name'].startswith('venet'):
+                        break
 
                     # detect interface like venet0:0, venet0:1, etc.
                     if not guess_iface:
@@ -293,7 +319,7 @@ class ServerInfo(object):
                     #netifaces[i] = None
                     break
 
-        netifaces = [ iface for iface in netifaces if 'mac' in iface ]
+        netifaces = [iface for iface in netifaces if 'mac' in iface]
         return netifaces
 
     @classmethod
@@ -301,7 +327,8 @@ class ServerInfo(object):
         nameservers = []
         with open('/etc/resolv.conf', 'r') as f:
             for line in f:
-                if not 'nameserver' in line: continue
+                if not 'nameserver' in line:
+                    continue
                 ns, = line.strip().split()[1:2]
                 nameservers.append(ns)
         return nameservers
@@ -358,7 +385,8 @@ class ServerInfo(object):
                             bitss.append('32bit')
         cores = [{'model': x, 'bits': y} for x, y in zip(models, bitss)]
         cpu_count = len(set(cpuids))
-        if cpu_count == 0: cpu_count = 1
+        if cpu_count == 0:
+            cpu_count = 1
         return {
             'cores': cores,
             'cpu_count': cpu_count,
@@ -368,10 +396,10 @@ class ServerInfo(object):
     @classmethod
     def partinfo(self, uuid=None, devname=None):
         """Read partition info including uuid and filesystem.
-        
+
         You can specify uuid or devname to get the identified partition info.
         If no argument provided, all partitions will return.
-        
+
         We read info from /etc/blkid/blkid.tab instead of call blkid command.
         REF: http://linuxconfig.org/how-to-retrieve-and-change-partitions-universally-unique-identifier-uuid-on-linux
         """
@@ -381,7 +409,8 @@ class ServerInfo(object):
         p.wait()
 
         # OpenVZ may not have this file
-        if not os.path.exists('/etc/blkid/blkid.tab'): return None
+        if not os.path.exists('/etc/blkid/blkid.tab'):
+            return None
 
         with open('/etc/blkid/blkid.tab') as f:
             for line in f:
@@ -427,9 +456,10 @@ class ServerInfo(object):
         blks = ServerInfo.partinfo()
 
         # OpenVZ may not have blk info
-        if not blks: return disks
+        if not blks:
+            return disks
 
-        for devname, blkinfo in blks.iteritems():
+        for devname, blkinfo in blks.items():
             dev = os.stat('/dev/%s' % devname).st_rdev
             major, minor = os.major(dev), os.minor(dev)
             blks[devname]['major'] = major
@@ -439,8 +469,10 @@ class ServerInfo(object):
         with open('/proc/partitions', 'r') as f:
             for line in f:
                 fields = line.split()
-                if len(fields) == 0: continue
-                if not fields[0].isdigit(): continue
+                if len(fields) == 0:
+                    continue
+                if not fields[0].isdigit():
+                    continue
                 major, minor, blocks, name = fields
                 major, minor, blocks = int(major), int(minor), int(blocks)
                 parts.append({
@@ -456,16 +488,17 @@ class ServerInfo(object):
             # check if it appears in blkid list
             if not part['name'] in blks:
                 # don't check the part with child partition
-                if i+1<len(parts) and parts[i+1]['name'].startswith(part['name']):
+                if i+1 < len(parts) and parts[i+1]['name'].startswith(part['name']):
                     continue
 
                 # if dev name doesn't match, check the major and minor of the dev
                 devfound = False
-                for devname, blkinfo in blks.iteritems():
+                for devname, blkinfo in blks.items():
                     if blkinfo['major'] == part['major'] and blkinfo['minor'] == part['minor']:
                         devfound = True
                         break
-                if devfound: continue
+                if devfound:
+                    continue
 
                 # means that it is busy
                 has_busy_part = True
@@ -479,22 +512,25 @@ class ServerInfo(object):
             lvs = p.stdout
             while True:
                 line = lvs.readline()
-                if not line: break
+                if not line:
+                    break
                 if 'LV Name' in line or 'LV Path' in line:
                     devlink = line.replace('LV Name', '').replace('LV Path', '').strip()
-                    if not os.path.exists(devlink): continue
+                    if not os.path.exists(devlink):
+                        continue
                     dev = os.readlink(devlink)
                     dev = os.path.abspath(os.path.join(os.path.dirname(devlink), dev))
                     dev = dev.replace('/dev/', '')
                     lvmlvs_vname[dev] = devlink.replace('/dev/', '')
                     lvmlvs.append(dev)
             p.wait()
-        
+
         # scan for the 'on' status swap partition
         swapptns = []
         with open('/proc/swaps', 'r') as f:
             for line in f:
-                if not line.startswith('/dev/'): continue
+                if not line.startswith('/dev/'):
+                    continue
                 fields = line.split()
                 swapptns.append(fields[0].replace('/dev/', ''))
 
@@ -530,7 +566,7 @@ class ServerInfo(object):
                 is_pv = True
             else:
                 is_pv = False
-            
+
             partition = {
                 'major': major,
                 'minor': minor,
@@ -591,7 +627,7 @@ class ServerInfo(object):
                 if 'VMware Virtual' in line:
                     return 'VMware'
                 if any(['QEMU Virtual CPU' in line,
-                       'Booting paravirtualized kernel on KVM' in line]):
+                        'Booting paravirtualized kernel on KVM' in line]):
                     return 'KVM'
                 if 'Booting paravirtualized kernel on Xen' in line:
                     return 'Xen PV'
@@ -599,8 +635,10 @@ class ServerInfo(object):
                     return 'Xen HVM'
                 if 'Xen version' in line:
                     return 'Xen'
-        if os.path.exists('/proc/xen/'): return 'Xen'
-        if os.path.exists('/proc/vz/'): return 'Virtuozzo/OpenVZ'
+        if os.path.exists('/proc/xen/'):
+            return 'Xen'
+        if os.path.exists('/proc/vz/'):
+            return 'Virtuozzo/OpenVZ'
         return ''
 
 
@@ -642,25 +680,25 @@ if __name__ == '__main__':
     cpustat = ServerInfo.cpustat()
     tstat = cpustat['total']
     print('* Total CPU stats:')
-    for k, v in tstat.iteritems():
+    for k, v in tstat.items():
         print('  %s: %d' % (k, v))
     for i, tstat in enumerate(cpustat['cpus']):
         print('* CPU-%d stats:' % i)
-        for k, v in tstat.iteritems():
+        for k, v in tstat.items():
             print('  %s: %d' % (k, v))
     print('')
 
     meminfo = ServerInfo.meminfo()
     print('* Memory total: %s' % meminfo['mem_total'])
-    print('* Memory used: %s (%s)' % (meminfo['mem_used'], meminfo['mem_used_rate']))
-    print('* Memory free: %s (%s)' % (meminfo['mem_free'], meminfo['mem_free_rate']))
+    print('* Memory used: %s (%s)' %(meminfo['mem_used'], meminfo['mem_used_rate']))
+    print('* Memory free: %s (%s)' %(meminfo['mem_free'], meminfo['mem_free_rate']))
     print('* Memory buffers: %s' % meminfo['mem_buffers'])
     print('* Memory cached: %s' % meminfo['mem_cached'])
     print('* Swap total: %s' % meminfo['swap_total'])
-    print('* Swap used: %s (%s)' % (meminfo['swap_used'], meminfo['swap_used_rate']))
-    print('* Swap free: %s (%s)' % (meminfo['swap_free'], meminfo['swap_free_rate']))
+    print('* Swap used: %s (%s)' %(meminfo['swap_used'], meminfo['swap_used_rate']))
+    print('* Swap free: %s (%s)' %(meminfo['swap_free'], meminfo['swap_free_rate']))
     print
-    
+
     mounts = ServerInfo.mounts(True)
     for mount in mounts:
         print('* Mount device: %s' % mount['dev'])
@@ -671,7 +709,7 @@ if __name__ == '__main__':
         print('* Free space: %s' % mount['free'])
         print('* Used space: %s (%s)' % (mount['used'], mount['used_rate']))
         print('')
-    
+
     netifaces = ServerInfo.netifaces()
     for netiface in netifaces:
         print('* Interface name: %s' % netiface['name'])
@@ -680,7 +718,7 @@ if __name__ == '__main__':
         print('* IP address: %s' % netiface['ip'])
         print('* Broadcast: %s' % netiface['bcast'])
         print('* Network mask: %s' % netiface['mask'])
-        if netiface.has_key('gw'):
+        if 'gw' in netiface:
             print('* Default gateway: %s' % netiface['gw'])
         print('* MAC address: %s' % netiface['mac'])
         print('* Data receive: %s' % netiface['rx'])
@@ -719,49 +757,63 @@ if __name__ == '__main__':
     print('')
     for partition in partitions:
         print('* Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor']))
-        if partition.has_key('vname'): print '  Volumn name: %s' % partition['vname']
+        if 'vname' in partition:
+            print '  Volumn name: %s' % partition['vname']
         print('  Partition size: %s (%s free)' % (partition['size'], partition['unpartition']))
-        if partition.has_key('uuid'): print '  Partition UUID: %s' % partition['uuid']
-        if partition.has_key('fstype'): print '  Partition fstype: %s' % partition['fstype']
+        if 'uuid' in partition:
+            print '  Partition UUID: %s' % partition['uuid']
+        if 'fstype' in partition:
+            print '  Partition fstype: %s' % partition['fstype']
         print '  Partition is PV: %s' % partition['is_pv']
         print '  Partition is LV: %s' % partition['is_lv']
         print '  Partition is HW: %s' % partition['is_hw']
-        if partition.has_key('mount'): print '  Mount point: %s' % partition['mount']
-        if partition['is_hw']: print '  Partition count: %d' % partition['partcount']
-        print 
+        if 'mount' in partition:
+            print '  Mount point: %s' % partition['mount']
+        if partition['is_hw']:
+            print '  Partition count: %d' % partition['partcount']
+        print
         for subpartition in partition['partitions']:
-            print '  - Subpartition name: %s (%d, %d)' % \
-                    (subpartition['name'], subpartition['major'], subpartition['minor'])
-            if subpartition.has_key('vname'): print '  - Volumn name: %s' % subpartition['vname']
+            print '  - Subpartition name: %s (%d, %d)' % (subpartition['name'], subpartition['major'], subpartition['minor'])
+            if 'vname' in subpartition:
+                print '  - Volumn name: %s' % subpartition['vname']
             print '  - Subpartition size: %s' % subpartition['size']
-            if subpartition.has_key('uuid'): print '  - Subpartition UUID: %s' % subpartition['uuid']
-            if subpartition.has_key('fstype'): print '  - Subpartition fstype: %s' % subpartition['fstype']
+            if 'uuid' in subpartition:
+                print '  - Subpartition UUID: %s' % subpartition['uuid']
+            if 'fstype' in subpartition:
+                print '  - Subpartition fstype: %s' % subpartition['fstype']
             print '  - Subpartition is PV: %s' % subpartition['is_pv']
             print '  - Subpartition is LV: %s' % subpartition['is_lv']
             print '  - Subpartition is HW: %s' % subpartition['is_hw']
-            if subpartition.has_key('mount'): print '  - Mount point: %s' % subpartition['mount']
-            if subpartition['is_hw']: print '  - Subpartition count: %d' % subpartition['partcount']
-            print 
-        print 
+            if 'mount' in subpartition:
+                print '  - Mount point: %s' % subpartition['mount']
+            if subpartition['is_hw']:
+                print '  - Subpartition count: %d' % subpartition['partcount']
+            print
+        print
 
     print '* LVM partitions:'
     for partition in diskinfo['lvm']['partitions']:
         print '  - Partition name: %s (%d, %d)' % \
-                (partition['name'], partition['major'], partition['minor'])
-        if partition.has_key('vname'): print '  - Volumn name: %s' % partition['vname']
+            (partition['name'], partition['major'], partition['minor'])
+        if 'vname' in partition:
+            print '  - Volumn name: %s' % partition['vname']
         print '  - Partition size: %s' % partition['size']
-        if partition.has_key('uuid'): print '  - Partition UUID: %s' % partition['uuid']
-        if partition.has_key('fstype'): print '  - Partition fstype: %s' % partition['fstype']
+        if 'uuid' in partition:
+            print '  - Partition UUID: %s' % partition['uuid']
+        if 'fstype' in partition:
+            print '  - Partition fstype: %s' % partition['fstype']
         print '  - Partition is PV: %s' % partition['is_pv']
         print '  - Partition is LV: %s' % partition['is_lv']
         print '  - Partition is HW: %s' % partition['is_hw']
-        if partition.has_key('mount'): print '  - Mount point: %s' % partition['mount']
-        if partition['is_hw']: print '  - Partition count: %d' % partition['partcount']
-        print 
+        if 'mount' in partition:
+            print '  - Mount point: %s' % partition['mount']
+        if partition['is_hw']:
+            print '  - Partition count: %d' % partition['partcount']
+        print
 
     print '* Support file systems:'
     for fstype in ServerTool.supportfs():
         print '  - %s' % fstype
     print
-    
+
     print '* Virtual Tech: %s' % ServerInfo.virt()

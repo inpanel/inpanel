@@ -8,10 +8,10 @@
         <h3>网站管理</h3>
     </div>
 
-    <div class="tabbable" ng-init="load()">
+    <div class="tabbable" ng-init="load()" ng-show="has_httpserver">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none"><a href="#nginx" ng-click="loadnginx()" data-toggle="tab">Nginx 网站列表</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none"><a href="#apache" ng-click="loadapache()" data-toggle="tab">Apache 网站列表</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='nginx'" ng-show="nginx_supported" style="display:none"><a href="#nginx" ng-click="loadnginx()" data-toggle="tab">Nginx</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='apache'" ng-show="apache_supported" style="display:none"><a href="#apache" ng-click="loadapache()" data-toggle="tab">Apache</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='package'" ng-show="has_httpserver" style="display:none"><a href="#package" ng-click="loadpackage()" data-toggle="tab">快速安装网站系统</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='subDomain'" ng-show="false" style="display:none"><a href="#subDomain" ng-click="sec('subDomain')" data-toggle="tab">快速创建子站点</a></li>
         </ul>
@@ -21,7 +21,7 @@
                     <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载站点列表，请稍候...
                 </div>
                 <div ng-show="!nginxloading">
-                    <div class="pull-left"><h5>Nginx 网站列表</h5></div>
+                    <div class="pull-left"><h5>站点列表</h5></div>
                     <div class="pull-right">
                         <a class="btn btn-default btn-sm" href="#/site/nginx/new"><span class="glyphicon glyphicon-plus"></span> 新建站点</a>
                         <div class="btn-group btn-group-sm">
@@ -57,7 +57,7 @@
                                 </td>
                                 <td>
                                     <span ng-repeat="listen in server.listens">
-                                    {{listen.ip}}:{{listen.port}}
+                                    {{listen.ip | site.ip}}:{{listen.port}}
                                     <span ng-show="listen.port==443||listen.port==80">({{listen.port | site.port}})</span>
                                     <span ng-show="listen.default_server">(默认)</span>
                                     <br>
@@ -91,9 +91,14 @@
                 <div class="well" ng-show="apacheloading">
                     <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载站点列表，请稍候...
                 </div>
-                <div class="pull-left" ng-show="!apacheloading"><h5>Apache 网站列表</h5></div>
+                <div class="pull-left" ng-show="!apacheloading"><h5>站点列表</h5></div>
                 <div class="pull-right" ng-show="!apacheloading">
-                    <a class="btn btn-default btn-sm" href="#/site/apache/new"><i class="glyphicon glyphicon-plus"></i> 添加站点</a>
+                    <a class="btn btn-default btn-sm" href="#/site/apache/new"><i class="glyphicon glyphicon-plus"></i> 新建站点</a>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-default" title="启动 Apache" ng-click="apache_set_status('start')" ng-disabled="apacheloading || !apache_supported || apache_status=='running'"><i class="glyphicon glyphicon-play"></i></button>
+                        <button class="btn btn-default" title="停止 Apache" ng-click="apache_set_status('stop')" ng-disabled="apacheloading || !apache_supported || apache_status=='stopped'"><i class="glyphicon glyphicon-stop"></i></button>
+                        <button class="btn btn-default" title="重启 Apache" ng-click="apache_set_status('restart')" ng-disabled="apacheloading || !apache_supported || apache_status=='stopped'"><i class="glyphicon glyphicon-refresh"></i></button>
+                    </div>
                 </div>
                 <table class="table table-hover table-bordered" ng-show="!apacheloading">
                     <thead>
@@ -114,12 +119,18 @@
                             <td class="text-right">{{$index+1}}</td>
                             <td ng-bind-html-unsafe="server.status | site.status"></td>
                             <td>
-                                <a href="http{{'s' | iftrue:server.Port=='443'}}://{{server.ServerName}}" target="_blank" ng-show="server.ServerName!='_'">{{server.ServerName}}</a>
+                                <span><a href="http{{'s' | iftrue:server.Port=='443'}}://{{server.ServerName}}" target="_blank" ng-show="server.ServerName!='_'">{{server.ServerName}}</a></span>
                                 <span ng-show="server.ServerName=='_'">任意域名</span>
+                                <br>
+                                <span ng-repeat="server_name in server.ServerAlias">
+                                <a href="http{{'s' | iftrue:server.Port=='443'}}://{{server_name}}" target="_blank" ng-show="server_name!='_'">{{server_name}}</a>
+                                <span ng-show="server_name=='_'">任意域名</span>
+                                <br>
+                                </span>
                             </td>
                             <td>
-                                {{server.IP}} : {{server.Port}}
-                                <span ng-show="server.Port==443||server.Port==80">({{server.Port}})</span>
+                                {{server.IP | site.ip}}:{{server.Port}}
+                                <span ng-show="server.Port==443||server.Port==80">({{server.Port | site.port}})</span>
                                 <span ng-show="listen.default_server">(默认)</span>
                             </td>
                             <td>
@@ -130,16 +141,16 @@
                                     <a class="btn btn-default btn-xs" title="管理站点文件" href="#/file?path=/{{server.DocumentRoot}}">
                                         <i class="glyphicon glyphicon-folder-open"></i>
                                     </a>
-                                    <a class="btn btn-default btn-xs" title="设置站点" href="#/site/nginx/edit_{{server.listens[0].ip}}_{{server.listens[0].port}}_{{server.server_names[0]}}">
+                                    <a class="btn btn-default btn-xs" title="设置站点" href="#/site/apache/edit_{{server.IP}}_{{server.Port}}_{{server.ServerName}}">
                                         <i class="glyphicon glyphicon-wrench"></i>
                                     </a>
-                                    <button class="btn btn-default btn-xs" ng-show="server.status!='on'" title="启用该站点" ng-click="nginx_enableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+                                    <button class="btn btn-default btn-xs" ng-show="server.status!='on'" title="启用该站点" ng-click="nginx_enableserver(server.IP, server.Port, server.ServerName)">
                                         <i class="glyphicon glyphicon-play"></i>
                                     </button>
-                                    <button class="btn btn-default btn-xs" ng-show="server.status=='on'" title="停用该站点" ng-click="nginx_disableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+                                    <button class="btn btn-default btn-xs" ng-show="server.status=='on'" title="停用该站点" ng-click="nginx_disableserver(server.IP, server.Port, server.ServerName)">
                                         <i class="glyphicon glyphicon-stop"></i>
                                     </button>
-                                    <button class="btn btn-default btn-xs" title="删除该站点" ng-click="nginx_deleteserverconfirm(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+                                    <button class="btn btn-default btn-xs" title="删除该站点" ng-click="nginx_deleteserverconfirm(server.IP, server.Port, server.ServerName)">
                                         <i class="glyphicon glyphicon-remove"></i>
                                     </button>
                                 </div>
@@ -222,14 +233,14 @@
                 </div>
             </div>
         </div>
-        <div ng-show="!has_httpserver" value="install" style="display:none">
-        <div class="well">
-            <p>系统检测到您还未安装 HTTP 服务器。</p>
-            <p>请先安装任意一款 HTTP 服务器后继续操作。</p>
-            <p class="text-info">（当前仅支持 Nginx 站点的管理配置，如需管理 Apache 站点，请留意 InPanel 的新版本。<a href="#/setting/upversion">检测新版本</a>）</p>
-            <p style="padding-top: 10px;"><a class="btn btn-default" href="#/service?s=http">立即安装</a></p>
+        <div ng-hide="has_httpserver" value="install" style="display:none">
+            <div class="well">
+                <p>系统检测到您还未安装 HTTP 服务器。</p>
+                <p>请先安装任意一款 HTTP 服务器后继续操作。</p>
+                <p class="text-info">（当前仅支持 Nginx 站点的管理配置，如需管理 Apache 站点，请留意 InPanel 的新版本。<a href="#/setting/upversion">检测新版本</a>）</p>
+                <p style="padding-top: 10px;"><a class="btn btn-default" href="#/service?s=http">立即安装</a></p>
+            </div>
         </div>
-    </div>
 </div>
 
 <div id="pkg_install_setting" class="modal fade">

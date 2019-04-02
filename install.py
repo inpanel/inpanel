@@ -35,6 +35,10 @@ class Install(object):
             print('')
             sys.exit()
 
+        if sys.version_info[0] < 3:
+            self.input = raw_input
+        else:
+            self.input = input
         if hasattr(platform, 'linux_distribution'):
             self.dist = platform.linux_distribution(full_distribution_name=0)
         else:
@@ -229,8 +233,8 @@ class Install(object):
 
     def config_account(self):
         '''set username and password'''
-        username = raw_input('Admin username [default: admin]: ').strip()
-        password = raw_input('Admin password [default: admin]: ').strip()
+        username = self.input('Admin username [default: admin]: ').strip()
+        password = self.input('Admin password [default: admin]: ').strip()
         if len(username) == 0:
             username = 'admin'
         if len(password) == 0:
@@ -293,7 +297,7 @@ class Install(object):
 
         print('* Checking VPSMate')
         v_path = '/usr/local/vpsmate'
-        isdel = raw_input('Need to delete VPSMate ? [yes or no, default: yes]: ').strip()
+        isdel = self.input('Need to delete VPSMate ? [yes or no, default: yes]: ').strip()
         if len(isdel) == 0:
             isdel = 'yes'
         if isdel == 'yes':

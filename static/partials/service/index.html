@@ -226,11 +226,19 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="width:100px">named</td>
+                            <td style="width:100px">Named</td>
                             <td style="width:60px" ng-bind-html-unsafe="info['service.named']['status'] | service.status"></td>
                             <td class="muted">DNS 域名解析服务器</td>
                             <td style="width:100px">
                                 <div srvminiop ng-init="name='named';service='named';urlname='named'"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width:100px">Samba</td>
+                            <td style="width:60px" ng-bind-html-unsafe="info['service.smb']['status'] | service.status"></td>
+                            <td class="muted">文件资源共享服务器</td>
+                            <td style="width:100px">
+                                <div srvminiop ng-init="name='samba';service='smb';urlname='samba'"></div>
                             </td>
                         </tr>
                         <tr style="display:none" ng-show="info['server.virt'] != 'Virtuozzo/OpenVZ'">

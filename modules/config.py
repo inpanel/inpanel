@@ -55,21 +55,21 @@ class Config(object):
                     'lastfile': '',
                 },
                 'time': {
-                    'timezone': ''          # format: timezone = Asia/Shanghai
+                    'timezone': '' # format: timezone = Asia/Shanghai
                 },
                 'ecs': {
                     'accounts': ''
                 },
                 'inpanel': {
-                    # format: Instance Name = Access key
+                    'Instance Name': 'Access key'
                 }
             }
             needupdate = False
-            for sec, secdata in default_configs.iteritems():
+            for sec, secdata in default_configs.items():
                 if not self.cfg.has_section(sec):
                     self.cfg.add_section(sec)
                     needupdate = True
-                for opt, val in secdata.iteritems():
+                for opt, val in secdata.items():
                     if not self.cfg.has_option(sec, opt):
                         self.cfg.set(sec, opt, val)
                         needupdate = True
