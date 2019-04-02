@@ -41,8 +41,8 @@ from tornado.escape import utf8 as _u
 
 APP_NAME = 'InPanel'
 APP_VERSION = '1.1.1'
-APP_BUILD = '18'
-APP_RELEASETIME = '2019-02-23 14:13:00 CST'
+APP_BUILD = '19'
+APP_RELEASETIME = '2019-04-02 15:49:23 GMT'
 PUB_API = {
     'latest': 'http://api.inpanel.org/?s=latest',
     'site_packages': 'http://api.inpanel.org/?s=site_packages',
