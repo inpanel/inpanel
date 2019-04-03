@@ -1282,6 +1282,18 @@ class OperationHandler(RequestHandler):
             else:
                 self.write({'code': -1, 'msg': u'站点不存在！'})
 
+        elif action in ('addserver', 'updateserver'):
+            if action == 'updateserver':
+                old_server_ip = self.get_argument('ip', '')
+                old_server_port = self.get_argument('port', '')
+                old_server_name = self.get_argument('server_name', '')
+
+            # version = self.get_argument('version', '')  # apache version
+            # setting = tornado.escape.json_decode(self.get_argument('setting', ''))
+            server_name = self.get_argument('server_name', '')
+            if not server_name:
+                self.write({'code': -1, 'msg': u'请输入有效的站点域名！'})
+                return
 
     def nginx(self):
         action = self.get_argument('action', '')
@@ -1573,7 +1585,7 @@ class OperationHandler(RequestHandler):
                 if not charset in charsets:
                     self.write({'code': -1, 'msg': u'请选择有效的字符编码！'})
                     return
-            
+
             # skip validate index
             if 'index' in setting:
                 index = setting['index']
@@ -1603,7 +1615,7 @@ class OperationHandler(RequestHandler):
                     if not os.path.exists(ssl_crt) or not os.path.exists(ssl_key):
                         self.write({'code': -1, 'msg': u'SSL证书或密钥不存在！'})
                         return
-            
+
             # validate rewrite_rules
             rewrite_rules = None
             if 'rewrite_enable' in setting and setting['rewrite_enable']:
@@ -1621,7 +1633,7 @@ class OperationHandler(RequestHandler):
                             self.write({'code': -1, 'msg': u'Rewrite 规则 “%s” 格式有误！' % rule})
                             return
                         rewrite_rules.append(rule)
-            
+
             # validate locations
             locations = []
             urlpaths = []
@@ -4016,7 +4028,7 @@ class RestoreHandler(RequestHandler):
 
         self.write('</body>')
 
-        
+
 class BuyECSHandler(RequestHandler):
     """Aliyun CPS program.
     """
