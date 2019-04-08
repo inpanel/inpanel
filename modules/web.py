@@ -1254,17 +1254,17 @@ class OperationHandler(RequestHandler):
         elif action in ('enableserver', 'disableserver', 'deleteserver'):
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
-            server_name = self.get_argument('server_name', '')
+            name = self.get_argument('name', '')
             handler = getattr(apache, action)
             opstr = {
                 'enableserver': u'启用',
                 'disableserver': u'停用',
                 'deleteserver': u'删除',
             }
-            if handler(ip, port, server_name):
-                self.write({'code': 0, 'msg': u'站点 %s %s成功！' % (server_name, opstr[action])})
+            if handler(ip, port, name):
+                self.write({'code': 0, 'msg': u'站点 %s %s成功！' % (name, opstr[action])})
             else:
-                self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (server_name, opstr[action])})
+                self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (name, opstr[action])})
 
         elif action == 'get_settings':
             # items = self.get_argument('items', '')
@@ -1275,25 +1275,57 @@ class OperationHandler(RequestHandler):
         elif action == 'getserver':
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
-            server_name = self.get_argument('server_name', '')
-            serverinfo = apache.getserver(_u(ip), _u(port), _u(server_name))
+            name = self.get_argument('name', '')
+            serverinfo = apache.getserver(_u(ip), _u(port), _u(name))
             if serverinfo:
                 self.write({'code': 0, 'msg': u'站点信息读取成功！', 'data': serverinfo})
             else:
                 self.write({'code': -1, 'msg': u'站点不存在！'})
 
         elif action in ('addserver', 'updateserver'):
-            if action == 'updateserver':
-                old_server_ip = self.get_argument('ip', '')
-                old_server_port = self.get_argument('port', '')
-                old_server_name = self.get_argument('server_name', '')
-
-            # version = self.get_argument('version', '')  # apache version
-            # setting = tornado.escape.json_decode(self.get_argument('setting', ''))
-            server_name = self.get_argument('server_name', '')
-            if not server_name:
-                self.write({'code': -1, 'msg': u'请输入有效的站点域名！'})
+            setting = tornado.escape.json_decode(self.get_argument('setting', ''))
+            ip = None
+            if 'IP' in setting:
+                ip = setting['IP']
+            if ip not in ('', '*', '0.0.0.0') and not utils.is_valid_ip(ip):
+                self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % ip})
                 return
+            port = None
+            if 'port' in setting:
+                port = int(setting['port'])
+            if port <= 0 or port > 65535:
+                self.write({'code': -1, 'msg': u'%s 不是有效的端口号!' % port})
+                return
+            name = None
+            if 'ServerName' in setting:
+                name = setting['ServerName']
+            if not utils.is_valid_domain(name):
+                self.write({'code': -1, 'msg': u'%s 不是有效的域名！' % name})
+                return
+            index = setting['DirectoryIndex'] if 'DirectoryIndex' in setting else 'index.html index.htm index.php'
+            alias = setting['ServerAlias'] if 'ServerAlias' in setting else None
+            admin = setting['ServerAdmin'] if 'ServerAdmin' in setting else 'root'
+            root = setting['DocumentRoot'] if 'DocumentRoot' in setting else '/var/www/html'
+            error_log = setting['ErrorLog'] if 'ErrorLog' in setting else None
+            custom_log = setting['CustomLog'] if 'CustomLog' in setting else None
+            directory = setting['directory'] if 'directory' in setting else None
+
+            version = self.get_argument('version', '')  # apache version
+            if action == 'addserver':
+                if not apache.addserver(name, ip, port, alias=alias, admin=admin, root=root, index=index, directory=directory,
+                    error_log=error_log, custom_log=custom_log, version=version):
+                    self.write({'code': -1, 'msg': u'新站点添加失败！请检查站点域名是否重复。', 'data': setting})
+                else:
+                    self.write({'code': 0, 'msg': u'新站点添加成功！', 'data': setting})
+            else:
+                c_ip = _u(self.get_argument('ip', ''))
+                c_port = _u(self.get_argument('port', ''))
+                c_name = _u(self.get_argument('name', ''))
+                if not apache.updateserver(c_name, c_ip, c_port, alias=alias, admin=admin, root=root, index=index, directory=directory,
+                    error_log=error_log, custom_log=custom_log, version=version):
+                    self.write({'code': -1, 'msg': u'站点设置更新失败！请检查配置信息（如域名是否重复？）', 'data': setting})
+                else:
+                    self.write({'code': 0, 'msg': u'站点设置更新成功！', 'data': setting})
 
     def nginx(self):
         action = self.get_argument('action', '')

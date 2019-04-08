@@ -503,31 +503,34 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
                 if server['_param']['disabled'] == disabled]
 
 
-def addserver(server_name, ip, port, server_alias=None, server_admin=None, document_root=None, index=None, directory=None, error_log=None, custom_log=None, version=None):
+def addserver(name, ip, port, alias=None, admin=None, root=None, index=None, directory=None, error_log=None, custom_log=None, version=None):
     '''Add a new VirtualHost.'''
 
     ip = ip or '*'
     if is_valid_ipv6(ip) and not is_valid_ipv4(ip):
         ip = '[' + ip + ']'
-    port = int(port) or 80
+    if port:
+        port = int(port) or 80
+    else:
+        return False
     # start generate the config string
     servercfg = ['<VirtualHost %s:%s> # %s' % (ip, port, GENBY)]
-    if is_valid_domain(server_name):
-        servercfg.append('    ServerName %s' % server_name)
+    if is_valid_domain(name):
+        servercfg.append('    ServerName %s' % name)
     else:
         return False
-    if document_root:
-        servercfg.append('    DocumentRoot %s' % document_root)
+    if root:
+        servercfg.append('    DocumentRoot %s' % root)
     else:
         return False
-    if server_admin:
-        servercfg.append('    ServerAdmin %s' % server_admin)
-    if server_alias:
-        servercfg.append('    ServerAlias %s' % (' '.join(server_alias)))
+    if admin:
+        servercfg.append('    ServerAdmin %s' % admin)
+    if alias:
+        servercfg.append('    ServerAlias %s' % (' '.join(alias)))
     if index:
         servercfg.append('    DirectoryIndex %s' % (' '.join(index.split())))
     else:
-        servercfg.append('    DirectoryIndex index.php index.html')
+        servercfg.append('    DirectoryIndex index.html index.htm index.php')
     if error_log:
         servercfg.append('    ErrorLog %s' % error_log)
     if custom_log:
@@ -539,7 +542,7 @@ def addserver(server_name, ip, port, server_alias=None, server_admin=None, docum
     servercfg.append('</VirtualHost>')
 
     #print '\n'.join(servercfg)
-    configfile = os.path.join(SERVERCONF, '%s.conf' % server_name)
+    configfile = os.path.join(SERVERCONF, '%s.conf' % name)
     configfile_exists = os.path.exists(configfile)
 
     # check if need to add a new line at the end of the file to
@@ -571,6 +574,14 @@ def _extend_directory(directory):
     return drct_cfg
 
 
+def updateserver(name, ip, port, alias=None, admin=None, root=None, index=None, directory=None, error_log=None, custom_log=None, version=None):
+    '''Update an existing server.
+
+    If the old config is not in the right place, we would automatically delete it and
+    create the new config to coresponding config file under /etc/nginx/conf.d/.
+    '''
+    pass
+
 if __name__ == '__main__':
     # test_path = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
     # tmp = loadconfig(test_path)
@@ -592,10 +603,10 @@ if __name__ == '__main__':
     # path = os.path.join(SERVERCONF, clist[i])
     # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
     SERVERCONF = '/Users/douzhenjiang/test/inpanel/test'
-    addserver('inpanel.org', '1.1.1.1', 80,
-              server_alias=['cc.com', 'bb.com'],
-              server_admin='root',
-              document_root='/var/www/inpanel.org',
+    addserver('11inpanel.org', '1.1.1.1', 80,
+              alias=['cc.com', 'bb.com'],
+              admin='root',
+              root='/var/www/inpanel.org',
               index='index.html index.php',
               directory=None,
               error_log='abc/aaa.log',

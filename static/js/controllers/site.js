@@ -68,15 +68,15 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
-                'success': function (res) {
-                    if (res.code == 0) {
-                        Message.setInfo(res.msg);
+                    'success': function (res) {
+                        if (res.code == 0) {
+                            Message.setInfo(res.msg);
+                        }
+                        if (res.status == 'finish') {
+                            $scope.load_status();
+                        }
                     }
-                    if (res.status == 'finish') {
-                        $scope.load_status();
-                    }
-                }
-            }, true);
+                }, true);
         };
         $scope.loadnginx = function (init, reload) {
             if (!init && Module.getSection() == 'nginx' && !reload) {
@@ -105,13 +105,13 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 'name': 'Apache',
                 'service': 'httpd'
             }, {
-                'success': function (res) {
-                    Message.setInfo(res.msg);
-                    if (res.status == 'finish') {
-                        $scope.load_status();
+                    'success': function (res) {
+                        Message.setInfo(res.msg);
+                        if (res.status == 'finish') {
+                            $scope.load_status();
+                        }
                     }
-                }
-            }, true);
+                }, true);
         };
         $scope.loadapache = function (init, reload) {
             if (!init && Module.getSection() == 'apache' && !reload) {
@@ -504,14 +504,14 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 'pkg': 'nginx',
                 'repo': 'installed'
             }, {
-                'success': function (res) {
-                    $scope.nginx_version = res.data[0].version;
-                },
-                'error': function (error) {
-                    $scope.nginx_version = '';
-                    //$scope.loaded = true;
-                }
-            }, true);
+                    'success': function (res) {
+                        $scope.nginx_version = res.data[0].version;
+                    },
+                    'error': function (error) {
+                        $scope.nginx_version = '';
+                        //$scope.loaded = true;
+                    }
+                }, true);
         };
         $scope.load_proxy_caches = function () {
             // load proxy cache list
@@ -884,10 +884,10 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
-                'success': function (res) {
-                    Message.setInfo(res.msg);
-                }
-            }, true);
+                    'success': function (res) {
+                        Message.setInfo(res.msg);
+                    }
+                }, true);
         };
         // initially add
         if ($scope.action == 'new') {
@@ -923,23 +923,24 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         }
         var module = 'site.apache';
         var tab_section = Module.getSection();
+        var tab_section_enabled = ['basic', 'alias', 'directory', 'advanced'];
         Module.init(module, $scope.module_header);
         $scope.loaded = false;
         $scope.showglobaladv = false;
-        $scope.curloc = -1;
-        $scope.setloc = function (i) {
-            $scope.curloc = i;
+        $scope.curdir = -1;
+        $scope.setdir = function (i) {
+            $scope.curdir = i;
         };
-        $scope.ServerAlias = [];
+
         var server_tmpl = {
             ServerName: '',
-            ServerAlias: [],
+            alias: [],
             IP: '',
-            Port: 80,
+            port: '80',
             ServerAdmin: '',
-            DocumentRoot: '',
+            DocumentRoot: '/var/www',
             DirectoryIndex: 'index.html index.htm index.php',
-            Directory: [],
+            directory: [],
             CustomLog: '',
             ErrorLog: '',
             Gzip: false,
@@ -948,152 +949,40 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             rewrite_enable: false,
             rewrite_rules: ''
         };
-        var listen_tmpl = {
-            'ip': '',
-            'port': '80',
-            'ssl': false,
-            'default_server': false
-        };
         var location_tmpl = {
-            urlpath: '/',
-            engine: 'static',
-            'static': {
-                root: '/var/www/',
-                autocreate: true,
-                autoindex: false,
-                rewrite_enable: false,
-                rewrite_detect_file: true,
-                rewrite_rules: ''
-            },
-            fastcgi: {
-                root: '/var/www/',
-                autocreate: true,
-                fastcgi_pass: '127.0.0.1:9000',
-                rewrite_enable: false,
-                rewrite_detect_file: true,
-                rewrite_rules: ''
-            },
-            proxy: {
-                protocol: 'http',
-                host: '',
-                realip: true,
-                charset: '',
-                backends: [],
-                balance: 'ip_hash',
-                keepalive: '10',
-                proxy_cache_enable: false,
-                proxy_cache: '',
-                proxy_cache_min_uses: '',
-                proxy_cache_methods_post: false,
-                proxy_cache_key: {
-                    schema: true,
-                    host: false,
-                    proxy_host: true,
-                    uri: true,
-                },
-                proxy_cache_valid: [],
-                proxy_cache_use_stale: {
-                    error: false,
-                    timeout: false,
-                    invalid_header: false,
-                    updating: false,
-                    http_500: false,
-                    http_502: false,
-                    http_503: false,
-                    http_504: false,
-                    http_404: false
-                },
-                proxy_cache_lock: false,
-                proxy_cache_lock_timeout: '5'
-            },
-            redirect: {
-                url: '',
-                type: '301',
-                option: 'keep'
-            },
-            error: {
-                code: '404'
-            }
-        };
-        var backend_tmpl = {
-            server: '',
-            weight: '',
-            fail_timeout: '10',
-            max_fails: '3'
-        };
-        var proxy_cache_valid_tmpl = {
-            code: 'any',
-            time: '1',
-            time_unit: 'h'
+            Allow: 'All',
+            AllowOverride: 'All',
+            Order: 'allow,deny',
+            Path: ''
         };
         $scope.setting = angular.copy(server_tmpl);
         $scope.gen_by_inpanel = $scope.action == 'new' ? true : false;
 
-        var global_rewrite_templates = {
-            '301_1': 'rewrite ^ http://example.com$request_uri? permanent',
-            '301_2': 'rewrite ^ http://example.com/ permanent',
-            '302_1': 'rewrite ^ http://example.com$request_uri? redirect',
-            '302_2': 'rewrite ^ http://example.com/ redirect'
-        };
-        $scope.$watch('rewrite_template', function (value) {
-            $scope.setting.rewrite_rules = value ? global_rewrite_templates[value] : '';
-        });
-
         $scope.load = function () {
-            if (tab_section && tab_section == 'advanced') {
-                $scope.sec('advanced');
-                Module.setSection('advanced');
-            } else {
-                $scope.sec('basic');
-                Module.setSection('basic');
-            }
+            tab_section = (tab_section && tab_section_enabled.indexOf(tab_section) > -1) ? tab_section : tab_section_enabled[0];
+            $scope.sec(tab_section);
+            Module.setSection(tab_section);
             // Apache version check may take too long time, so we don't want to wait for it
             if ($scope.action == 'new') {
+                $scope.add_alias();
+                $scope.add_directory();
                 $scope.loaded = true;
+                console.log('new');
             } else {
                 $scope.getserver();
             }
-
             Backend.call($scope, module, '/backend/yum_info', '/backend/yum_info_apache', {
                 'pkg': 'apache',
                 'repo': 'installed'
             }, {
-                'success': function (res) {
-                    $scope.apache_version = res.data[0].version;
-                },
-                'error': function (error) {
-                    $scope.apache_version = '';
-                    //$scope.loaded = true;
-                }
-            }, true);
-            $scope.loadproxycaches();
-            // initially add
-            if (section == 'new') {
-                $scope.add_server_name();
-                // $scope.addlisten();
-                // $scope.addlocation();
-            }
-        };
-
-        // load proxy cache list
-        $scope.proxy_caches = [];
-        $scope.loadproxycaches = function () {
-            Request.post('/operation/apache', {
-                'action': 'gethttpsettings',
-                'items': 'proxy_cache_path[]'
-            }, function (res) {
-                if (res.code == 0) {
-                    var proxy_caches = [];
-                    if (/msie/.test(navigator.userAgent.toLowerCase())) proxy_caches = ['']; // temp patch for ie8
-                    var ps = res.data.proxy_cache_path;
-                    if (ps) {
-                        for (var i = 0; i < ps.length; i++) {
-                            proxy_caches.push(ps[i].name);
-                        }
+                    'success': function (res) {
+                        $scope.apache_version = res.data[0].version;
+                    },
+                    'error': function (error) {
+                        $scope.apache_version = '';
+                        //$scope.loaded = true;
                     }
-                    $scope.proxy_caches = proxy_caches;
-                }
-            }, false, true);
+                }, true);
         };
 
         // get server info (in edit mode)
@@ -1102,23 +991,23 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 'action': 'getserver',
                 'ip': server_ip,
                 'port': server_port,
-                'server_name': server_name
+                'name': server_name
             }, function (res) {
                 if (res.code == 0) {
                     var d = res.data;
                     // init setting
                     var s = $scope.setting;
-                    s.Port = d.Port;
+                    s.port = d.Port;
                     s.IP = d.IP;
                     s.DocumentRoot = d.DocumentRoot;
                     $scope.gen_by_inpanel = d._inpanel;
                     if (d.charset) s.charset = d.charset;
                     if (d.CustomLog) s.CustomLog = d.CustomLog;
-                    if (d.Directory) s.Directory = d.Directory;
+                    if (d.Directory) s.directory = d.Directory;
                     if (d.DirectoryIndex) s.DirectoryIndex = d.DirectoryIndex;
                     if (d.ErrorLog) s.ErrorLog = d.ErrorLog;
                     if (d.Gzip) s.Gzip = d.Gzip;
-                    if (d.ServerAlias) s.ServerAlias = d.ServerAlias;
+                    if (d.ServerAlias) s.alias = d.ServerAlias;
                     if (d.ServerName) s.ServerName = d.ServerName;
                     if (d.ssl_crt) s.ssl_crt = d.ssl_crt;
                     if (d.ssl_key) s.ssl_key = d.ssl_key;
@@ -1126,7 +1015,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                         s.rewrite_rules = d.rewrite_rules.join('\n');
                         if (s.rewrite_rules) s.rewrite_enable = true;
                     }
-                    if (d.locations) {
+                    if (d.directory) {
                         for (i in d.locations) {
                             var loc = d.locations[i];
                             var t = angular.copy(location_tmpl);
@@ -1234,7 +1123,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                             s.locations.push(t);
                         }
                     }
-                    $scope.curloc = 0;
+                    $scope.curdir = 0;
                     $scope.loaded = true;
                 } else {
                     Timeout(function () {
@@ -1245,56 +1134,42 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         };
 
         // server name operation
-        $scope.delete_server_alias = function (i) {
-            $scope.ServerAlias.splice(i, 1);
+        $scope.delete_alias = function (i) {
+            $scope.setting.alias.splice(i, 1);
         };
-        $scope.add_server_name = function () {
-            $scope.ServerAlias.push('');
+        $scope.add_alias = function () {
+            $scope.setting.alias.push('');
+            console.log('alias', $scope.setting.alias);
         };
-        $scope.$watch('ServerAlias', function (value, oldvalue) {
+        $scope.$watch('setting.alias', function (value, oldvalue) {
             console.log(value, oldvalue);
         }, true);
-        // listen operation
-        $scope.deletelisten = function (i) {
-            $scope.setting.listens.splice(i, 1);
-        };
-        $scope.addlisten = function () {
-            $scope.setting.listens.push(angular.copy(listen_tmpl));
-        };
 
         // location operation
-        $scope.deletelocation = function (i) {
-            $scope.setting.locations.splice(i, 1);
-            $scope.curloc--;
-            if ($scope.curloc < 0 && $scope.setting.locations.length > 0) $scope.curloc = 0;
+        $scope.delete_directory = function (i) {
+            $scope.setting.directory.splice(i, 1);
+            $scope.curdir--;
+            if ($scope.curdir < 0 && $scope.setting.directory.length > 0) $scope.curdir = 0;
         };
-        $scope.addlocation = function () {
-            var locs = $scope.setting.locations;
-            locs.splice($scope.curloc + 1, 0, angular.copy(location_tmpl));
-            $scope.proxy_addbackend($scope.curloc + 1);
-            $scope.curloc++;
-        };
-
-        // proxy operation
-        $scope.proxy_deletebackend = function (loc_i, i) {
-            $scope.setting.locations[loc_i].proxy.backends.splice(i, 1);
-        };
-        $scope.proxy_addbackend = function (loc_i) {
-            $scope.setting.locations[loc_i].proxy.backends.push(angular.copy(backend_tmpl));
-            $scope.proxy_addvalid(loc_i);
-        };
-        $scope.proxy_deletevalid = function (loc_i, i) {
-            $scope.setting.locations[loc_i].proxy.proxy_cache_valid.splice(i, 1);
-        };
-        $scope.proxy_addvalid = function (loc_i) {
-            $scope.setting.locations[loc_i].proxy.proxy_cache_valid.push(angular.copy(proxy_cache_valid_tmpl));
+        $scope.add_directory = function () {
+            $scope.setting.directory.splice($scope.curdir + 1, 0, angular.copy(location_tmpl));
+            $scope.curdir++;
         };
 
         // automatically set the root path of static and fastcgi engine
-        $scope.$watch('ServerAlias[0]', function (value, oldvalue) {
+        $scope.$watch('setting.ServerName', function (value, oldvalue) {
+            // if ($scope.setting.CustomLog == '' && value) {
+                $scope.setting.CustomLog = value + '-access_log';
+            // }
+            // if ($scope.setting.ErrorLog == '' && value) {
+                $scope.setting.ErrorLog = value + '-error_log';
+            // }
+            // if (($scope.setting.DocumentRoot == '' || $scope.setting.DocumentRoot != '/var/www') && value) {
+                $scope.setting.DocumentRoot = '/var/www/' + value;
+            // }
             var server_name = value;
             var old_server_name = oldvalue;
-            var locs = $scope.setting.locations;
+            var locs = $scope.setting.directory;
             for (var i = 0; i < locs.length; i++) {
                 if (locs[i].urlpath == '/') {
                     var prefix = location_tmpl['static'].root;
@@ -1331,10 +1206,10 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             $scope.selector_title = '请选择站点目录';
             $scope.selector.onlydir = true;
             $scope.selector.onlyfile = false;
-            $scope.selector.load($scope.setting.locations[i]['static'].root);
+            $scope.selector.load($scope.setting.directory[i]['static'].root);
             $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
-                $scope.setting.locations[i]['static'].root = path;
+                $scope.setting.directory[i]['static'].root = path;
             };
             $('#selector').modal();
         };
@@ -1342,10 +1217,10 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             $scope.selector_title = '请选择站点目录';
             $scope.selector.onlydir = true;
             $scope.selector.onlyfile = false;
-            $scope.selector.load($scope.setting.locations[i].fastcgi.root);
+            $scope.selector.load($scope.setting.directory[i].fastcgi.root);
             $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
-                $scope.setting.locations[i].fastcgi.root = path;
+                $scope.setting.directory[i].fastcgi.root = path;
             };
             $('#selector').modal();
         };
@@ -1388,9 +1263,8 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 'setting': angular.toJson($scope.setting)
             }, function (res) {
                 if (res.code == 0) {
-                    var s = $scope.setting;
                     $scope.loaded = false;
-                    var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
+                    var name = ($scope.setting.IP ? $scope.setting.IP : '*') + '_' + $scope.setting.port + '_' + $scope.setting.ServerName;
                     $location.path('/site/apache/edit_' + name);
                     if (active && active == 'active') {
                         $scope.apache_set_status('restart');
@@ -1408,9 +1282,8 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 'setting': angular.toJson($scope.setting)
             }, function (res) {
                 if (res.code == 0) {
-                    var s = $scope.setting;
                     $scope.loaded = false;
-                    var name = (s.listens[0].ip ? s.listens[0].ip : '*') + '_' + s.listens[0].port + '_' + s.server_names[0].name;
+                    var name = ($scope.setting.IP ? $scope.setting.IP : '*') + '_' + $scope.setting.port + '_' + $scope.setting.ServerName;
                     var new_path = '/site/apache/edit_' + name;
                     if (new_path != $location.path()) {
                         $location.path(new_path);
@@ -1437,10 +1310,10 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 'name': 'Apache',
                 'service': 'httpd'
             }, {
-                'success': function (res) {
-                    Message.setInfo(res.msg);
-                }
-            }, true);
+                    'success': function (res) {
+                        Message.setInfo(res.msg);
+                    }
+                }, true);
         };
     }
 ];

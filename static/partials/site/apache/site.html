@@ -14,13 +14,11 @@
         <p>如要手工编辑原始配置文件内容，请<a href="#/service/apache?s=configfile">点击这里</a>。</p>
     </div>
 
-    <div class="alert alert-warning">
-        <p>注意：添加或更新站点配置后，需要 <a href="#/service/apache"><strong>重启 Apache</strong></a> 后配置才会生效。</p>
-    </div>
-
     <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='basic'"><a href="#basic" ng-click="sec('basic')" data-toggle="tab">基本设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='basic'"><a href="#basic" ng-click="sec('basic')" data-toggle="tab">基本信息</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='alias'"><a href="#alias" ng-click="sec('alias')" data-toggle="tab">绑定别名</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='directory'"><a href="#directory" ng-click="sec('directory')" data-toggle="tab">路径设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='advanced'"><a href="#advanced" ng-click="sec('advanced')" data-toggle="tab">高级设置</a></li>
         </ul>
         <div class="tab-content">
@@ -29,51 +27,41 @@
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">监听地址</label>
                         <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.IP" type="text" placeholder="默认监听所有可用IP">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">监听端口</label>
+                        <div class="col-sm-10">
                             <div class="input-group">
-                                <input class="form-control" ng-model="setting.IP" type="text" placeholder="默认监听所有可用IP">
-                                <div class="input-group-addon" style="border-left: none;border-right:none;">:</div>
-                                <input class="form-control" ng-model="setting.Port" type="text" placeholder="端口">
+                                <input class="form-control" ng-model="setting.port" type="text" placeholder="监听端口">
                                 <div class="input-group-btn">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">端口 <span class="caret"></span></button>
                                     <ul class="dropdown-menu dropdown-menu-right">
-                                        <li><a href="javascript:void(0);" ng-click="setting.Port='80'">80</a></li>
-                                        <li><a href="javascript:void(0);" ng-click="setting.Port='81'">81</a></li>
-                                        <li><a href="javascript:void(0);" ng-click="setting.Port='443'">443</a></li>
-                                        <li><a href="javascript:void(0);" ng-click="setting.Port='8080'">8080</a></li>
-                                        <li><a href="javascript:void(0);" ng-click="setting.Port='8899'">8899</a></li>
-                                        <li><a href="javascript:void(0);" ng-click="setting.Port='9090'">9090</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='80'">80</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='81'">81</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='443'">443</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='8080'">8080</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='8899'">8899</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='9090'">9090</a></li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">站点主域名</label>
+                        <label class="col-sm-2 control-label">网站域名</label>
                         <div class="col-sm-10">
-                            <input ng-model="setting.ServerName" type="text" class="form-control" placeholder="站点主域名">
+                            <input ng-model="setting.ServerName" type="text" class="form-control" placeholder="网站域名">
                         </div>
                     </div>
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">站点别名</label>
-                        <div class="col-sm-10">
-                            <div class="form-inline" ng-repeat="server_name in ServerAlias">
-                                <div class="input-group">
-                                    <input class="form-control" ng-model="server_name" type="text" placeholder="请输入域名">
-                                    <div class="input-group-btn">
-                                        <button class="btn btn-default" title="删除这个别名" ng-click="delete_server_alias($index)"><i class="glyphicon glyphicon-minus"></i></button>
-                                        <button class="btn btn-default" title="增加一个别名" ng-click="add_server_name()"><i class="glyphicon glyphicon-plus"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">站点目录</label>
+                        <label class="col-sm-2 control-label">文档位置</label>
                         <div class="col-sm-10">
                             <div class="input-group">
-                                <input ng-model="setting.DocumentRoot" type="text" class="form-control" placeholder="站点所在目录">
+                                <input ng-model="setting.DocumentRoot" type="text" class="form-control" placeholder="网站存放目录">
                                 <div class="input-group-btn">
-                                    <button class="btn btn-default" ng-click="selectsslcrt()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
+                                    <button class="btn btn-default" ng-click="selectsslcrt()" title="选择文件夹"><i class="glyphicon glyphicon-file"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +73,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-2 control-label">ErrorLog</label>
+                        <label class="col-sm-2 control-label">错误日志</label>
                         <div class="col-sm-10">
                             <input class="form-control" ng-model="setting.ErrorLog" type="text">
                         </div>
@@ -98,39 +86,39 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='advanced'" id="advanced">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='alias'" id="alias">
                 <div class="form-horizontal form-horizontal-small">
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">下载限制</label>
-                        <div class="col-sm-10">
+                        <div class="form-inline" ng-repeat="server_name in setting.alias">
+                            <button class="btn btn-default" ng-click="add_alias($index)" ng-show="setting.locations.length==0" style="display:none">
+                                <i class="glyphicon glyphicon-plus"></i> 添加域名
+                            </button>
                             <div class="input-group">
-                                <input class="form-control" ng-model="setting.limit_rate" type="text" placeholder="不限制">
-                                <span class="input-group-addon">KB / S</span>
+                                <input class="form-control" ng-model="server_name" type="text" placeholder="请输入域名">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-default" title="删除这个别名" ng-click="delete_alias($index)"><i class="glyphicon glyphicon-minus"></i></button>
+                                    <button class="btn btn-default" title="增加一个别名" ng-click="add_alias()"><i class="glyphicon glyphicon-plus"></i></button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label">连接限制</label>
-                        <div class="col-sm-10">
-                            <div class="input-group">
-                                <input class="form-control" ng-model="setting.limit_conn" type="text" placeholder="不限制">
-                                <span class="input-group-addon">个 / IP</span>
-                            </div>
-                        </div>
-                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='directory'" id="directory">
+                <div class="form-horizontal form-horizontal-small">
                     <div class="form-group">
                         <label class="col-sm-2 control-label">路径设置</label>
                         <div class="col-sm-10">
                             <div class="form-inline">
-                                <button class="btn btn-default" ng-click="addlocation($index)" ng-show="setting.locations.length==0" style="display:none">
+                                <button class="btn btn-default" ng-click="add_directory($index)" ng-show="setting.directory.length==0" style="display:none">
                                     <i class="glyphicon glyphicon-plus"></i> 添加路径配置
                                 </button>
-                                <ul class="nav nav-tabs" ng-show="setting.locations.length>0" style="display:none;">
-                                    <li ng-repeat="location in setting.locations" ng-class="'active'|iftrue:$index==curloc" ng-click="setloc($index)">
+                                <ul class="nav nav-tabs" ng-show="setting.directory.length>0" style="display:none;">
+                                    <li ng-repeat="location in setting.directory" ng-class="'active'|iftrue:$index==curloc" ng-click="setdir($index)">
                                         <a href="#loc_{{$index}}" data-toggle="tab">{{location.urlpath}}</a>
                                     </li>
                                     <li>
-                                        <button class="btn btn-default" ng-click="addlocation()" style="margin-left: 20px; margin-top: 5px;">
+                                        <button class="btn btn-default" ng-click="add_directory()" style="margin-left: 20px; margin-top: 5px;">
                                             <i class="glyphicon glyphicon-plus"></i> 添加路径
                                         </button>
                                         <button class="btn btn-default" ng-click="deletelocation(curloc)" style="margin-left: 10px; margin-top: 5px;">
@@ -138,8 +126,8 @@
                                         </button>
                                     </li>
                                 </ul>
-                                <div class="tab-content" ng-show="setting.locations.length>0" style="display:none;">
-                                    <div class="tab-pane" ng-repeat="location in setting.locations" ng-class="'active'|iftrue:$index==curloc" id="loc_{{$index}}">
+                                <div class="tab-content" ng-show="setting.directory.length>0" style="display:none;">
+                                    <div class="tab-pane" ng-repeat="location in setting.directory" ng-class="'active'|iftrue:$index==curloc" id="loc_{{$index}}">
                                         <div class="form-inline">
                                             <label class="col-sm-2 control-label">URL路径</label>
                                             <div class="controls">
@@ -311,120 +299,7 @@
                                                 </label>
                                             </div>
                                         </div>
-                                        <div ng-show="location.engine=='proxy'&&location.proxy.proxy_cache_enable" style="margin-left:70px">
-                                            <div class="form-inline">
-                                                <label class="col-sm-2 control-label">缓存区域</label>
-                                                <div class="controls">
-                                                    <select class="form-control" style="width:150px" ng-model="location.proxy.proxy_cache" ng-options="cache for cache in proxy_caches"></select>
-                                                    <button class="btn btn-default" title="重新加载" ng-click="loadproxycaches()"><i class="glyphicon glyphicon-refresh"></i></button>
-                                                    <span class="help-block">如尚未创建缓存区，请<a href="#/service/apache?s=proxy" target="_blank">点此设定</a>。</span>
-                                                </div>
-                                            </div>
-                                            <div class="form-inline">
-                                                <label class="col-sm-2 control-label">缓存条件</label>
-                                                <div class="controls">
-                                                    至少请求 <input type="text" class="form-control" ng-model="location.proxy.proxy_cache_min_uses"> 次后才缓存资源
-                                                </div>
-                                            </div>
-                                            <div class="form-inline">
-                                                <label class="col-sm-2 control-label">请求类型</label>
-                                                <div class="controls">
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" checked disabled> GET
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" checked disabled> HEAD
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_methods_post"> POST
-                                                    </label>
-                                                    <span class="help-block">缓存以上选中的请求类型。</span>
-                                                </div>
-                                            </div>
-                                            <div class="form-inline">
-                                                <label class="col-sm-2 control-label">资源标识</label>
-                                                <div class="controls">
-                                                    <label class="checkbox-inline"><input type="checkbox" ng-model="location.proxy.proxy_cache_key.schema"> 协议</label>
-                                                    <label class="checkbox-inline"><input type="checkbox" ng-model="location.proxy.proxy_cache_key.host"> 主机名</label>
-                                                    <label class="checkbox-inline"><input type="checkbox" ng-model="location.proxy.proxy_cache_key.proxy_host"> 后端主机名</label>
-                                                    <label class="checkbox-inline"><input type="checkbox" ng-model="location.proxy.proxy_cache_key.uri"> 请求路径</label>
-                                                    <span class="help-block">缓存资源的唯一性将由以上组合确定。</span>
-                                                </div>
-                                            </div>
-                                            <div class="form-inline">
-                                                <label class="col-sm-2 control-label">缓存过期</label>
-                                                <div class="controls">
-                                                    <button class="btn btn-default" ng-click="proxy_addvalid($index)" ng-show="location.proxy.proxy_cache_valid.length==0"><i class="glyphicon glyphicon-plus"></i> 新增缓存过期配置</button>
-                                                    <div ng-repeat="valid in location.proxy.proxy_cache_valid">
-                                                        状态码：
-                                                        <select class="form-control" style="width:80px;" ng-model="valid.code">
-                                                            <option value="any">所有</option>
-                                                            <option value="200">200</option>
-                                                            <option value="301">301</option>
-                                                            <option value="302">302</option>
-                                                            <option value="404">404</option>
-                                                            <option value="500">500</option>
-                                                            <option value="502">502</option>
-                                                            <option value="503">503</option>
-                                                            <option value="504">504</option>
-                                                        </select>，过期时间：
-                                                        <input class="form-control" type="text" ng-model="valid.time" style="width: 60px;">
-                                                        <select class="form-control" ng-model="valid.time_unit">
-                                                            <option value="s">秒</option>
-                                                            <option value="m">分钟</option>
-                                                            <option value="h">小时</option>
-                                                            <option value="d">天</option>
-                                                        </select>
-                                                        <button class="btn btn-default" title="删除该行" ng-click="proxy_deletevalid($parent.$index, $index)"><i class="glyphicon glyphicon-minus"></i></button>
-                                                        <button class="btn btn-default" title="新增一行" ng-click="proxy_addvalid($parent.$index)" ng-show="$index==location.proxy.proxy_cache_valid.length-1"><i class="glyphicon glyphicon-plus"></i></button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-inline">
-                                                <label class="col-sm-2 control-label">旧缓存</label>
-                                                <div class="controls">
-                                                    <span style="margin-top:3px;margin-bottom:0px;display:block">在以下情况下，直接使用旧的缓存：</span>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.error"> 连接后端出错
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.timeout"> 连接后端超时
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.invalid_header"> 后端返回错误
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.updating"> 缓存正在更新
-                                                    </label><br>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.http_500"> 后端 500 错误 
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.http_502"> 后端 502 错误 
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.http_503"> 后端 503 错误 
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.http_504"> 后端 504 错误 
-                                                    </label>
-                                                    <label class="checkbox-inline">
-                                                        <input type="checkbox" ng-model="location.proxy.proxy_cache_use_stale.http_404"> 后端 404 错误 
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <div class="form-inline" ng-show="true | ifverget:[apache_version, '1.1.12']">
-                                                <label class="col-sm-2 control-label">并发锁定</label>
-                                                <div class="controls">
-                                                    <p><label class="checkbox-inline"><input type="checkbox" ng-model="location.proxy.proxy_cache_lock"> 启用并发锁定</label></p>
-                                                    <div class="input-group">
-                                                        <input type="text" class="form-control" ng-disabled="!location.proxy.proxy_cache_lock" ng-model="location.proxy.proxy_cache_lock_timeout">
-                                                        <span class="input-group-addon">秒</span>
-                                                    </div>
-                                                    <span class="help-block">并发锁定可防止多个相同请求向后端请求同一资源。</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <div ng-show="location.engine=='proxy'&&location.proxy.proxy_cache_enable">缓存区域</div>
                                         <div class="form-inline" ng-show="location.engine=='error'">
                                             <label class="col-sm-2 control-label">错误代码</label>
                                             <div class="controls">
@@ -479,6 +354,29 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='advanced'" id="advanced">
+                <div class="form-horizontal form-horizontal-small">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">下载限制</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control" ng-model="setting.limit_rate" type="text" placeholder="不限制">
+                                <span class="input-group-addon">KB / S</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">连接限制</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control" ng-model="setting.limit_conn" type="text" placeholder="不限制">
+                                <span class="input-group-addon">个 / IP</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label class="col-sm-2 control-label">SSL 选项</label>
                         <div class="col-sm-10">

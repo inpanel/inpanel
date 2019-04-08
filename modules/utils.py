@@ -172,7 +172,7 @@ def loadconfig(cfgfile, delimiter, detail=False):
 
             if item in settings:
                 if detail:
-                    count = settings[item]['count']+1
+                    count = settings[item]['count'] + 1
                 if not commented:
                     settings[item] = detail and {
                         'file': cfgfile,
