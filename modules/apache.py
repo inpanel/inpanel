@@ -230,7 +230,7 @@ def _parse_virtualhost_config(conf=''):
             v_dirs = {}
             result_d[id_v] = []
             directorys[id_v] = []
-            name_port = match.groups()[1].strip(' ').strip('"').strip('\'')
+            name_port = match.groups()[1].strip().strip('"').strip('\'')
             print(name_port)
             port = name_port.split(':')[-1]
             ip = name_port[0:-(len(port) + 1)]
@@ -245,7 +245,7 @@ def _parse_virtualhost_config(conf=''):
         match_d = RE_DT_START.search(out)
         if enable is True and match_d:
             v_dirs = {}
-            path = match_d.groups()[1].strip()
+            path = match_d.groups()[1].strip().strip('"')
             v_dirs[id_d] = []
             v_dirs[id_d].append(path)
             enable_d = True
@@ -304,7 +304,7 @@ def _parse_virtualhost_config(conf=''):
                     elif i == 'ServerAlias':
                         server[i] = line.split()[1:]
                     else:
-                        server[i] = line.split()[1].strip(string.punctuation)
+                        server[i] = line.split()[1].strip(' ').strip('"')
                     continue
         if 'ServerName' not in server or not server['ServerName']:
             server['ServerName'] = server['ServerAlias'][0]

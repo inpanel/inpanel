@@ -901,18 +901,20 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
 var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Backend', 'Timeout',
     function ($scope, Module, $routeParams, $location, Request, Message, Backend, Timeout) {
         var section = $routeParams.section;
+        var module = 'site.apache';
+        var tab_section = Module.getSection();
+        var tab_section_enabled = ['basic', 'directory', 'alias', 'advanced'];
+        var server_ip = '';
+        var server_port = '';
+        var server_name = '';
         $scope.action = section == 'new' ? 'new' : 'edit';
-        $scope.module_header = $scope.action == 'new' ? '新建站点' : '编辑站点';
-        var site = $scope.action == 'edit' ? section.substr(5) : '';
-        var server_ip, server_port, server_name;
         if ($scope.action == 'edit') {
-            site = site.split('_');
-            console.log(site);
-            if (site.length == 3) {
+            var site = section.substr(5).split('_');
+            if (site && site.length == 3) {
                 server_ip = site[0];
                 server_port = site[1];
                 server_name = site[2];
-            } else if (site.length == 4 && site[3] == '') {
+            } else if (site && site.length == 4 && site[3] == '') {
                 server_ip = site[0];
                 server_port = site[1];
                 server_name = '_';
@@ -921,53 +923,42 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 return;
             }
         }
-        var module = 'site.apache';
-        var tab_section = Module.getSection();
-        var tab_section_enabled = ['basic', 'alias', 'directory', 'advanced'];
-        Module.init(module, $scope.module_header);
         $scope.loaded = false;
-        $scope.showglobaladv = false;
-        $scope.curdir = -1;
-        $scope.setdir = function (i) {
-            $scope.curdir = i;
+        $scope.module_header = $scope.action == 'new' ? '新建站点' : '编辑站点';
+        Module.init(module, $scope.module_header);
+        $scope.gen_by_inpanel = $scope.action == 'new' ? true : false;
+        $scope.curdir_index = -1;
+        $scope.setdir_index = function (i) {
+            $scope.curdir_index = i;
         };
 
         var server_tmpl = {
-            ServerName: '',
-            alias: [],
-            IP: '',
+            name: '',
+            name_alias: [],
+            ip: '',
             port: '80',
-            ServerAdmin: '',
-            DocumentRoot: '/var/www',
-            DirectoryIndex: 'index.html index.htm index.php',
+            admin: '',
+            root: '/var/www',
+            indexs: 'index.html index.htm index.php',
             directory: [],
-            CustomLog: '',
-            ErrorLog: '',
+            custom_log: '',
+            error_log: '',
             Gzip: false,
             ssl_crt: '',
             ssl_key: '',
             rewrite_enable: false,
-            rewrite_rules: ''
-        };
-        var location_tmpl = {
-            Allow: 'All',
-            AllowOverride: 'All',
-            Order: 'allow,deny',
-            Path: ''
+            rewrite_rules: '',
+            autocreate: true
         };
         $scope.setting = angular.copy(server_tmpl);
-        $scope.gen_by_inpanel = $scope.action == 'new' ? true : false;
 
         $scope.load = function () {
             tab_section = (tab_section && tab_section_enabled.indexOf(tab_section) > -1) ? tab_section : tab_section_enabled[0];
             $scope.sec(tab_section);
             Module.setSection(tab_section);
-            // Apache version check may take too long time, so we don't want to wait for it
             if ($scope.action == 'new') {
-                $scope.add_alias();
                 $scope.add_directory();
                 $scope.loaded = true;
-                console.log('new');
             } else {
                 $scope.getserver();
             }
@@ -975,14 +966,14 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
                 'pkg': 'apache',
                 'repo': 'installed'
             }, {
-                    'success': function (res) {
-                        $scope.apache_version = res.data[0].version;
-                    },
-                    'error': function (error) {
-                        $scope.apache_version = '';
-                        //$scope.loaded = true;
-                    }
-                }, true);
+                'success': function (res) {
+                    $scope.apache_version = res.data[0].version;
+                },
+                'error': function (error) {
+                    $scope.apache_version = '';
+                    //$scope.loaded = true;
+                }
+            }, true);
         };
 
         // get server info (in edit mode)
@@ -995,135 +986,25 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             }, function (res) {
                 if (res.code == 0) {
                     var d = res.data;
-                    // init setting
                     var s = $scope.setting;
-                    s.port = d.Port;
-                    s.IP = d.IP;
-                    s.DocumentRoot = d.DocumentRoot;
                     $scope.gen_by_inpanel = d._inpanel;
-                    if (d.charset) s.charset = d.charset;
-                    if (d.CustomLog) s.CustomLog = d.CustomLog;
-                    if (d.Directory) s.directory = d.Directory;
-                    if (d.DirectoryIndex) s.DirectoryIndex = d.DirectoryIndex;
-                    if (d.ErrorLog) s.ErrorLog = d.ErrorLog;
-                    if (d.Gzip) s.Gzip = d.Gzip;
-                    if (d.ServerAlias) s.alias = d.ServerAlias;
-                    if (d.ServerName) s.ServerName = d.ServerName;
+                    s.port = d.Port;
+                    s.ip = d.IP;
+                    s.root = d.DocumentRoot;
+                    s.admin = d.ServerAdmin;
+                    s.custom_log = d.CustomLog || '';
+                    s.indexs = d.DirectoryIndex || '';
+                    s.error_log = d.ErrorLog || '';
+                    s.Gzip = d.Gzip || false;
+                    s.name_alias = d.ServerAlias || [];
+                    s.name = d.ServerName || '';
                     if (d.ssl_crt) s.ssl_crt = d.ssl_crt;
                     if (d.ssl_key) s.ssl_key = d.ssl_key;
                     if (d.rewrite_rules) {
                         s.rewrite_rules = d.rewrite_rules.join('\n');
                         if (s.rewrite_rules) s.rewrite_enable = true;
                     }
-                    if (d.directory) {
-                        for (i in d.locations) {
-                            var loc = d.locations[i];
-                            var t = angular.copy(location_tmpl);
-                            if (typeof loc.urlpath != 'undefined') {
-                                t.urlpath = loc.urlpath;
-                                t.oldurlpath = t.urlpath;
-                            }
-                            // detect engine
-                            if (typeof loc.error_code != 'undefined') {
-                                t.engine = 'error';
-                                t.error.code = loc.error_code;
-                            } else if (typeof loc.fastcgi_pass != 'undefined') {
-                                t.engine = 'fastcgi';
-                                t.fastcgi.fastcgi_pass = loc.fastcgi_pass;
-                                if (loc.root) t.fastcgi.root = loc.root;
-                                t.fastcgi.rewrite_detect_file = loc.rewrite_detect_file ? true : false;
-                                if (loc.rewrite_rules) {
-                                    t.fastcgi.rewrite_rules = loc.rewrite_rules.join(';\n');
-                                    if (t.fastcgi.rewrite_rules) {
-                                        t.fastcgi.rewrite_rules += ';';
-                                        t.fastcgi.rewrite_enable = true;
-                                    }
-                                }
-                            } else if (typeof loc.proxy_protocol != 'undefined') {
-                                t.engine = 'proxy';
-                                t.proxy.protocol = loc.proxy_protocol;
-                                if (typeof loc.proxy_host != 'undefined') t.proxy.host = loc.proxy_host;
-                                if (typeof loc.proxy_realip != 'undefined') t.proxy.realip = loc.proxy_realip;
-                                if (typeof loc.proxy_balance != 'undefined') t.proxy.balance = loc.proxy_balance;
-                                if (typeof loc.proxy_keepalive != 'undefined') t.proxy.keepalive = loc.proxy_keepalive;
-                                for (i in loc.proxy_backends) {
-                                    var backend = loc.proxy_backends[i];
-                                    var b = angular.copy(backend_tmpl);
-                                    if (typeof backend.server != 'undefined') b.server = backend.server;
-                                    if (typeof backend.weight != 'undefined') b.weight = backend.weight;
-                                    if (typeof backend.fail_timeout != 'undefined') b.fail_timeout = backend.fail_timeout;
-                                    if (typeof backend.max_fails != 'undefined') b.max_fails = backend.max_fails;
-                                    t.proxy.backends.push(b);
-                                }
-                                if (typeof loc.proxy_cache != 'undefined') {
-                                    t.proxy.proxy_cache_enable = true;
-                                    t.proxy.proxy_cache = loc.proxy_cache;
-                                    if (typeof loc.proxy_cache_min_uses != 'undefined') t.proxy.proxy_cache_min_uses = loc.proxy_cache_min_uses;
-                                    if (typeof loc.proxy_cache_methods != 'undefined') t.proxy.proxy_cache_methods_post = loc.proxy_cache_methods == 'POST';
-                                    if (typeof loc.proxy_cache_key != 'undefined') {
-                                        var lks = loc.proxy_cache_key.split('$');
-                                        var tks = t.proxy.proxy_cache_key;
-                                        for (var i = 0; i < lks.length; i++) {
-                                            if (lks[i] == 'schema') tks.schema = true;
-                                            else if (lks[i] == 'host') tks.host = true;
-                                            else if (lks[i] == 'proxy_host') tks.proxy_host = true;
-                                            else if (lks[i] == 'request_uri') tks.uri = true;
-                                        }
-                                    }
-                                    if (typeof loc.proxy_cache_valid != 'undefined') {
-                                        var valids = loc.proxy_cache_valid;
-                                        for (var i = 0; i < valids.length; i++) {
-                                            t.proxy.proxy_cache_valid.push({
-                                                code: valids[i].code,
-                                                time: parseInt(valids[i].time) + '',
-                                                time_unit: valids[i].time.substr(valids[i].time.length - 1),
-                                            });
-                                        }
-                                    }
-                                    if (typeof loc.proxy_cache_use_stale != 'undefined') {
-                                        var lts = loc.proxy_cache_use_stale;
-                                        var tts = t.proxy.proxy_cache_use_stale;
-                                        for (var i = 0; i < lts.length; i++) {
-                                            if (lts[i] == 'error') tts.error = true;
-                                            else if (lts[i] == 'timeout') tts.timeout = true;
-                                            else if (lts[i] == 'invalid_header') tts.invalid_header = true;
-                                            else if (lts[i] == 'updating') tts.updating = true;
-                                            else if (lts[i] == 'http_500') tts.http_500 = true;
-                                            else if (lts[i] == 'http_502') tts.http_502 = true;
-                                            else if (lts[i] == 'http_503') tts.http_503 = true;
-                                            else if (lts[i] == 'http_504') tts.http_504 = true;
-                                            else if (lts[i] == 'http_404') tts.http_404 = true;
-                                        }
-                                    }
-                                    if (typeof loc.proxy_cache_lock != 'undefined') {
-                                        t.proxy.proxy_cache_lock = loc.proxy_cache_lock;
-                                        if (typeof loc.proxy_cache_lock_timeout != 'undefined')
-                                            t.proxy.proxy_cache_lock_timeout = loc.proxy_cache_lock_timeout;
-                                    }
-                                }
-                            } else if (typeof loc.redirect_url != 'undefined') {
-                                t.engine = 'redirect';
-                                t.redirect.url = loc.redirect_url;
-                                if (typeof loc.redirect_type != 'undefined') t.redirect.type = loc.redirect_type;
-                                if (typeof loc.redirect_option != 'undefined') t.redirect.option = loc.redirect_option;
-                            } else if (typeof loc.root != 'undefined') {
-                                t.engine = 'static';
-                                t['static'].root = loc.root;
-                                t['static'].rewrite_detect_file = loc.rewrite_detect_file ? true : false;
-                                if (typeof loc.autoindex != 'undefined') t['static'].autoindex = loc.autoindex;
-                                if (loc.rewrite_rules) {
-                                    t['static'].rewrite_rules = loc.rewrite_rules.join(';\n');
-                                    if (t['static'].rewrite_rules) {
-                                        t['static'].rewrite_rules += ';';
-                                        t['static'].rewrite_enable = true;
-                                    }
-                                }
-                            }
-                            if (t.proxy.backends.length == 0) t.proxy.backends.push(angular.copy(backend_tmpl));
-                            s.locations.push(t);
-                        }
-                    }
-                    $scope.curdir = 0;
+                    $scope.detect_directory(d.Directory);
                     $scope.loaded = true;
                 } else {
                     Timeout(function () {
@@ -1134,82 +1015,119 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
         };
 
         // server name operation
-        $scope.delete_alias = function (i) {
-            $scope.setting.alias.splice(i, 1);
+        $scope.del_name_alias = function (i) {
+            $scope.setting.name_alias.splice(i, 1);
         };
-        $scope.add_alias = function () {
-            $scope.setting.alias.push('');
-            console.log('alias', $scope.setting.alias);
+        $scope.add_name_alias = function () {
+            $scope.setting.name_alias.push('');
+            console.log('name_alias', $scope.setting.name_alias);
         };
-        $scope.$watch('setting.alias', function (value, oldvalue) {
+        $scope.$watch('setting.name_alias', function (value, oldvalue) {
             console.log(value, oldvalue);
         }, true);
 
-        // location operation
-        $scope.delete_directory = function (i) {
+        var directory_tmpl = {
+            path: '/',
+            indexes: '-',
+            followlinks: '+',
+            execcgi: '+',
+            Allow: 'All',
+            AllowOverride: 'All',
+            Order: 'allow,deny',
+            autocreate: true
+        };
+        // directory operation
+        $scope.detect_directory = function (d) {
+            if (!d || d.length == 0) {
+                return;
+            }
+            for (i in d) {
+                var t = angular.copy(directory_tmpl);
+                if (typeof d[i].Path != 'undefined') {
+                    t.path = d[i].Path;
+                    t.oldpath = t.Path;
+                }
+                $scope.setting.directory.push(t);
+            }
+            $scope.curdir_index = 0;
+        };
+        $scope.del_directory = function (i) {
             $scope.setting.directory.splice(i, 1);
-            $scope.curdir--;
-            if ($scope.curdir < 0 && $scope.setting.directory.length > 0) $scope.curdir = 0;
+            $scope.curdir_index--;
+            if ($scope.curdir_index < 0 && $scope.setting.directory.length > 0) $scope.curdir_index = 0;
         };
         $scope.add_directory = function () {
-            $scope.setting.directory.splice($scope.curdir + 1, 0, angular.copy(location_tmpl));
-            $scope.curdir++;
+            var drct = angular.copy(directory_tmpl);
+            if ($scope.setting.root) {
+                drct.path = $scope.setting.root;
+            }
+            $scope.setting.directory.splice($scope.curdir_index + 1, 0, drct);
+            $scope.curdir_index++;
         };
 
-        // automatically set the root path of static and fastcgi engine
-        $scope.$watch('setting.ServerName', function (value, oldvalue) {
-            // if ($scope.setting.CustomLog == '' && value) {
-                $scope.setting.CustomLog = value + '-access_log';
-            // }
-            // if ($scope.setting.ErrorLog == '' && value) {
-                $scope.setting.ErrorLog = value + '-error_log';
-            // }
-            // if (($scope.setting.DocumentRoot == '' || $scope.setting.DocumentRoot != '/var/www') && value) {
-                $scope.setting.DocumentRoot = '/var/www/' + value;
-            // }
-            var server_name = value;
-            var old_server_name = oldvalue;
-            var locs = $scope.setting.directory;
-            for (var i = 0; i < locs.length; i++) {
-                if (locs[i].urlpath == '/') {
-                    var prefix = location_tmpl['static'].root;
-                    var expected_path = prefix + '/' + old_server_name;
-                    expected_path = expected_path.replace('//', '/');
-                    if (locs[i]['static'].root == expected_path) {
-                        var root = prefix + '/' + server_name;
-                        locs[i]['static'].root = root.replace('//', '/');
+        $scope.$watch('setting.name', function (newValue, oldValue) {
+            if (newValue) {
+                if ($scope.setting.root == '' || $scope.setting.root == server_tmpl.root + '/' + oldValue || $scope.setting.root == server_tmpl.root + oldValue) {
+                    $scope.setting.root = server_tmpl.root + '/' + newValue;
+                }
+                if ($scope.setting.custom_log == '' || $scope.setting.custom_log == oldValue + '-access_log') {
+                    $scope.setting.custom_log = newValue + '-access_log';
+                }
+                if ($scope.setting.error_log == '' || $scope.setting.error_log == oldValue + '-error_log') {
+                    $scope.setting.error_log = newValue + '-error_log';
+                }
+            } else {
+                if ($scope.setting.root == server_tmpl.root + '/' + oldValue) {
+                    $scope.setting.root = server_tmpl.root
+                }
+                if ($scope.setting.custom_log == oldValue + '-access_log') {
+                    $scope.setting.custom_log = ''
+                }
+                if ($scope.setting.error_log == oldValue + '-error_log') {
+                    $scope.setting.error_log = ''
+                }
+            }
+        });
+        $scope.$watch('setting.root', function (newValue, oldValue) {
+            if (!$scope.loaded) {
+                return;
+            }
+            var d = $scope.setting.directory;
+            if (d.length > 0) {
+                if (newValue) {
+                    if (d[0].path == '' || d[0].path == oldValue) {
+                        $scope.setting.directory[0].path = newValue;
                     }
-                    var prefix = location_tmpl.fastcgi.root;
-                    var expected_path = prefix + '/' + old_server_name;
-                    expected_path = expected_path.replace('//', '/');
-                    if (locs[i].fastcgi.root == expected_path) {
-                        var root = prefix + '/' + server_name;
-                        locs[i].fastcgi.root = root.replace('//', '/');
+                } else {
+                    if (d[0].path == oldValue) {
+                        $scope.del_directory(0);
                     }
                 }
+            } else {
+                $scope.add_directory();
             }
         });
 
         // operations when url path change
         $scope.urlpathchange = function (loc) {
-            if (loc.urlpath.length == 0) loc.urlpath = '/';
+            if (loc.path.length == 0) loc.path = '/';
             if (loc.engine == 'fastcgi' && loc.fastcgi.rewrite_enable) {
                 // parse rewrite rules and automatically replace the path start with the old path
-                var r = new RegExp('([\\^\\s])(' + (loc.oldurlpath + '/').replace('//', '/').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'gm');
-                loc.fastcgi.rewrite_rules = loc.fastcgi.rewrite_rules.replace(r, '$1' + (loc.urlpath + '/').replace('//', '/'));
-                loc.oldurlpath = loc.urlpath;
+                var r = new RegExp('([\\^\\s])(' + (loc.oldpath + '/').replace('//', '/').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'gm');
+                loc.fastcgi.rewrite_rules = loc.fastcgi.rewrite_rules.replace(r, '$1' + (loc.path + '/').replace('//', '/'));
+                loc.oldpath = loc.path;
             }
         };
 
-        // site folder selector
-        $scope.selectstaticfolder = function (i) {
+        // site root selector
+        $scope.select_site_root = function () {
             $scope.selector_title = '请选择站点目录';
             $scope.selector.onlydir = true;
             $scope.selector.onlyfile = false;
-            $scope.selector.load($scope.setting.directory[i]['static'].root);
+            $scope.selector.load(server_tmpl.root);
             $scope.selector.selecthandler = function (path) {
                 $('#selector').modal('hide');
-                $scope.setting.directory[i]['static'].root = path;
+                $scope.setting.root = path;
             };
             $('#selector').modal();
         };
@@ -1264,7 +1182,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             }, function (res) {
                 if (res.code == 0) {
                     $scope.loaded = false;
-                    var name = ($scope.setting.IP ? $scope.setting.IP : '*') + '_' + $scope.setting.port + '_' + $scope.setting.ServerName;
+                    var name = ($scope.setting.ip ? $scope.setting.ip : '*') + '_' + $scope.setting.port + '_' + $scope.setting.name;
                     $location.path('/site/apache/edit_' + name);
                     if (active && active == 'active') {
                         $scope.apache_set_status('restart');
@@ -1283,7 +1201,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             }, function (res) {
                 if (res.code == 0) {
                     $scope.loaded = false;
-                    var name = ($scope.setting.IP ? $scope.setting.IP : '*') + '_' + $scope.setting.port + '_' + $scope.setting.ServerName;
+                    var name = ($scope.setting.ip ? $scope.setting.ip : '*') + '_' + $scope.setting.port + '_' + $scope.setting.name;
                     var new_path = '/site/apache/edit_' + name;
                     if (new_path != $location.path()) {
                         $location.path(new_path);
