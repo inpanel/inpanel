@@ -42,7 +42,7 @@ CONFIGS = {
     'Timeout': 60,
     'DefaultType': 'text/plain',
     'DocumentRoot': '/var/www/html',
-    'DirectoryIndex': 'index.html index.html.var',
+    'DirectoryIndex': 'index.html index.htm index.php',
     'AddDefaultCharset': 'UTF-8',
     'Listen': 80,
     'ServerAdmin': 'root@localhost',
@@ -73,24 +73,6 @@ CON_DIRECTIVES = {
     'Location': '',
     'VirtualHost': '',
     'IfModule': ''
-}
-VH_OPTIONS = {
-    'CustomLog': '',
-    'ServerAdmin': 'admin@localhost',
-    'ServerName': '',
-    'DirectoryIndex': 'index.html',
-    'DocumentRoot': '/var/www',
-    'ErrorLog': '',
-    'Options': '',
-    'ServerAlias': [],
-    'Location': '',
-    'SuexecUserGroup': '',
-}
-DIRECTORY = {
-    'Options': 'Indexes FollowSymLinks MultiViews',
-    'AllowOverride': 'None',
-    'Order': 'allow,deny',
-    'Allow': 'from all',
 }
 VH_TMP = '''<VirtualHost *:80>
     ServerAdmin webmaster@localhost
@@ -231,7 +213,7 @@ def _parse_virtualhost_config(conf=''):
             result_d[id_v] = []
             directorys[id_v] = []
             name_port = match.groups()[1].strip().strip('"').strip('\'')
-            print(name_port)
+            # print(name_port)
             port = name_port.split(':')[-1]
             ip = name_port[0:-(len(port) + 1)]
             ip = ip.lstrip('[').rstrip(']')  # for IPv6
@@ -247,7 +229,7 @@ def _parse_virtualhost_config(conf=''):
             v_dirs = {}
             path = match_d.groups()[1].strip().strip('"')
             v_dirs[id_d] = []
-            v_dirs[id_d].append(path)
+            v_dirs[id_d].append('path ' + path)
             enable_d = True
             continue
 
@@ -290,24 +272,24 @@ def _parse_virtualhost_config(conf=''):
         return []
     for i in result:
         server = {
-            'IP': result[i][0],  # IP
-            'Port': result[i][1],  # Port
-            'Directory': directorys[i],
+            'ip': result[i][0],
+            'port': result[i][1],
+            'directory': directorys[i],
             '_inpanel': gen_by_inpanel,
             'status': 'off' if line_disabled else 'on'
         }
         for line in result[i]:
-            for i in VH_OPTIONS:
-                if i in line:
-                    if i == 'DirectoryIndex':
-                        server[i] = ' '.join(str(n) for n in line.split()[1:])
-                    elif i == 'ServerAlias':
-                        server[i] = line.split()[1:]
-                    else:
-                        server[i] = line.split()[1].strip(' ').strip('"')
-                    continue
-        if 'ServerName' not in server or not server['ServerName']:
-            server['ServerName'] = server['ServerAlias'][0]
+            line = line.split()
+            key = line[0]
+            if key == 'DirectoryIndex':
+                server['directoryindex'] = ' '.join(str(n) for n in line[1:])
+            elif key == 'ServerAlias':
+                server['serveralias'] = line[1:]
+            elif key in ('ServerAdmin', 'ServerName', 'DocumentRoot', 'ErrorLog', 'CustomLog', 'Options', 'Location', 'SuexecUserGroup'):
+                server[key.lower()] = line[1].strip(' ').strip('"')
+            # if 'servername' not in server or not server['servername']:
+            #     server['servername'] = server['serveralias'][0]
+
         virtualHosts.append(server)
 
     return virtualHosts
@@ -319,18 +301,27 @@ def _parse_directory(directory):
 
     results = []
     for r in directory:
-        drct = {'Path': r[0]}
+        drct = {
+            'path': '',
+            'allow': [],
+            'deny': []
+        }
         for line in r:
-            for i in DIRECTORY:
-                if i in line:
-                    if i == 'Order':
-                        drct[i] = ','.join(str(n) for n in line.split()[1:])
-                    elif i in ('Options', 'Allow'):
-                        drct[i] = ' '.join(str(n) for n in line.split()[1:])
-                    else:
-                        drct[i] = line.split()[1].strip(string.punctuation)
-                    continue
+            line = line.split()
+            key = line[0]
+            if key == 'path':
+                drct['path'] = line[1].strip()
+            elif key == 'Order':
+                drct['order'] = ','.join(str(n) for n in line[1:])
+            elif key in ('Options'):
+                drct[key.lower()] = ' '.join(str(n) for n in line[1:])
+            elif key.lower() in ('allow', 'deny'):
+                drct[key.lower()].append(line[2].strip())
+            elif key in ('AllowOverride'):
+                drct[key.lower()] = line[1].strip()
+            # continue
         results.append(drct)
+    # print(results)
     return results
 
 
@@ -503,7 +494,7 @@ def _context_getservers(disabled=None, config=None, getlineinfo=True):
                 if server['_param']['disabled'] == disabled]
 
 
-def addserver(name, ip, port, alias=None, admin=None, root=None, index=None, directory=None, error_log=None, custom_log=None, version=None):
+def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documentroot=None, directoryindex=None, directory=None, errorlog=None, customlog=None, version=None):
     '''Add a new VirtualHost.'''
 
     ip = ip or '*'
@@ -515,26 +506,27 @@ def addserver(name, ip, port, alias=None, admin=None, root=None, index=None, dir
         return False
     # start generate the config string
     servercfg = ['<VirtualHost %s:%s> # %s' % (ip, port, GENBY)]
-    if is_valid_domain(name):
-        servercfg.append('    ServerName %s' % name)
+    if is_valid_domain(serveraname):
+        servercfg.append('    ServerName %s' % serveraname)
     else:
         return False
-    if root:
-        servercfg.append('    DocumentRoot %s' % root)
+    if documentroot:
+        servercfg.append('    DocumentRoot %s' % documentroot)
     else:
         return False
-    if admin:
-        servercfg.append('    ServerAdmin %s' % admin)
-    if alias:
-        servercfg.append('    ServerAlias %s' % (' '.join(alias)))
-    if index:
-        servercfg.append('    DirectoryIndex %s' % (' '.join(index.split())))
+    if serveradmin:
+        servercfg.append('    ServerAdmin %s' % serveradmin)
+    if serveralias:
+        servercfg.append('    ServerAlias %s' % (' '.join(serveralias)))
+    if directoryindex:
+        servercfg.append('    DirectoryIndex %s' %
+                         (' '.join(directoryindex.split())))
     else:
         servercfg.append('    DirectoryIndex index.html index.htm index.php')
-    if error_log:
-        servercfg.append('    ErrorLog %s' % error_log)
-    if custom_log:
-        servercfg.append('    CustomLog %s' % custom_log)
+    if errorlog:
+        servercfg.append('    ErrorLog %s' % errorlog)
+    if customlog:
+        servercfg.append('    CustomLog %s' % customlog)
     if directory and len(directory) > 0:
         d = _extend_directory(directory)
         servercfg.extend(['    %s' % i for i in d])
@@ -542,7 +534,7 @@ def addserver(name, ip, port, alias=None, admin=None, root=None, index=None, dir
     servercfg.append('</VirtualHost>')
 
     #print '\n'.join(servercfg)
-    configfile = os.path.join(SERVERCONF, '%s.conf' % name)
+    configfile = os.path.join(SERVERCONF, '%s.conf' % serveraname)
     configfile_exists = os.path.exists(configfile)
 
     # check if need to add a new line at the end of the file to
@@ -567,14 +559,17 @@ def _extend_directory(directory):
     '''
     drct_cfg = []
     for drct in directory:
-        drct_cfg.append('<Directory %s>' % drct.path)
-        if drct.options:
-            drct_cfg.append('    Options %s' % drct.options)
+        if 'path' in drct and drct['path']:
+            drct_cfg.append('<Directory %s>' % drct['path'])
+        else:
+            continue
+        if 'options' in drct and drct['options']:
+            drct_cfg.append('    Options %s' % drct['options'])
         drct_cfg.append('</Directory>')
     return drct_cfg
 
 
-def updateserver(name, ip, port, alias=None, admin=None, root=None, index=None, directory=None, error_log=None, custom_log=None, version=None):
+def updateserver(o_name, o_ip, o_port, serveraname, ip, port, serveralias=None, serveradmin=None, documentroot=None, directoryindex=None, directory=None, errorlog=None, customlog=None, version=None):
     '''Update an existing server.
 
     If the old config is not in the right place, we would automatically delete it and
@@ -582,8 +577,19 @@ def updateserver(name, ip, port, alias=None, admin=None, root=None, index=None, 
     '''
     pass
 
+
+def deleteserver(server_name, ip, port):
+    '''Delete a server.'''
+    print(SERVERCONF + server_name + '.conf')
+    try:
+        os.unlink(SERVERCONF + server_name + '.conf')
+        return True
+    except:
+        return False
+
+
 if __name__ == '__main__':
-    # test_path = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
+    test_path = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
     # tmp = loadconfig(test_path)
     # print(tmp)
     # print(json.dumps(tmp))
@@ -594,21 +600,22 @@ if __name__ == '__main__':
     # for line in replace_docroot('aaa.com', 'docroot'):
     #     print(line)
 
-    # aaa = '/Users/douzhenjiang/test/inpanel/test/aaa.com.conf'
-    # tmp1 = _parse_virtualhost_config(aaa)
-    # print(json.dumps(tmp1))
+    aaa = '/Users/douzhenjiang/test/inpanel/test/aaa.com.conf'
+    tmp1 = _parse_virtualhost_config(aaa)
+    print(json.dumps(tmp1))
 
     # print getservers()
 
     # path = os.path.join(SERVERCONF, clist[i])
     # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
-    SERVERCONF = '/Users/douzhenjiang/test/inpanel/test'
-    addserver('11inpanel.org', '1.1.1.1', 80,
-              alias=['cc.com', 'bb.com'],
-              admin='root',
-              root='/var/www/inpanel.org',
-              index='index.html index.php',
-              directory=None,
-              error_log='abc/aaa.log',
-              custom_log='abc/aaa_error.log',
-              version=None)
+    # SERVERCONF = '/Users/douzhenjiang/test/inpanel/test'
+    # addserver('11inpanel.org', '1.1.1.1', 80,
+    #           serveralias=['cc.com', 'bb.com'],
+    #           serveradmin='root',
+    #           documentroot='/var/www/inpanel.org',
+    #           directoryindex='index.html index.php',
+    #           directory=[{'path': '/var/www/inpanel.org/abc',
+    #                       'options': 'aadsfsdf asdfdsf'}],
+    #           errorlog='abc/aaa.log',
+    #           customlog='abc/aaa_error.log',
+    #           version=None)

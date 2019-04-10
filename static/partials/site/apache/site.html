@@ -18,7 +18,7 @@
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='basic'"><a href="#basic" ng-click="sec('basic')" data-toggle="tab">基本设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='directory'"><a href="#directory" ng-click="sec('directory')" data-toggle="tab">目录设置</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='alias'"><a href="#alias" ng-click="sec('alias')" data-toggle="tab">绑定域名</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='serveralias'"><a href="#serveralias" ng-click="sec('serveralias')" data-toggle="tab">绑定域名</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='advanced'"><a href="#advanced" ng-click="sec('advanced')" data-toggle="tab">高级设置</a></li>
         </ul>
         <div class="tab-content">
@@ -52,16 +52,16 @@
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">网站域名</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="setting.name" type="text" placeholder="网站域名">
+                            <input class="form-control" ng-model="setting.servername" type="text" placeholder="网站域名">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label">站点目录</label>
                         <div class="col-sm-10">
                             <div class="input-group">
-                                <input class="form-control" ng-model="setting.root" type="text" placeholder="网站存放目录">
+                                <input class="form-control" ng-model="setting.documentroot" type="text" placeholder="网站存放目录">
                                 <div class="input-group-btn">
-                                    <button class="btn btn-default" ng-click="select_site_root()" title="选择文件夹"><i class="glyphicon glyphicon-folder-open"></i></button>
+                                    <button class="btn btn-default" ng-click="select_document_root()" title="选择文件夹"><i class="glyphicon glyphicon-folder-open"></i></button>
                                 </div>
                             </div>
                             <label class="checkbox-inline"><input ng-model="setting.autocreate" type="checkbox"> 目录不存在时，自动创建目录</label><br>
@@ -70,19 +70,19 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label">默认首页</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="setting.indexs" type="text" placeholder="首页默认访问文件">
+                            <input class="form-control" ng-model="setting.directoryindex" type="text" placeholder="首页默认访问文件">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label">错误日志</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="setting.error_log" type="text">
+                            <input class="form-control" ng-model="setting.errorlog" type="text">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label">CustomLog</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="setting.custom_log" type="text">
+                            <input class="form-control" ng-model="setting.customlog" type="text">
                         </div>
                     </div>
                 </div>
@@ -148,13 +148,13 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='alias'" id="alias">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='serveralias'" id="serveralias">
                 <p>
-                    <button class="btn btn-default" ng-click="add_name_alias($index)" ng-show="setting.name_alias.length==0" style="display:none">
+                    <button class="btn btn-default" ng-click="add_name_alias($index)" ng-show="setting.serveralias.length==0" style="display:none">
                         <i class="glyphicon glyphicon-plus"></i> 添加域名
                     </button>
                 </p>
-                <div class="form-group form-inline" ng-repeat="name in setting.name_alias">
+                <div class="form-group form-inline" ng-repeat="name in setting.serveralias">
                     <div class="input-group">
                         <input class="form-control" ng-model="name" type="text" placeholder="请输入域名">
                         <div class="input-group-btn">
@@ -169,7 +169,7 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label">管理员</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="setting.admin" type="text" placeholder="管理员邮箱或地址">
+                            <input class="form-control" ng-model="setting.serveradmin" type="text" placeholder="管理员邮箱或地址">
                         </div>
                     </div>
                     <div class="form-group form-inline">

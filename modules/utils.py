@@ -31,14 +31,14 @@ def make_cookie_secret():
 
 
 def is_valid_ip(ip):
-    """Validates IP addresses.
-    """
+    '''Validates IP addresses.'''
     return is_valid_ipv4(ip) or is_valid_ipv6(ip)
 
 
 def is_valid_ipv4(ip):
-    """Validates IPv4 addresses.
-    """
+    '''Validates IPv4 addresses.'''
+    if not ip or ip is '':
+        return False
     try:
         socket.inet_pton(socket.AF_INET, ip)
         return True
@@ -47,8 +47,9 @@ def is_valid_ipv4(ip):
 
 
 def is_valid_ipv6(ip):
-    """Validates IPv6 addresses.
-    """
+    '''Validates IPv6 addresses.'''
+    if not ip or ip is '':
+        return False
     try:
         socket.inet_pton(socket.AF_INET6, ip)
         return True
@@ -101,6 +102,8 @@ def ftime(secs):
 
 def is_valid_domain(name, allow_localname=True):
     '''Validates domain name.'''
+    if not name or name is '':
+        return False
     name = name.lower()
     if allow_localname:
         pt = r'^(?:(?:(?:[a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z0-9])\.)*(?:(?:[a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z0-9])$'
