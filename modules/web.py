@@ -31,7 +31,7 @@ import tornado.web
 from async_process import call_subprocess, callbackable
 from modules import (aliyuncs, apache, certificate, cron, fdisk, files,
                      lighttpd, mysql, named, nginx, php, process, proftpd,
-                     pureftpd, remote, ssh, user, utils, vsftpd, yum)
+                     pureftpd, remote, shell, ssh, user, utils, vsftpd, yum)
 from modules.config import Config
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
@@ -840,7 +840,8 @@ class SettingHandler(RequestHandler):
             
             if accesskey != '':
                 try:
-                    if len(base64.b64decode(accesskey)) != 32: raise Exception()
+                    if len(base64.b64decode(accesskey)) != 32:
+                        raise Exception()
                 except:
                     self.write({'code': -1, 'msg': u'远程控制密钥格式不正确！'})
                     return
@@ -853,8 +854,8 @@ class SettingHandler(RequestHandler):
 
 
 class OperationHandler(RequestHandler):
-    """Server operation handler
-    """
+    ''''Server operation handler
+    '''
 
     def post(self, op):
         """Run a server operation
@@ -2104,6 +2105,7 @@ class OperationHandler(RequestHandler):
     def cron(self):
         # cron jobs management
         action = self.get_argument('action', '')
+        user = self.config.get('auth', 'username')
 
         if action == 'get_settings':
             self.write({'code': 0, 'msg': u'获取 Cron 服务配置信息成功！', 'data': cron.load_config()})
@@ -2114,8 +2116,29 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'设置保存失败！'})
+
         if action == 'cron_list':
-            self.write({'code': 0, 'msg': u'获取 Cron 定时任务成功！', 'data': cron.cron_list()})
+            self.write({'code': 0, 'msg': u'获取 Cron 定时任务成功！','data': cron.cron_list(user)})
+
+        elif action in ('cron_add', 'cron_mod'):
+            minute = self.get_argument('minute', '')
+            hour = self.get_argument('hour', '')
+            day = self.get_argument('day', '')
+            month = self.get_argument('month', '')
+            weekday = self.get_argument('weekday', '')
+            weekday = self.get_argument('weekday', '')
+            cmd = self.get_argument('cmd', '')
+            if action == 'cron_add':
+                # res = cron.addcron(user, minute, hour, day, month, weekday, cmd)
+                self.write({'code': 0, 'msg': 'Excute Successfully', 'data': cron.addcron(user, minute, hour, day, month, weekday, cmd)})
+            elif action == 'cron_mod':
+                lid = self.get_argument('id', '')
+                res = cron.modcron(user, lid, minute, hour, day, month, weekday, cmd)
+                self.write({'code': 0, 'msg': 'Excute Successfully', 'data': res})
+
+        elif action == 'del':
+            lid = self.get_argument('id', '')
+            self.write({'code': 0, 'msg': 'Excute Successfully', 'data': cron.delcron(user, lid)})
 
     def vsftpd(self):
         action = self.get_argument('action', '')
@@ -2136,6 +2159,12 @@ class OperationHandler(RequestHandler):
     def pureftpd(self):
         pureftpd.web_response(self)
 
+    def shell(self):
+        action = self.get_argument('action', '')
+        cmd = self.get_argument('cmd', '')
+        cwd = self.get_argument('cwd', '')
+        if action == 'exec_command':
+            self.write({'code': 0, 'msg': u'命令已发送', 'data': shell.exec_command(_u(cmd), _u(cwd))})
 
 class PageHandler(RequestHandler):
     """Return single page.

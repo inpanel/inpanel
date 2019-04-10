@@ -134,3 +134,31 @@ span.CodeMirror-matchhighlight {
 .CodeMirror-focused span.CodeMirror-matchhighlight {
     background: #e7e4ff !important;
 }
+
+.shell-form {
+    height: auto!important;
+    min-height: 200px;
+    padding: 4px;
+    background-color: #333;
+    color: #fff;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 1em;
+    word-break: break-all;
+}
+.shell-form span {
+    display: block;
+    font-family: monospace;
+    white-space: pre-wrap !important;
+    color: #fff;
+    background-color: #333;
+}
+
+.shell-input {
+    width: 100%;
+    border: 0;
+    background-color: #333;
+    color: #fff;
+    font-family: monospace;
+    font-size: 1em;
+}

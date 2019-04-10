@@ -1596,20 +1596,69 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
             $scope.cron_time[type] = $scope.options[type];
         };
         $scope.addCronJobs = function () {
-            var data = {
-                action: 'add_cron_jobs',
-                command: $scope.task_time + ' ' + $scope.task_command
+            Request.post('/operation/cron', {
+                action: 'cron_add',
+                minute: $scope.cron_time.minute,
+                hour: $scope.cron_time.hour,
+                day: $scope.cron_time.day,
+                month: $scope.cron_time.month,
+                weekday: $scope.cron_time.weekday,
+                cmd: $scope.task_command
+            }, function(res) {
+                if (res.code == 0) {
+                    $('#cron-add-confirm').modal('hide');
+                    $scope.load_cron_list();
+                }
+            });
+        };
+    }
+];
+
+var UtilsShellCtrl = ['$scope', '$routeParams', 'Module', 'Timeout', 'Request',
+    function($scope, $routeParams, Module, Timeout, Request) {
+        var module = 'utils.shell';
+        Module.init(module, 'SHELL 命令');
+        var section = Module.getSection();
+        var enabled_sections = ['base', 'advance'];
+        Module.initSection(enabled_sections[0]);
+        $scope.loaded = false;
+        $scope.loading = false;
+        $scope.base_cmds = [];
+        $scope.base_cwd = '/';
+        $scope.base_input = '';
+
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            // $scope['load_' + section](init);
+        };
+
+        $scope.send_base_cmd = function() {
+            if ($scope.base_input == '') {
+                return;
             }
-            console.log(data)
-            // Request.post('/operation/task', {
-            //     action: 'add',
-            //     username: $scope.username,
-            //     password: $scope.password ? hex_md5($scope.password) : '',
-            //     passwordc: $scope.passwordc ? hex_md5($scope.passwordc) : '',
-            //     passwordcheck: $scope.passwordcheck
-            // }, function(data) {
-            //     if (data.code == 0) $scope.loadAuthInfo();
-            // });
+            $scope.base_cmds.push('# ' + $scope.base_input);
+            Request.post('/operation/shell', {
+                'action': 'exec_command',
+                'cmd': $scope.base_input,
+                'cwd': $scope.base_cwd
+            }, function (res) {
+                $scope.base_input = '';
+                if (res.code == 0) {
+                    if (res.data) {
+                        $scope.base_cmds.push(res.data.data);
+                        // for (i in res.data.data) {
+                        //     $scope.base_cmds.push(res.data.data[i]);
+                        // }
+                    }
+                }
+            });
         };
     }
 ];
