@@ -18,7 +18,7 @@
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='basic'"><a href="#basic" ng-click="sec('basic')" data-toggle="tab">基本设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='directory'"><a href="#directory" ng-click="sec('directory')" data-toggle="tab">目录设置</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='serveralias'"><a href="#serveralias" ng-click="sec('serveralias')" data-toggle="tab">绑定域名</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='server-alias'"><a href="#server-alias" ng-click="sec('server-alias')" data-toggle="tab">绑定域名</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='advanced'"><a href="#advanced" ng-click="sec('advanced')" data-toggle="tab">高级设置</a></li>
         </ul>
         <div class="tab-content">
@@ -64,7 +64,7 @@
                                     <button class="btn btn-default" ng-click="select_document_root()" title="选择文件夹"><i class="glyphicon glyphicon-folder-open"></i></button>
                                 </div>
                             </div>
-                            <label class="checkbox-inline"><input ng-model="setting.autocreate" type="checkbox"> 目录不存在时，自动创建目录</label><br>
+                            <label class="checkbox-inline"><input ng-model="setting.autocreate" type="checkbox">目录不存在时，自动创建目录</label><br>
                         </div>
                     </div>
                     <div class="form-group">
@@ -95,7 +95,7 @@
                 </p>
                 <ul class="nav nav-tabs" ng-show="setting.directory.length>0" style="display:none;">
                     <li ng-repeat="drct in setting.directory" ng-class="'active'|iftrue:$index==curdir_index" ng-click="setdir_index($index)">
-                        <a href="#loc_{{$index}}" data-toggle="tab">{{drct.path}}</a>
+                        <a href="#drct_{{$index}}" data-toggle="tab">{{drct.path}}</a>
                     </li>
                     <li class="pull-right">
                         <div class="btn-group" role="group">
@@ -105,13 +105,13 @@
                     </li>
                 </ul>
                 <div class="tab-content" ng-show="setting.directory.length>0" style="display:none;">
-                    <div class="tab-pane" ng-repeat="drct in setting.directory" ng-class="'active'|iftrue:$index==curdir_index" id="loc_{{$index}}">
+                    <div class="tab-pane" ng-repeat="drct in setting.directory" ng-class="'active'|iftrue:$index==curdir_index" id="drct_{{$index}}">
                         <div class="form-horizontal form-horizontal-small">
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">目录路径</label>
                                 <div class="col-sm-10">
-                                    <input class="form-control" ng-model="drct.path" ng-change="urlpathchange(drct)" type="text" placeholder="URL路径">
-                                    <label class="checkbox-inline"><input ng-model="drct.autocreate" type="checkbox"> 目录不存在时，自动创建目录</label><br>
+                                    <input class="form-control" ng-model="drct.path" ng-change="drct_change(drct)" type="text" placeholder="URL路径">
+                                    <label class="checkbox-inline"><input ng-model="drct.autocreate" type="checkbox">目录不存在时，自动创建目录</label><br>
                                 </div>
                             </div>
                             <div class="form-group form-inline">
@@ -127,7 +127,7 @@
                             <div class="form-group form-inline">
                                 <label class="col-sm-2 control-label">符号链接</label>
                                 <div class="col-sm-10">
-                                    <select class="form-control" ng-model="drct.followlinks">
+                                    <select class="form-control" ng-model="drct.followsymlinks">
                                         <option value="">默认全局设置</option>
                                         <option value="+">允许访问链接文件</option>
                                         <option value="-">禁止访问链接文件</option>
@@ -144,22 +144,40 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">白名单</label>
+                                <div class="col-sm-10">
+                                    <label class="checkbox-inline"><input ng-model="drct.allow_enable" type="checkbox">启用白名单</label>
+                                    <div class="form-inline" ng-show="drct.allow_enable" style="margin-top:10px;display:none">
+                                        <textarea class="form-control" ng-model="drct.allow" style="height:100px;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">黑名单</label>
+                                <div class="col-sm-10">
+                                    <label class="checkbox-inline"><input ng-model="drct.deny_enable" type="checkbox">启用黑名单</label>
+                                    <div class="form-inline" ng-show="drct.deny_enable" style="margin-top:10px;display:none">
+                                        <textarea class="form-control" ng-model="drct.deny" style="height:100px;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='serveralias'" id="serveralias">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='server-alias'" id="server-alias">
                 <p>
-                    <button class="btn btn-default" ng-click="add_name_alias($index)" ng-show="setting.serveralias.length==0" style="display:none">
+                    <button class="btn btn-default" ng-click="add_server_alias($index)" ng-show="setting.serveralias.length==0" style="display:none">
                         <i class="glyphicon glyphicon-plus"></i> 添加域名
                     </button>
                 </p>
-                <div class="form-group form-inline" ng-repeat="name in setting.serveralias">
+                <div class="form-group form-inline" ng-repeat="alias in setting.serveralias">
                     <div class="input-group">
-                        <input class="form-control" ng-model="name" type="text" placeholder="请输入域名">
+                        <input class="form-control" ng-model="alias.name" type="text" placeholder="请输入域名">
                         <div class="input-group-btn">
-                            <button class="btn btn-default" title="删除这个别名" ng-click="del_name_alias($index)"><i class="glyphicon glyphicon-minus"></i></button>
-                            <button class="btn btn-default" title="增加一个别名" ng-click="add_name_alias()"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button class="btn btn-default" title="删除这个别名" ng-click="del_server_alias($index)"><i class="glyphicon glyphicon-minus"></i></button>
+                            <button class="btn btn-default" title="增加一个别名" ng-click="add_server_alias()"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
                 </div>
@@ -215,7 +233,7 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label">重定向</label>
                         <div class="col-sm-10">
-                            <label class="checkbox-inline"><input ng-model="setting.rewrite_enable" type="checkbox"> 启用全局 Rewrite</label>
+                            <label class="checkbox-inline"><input ng-model="setting.rewrite_enable" type="checkbox">启用全局 Rewrite</label>
                             <div class="form-inline" ng-show="setting.rewrite_enable" style="margin-top:10px;display:none">
                                 <select class="form-control" ng-model="rewrite_template">
                                     <option value="">常用 Rewrite 规则</option>
