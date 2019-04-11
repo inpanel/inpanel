@@ -280,15 +280,15 @@ def _parse_virtualhost_config(conf=''):
         }
         for line in result[i]:
             line = line.split()
-            key = line[0]
-            if key == 'DirectoryIndex':
+            key = line[0].lower()
+            if key == 'directoryindex':
                 server['directoryindex'] = ' '.join(str(n) for n in line[1:])
-            elif key == 'ServerAlias':
+            elif key == 'serveralias':
                 server['serveralias'] = line[1:]
-            elif key in ('ServerAdmin', 'ServerName', 'DocumentRoot', 'ErrorLog', 'CustomLog', 'Options', 'Location', 'SuexecUserGroup'):
-                server[key.lower()] = line[1].strip(' ').strip('"')
-            # if 'servername' not in server or not server['servername']:
-            #     server['servername'] = server['serveralias'][0]
+            elif key == 'customlog':
+                server['customlog'] = ' '.join(line[1:])
+            elif key in ('serveradmin', 'servername', 'documentroot', 'errorlog', 'options', 'location', 'suexecusergroup'):
+                server[key] = line[1].strip(' ').strip('"')
 
         virtualHosts.append(server)
 
@@ -296,6 +296,8 @@ def _parse_virtualhost_config(conf=''):
 
 
 def _parse_directory(directory):
+    '''read and detect directory config
+    '''
     if not directory:
         return []
 
@@ -308,18 +310,34 @@ def _parse_directory(directory):
         }
         for line in r:
             line = line.split()
-            key = line[0]
+            key = line[0].lower()
             if key == 'path':
                 drct['path'] = line[1].strip()
-            elif key == 'Order':
-                drct['order'] = ','.join(str(n) for n in line[1:])
-            elif key in ('Options'):
-                drct[key.lower()] = ' '.join(str(n) for n in line[1:])
-            elif key.lower() in ('allow', 'deny'):
-                drct[key.lower()].append(line[2].strip())
-            elif key in ('AllowOverride'):
-                drct[key.lower()] = line[1].strip()
-            # continue
+            elif key == 'order':
+                drct['order'] = (','.join(str(n) for n in line[1:])).lower()
+            elif key in ('allow', 'deny'):
+                # drct[key].append(line[2].strip()) # only multi-line IPs
+                drct[key].extend([i for i in line[2:]]) # support multi-line IPs and multiple IPs per line
+            elif key in ('allowoverride'):
+                drct[key] = line[1].strip()
+            elif key == 'options':
+                options = (' '.join(str(n) for n in line[1:])).lower()
+                if '-indexes' in options:
+                    drct['indexes'] = '-'
+                elif 'indexes' in options or '+indexes' in options:
+                    drct['indexes'] = '+'
+                if '-followsymlinks' in options:
+                    drct['followsymlinks'] = '-'
+                elif 'followsymlinks' in options or '+followsymlinks' in options:
+                    drct['followsymlinks'] = '+'
+                if '-execcgi' in options:
+                    drct['execcgi'] = '-'
+                elif 'execcgi' in options or '+execcgi' in options:
+                    drct['execcgi'] = '+'
+        order = drct.get('order', '')
+        if order in ('allow,deny', 'deny,allow'):
+            drct['allow_enable'] = True
+            drct['deny_enable'] = True
         results.append(drct)
     # print(results)
     return results
@@ -550,7 +568,7 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
 
 
 def _extend_directory(directory):
-    '''extend Directory config to line for configfile.
+    '''extend Directory config to line for build configfile.
     Usage
     ----------
     > d = _extend_directory(directory)\n
@@ -563,8 +581,21 @@ def _extend_directory(directory):
             drct_cfg.append('<Directory %s>' % drct['path'])
         else:
             continue
-        if 'options' in drct and drct['options']:
-            drct_cfg.append('    Options %s' % drct['options'])
+        options = []
+        if drct.get('indexes'): # '+' or '-'
+            options.append(str(drct['indexes']) + 'indexes')
+        if drct.get('followsymlinks'):
+            options.append(str(drct['followsymlinks']) + 'followsymlinks')
+        if drct.get('execcgi'):
+            options.append(str(drct['execcgi']) + 'execcgi')
+        if len(options) > 0:
+            drct_cfg.append('    Options ' + ' '.join(options))
+        if drct.get('order'):
+            drct_cfg.append('    Order ' + drct['order'])
+        if len(drct.get('allow', [])) > 0:
+            drct_cfg.extend(['    allow from %s' % i for i in drct['allow']])
+        if len(drct.get('deny', [])) > 0:
+            drct_cfg.extend(['    deny from %s' % i for i in drct['deny']])
         drct_cfg.append('</Directory>')
     return drct_cfg
 
