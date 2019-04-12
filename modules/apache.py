@@ -497,24 +497,57 @@ def _context_check_gzip(LoadModule, IfModule):
 
 
 def _context_getservers(disabled=None, config=None, getlineinfo=True):
-    """Get server context configs.
-    """
+    '''Get server context configs.
+    '''
     if not config or config['_isdirty']:
-        config = loadconfig(HTTPD_CONF, getlineinfo)
-    http = config['_'][0]['http'][0]
-    if not 'server' in http:
-        return []
-    servers = http['server']
+        servers = loadconfig(HTTPD_CONF, getlineinfo)
     if disabled == None or not getlineinfo:
         return servers
     else:
-        return [server for server in servers
-                if server['_param']['disabled'] == disabled]
+        return [server for server in servers if server['disabled'] == disabled]
+
+def _context_getserver(ip, port, servername, config=None, disabled=None, getlineinfo=True):
+    '''Get a server context config by ip:port and servername.
+
+    If disabled is None, return all servers
+    If disabled is True, return only disabled servers
+    If disabled is False, return only normal servers
+    '''
+    if not config or config['_isdirty']:
+        config = loadconfig(HTTPD_CONF, getlineinfo)
+    cnfservers = _context_getservers(disabled=disabled, config=config, getlineinfo=getlineinfo)
+    if not ip or ip in ('*', '0.0.0.0'):
+        ip = '*'
+    if is_valid_ipv6(ip) and not is_valid_ipv4(ip):
+        ip = '[' + ip + ']'
+    # for s in cnfservers:
+    #     if servername == s.servername and ip == s.ip and port == s.port:
+    #         return s
+    # found_server = 
+    return any([s.servername and ip == s.ip and port == s.port for s in cnfservers])
+        # if getlineinfo:
+        #     s_names = ' '.join([v['value'] for v in s['server_name']]).split()
+        #     listens = [v['value'].split()[0] for v in s['listen']]
+        # else:
+        #     s_names = ' '.join([v for v in s['server_name']]).split()
+        #     listens = [v.split()[0] for v in s['listen']]
+        # find_listen = ip and ['%s:%s' % (ip, port)] or [port, '*:%s' % port, '0.0.0.0:%s' % port]
+        # if server_name == s_names and ip == s_ip and port == s_port: # any([i in listens for i in find_listen]):
+        #     return s
+    # return False
+
+def servername_exists(ip, port, server_name, config=None):
+    '''Check if the server_name at given ip:port is already exists.
+    '''
+
+    return _context_getserver(ip, port, server_name, config=config) and True or False
 
 
 def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documentroot=None, directoryindex=None, directory=None, errorlog=None, customlog=None, version=None):
     '''Add a new VirtualHost.'''
 
+    if not is_valid_domain(serveraname):
+        return False
     ip = ip or '*'
     if is_valid_ipv6(ip) and not is_valid_ipv4(ip):
         ip = '[' + ip + ']'
@@ -522,12 +555,13 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
         port = int(port) or 80
     else:
         return False
+    # check if any of servername - ip - port pair already exists
+    if servername_exists(ip, port, serveraname):
+        return False
+
     # start generate the config string
     servercfg = ['<VirtualHost %s:%s> # %s' % (ip, port, GENBY)]
-    if is_valid_domain(serveraname):
-        servercfg.append('    ServerName %s' % serveraname)
-    else:
-        return False
+    servercfg.append('    ServerName %s' % serveraname)
     if documentroot:
         servercfg.append('    DocumentRoot %s' % documentroot)
     else:
@@ -600,13 +634,23 @@ def _extend_directory(directory):
     return drct_cfg
 
 
-def updateserver(o_name, o_ip, o_port, serveraname, ip, port, serveralias=None, serveradmin=None, documentroot=None, directoryindex=None, directory=None, errorlog=None, customlog=None, version=None):
+def updateserver(old_name, old_ip, old_port, serveraname, ip, port, serveralias=None, serveradmin=None, documentroot=None, directoryindex=None, directory=None, errorlog=None, customlog=None, version=None):
     '''Update an existing server.
 
     If the old config is not in the right place, we would automatically delete it and
-    create the new config to coresponding config file under /etc/nginx/conf.d/.
+    create the new config to coresponding config file under /etc/httpd/conf.d/.
     '''
-    pass
+    # compare the old context and the new context
+    # to check if the ip:port/server_name change and conflict status
+    config = loadconfig(HTTPD_CONF, True)
+    oldscontext = _context_getserver(old_ip, old_port, old_name, config)
+    if not oldscontext:
+        return False
+    scontext = _context_getserver(ip, port, serveraname)
+    # server context found, but not equals to the old
+    # this means conflict occur
+    if scontext and scontext != oldscontext:
+        return False
 
 
 def deleteserver(server_name, ip, port):
@@ -617,6 +661,20 @@ def deleteserver(server_name, ip, port):
         return True
     except:
         return False
+
+
+def disableserver(ip, port, servername):
+    """Disable a server.
+    """
+    _context_commentupstreams(servername)
+    return _context_commentserver(ip, port, servername)
+
+
+def enableserver(ip, port, servername):
+    """Enable a server.
+    """
+    _context_uncommentupstreams(servername)
+    return _context_uncommentserver(ip, port, servername)
 
 
 if __name__ == '__main__':
