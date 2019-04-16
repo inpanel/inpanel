@@ -21,8 +21,8 @@ from stat import *
 from uuid import uuid4
 
 import lib.magic
-from modules.server import ServerInfo
-from modules.utils import b2h, ftime
+from server import ServerInfo
+from core.utils import b2h, ftime
 
 charsets = ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5', 'euc-jp', 'euc-kr', 'iso-8859-2', 'shift_jis')
 

@@ -16,7 +16,7 @@ import shlex
 import time
 
 from lib import pexpect
-from modules.utils import valid_filename
+from core.utils import valid_filename
 
 
 def updatepwd(pwd, oldpwd):

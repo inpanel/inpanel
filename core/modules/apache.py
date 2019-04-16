@@ -18,7 +18,7 @@ import string
 # import glob
 # import sys
 # import shutil
-from utils import is_valid_domain, is_valid_ipv4, is_valid_ipv6
+from core.utils import is_valid_domain, is_valid_ipv4, is_valid_ipv6
 
 try:
     from io import StringIO

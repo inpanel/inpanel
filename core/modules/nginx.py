@@ -13,7 +13,7 @@ import glob
 import os
 import re
 
-from modules.utils import is_valid_ipv4, is_valid_ipv6, version_get
+from core.utils import is_valid_ipv4, is_valid_ipv6, version_get
 
 DEBUG = False
 

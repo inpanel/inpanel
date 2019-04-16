@@ -22,6 +22,7 @@ import subprocess
 import time
 import uuid
 
+import core
 import pyDes
 import tornado
 import tornado.gen
@@ -29,25 +30,17 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 from async_process import call_subprocess, callbackable
+from core import api as core_api
+from core import utils
 from modules import (aliyuncs, apache, certificate, cron, fdisk, files,
                      lighttpd, mysql, named, nginx, php, process, proftpd,
-                     pureftpd, remote, shell, ssh, user, utils, vsftpd, yum)
+                     pureftpd, remote, shell, ssh, user, vsftpd, yum)
 from modules.config import Config
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
 from modules.service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
-
-APP_NAME = 'InPanel'
-APP_VERSION = '1.1.1'
-APP_BUILD = '19'
-APP_RELEASETIME = '2019-04-02 15:49:23 GMT'
-PUB_API = {
-    'latest': 'http://api.inpanel.org/?s=latest',
-    'site_packages': 'http://api.inpanel.org/?s=site_packages',
-    'download_package': 'http://api.inpanel.org/?s=site_packages&a=download'
-}
 
 
 class Application(tornado.web.Application):
@@ -93,7 +86,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 pass
 
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
     def check_xsrf_cookie(self):
         token = (self.get_argument("_xsrf", None) or
@@ -151,22 +144,22 @@ class RequestHandler(tornado.web.RequestHandler):
 
 class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class ErrorHandler(tornado.web.ErrorHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class FallbackHandler(tornado.web.FallbackHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class RedirectHandler(tornado.web.RedirectHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class FileDownloadHandler(StaticFileHandler):
@@ -210,13 +203,7 @@ class FileUploadHandler(RequestHandler):
 class VersionHandler(RequestHandler):
     def get(self):
         self.authed()
-        version_info = {
-            'name': APP_NAME,
-            'build': APP_BUILD,
-            'version': APP_VERSION,
-            'releasetime': APP_RELEASETIME
-        }
-        self.write(version_info)
+        self.write(core.version_info)
 
 
 class XsrfHandler(RequestHandler):
@@ -350,7 +337,7 @@ class SitePackageHandler(RequestHandler):
         # fetch from api
         if not packages:
             http = tornado.httpclient.AsyncHTTPClient()
-            response = yield tornado.gen.Task(http.fetch, PUB_API['site_packages'])
+            response = yield tornado.gen.Task(http.fetch, core_api['site_packages'])
             if response.error:
                 self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
                 self.finish()
@@ -403,7 +390,7 @@ class SitePackageHandler(RequestHandler):
         filepath = os.path.join(self.settings['package_path'], filenameext)
 
         self.write({'code': 0, 'msg': '', 'data': {
-            'url': '%s&name=%s&version=%s' % (PUB_API['download_package'], name, version),
+            'url': '%s&name=%s&version=%s' % (core_api['download_package'], name, version),
             'path': filepath,
             'temp': workpath,
         }})
@@ -750,7 +737,7 @@ class SettingHandler(RequestHandler):
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
                 http = tornado.httpclient.AsyncHTTPClient()
-                response = yield tornado.gen.Task(http.fetch, PUB_API['latest'])
+                response = yield tornado.gen.Task(http.fetch, core_api['latest'])
                 if response.error:
                     self.write({'code': -1, 'msg': u'获取新版本信息失败！'})
                 else:
@@ -2670,7 +2657,7 @@ class BackendHandler(RequestHandler):
 
         # install the latest version
         http = tornado.httpclient.AsyncHTTPClient()
-        response = yield tornado.gen.Task(http.fetch, PUB_API['latest'])
+        response = yield tornado.gen.Task(http.fetch, core_api['latest'])
         if response.error:
             self._update_job('update', -1, u'获取版本信息失败！')
             return

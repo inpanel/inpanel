@@ -19,9 +19,9 @@ sys.path.insert(0, os.path.join(root_path, 'lib'))
 
 import tornado.httpserver
 import tornado.ioloop
-from modules import web
-from modules.config import Config
-from modules.utils import make_cookie_secret
+from core import web
+from core.modules.config import Config
+from core.utils import make_cookie_secret
 
 
 def write_pid():
