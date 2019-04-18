@@ -18,7 +18,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
-                <table class="table table-button" style="width:500px;">
+                <table class="table table-button table-condensed" style="width:500px;">
                     <thead>
                         <tr>
                             <th colspan="2">基本信息</th>
@@ -74,7 +74,7 @@
             </div>
 
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='operation'" id="operation">
-                <table class="table table-button" style="width:500px;">
+                <table class="table table-button table-condensed" style="width:500px;">
                     <thead>
                         <tr>
                             <th colspan="2">基本操作</th>
@@ -110,7 +110,7 @@
                         <div style="padding:20px;display:none" ng-show="diskloading">
                             <img src="images/loading.gif" style="margin-right:5px"> 正在加载磁盘列表，请稍候...
                         </div>
-                        <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered"
+                        <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered table-condensed"
                             ng-show="!diskloading">
                             <thead>
                                 <tr>
@@ -159,7 +159,7 @@
                         <div style="padding:20px;display:none" ng-show="snaploading">
                             <img src="images/loading.gif" style="margin-right:5px"> 正在加载磁盘快照列表，请稍候...
                         </div>
-                        <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered"
+                        <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered table-condensed"
                             ng-show="!snaploading">
                             <thead>
                                 <tr>
@@ -195,7 +195,7 @@
             </div>
 
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='reset'" id="reset">
-                <table class="table table-button" style="width:500px;">
+                <table class="table table-button table-condensed" style="width:500px;">
                     <thead>
                         <tr>
                             <th colspan="2">重置系统</th>
@@ -278,7 +278,7 @@
             </div>
 
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='inpanel'" id="inpanel ng-init="loadinpanel()">
-                <table class="table table-button" style="width:500px;">
+                <table class="table table-button table-condensed" style="width:500px;">
                     <thead>
                         <tr>
                             <th colspan="2">InPanel</th>
@@ -297,7 +297,7 @@
                     </tbody>
                 </table>
 
-                <table class="table table-button" style="width:500px;">
+                <table class="table table-button table-condensed" style="width:500px;">
                     <thead>
                         <tr>
                             <th colspan="2">远程控制设置</th>

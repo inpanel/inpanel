@@ -29,11 +29,11 @@
                     </div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加CRON 定时任务" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_normal_list()"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
-                    <table class="table table-hover table-bordered responsive-table">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width: 50px;">分钟</th>
@@ -74,8 +74,8 @@
                     </div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新磁盘列表" ng-disabled="!loaded" ng-click="load_cron_list()"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加CRON 定时任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_special_list()"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加任务" ng-disabled="!loaded" ng-click="add_special_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
                 </div>
@@ -87,6 +87,12 @@
                 <div ng-show="has_cron_service && !loading.environment">
                     <div class="pull-left">
                         <h5>环境变量</h5>
+                    </div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_environment_list()"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加环境变量" ng-disabled="!loaded" ng-click="add_environment_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>

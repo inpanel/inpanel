@@ -26,6 +26,7 @@ html {
 }
 
 body {
+    font-size: 12px;
     /* Margin bottom by footer height */
     margin-bottom: 90px;
 }
@@ -69,6 +70,8 @@ body {
 .file-list .breadcrumb {
     background: none;
     margin-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
     border: 1px solid #ccc;
 }
 

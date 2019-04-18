@@ -24,7 +24,7 @@
                             <h5 class="pull-left">物理分区管理</h5>
                             <button class="btn btn-default btn-sm pull-right" title="刷新磁盘列表" ng-click="get_diskinfo()" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
                         </div>
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover table-condensed">
                             <tbody ng-repeat="partition in diskinfo['partitions']">
                                 <tr class="warning">
                                     <td style="width:80px;">设备{{$index+1}}</td>
@@ -71,7 +71,7 @@
 
                     <div style="margin-top:40px;display:none" ng-show="diskinfo['lvscount'] > 0">
                         <h5>LVM逻辑卷（只读）</h5>
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover table-condensed">
                             <tbody>
                                 <tr class="warning">
                                     <td style="width:100px;">设备</td>
@@ -103,7 +103,7 @@
                             <a class="btn btn-default" href="#/storage/remote/new" title="添加网络磁盘" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></a>
                         </div>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width:50px;">序号</th>

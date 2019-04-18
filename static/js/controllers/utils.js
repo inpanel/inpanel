@@ -1469,31 +1469,25 @@ var UtilsRepositoryCtrl = [
     }
 ];
 
-var UtilsCronCtrl = ['$scope', 'Module', 'Request',
-    function ($scope, Module, Request) {
+var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
+    function ($scope, Module, Request, Timeout) {
         var module = 'utils.cron';
         Module.init(module, '定时任务');
-        $scope.loaded = false;
-        $scope.cron_list = [];
-        $scope.loading = {
-            normal: false,
-            special: false,
-            environment: false
-        }
-        $scope.has_cron_service = false;
         var section = Module.getSection();
         var enabled_sections = ['normal', 'special', 'environment'];
         Module.initSection(enabled_sections[0]);
+        $scope.loaded = false;
+        $scope.cron_list = [];
+        $scope.has_cron_service = false;
 
         $scope.load = function () {
             Request.get('/query/service.crond', function(data) {
-                console.log(data);
                 if (data['service.crond'] && data['service.crond'].status) {
                     $scope.has_cron_service = true;
                 }
-                $scope.loaded = true;
+                $scope.tab_sec(section);
             });
-            $scope.tab_sec(section);
+            $scope.loaded = true;
         };
 
         $scope.tab_sec = function (section) {
@@ -1525,22 +1519,36 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
         $scope.task_email = '';
         $scope.task_command = '';
 
+        $scope.first = {
+            normal: true,
+            special: true,
+            environment: true
+        };
         $scope.load_normal = function (init) {
-            if (!init && !$scope.loading.normal) {
-                return; // Prevent duplicate requests
+            if (init || $scope.first.normal) {
+                $scope.load_normal_list();
             }
-            $scope.load_cron_list();
         };
         $scope.load_special = function (init) {
-            $scope.loading.special = false;
+            if (init || $scope.first.special) {
+                $scope.load_special_list();
+            }
         };
         $scope.load_environment = function (init) {
-            $scope.loading.environment = false;
+            if (init || $scope.first.environment) {
+                $scope.load_environment_list();
+            }
         };
 
-        $scope.load_cron_list = function () {
-            if (!$scope.has_cron_service) return;
+        $scope.loading = {
+            normal: false,
+            special: false,
+            environment: false
+        };
+        $scope.load_normal_list = function () {
+            if (!$scope.has_cron_service || $scope.loading.normal) return; // Prevent duplicate requests
             $scope.loading.normal = true;
+            $scope.first.normal = false;
             Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
                 $scope.loading.normal = false;
                 if (data.code == 0) {
@@ -1548,6 +1556,25 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
                 }
             }, false, true);
         };
+        $scope.load_special_list = function () {
+            if (!$scope.has_cron_service || $scope.loading.special) return; // Prevent duplicate requests
+            $scope.loading.special = true;
+            $scope.first.special = false;
+            Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
+                $scope.loading.special = false;
+                if (data.code == 0) {}
+            }, false, true);
+        };
+        $scope.load_environment_list = function () {
+            if (!$scope.has_cron_service || $scope.loading.environment) return; // Prevent duplicate requests
+            $scope.loading.environment = true;
+            $scope.first.environment = false;
+            Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
+                $scope.loading.environment = false;
+                if (data.code == 0) {}
+            }, false, true);
+        };
+
         $scope.cron_add_confirm = function() {
             $scope.load_user();
             $('#cron-add-confirm').modal();
@@ -1617,7 +1644,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
             }, function(res) {
                 if (res.code == 0) {
                     $('#cron-add-confirm').modal('hide');
-                    $scope.load_cron_list();
+                    $scope.load_normal_list();
                 }
             });
         };

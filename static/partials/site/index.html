@@ -33,7 +33,7 @@
                             <button class="btn btn-default" title="重启 Nginx" ng-click="nginx_set_status('restart')" ng-disabled="nginxloading || !nginx_supported || nginx_status=='stopped'"><i class="glyphicon glyphicon-refresh"></i></button>
                         </div>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width: 20px;" class="text-right">#</th>
@@ -106,7 +106,7 @@
                         <button class="btn btn-default" title="重启 Apache" ng-click="apache_set_status('restart')" ng-disabled="apacheloading || !apache_supported || apache_status=='stopped'"><i class="glyphicon glyphicon-refresh"></i></button>
                     </div>
                 </div>
-                <table class="table table-hover table-bordered" ng-show="!apacheloading">
+                <table class="table table-hover table-bordered table-condensed" ng-show="!apacheloading">
                     <thead>
                         <tr>
                             <th style="width: 20px;" class="text-right">#</th>
@@ -171,7 +171,7 @@
                 </div>
                 <div ng-show="!packageloading">
                     <div class="well" ng-show="site_packages.length==0">未找到网站程序。</div>
-                    <table class="table table-hover table-bordered" ng-repeat="cate in site_packages">
+                    <table class="table table-hover table-bordered table-condensed" ng-repeat="cate in site_packages">
                         <thead>
                             <tr>
                                 <th colspan="3">{{cate.name}}</th>
