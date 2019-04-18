@@ -248,7 +248,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{curpkg.name}} 安装设置</h3>
+                <h3 class="modal-title">{{curpkg.name}} 安装设置</h3>
             </div>
             <div class="modal-body">
                 <h5>请选择要安装的版本</h5>
@@ -287,7 +287,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{confirm_title}}</h3>
+                <h3 class="modal-title">{{confirm_title}}</h3>
             </div>
             <div class="modal-body" ng-bind-html-unsafe="confirm_body">
             </div>
@@ -304,7 +304,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>删除 <span style="text-transform: capitalize;">{{current_server.type}}</span> 站点</h3>
+                <h3 class="modal-title">删除 <span style="text-transform: capitalize;">{{current_server.type}}</span> 站点</h3>
             </div>
             <div class="modal-body">
                 <p>确认删除 “{{current_server.name}}:{{current_server.port}}” 这个站点？</p>
@@ -323,7 +323,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{selector_title}}</h3>
+                <h3 class="modal-title">{{selector_title}}</h3>
             </div>
             <div class="modal-body">
                 <div selector></div>
