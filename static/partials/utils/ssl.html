@@ -41,9 +41,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='keys'" id="keys">
-                <div class="well" ng-show="loading_keys">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载私钥列表，请稍候...
-                </div>
+                <div ng-show="loading_keys"><div waiting></div></div>
                 <div ng-show="!loading_keys" style="display:none">
                     <div class="pull-left"><h5>私钥列表（*.key）</h5></div>
                     <div class="pull-right">
@@ -85,9 +83,7 @@
                 <div ng-show="!loading_csrs">
                     <div class="well" ng-show="host_packages.length==0">未找到网站程序。</div>
                 </div>
-                <div class="well" ng-show="loading_csrs">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载请求文件列表，请稍候...
-                </div>
+                <div ng-show="loading_csrs"><div waiting></div></div>
                 <div ng-show="!loading_csrs">
                     <div class="pull-left"><h5>签名请求列表（*.csr）</h5></div>
                     <div class="pull-right">
@@ -126,9 +122,7 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='crts'" id="crts">
-                <div class="well" ng-show="loading_crts">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载证书列表，请稍候...
-                </div>
+                <div ng-show="loading_crts"><div waiting></div></div>
                 <div ng-show="!loading_crts">
                     <div class="pull-left"><h5>证书列表（*.crt）</h5></div>
                     <div class="pull-right">
@@ -174,9 +168,7 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='host'" id="host">
-                <div class="well" ng-show="loading_host">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载，请稍候...
-                </div>
+                <div ng-show="loading_host"><div waiting></div></div>
                 <div ng-show="!loading_host">
                     <div class="pull-left"><h5>管理 SSL 主机</h5></div>
                     <table class="table table-hover table-bordered table-condensed">

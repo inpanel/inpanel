@@ -11,8 +11,8 @@
         </h3>
     </div>
     <div class="tabbable">
-        <div class="well" ng-show="loading_info">
-            <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载详情，请稍候...
+        <div ng-show="loading_info">
+            <div waiting ng-init="waitingText='正在加载详情，请稍候...'"></div>
         </div>
         <div class="form-horizontal form-horizontal-small" ng-show="!loading_info">
             <hr/>

@@ -55,8 +55,8 @@
             </div>
         </div>
 
-        <div style="margin:30px 10px" ng-show="fileloading">
-            <img src="images/loading.gif" style="margin-right:5px"> 正在加载文件列表，请稍候...
+        <div style="margin-top:30px;margin-bottom: 30px;" ng-show="fileloading">
+            <div waiting ng-init="waitingText='正在加载文件列表，请稍候...'"></div>
         </div>
 
         <div ng-show="!fileloading">

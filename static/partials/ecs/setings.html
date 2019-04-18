@@ -108,7 +108,7 @@
                     </div>
                     <div class="widget-content">
                         <div style="padding:20px;display:none" ng-show="diskloading">
-                            <img src="images/loading.gif" style="margin-right:5px"> 正在加载磁盘列表，请稍候...
+                            <div waiting ng-init="waitingText='正在加载磁盘列表，请稍候...'"></div>
                         </div>
                         <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered table-condensed"
                             ng-show="!diskloading">
@@ -157,7 +157,7 @@
                     </div>
                     <div class="widget-content">
                         <div style="padding:20px;display:none" ng-show="snaploading">
-                            <img src="images/loading.gif" style="margin-right:5px"> 正在加载磁盘快照列表，请稍候...
+                            <div waiting ng-init="waitingText='正在加载磁盘快照列表，请稍候...'"></div>
                         </div>
                         <table style="display:none;font-size:12px" class="table table-striped table-hover table-bordered table-condensed"
                             ng-show="!snaploading">
@@ -215,7 +215,7 @@
                         <tr ng-show="instance.Status=='Stopped'||instance.Status=='ResetFailure'">
                             <td colspan="2">
                                 <div style="display:none" ng-show="imageloading">
-                                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载系统镜像列表，请稍候...
+                                    <div waiting ng-init="waitingText='正在加载系统镜像列表，请稍候...'"></div>
                                 </div>
                                 <table class="table table-condensed" ng-show="!imageloading">
                                     <thead>

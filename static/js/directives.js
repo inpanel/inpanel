@@ -1058,4 +1058,16 @@ directive('autofocus', function () {
     return function ($scope, element) {
         element[0].focus();
     };
+}).
+directive('waiting', function () {
+    return {
+        restrict: 'A',
+        transclude: true,
+        scope: {},
+        controller: ['$scope', function ($scope) {
+            $scope.waitingText = $scope.waitingText || '正在加载列表，请稍候......';
+        }],
+        template: '<div class="well"><img src="images/loading.gif" style="margin-right: 10px;">{{waitingText}}</div>',
+        replace: true
+    };
 });

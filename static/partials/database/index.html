@@ -45,8 +45,8 @@
                     </div>
                 </div>
 
-                <div class="well" ng-show="$mysql.password_validated && dbloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库列表，请稍候...
+                <div ng-show="$mysql.password_validated && dbloading">
+                    <div waiting ng-init="waitingText='正在加载数据库列表，请稍候...'"></div>
                 </div>
                 <div class="panel panel-default" ng-show="$mysql.password_validated && !dbloading">
                     <div class="panel-heading">
@@ -94,10 +94,9 @@
                     </table>
                 </div>
 
-                <div class="well" ng-show="$mysql.password_validated && userloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
+                <div ng-show="$mysql.password_validated && userloading">
+                    <div waiting ng-init="waitingText='正在加载用户列表，请稍候...'"></div>
                 </div>
-
                 <div class="panel panel-default" ng-show="$mysql.password_validated && !userloading">
                     <div class="panel-heading">
                         <div class="panel-title">

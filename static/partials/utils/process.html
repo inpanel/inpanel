@@ -15,9 +15,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='list'" id="list">
-                <div class="well" ng-show="init_process">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
-                </div>
+                <div ng-show="init_process"><div waiting></div></div>
                 <div ng-show="!init_process">
                     <div class="pull-left">
                         <h5>进程列表</h5>
@@ -108,16 +106,16 @@
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane active" id="info" role="tabpanel">
-                            <div class="well" ng-show="!current_process_loaded.info">
-                                <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载中，请稍候...
+                            <div ng-show="!current_process_loaded.info">
+                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
                             <div ng-show="current_process_loaded.info && current_process.info">
                                 {{current_process.info}}
                             </div>
                         </div>
                         <div class="tab-pane" id="status" role="tabpanel">
-                            <div class="well" ng-show="!current_process_loaded.status">
-                                <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载中，请稍候...
+                            <div ng-show="!current_process_loaded.status">
+                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
                             <table class="table table-bordered table-condensed" ng-show="current_process_loaded.status && current_process.status">
                                 <tbody>
@@ -135,16 +133,16 @@
                             </table>
                         </div>
                         <div class="tab-pane" id="file" role="tabpanel">
-                            <div class="well" ng-show="!current_process_loaded.file">
-                                <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载中，请稍候...
+                            <div ng-show="!current_process_loaded.file">
+                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
                             <div ng-show="current_process_loaded.file && current_process.file">
                                 {{current_process.file}}
                             </div>
                         </div>
                         <div class="tab-pane" id="io" role="tabpanel">
-                            <div class="well" ng-show="!current_process_loaded.io">
-                                <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载中，请稍候...
+                            <div ng-show="!current_process_loaded.io">
+                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
                             <table class="table table-bordered table-condensed" ng-show="current_process_loaded.io && current_process.io">
                                 <thead>
@@ -184,8 +182,8 @@
                             </div>
                         </div>
                         <div class="tab-pane" id="memory" role="tabpanel">
-                            <div class="well" ng-show="!current_process_loaded.memory">
-                                <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载中，请稍候...
+                            <div ng-show="!current_process_loaded.memory">
+                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
                             <div>正在调试</div>
                             <table class="table table-bordered table-condensed" ng-show="current_process_loaded.memory && current_process.memory">
@@ -214,8 +212,8 @@
                             </table>
                         </div>
                         <div class="tab-pane" id="network" role="tabpanel">
-                            <div class="well" ng-show="!current_process_loaded.network">
-                                <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载中，请稍候...
+                            <div ng-show="!current_process_loaded.network">
+                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
                             <div ng-show="current_process_loaded.network && current_process.network">
                                 {{current_process.network}}

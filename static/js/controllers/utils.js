@@ -1486,8 +1486,8 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
                     $scope.has_cron_service = true;
                 }
                 $scope.tab_sec(section);
+                $scope.loaded = true;
             });
-            $scope.loaded = true;
         };
 
         $scope.tab_sec = function (section) {

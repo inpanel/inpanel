@@ -46,8 +46,8 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='users'" id="users">
-                <div class="well" ng-show="userloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
+                <div ng-show="userloading">
+                    <div waiting ng-init="waitingText='正在加载用户列表，请稍候...'"></div>
                 </div>
 
                 <div class="panel panel-default" ng-show="!userloading">
@@ -92,8 +92,8 @@
             </div>
 
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='operation'" id="operation">
-                <div class="well" ng-show="dbloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库信息，请稍候...
+                <div ng-show="dbloading">
+                    <div waiting ng-init="waitingText='正在加载数据库信息，请稍候...'"></div>
                 </div>
 
                 <div class="panel panel-default" ng-show="!dbloading">

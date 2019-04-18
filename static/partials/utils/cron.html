@@ -20,10 +20,10 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='normal'" id="normal">
-                <div class="well" ng-show="has_cron_service && loading.normal">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
+                <div ng-show="loading.normal">
+                    <div waiting></div>
                 </div>
-                <div ng-show="has_cron_service && !loading.normal">
+                <div ng-show="!loading.normal">
                     <div class="pull-left">
                         <h5>普通任务列表</h5>
                     </div>
@@ -65,10 +65,8 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='special'" id="special">
-                <div class="well" ng-show="has_cron_service && loading.special">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
-                </div>
-                <div ng-show="has_cron_service && !loading.special">
+                <div ng-show="loading.special"><div waiting></div></div>
+                <div ng-show="!loading.special">
                     <div class="pull-left">
                         <h5>特殊任务列表</h5>
                     </div>
@@ -81,10 +79,8 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='environment'" id="environment">
-                <div class="well" ng-show="has_cron_service && loading.environment">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
-                </div>
-                <div ng-show="has_cron_service && !loading.environment">
+                <div ng-show="loading.environment"><div waiting></div></div>
+                <div ng-show="!loading.environment">
                     <div class="pull-left">
                         <h5>环境变量</h5>
                     </div>

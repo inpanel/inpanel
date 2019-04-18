@@ -46,40 +46,40 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='privs'" id="privs">
-                <div class="well" ng-show="privsloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载权限列表，请稍候...
+                <div ng-show="privsloading">
+                    <div waiting ng-init="waitingText='正在加载权限列表，请稍候...'"></div>
                 </div>
 
                 <div class="panel panel-default" ng-show="!privsloading">
                     <div class="panel-heading">
                         <div class="panel-title">
                             <i class="glyphicon glyphicon-user"></i>
-                            <span "> 按数据库指定的权限</span>
+                            <span"> 按数据库指定的权限</span>
                         </div>
                     </div>
                     <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
-                                <th style="width:20px " class="text-right ">#</th>
+                                <th style="width:20px" class="text-right">#</th>
                                 <th>数据库</th>
                                 <th>权限</th>
                                 <th>授权权限</th>
-                                <th style="width:90px ">操作</th>
+                                <th style="width:90px">操作</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-show="privs.bydb.length==0 ">
-                                <td colspan="5 ">该用户暂未设置数据库权限</td>
+                            <tr ng-show="privs.bydb.length==0">
+                                <td colspan="5">该用户暂未设置数据库权限</td>
                             </tr>
-                            <tr ng-repeat="dbpriv in privs.bydb ">
-                                <td class="text-right ">{{$index+1}}</td>
+                            <tr ng-repeat="dbpriv in privs.bydb">
+                                <td class="text-right">{{$index+1}}</td>
                                 <td>{{dbpriv.Db}}</td>
-                                <td ng-bind-html-unsafe="dbpriv | mysql.privs: 'db' "></td>
-                                <td ng-bind-html-unsafe="dbpriv.Grant_priv | mysql.grant "></td>
+                                <td ng-bind-html-unsafe="dbpriv | mysql.privs: 'db'"></td>
+                                <td ng-bind-html-unsafe="dbpriv.Grant_priv | mysql.grant"></td>
                                 <td>
-                                    <div class="btn-group ">
-                                        <button class="btn btn-default btn-sm " ng-click="editprivs(dbpriv) ">
-                                            <i class="icon-edit "></i> 编辑权限
+                                    <div class="btn-group">
+                                        <button class="btn btn-default btn-sm" ng-click="editprivs(dbpriv)">
+                                            <i class="icon-edit"></i> 编辑权限
                                         </button>
                                     </div>
                                 </td>
@@ -87,25 +87,25 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="panel panel-default " ng-show="!privsloading ">
-                    <div class="panel-heading ">
-                        <div class="panel-title ">
-                            <i class="glyphicon glyphicon-edit "></i>
+                <div class="panel panel-default" ng-show="!privsloading">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-edit"></i>
                             <span> 设置数据库权限</span>
                         </div>
                     </div>
-                    <div class="panel-body ">
-                        <div class="form-group form-inline ">
-                            <label class="control-label ">在下列数据库中设置用户权限：</label>
-                            <select class="form-control " ng-disabled="processing " ng-model="privs_dbname " ng-options="db.name as db.name for db in dbs "></select>
-                            <button class="btn btn-default " ng-disabled="processing " ng-click="editprivs() ">设置权限</button>
+                    <div class="panel-body">
+                        <div class="form-group form-inline">
+                            <label class="control-label">在下列数据库中设置用户权限：</label>
+                            <select class="form-control" ng-disabled="processing" ng-model="privs_dbname" ng-options="db.name as db.name for db in dbs"></select>
+                            <button class="btn btn-default" ng-disabled="processing" ng-click="editprivs()">设置权限</button>
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-default " ng-show="!privsloading ">
-                    <div class="panel-heading ">
-                        <div class="panel-title ">
-                            <i class="glyphicon glyphicon-user "></i>
+                <div class="panel panel-default" ng-show="!privsloading">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-user"></i>
                             <span> 全局权限</span>
                         </div>
                     </div>
@@ -114,17 +114,17 @@
                             <tr>
                                 <th>权限</th>
                                 <th>授权权限</th>
-                                <th style="width:90px ">操作</th>
+                                <th style="width:90px">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td ng-bind-html-unsafe="privs.global | mysql.privs: 'global' "></td>
-                                <td ng-bind-html-unsafe="privs.global.Grant_priv | mysql.grant "></td>
+                                <td ng-bind-html-unsafe="privs.global | mysql.privs: 'global'"></td>
+                                <td ng-bind-html-unsafe="privs.global.Grant_priv | mysql.grant"></td>
                                 <td>
-                                    <div class="btn-group ">
-                                        <button class="btn btn-default btn-sm " ng-click="editprivs(privs.global) " ng-disabled="user=='root' &&host!='%' ">
-                                            <i class="glyphicon glyphicon-edit "></i> 编辑权限
+                                    <div class="btn-group">
+                                        <button class="btn btn-default btn-sm" ng-click="editprivs(privs.global)" ng-disabled="user=='root' &&host!='%'">
+                                            <i class="glyphicon glyphicon-edit"></i> 编辑权限
                                         </button>
                                     </div>
                                 </td>
@@ -134,60 +134,60 @@
                 </div>
             </div>
 
-            <div class="tab-pane " ng-class=" 'active' | iftrue:activeTabName=='operation' " id="operation ">
-                <div class="well " ng-show="privsloading ">
-                    <img src="images/loading.gif " style="margin-right:5px "> 正在加载用户信息，请稍候...
+            <div class="tab-pane" ng-class=" 'active' | iftrue:activeTabName=='operation'" id="operation">
+                <div ng-show="privsloading">
+                    <div waiting ng-init="waitingText='正在加载用户信息，请稍候...'"></div>
                 </div>
 
-                <div class="panel panel-default " ng-show="!privsloading ">
-                    <div class="panel-heading ">
-                        <div class="panel-title ">
-                            <i class="glyphicon glyphicon-lock "></i>
+                <div class="panel panel-default" ng-show="!privsloading">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-lock"></i>
                             <span> 密码设置</span>
                         </div>
                     </div>
-                    <div class="panel-body ">
-                        <div class="form-horizontal form-horizontal-small ">
-                            <div class="form-group form-inline ">
-                                <label class="col-sm-2 control-label "></label>
-                                <div class="col-sm-10 checkbox ">
+                    <div class="panel-body">
+                        <div class="form-horizontal form-horizontal-small">
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-10 checkbox">
                                     <label>
-                                        <input type="checkbox " ng-model="emptypassword "> 使用空密码
+                                        <input type="checkbox" ng-model="emptypassword"> 使用空密码
                                     </label>
                                 </div>
                             </div>
-                            <div class="form-group form-inline ">
-                                <label class="col-sm-2 control-label " for="newpassword ">新密码</label>
-                                <div class="col-sm-10 ">
-                                    <input class="form-control " type="password " id="newpassword " ng-disabled="processing||emptypassword " ng-model="newpassword " placeholder="不修改请留空 " autocomplete="off ">
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="newpassword">新密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" type="password" id="newpassword" ng-disabled="processing||emptypassword" ng-model="newpassword" placeholder="不修改请留空" autocomplete="off">
                                 </div>
                             </div>
-                            <div class="form-group form-inline ">
-                                <label class="col-sm-2 control-label " for="newpasswordc ">确认密码</label>
-                                <div class="col-sm-10 ">
-                                    <input class="form-control " type="password " id="newpasswordc " ng-disabled="processing||emptypassword " ng-model="newpasswordc " placeholder="不修改请留空 " autocomplete="off ">
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="newpasswordc">确认密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" type="password" id="newpasswordc" ng-disabled="processing||emptypassword" ng-model="newpasswordc" placeholder="不修改请留空" autocomplete="off">
                                 </div>
                             </div>
-                            <div class="form-group form-inline ">
-                                <label class="col-sm-2 control-label "></label>
-                                <div class="col-sm-10 ">
-                                    <button class="btn btn-default " ng-disabled="processing||(!emptypassword&&!newpassword) " ng-click="setpassword() ">更新密码</button>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-10">
+                                    <button class="btn btn-default" ng-disabled="processing||(!emptypassword&&!newpassword)" ng-click="setpassword()">更新密码</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-danger " ng-show="(user!='root' ||host=='%' ) && !privsloading ">
-                    <div class="panel-heading ">
-                        <div class="panel-title ">
-                            <i class="glyphicon glyphicon-trash "></i>
+                <div class="panel panel-danger" ng-show="(user!='root' ||host=='%' ) && !privsloading">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-trash"></i>
                             <span> 删除用户</span>
                         </div>
                     </div>
-                    <div class="panel-body ">
-                        <div class="form-group form-inline has-warning ">
-                            <input class="form-control " type="text " ng-disabled="processing " ng-model="delete_confirm " placeholder="输入 OK ">
-                            <button class="btn btn-danger " ng-disabled="processing||delete_confirm!='OK' " ng-click="dropuser() ">输入大写 OK 后确认删除</button>
+                    <div class="panel-body">
+                        <div class="form-group form-inline has-warning">
+                            <input class="form-control" type="text" ng-disabled="processing" ng-model="delete_confirm" placeholder="输入 OK">
+                            <button class="btn btn-danger" ng-disabled="processing||delete_confirm!='OK'" ng-click="dropuser()">输入大写 OK 后确认删除</button>
                         </div>
                     </div>
                 </div>
@@ -196,114 +196,114 @@
     </div>
 </div>
 
-<div id="privsedit " class="modal fade ">
-    <div class="modal-dialog " role="document ">
-        <div class="modal-content ">
-            <div class="modal-header ">
-                <button type="button " class="close " data-dismiss="modal " aria-hidden="true ">&times;</button>
+<div id="privsedit" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h3>{{privsedit_title}}</h3>
             </div>
-            <div class="modal-body ">
-                <div class="form-group ">
+            <div class="modal-body">
+                <div class="form-group">
                     <legend>数据权限</legend>
-                    <div class="checkbox ">
-                        <label title="允许查询数据 "><input type="checkbox " ng-model="curprivs.Select_priv " ng-true-value="Y " ng-false-value="N "> SELECT</label>
+                    <div class="checkbox">
+                        <label title="允许查询数据"><input type="checkbox" ng-model="curprivs.Select_priv" ng-true-value="Y" ng-false-value="N"> SELECT</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许插入和替换数据 "><input type="checkbox " ng-model="curprivs.Insert_priv " ng-true-value="Y " ng-false-value="N "> INSERT</label>
+                    <div class="checkbox">
+                        <label title="允许插入和替换数据"><input type="checkbox" ng-model="curprivs.Insert_priv" ng-true-value="Y" ng-false-value="N"> INSERT</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许修改数据 "><input type="checkbox " ng-model="curprivs.Update_priv " ng-true-value="Y " ng-false-value="N "> UPDATE</label>
+                    <div class="checkbox">
+                        <label title="允许修改数据"><input type="checkbox" ng-model="curprivs.Update_priv" ng-true-value="Y" ng-false-value="N"> UPDATE</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许删除数据 "><input type="checkbox " ng-model="curprivs.Delete_priv " ng-true-value="Y " ng-false-value="N "> DELETE</label>
+                    <div class="checkbox">
+                        <label title="允许删除数据"><input type="checkbox" ng-model="curprivs.Delete_priv" ng-true-value="Y" ng-false-value="N"> DELETE</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许从文件中导入数据以及将数据导出至文件 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.File_priv " ng-true-value="Y " ng-false-value="N "> FILE</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许从文件中导入数据以及将数据导出至文件" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.File_priv" ng-true-value="Y" ng-false-value="N"> FILE</label>
                     </div>
                 </div>
-                <div class="form-group ">
+                <div class="form-group">
                     <legend>结构权限</legend>
-                    <div class="checkbox ">
-                        <label title="允许创建新数据库和数据表 "><input type="checkbox " ng-model="curprivs.Create_priv " ng-true-value="Y " ng-false-value="N "> CREATE</label>
+                    <div class="checkbox">
+                        <label title="允许创建新数据库和数据表"><input type="checkbox" ng-model="curprivs.Create_priv" ng-true-value="Y" ng-false-value="N"> CREATE</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许修改现有数据表的结构 "><input type="checkbox " ng-model="curprivs.Alter_priv " ng-true-value="Y " ng-false-value="N "> ALTER</label>
+                    <div class="checkbox">
+                        <label title="允许修改现有数据表的结构"><input type="checkbox" ng-model="curprivs.Alter_priv" ng-true-value="Y" ng-false-value="N"> ALTER</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许创建和删除索引 "><input type="checkbox " ng-model="curprivs.Index_priv " ng-true-value="Y " ng-false-value="N "> INDEX</label>
+                    <div class="checkbox">
+                        <label title="允许创建和删除索引"><input type="checkbox" ng-model="curprivs.Index_priv" ng-true-value="Y" ng-false-value="N"> INDEX</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许删除数据库和数据表 "><input type="checkbox " ng-model="curprivs.Drop_priv " ng-true-value="Y " ng-false-value="N "> DROP</label>
+                    <div class="checkbox">
+                        <label title="允许删除数据库和数据表"><input type="checkbox" ng-model="curprivs.Drop_priv" ng-true-value="Y" ng-false-value="N"> DROP</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许创建临时表 "><input type="checkbox " ng-model="curprivs.Create_tmp_table_priv " ng-true-value="Y " ng-false-value="N "> CREATE TEMPORARY TABLES</label>
+                    <div class="checkbox">
+                        <label title="允许创建临时表"><input type="checkbox" ng-model="curprivs.Create_tmp_table_priv" ng-true-value="Y" ng-false-value="N"> CREATE TEMPORARY TABLES</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许执行 SHOW CREATE VIEW 查询 "><input type="checkbox " ng-model="curprivs.Show_view_priv " ng-true-value="Y " ng-false-value="N "> SHOW VIEW</label>
+                    <div class="checkbox">
+                        <label title="允许执行 SHOW CREATE VIEW 查询"><input type="checkbox" ng-model="curprivs.Show_view_priv" ng-true-value="Y" ng-false-value="N"> SHOW VIEW</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许创建存储过程 "><input type="checkbox " ng-model="curprivs.Create_routine_priv " ng-true-value="Y " ng-false-value="N "> CREATE ROUTINE</label>
+                    <div class="checkbox">
+                        <label title="允许创建存储过程"><input type="checkbox" ng-model="curprivs.Create_routine_priv" ng-true-value="Y" ng-false-value="N"> CREATE ROUTINE</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许修改或删除储存过程 "><input type="checkbox " ng-model="curprivs.Alter_routine_priv " ng-true-value="Y " ng-false-value="N "> ALTER ROUTINE</label>
+                    <div class="checkbox">
+                        <label title="允许修改或删除储存过程"><input type="checkbox" ng-model="curprivs.Alter_routine_priv" ng-true-value="Y" ng-false-value="N"> ALTER ROUTINE</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许运行存储过程 "><input type="checkbox " ng-model="curprivs.Execute_priv " ng-true-value="Y " ng-false-value="N "> EXECUTE</label>
+                    <div class="checkbox">
+                        <label title="允许运行存储过程"><input type="checkbox" ng-model="curprivs.Execute_priv" ng-true-value="Y" ng-false-value="N"> EXECUTE</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许创建视图 "><input type="checkbox " ng-model="curprivs.Create_view_priv " ng-true-value="Y " ng-false-value="N "> CREATE VIEW</label>
+                    <div class="checkbox">
+                        <label title="允许创建视图"><input type="checkbox" ng-model="curprivs.Create_view_priv" ng-true-value="Y" ng-false-value="N"> CREATE VIEW</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许为事件触发器设置事件 "><input type="checkbox " ng-model="curprivs.Event_priv " ng-true-value="Y " ng-false-value="N "> EVENT</label>
+                    <div class="checkbox">
+                        <label title="允许为事件触发器设置事件"><input type="checkbox" ng-model="curprivs.Event_priv" ng-true-value="Y" ng-false-value="N"> EVENT</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许创建和删除触发器 "><input type="checkbox " ng-model="curprivs.Trigger_priv " ng-true-value="Y " ng-false-value="N "> TRIGGER</label>
+                    <div class="checkbox">
+                        <label title="允许创建和删除触发器"><input type="checkbox" ng-model="curprivs.Trigger_priv" ng-true-value="Y" ng-false-value="N"> TRIGGER</label>
                     </div>
                 </div>
-                <div class="form-group ">
+                <div class="form-group">
                     <legend>管理权限</legend>
-                    <div class="checkbox ">
-                        <label title="允许添加用户和权限，而不允许重新载入权限表 "><input type="checkbox " ng-model="curprivs.Grant_priv " ng-true-value="Y " ng-false-value="N "> GRANT</label>
+                    <div class="checkbox">
+                        <label title="允许添加用户和权限，而不允许重新载入权限表"><input type="checkbox" ng-model="curprivs.Grant_priv" ng-true-value="Y" ng-false-value="N"> GRANT</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许在达到最大连接数时连接，对于大多数像设置全局变量或杀死其它用户线程这样的管理操作是必需的 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.Super_priv " ng-true-value="Y " ng-false-value="N "> SUPER</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许在达到最大连接数时连接，对于大多数像设置全局变量或杀死其它用户线程这样的管理操作是必需的" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.Super_priv" ng-true-value="Y" ng-false-value="N"> SUPER</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许查看所有用户的进程 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.Process_priv " ng-true-value="Y " ng-false-value="N "> PROCESS</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许查看所有用户的进程" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.Process_priv" ng-true-value="Y" ng-false-value="N"> PROCESS</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许重新载入服务器设置并刷新服务器的缓存 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.Reload_priv " ng-true-value="Y " ng-false-value="N "> RELOAD</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许重新载入服务器设置并刷新服务器的缓存" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.Reload_priv" ng-true-value="Y" ng-false-value="N"> RELOAD</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许关闭服务器 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.Shutdown_priv " ng-true-value="Y " ng-false-value="N "> SHUTDOWN</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许关闭服务器" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.Shutdown_priv" ng-true-value="Y" ng-false-value="N"> SHUTDOWN</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许访问完整的数据库列表 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.Show_db_priv " ng-true-value="Y " ng-false-value="N "> SHOW DATABASES</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许访问完整的数据库列表" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.Show_db_priv" ng-true-value="Y" ng-false-value="N"> SHOW DATABASES</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许锁定当前线程的表 "><input type="checkbox " ng-model="curprivs.Lock_tables_priv " ng-true-value="Y " ng-false-value="N "> LOCK TABLES</label>
+                    <div class="checkbox">
+                        <label title="允许锁定当前线程的表"><input type="checkbox" ng-model="curprivs.Lock_tables_priv" ng-true-value="Y" ng-false-value="N"> LOCK TABLES</label>
                     </div>
-                    <div class="checkbox ">
-                        <label title="允许创建外键约束 "><input type="checkbox " ng-model="curprivs.References_priv " ng-true-value="Y " ng-false-value="N "> REFERENCES</label>
+                    <div class="checkbox">
+                        <label title="允许创建外键约束"><input type="checkbox" ng-model="curprivs.References_priv" ng-true-value="Y" ng-false-value="N"> REFERENCES</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许询问附属者/控制者在哪里 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.Repl_client_priv " ng-true-value="Y " ng-false-value="N "> REPLICATION CLIENT</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许询问附属者/控制者在哪里" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.Repl_client_priv" ng-true-value="Y" ng-false-value="N"> REPLICATION CLIENT</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许主从模式中的从复制 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.Repl_slave_priv " ng-true-value="Y " ng-false-value="N "> REPLICATION SLAVE</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许主从模式中的从复制" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.Repl_slave_priv" ng-true-value="Y" ng-false-value="N"> REPLICATION SLAVE</label>
                     </div>
-                    <div class="checkbox " ng-show="!curprivs.Db ">
-                        <label title="允许创建、删除和重命名用户账户 " ng-disabled="curprivs.Db!='' "><input type="checkbox " ng-model="curprivs.Create_user_priv " ng-true-value="Y " ng-false-value="N "> CREATE USER</label>
+                    <div class="checkbox" ng-show="!curprivs.Db">
+                        <label title="允许创建、删除和重命名用户账户" ng-disabled="curprivs.Db!=''"><input type="checkbox" ng-model="curprivs.Create_user_priv" ng-true-value="Y" ng-false-value="N"> CREATE USER</label>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer ">
-                <div class="pull-left checkbox ">
-                    <label><input type="checkbox " ng-model="selectall "> 全选/全不选</label>
+            <div class="modal-footer">
+                <div class="pull-left checkbox">
+                    <label><input type="checkbox" ng-model="selectall"> 全选/全不选</label>
                 </div>
-                <button class="btn btn-default " data-dismiss="modal " aria-hidden="true ">取消</button>
-                <button class="btn btn-primary " onclick="$( '#privsedit').modal( 'hide') " ng-click="updateprivs() ">保存权限设置</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$( '#privsedit').modal( 'hide')" ng-click="updateprivs()">保存权限设置</button>
             </div>
         </div>
     </div>
