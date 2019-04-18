@@ -7,41 +7,30 @@
     <div class="module-header">
         <h3>任务管理(In Development)</h3>
     </div>
-
+    <div class="well" ng-hide="has_cron_service">
+        <p>系统检测到 Cron 当前尚未安装。</p>
+        <p>是否要开始安装？</p>
+        <p><a class="btn btn-default" href="#/service/cron">立即安装</a></p>
+    </div>
     <div class="tabbable">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='base'"><a href="#base" ng-click="tab_sec('base')" data-toggle="tab">常规计划</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='cron'"><a href="#cron" ng-click="tab_sec('cron')" data-toggle="tab">定时任务</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='normal'"><a href="#normal" ng-click="tab_sec('normal')" data-toggle="tab">常规</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='special'"><a href="#special" ng-click="tab_sec('special')" data-toggle="tab">特殊</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='environment'"><a href="#environment" ng-click="tab_sec('environment')" data-toggle="tab">环境变量</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='base'" id="base">
-                <div class="pull-left">
-                    <h5>常见任务列表</h5>
-                </div>
-                <div class="pull-right">
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
-                        <button class="btn btn-default" title="添加CRON 定时任务" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></button>
-                    </div>
-                </div>
-            </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='cron'" id="cron">
-                <div class="well" ng-hide="has_cron_service">
-                    <p>系统检测到 Cron 当前尚未安装。</p>
-                    <p>是否要开始安装？</p>
-                    <p><a class="btn btn-default" href="#/service/cron">立即安装</a></p>
-                </div>
-                <div class="well" ng-show="has_cron_service && loading_cron_list">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='normal'" id="normal">
+                <div class="well" ng-show="has_cron_service && loading.normal">
                     <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
                 </div>
-                <div ng-show="has_cron_service && !loading_cron_list">
+                <div ng-show="has_cron_service && !loading.normal">
                     <div class="pull-left">
-                        <h5>CRON 定时任务</h5>
+                        <h5>普通任务列表</h5>
                     </div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新磁盘列表" ng-disabled="!loaded" ng-click="load_cron_list()"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加CRON 定时任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加CRON 定时任务" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
                     <table class="table table-hover table-bordered responsive-table">
@@ -73,6 +62,32 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='special'" id="special">
+                <div class="well" ng-show="has_cron_service && loading.special">
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
+                </div>
+                <div ng-show="has_cron_service && !loading.special">
+                    <div class="pull-left">
+                        <h5>特殊任务列表</h5>
+                    </div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新磁盘列表" ng-disabled="!loaded" ng-click="load_cron_list()"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加CRON 定时任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='environment'" id="environment">
+                <div class="well" ng-show="has_cron_service && loading.environment">
+                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载列表，请稍候...
+                </div>
+                <div ng-show="has_cron_service && !loading.environment">
+                    <div class="pull-left">
+                        <h5>环境变量</h5>
+                    </div>
                 </div>
             </div>
         </div>

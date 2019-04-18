@@ -1475,10 +1475,14 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
         Module.init(module, '定时任务');
         $scope.loaded = false;
         $scope.cron_list = [];
-        $scope.loading_cron_list = true;
+        $scope.loading = {
+            normal: false,
+            special: false,
+            environment: false
+        }
         $scope.has_cron_service = false;
         var section = Module.getSection();
-        var enabled_sections = ['base', 'cron'];
+        var enabled_sections = ['normal', 'special', 'environment'];
         Module.initSection(enabled_sections[0]);
 
         $scope.load = function () {
@@ -1521,18 +1525,24 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
         $scope.task_email = '';
         $scope.task_command = '';
 
-        $scope.load_base = function (init) {};
-        $scope.load_cron = function (init) {
-            if (!init && !$scope.init_process) {
+        $scope.load_normal = function (init) {
+            if (!init && !$scope.loading.normal) {
                 return; // Prevent duplicate requests
             }
             $scope.load_cron_list();
         };
+        $scope.load_special = function (init) {
+            $scope.loading.special = false;
+        };
+        $scope.load_environment = function (init) {
+            $scope.loading.environment = false;
+        };
+
         $scope.load_cron_list = function () {
             if (!$scope.has_cron_service) return;
-            $scope.loading_cron_list = true;
+            $scope.loading.normal = true;
             Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
-                $scope.loading_cron_list = false;
+                $scope.loading.normal = false;
                 if (data.code == 0) {
                     $scope.cron_list = data.data;
                 }
