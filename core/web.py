@@ -2092,7 +2092,6 @@ class OperationHandler(RequestHandler):
     def cron(self):
         # cron jobs management
         action = self.get_argument('action', '')
-        user = self.config.get('auth', 'username')
 
         if action == 'get_settings':
             self.write({'code': 0, 'msg': u'获取 Cron 服务配置信息成功！', 'data': cron.load_config()})
@@ -2104,9 +2103,9 @@ class OperationHandler(RequestHandler):
             else:
                 self.write({'code': -1, 'msg': u'设置保存失败！'})
 
+        user = self.get_argument('user', 'root')
         if action == 'cron_list':
-            self.write({'code': 0, 'msg': u'获取 Cron 定时任务成功！','data': cron.cron_list(user)})
-
+            self.write({'code': 0, 'msg': u'获取定时任务成功！','data': cron.cron_list(user)})
         elif action in ('cron_add', 'cron_mod'):
             minute = self.get_argument('minute', '')
             hour = self.get_argument('hour', '')
@@ -2114,18 +2113,24 @@ class OperationHandler(RequestHandler):
             month = self.get_argument('month', '')
             weekday = self.get_argument('weekday', '')
             weekday = self.get_argument('weekday', '')
-            cmd = self.get_argument('cmd', '')
+            command = self.get_argument('command', '')
             if action == 'cron_add':
-                # res = cron.addcron(user, minute, hour, day, month, weekday, cmd)
-                self.write({'code': 0, 'msg': 'Excute Successfully', 'data': cron.addcron(user, minute, hour, day, month, weekday, cmd)})
+                if cron.cron_add(user, minute, hour, day, month, weekday, command):
+                    self.write({'code': 0, 'msg': u'定时任务添加成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'定时任务添加失败！'})
             elif action == 'cron_mod':
-                lid = self.get_argument('id', '')
-                res = cron.modcron(user, lid, minute, hour, day, month, weekday, cmd)
-                self.write({'code': 0, 'msg': 'Excute Successfully', 'data': res})
-
-        elif action == 'del':
-            lid = self.get_argument('id', '')
-            self.write({'code': 0, 'msg': 'Excute Successfully', 'data': cron.delcron(user, lid)})
+                cronid = self.get_argument('cronid', '')
+                if cron.cron_mod(user, cronid, minute, hour, day, month, weekday, command):
+                    self.write({'code': 0, 'msg': u'定时任务修改成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'定时任务修改失败！'})
+        elif action == 'cron_del':
+            cronid = self.get_argument('cronid', '')
+            if cron.cron_del(user, cronid):
+                self.write({'code': 0, 'msg': u'定时任务删除成功！'})
+            else:
+                self.write({'code': -1, 'msg': u'定时任务删除失败！'})
 
     def vsftpd(self):
         action = self.get_argument('action', '')

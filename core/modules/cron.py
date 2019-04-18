@@ -13,20 +13,17 @@ import re
 import shlex
 import subprocess
 import getpass
+import json
 
 # from configloader import (loadconfig, raw_loadconfig, raw_saveconfig, readconfig, saveconfig, writeconfig)
 
-CRON_DIR = '/etc/cron.d/'
-CRONTAB = '/etc/crontab'
-CRONTAB_USER = '/var/spool/cron'
-
-system_crontab = '/etc/crontab'
-cronfiles_dir = '/etc/cron.d'
+cfgdir = '/etc/cron.d/'
+crontab = '/etc/crontab'
 user_dir = '/var/spool/cron/'
-# user_dir = '//Users/douzhenjiang/Projects/inpanel/test/'
+# user_dir = '/Users/douzhenjiang/Projects/inpanel/test/var_spool_cron'
 
 
-CRON_CONFIG_MAP = {
+cfg_map = {
     'SHELL': 'shell',
     'MAILTO': 'mailto',
     'HOME': 'home',
@@ -36,13 +33,13 @@ CRON_CONFIG_MAP = {
 
 def load_config():
     try:
-        if not os.path.exists(CRONTAB):
+        if not os.path.exists(crontab):
             return {}
     except OSError:
         return {}
 
     config = {}
-    with open(CRONTAB, 'r') as f:
+    with open(crontab, 'r') as f:
         lines = f.readlines()
 
     while len(lines) > 0:
@@ -52,19 +49,19 @@ def load_config():
             continue
 
         k = out.strip().split('=')[0]
-        if k and k in CRON_CONFIG_MAP:
-            config[CRON_CONFIG_MAP[k]] = out.split('=')[1]
+        if k and k in cfg_map:
+            config[cfg_map[k]] = out.split('=')[1]
 
     return config
 
 
 def update_config(configs):
-    cmap_reverse = dict((v, k) for k, v in CRON_CONFIG_MAP.items())
+    cmap_reverse = dict((v, k) for k, v in cfg_map.items())
     new_config = {}
     for k, v in configs.items():
         if k in cmap_reverse:
             new_config[cmap_reverse[k]] = v
-    return save_config(CRONTAB, new_config)
+    return save_config(crontab, new_config)
 
 
 def save_config(filepath, config):
@@ -99,31 +96,13 @@ def save_config(filepath, config):
     return False
 
 
-def cron_list(user):
+def cron_list(user=None):
     # return a test list
-    # return _parse_cron(user_dir + user, 'other')
-    return [
-        {
-            'minute': '*/5',
-            'hour': '*',
-            'day': '*',
-            'month': '*',
-            'weekday': '*',
-            'user': 'root',
-            'command': '/usr/local/bin/php /var/www/public_html/path/to/cron/script',
-        }, {
-            'minute': '0',
-            'hour': '0',
-            'day': '1,15',
-            'month': '*',
-            'weekday': '*',
-            'user': 'root',
-            'command': '/usr/local/bin/ea-php56 /var/www/domain_path/path/to/cron/script',
-        }
-    ]
+    user = user or 'root'
+    return _parse_cron(os.path.join(user_dir, user), 'other', user=user)
 
 
-def _parse_cron(filename, option):
+def _parse_cron(filename, option, user=None):
     '''parser Cron config to python object (array)
     '''
     try:
@@ -131,6 +110,7 @@ def _parse_cron(filename, option):
             return None
     except OSError:
         return None
+
     cronlist = []
     with open(filename) as f:
         i = 0
@@ -139,12 +119,12 @@ def _parse_cron(filename, option):
             if re.findall("^\d|^\*|^\-", line):
                 if option == 'other':
                     text = re.split('\s+', line, 5)
-                    cmd = text[5]
-                    user = None
+                    command = text[5]
+                    # user = None
                 else:
                     text = re.split('\s+', line, 6)
                     user = text[5]
-                    cmd = text[6]
+                    command = text[6]
                 i = i + 1
                 cronlist.append({
                     'id': i,
@@ -153,22 +133,23 @@ def _parse_cron(filename, option):
                     'day': text[2],
                     'month': text[3],
                     'weekday': text[4],
-                    'cmd': cmd,
+                    'command': command,
                     'user': user
                 })
     return cronlist
 
 
-def cron_add(user, minute, hour, day, month, weekday, cmd):
-    line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, cmd)
-    with open(user_dir + user, 'a+') as f:
+def cron_add(user, minute, hour, day, month, weekday, command):
+    line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
+    user = user or 'root'
+    with open(os.path.join(user_dir, user), 'a+') as f:
         f.write(line)
         return True
 
 
-def modcron(user, id, minute, hour, day, month, weekday, cmd):
-    cron_line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, cmd)
-    with open(user_dir + user, 'r') as f:
+def cron_mod(user, id, minute, hour, day, month, weekday, command):
+    cron_line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
+    with open(os.path.join(user_dir, user), 'r') as f:
         lines = f.readlines()
 
     i = 0
@@ -181,14 +162,14 @@ def modcron(user, id, minute, hour, day, month, weekday, cmd):
                 lines[j-1] = cron_line
                 break
 
-    with open(user_dir + user, 'w+') as f:
+    with open(os.path.join(user_dir, user), 'w+') as f:
         f.writelines(lines)
 
-    return "Modify Cron Successfully"
+    return True
 
 
-def delcron(user, id):
-    with open(user_dir + user, 'r') as f:
+def cron_del(user, id):
+    with open(os.path.join(user_dir, user), 'r') as f:
         lines = f.readlines()
 
     i = 0
@@ -201,10 +182,10 @@ def delcron(user, id):
                 del lines[j-1]
                 break
 
-    with open(user_dir + user, 'w+') as f:
+    with open(os.path.join(user_dir, user), 'w+') as f:
         f.writelines(lines)
 
-    return "Delete Cron Successfully"
+    return True
 
 
 def listCron():
@@ -218,13 +199,14 @@ def listCron():
 
 
 if __name__ == "__main__":
-    # print CRONTAB
+    # print crontab
     # print listCron()
     # os.system("top")
-    # print loadconfig(CRONTAB, CRON_CONFIG_MAP)
-    # print raw_loadconfig(CRONTAB)
+    # print loadconfig(crontab, cfg_map)
+    # print raw_loadconfig(crontab)
     print(load_config())
     # print update_config({'shell': 'shelshelshel', 'home': 'homehomehome', 'path':'abc'})
-    # print dict((v, k) for k, v in CRON_CONFIG_MAP.items())
-    print(cron_list('root'))
-    # print(cron_add('root', '*','*','*','*','*', 'cmd'))
+    # print dict((v, k) for k, v in cfg_map.items())
+    config = cron_list('root')
+    print(json.dumps(config))
+    # print(cron_add('root', '*','*','*','*','*', 'command'))

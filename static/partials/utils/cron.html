@@ -5,7 +5,7 @@
 
 <div id="main" ng-init="load()" ng-show="loaded">
     <div class="module-header">
-        <h3>任务管理(In Development)</h3>
+        <h3>定时任务管理</h3>
     </div>
     <div class="well" ng-hide="has_cron_service">
         <p>系统检测到 Cron 当前尚未安装。</p>
@@ -24,18 +24,24 @@
                     <div waiting></div>
                 </div>
                 <div ng-show="!loading.normal">
-                    <div class="pull-left">
-                        <h5>普通任务列表</h5>
-                    </div>
-                    <div class="pull-right">
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_normal_list()"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-5">
+                            <h5>普通任务列表</h5>
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-7">
+                            <div class="form-inline pull-right">
+                                <select class="form-control input-sm" ng-model="curr_user" ng-change="load_normal_list()" ng-options="user for user in users" style="display: inline-block;width: 100px;"></select>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_normal_list()"><i class="glyphicon glyphicon-refresh"></i></button>
+                                    <button class="btn btn-default" title="添加任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
+                                <th style="width: 50px;">ID</th>
                                 <th style="width: 50px;">分钟</th>
                                 <th style="width: 50px;">小时</th>
                                 <th style="width: 50px;">天</th>
@@ -48,6 +54,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="info in cron_list">
+                                <td>{{info.id}}</td>
                                 <td>{{info.minute}}</td>
                                 <td>{{info.hour}}</td>
                                 <td>{{info.day}}</td>
@@ -57,7 +64,7 @@
                                 <td><code>{{info.command}}</code></td>
                                 <td>
                                     <button class="btn btn-default btn-xs" ng-click="cron_detail(info)">查看</button>
-                                    <button class="btn btn-default btn-xs" ng-click="cron_delete_confirm(info)">删除</button>
+                                    <button class="btn btn-default btn-xs" ng-click="cron_del_confirm(info)">删除</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -68,7 +75,7 @@
                 <div ng-show="loading.special"><div waiting></div></div>
                 <div ng-show="!loading.special">
                     <div class="pull-left">
-                        <h5>特殊任务列表</h5>
+                        <h5>特殊任务列表(In Development)</h5>
                     </div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
@@ -82,7 +89,7 @@
                 <div ng-show="loading.environment"><div waiting></div></div>
                 <div ng-show="!loading.environment">
                     <div class="pull-left">
-                        <h5>环境变量</h5>
+                        <h5>环境变量(In Development)</h5>
                     </div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
@@ -101,7 +108,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>添加定时任务</h3>
+                <h3 class="modal-title" ng-show="task_id">查看定时任务</h3>
+                <h3 class="modal-title" ng-hide="task_id">添加定时任务</h3>
             </div>
             <div class="modal-body">
                 <form class="" onsubmit="return false">
@@ -110,7 +118,7 @@
                             <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
                                 <label for="common_options">快速设置</label>
                                 <select id="common_options" class="form-control" ng-model="common_options" ng-change="select_common_option()">
-                                    <option value="">-- 请选择 --</option>
+                                    <option value="">请选择</option>
                                     <option value="* * * * *">每分钟一次(* * * * *)</option>
                                     <option value="*/5 * * * *">每五分钟一次(*/5 * * * *)</option>
                                     <option value="0,30 * * * *">每小时两次(0,30 * * * *)</option>
@@ -124,7 +132,7 @@
                                 </select>
                             </div>
                             <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                                <label for="task_email">电子邮箱:</label>
+                                <label for="task_email">电子邮箱</label>
                                 <input type="text" ng-model="task_email" class="form-control" id="task_email" placeholder="接收通知的电子邮箱地址">
                             </div>
                         </div>
@@ -132,13 +140,13 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="minute">分钟:</label>
-                                <input id="minute" ng-model="cron_time['minute']" type="text" class="form-control" size="4" ng-change="input_single_option('minute')" placeholder="分钟">
+                                <label for="minute">分钟</label>
+                                <input id="minute" ng-model="cron_time.minute" type="text" class="form-control" size="4" ng-change="input_single_option('minute')" placeholder="分钟">
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="minute_options">快速选择:</label>
-                                <select id="minute_options" ng-model="options['minute']" class="form-control" ng-change="select_single_option('minute')">
-                                    <option value="">-- 请选择 --</option>
+                                <label for="minute_options">快速选择</label>
+                                <select id="minute_options" ng-model="options.minute" class="form-control" ng-change="select_single_option('minute')">
+                                    <option value="">请选择</option>
                                     <option value="*">每分钟一次(*)</option>
                                     <option value="*/2">每两分钟一次(*/2)</option>
                                     <option value="*/3">每三分钟一次(*/3)</option>
@@ -211,13 +219,13 @@
                                 </select>
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="hour">小时:</label>
-                                <input id="hour" ng-model="cron_time['hour']" type="text" class="form-control" size="4" ng-change="input_single_option('hour')" placeholder="小时">
+                                <label for="hour">小时</label>
+                                <input id="hour" ng-model="cron_time.hour" type="text" class="form-control" size="4" ng-change="input_single_option('hour')" placeholder="小时">
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="hour_options">快速选择:</label>
-                                <select id="hour_options" ng-model="options['hour']" class="form-control" ng-change="select_single_option('hour')">
-                                    <option value="">-- 请选择 --</option>
+                                <label for="hour_options">快速选择</label>
+                                <select id="hour_options" ng-model="options.hour" class="form-control" ng-change="select_single_option('hour')">
+                                    <option value="">请选择</option>
                                     <option value="*">每小时(*)</option>
                                     <option value="*/2">每隔一小时(*/2)</option>
                                     <option value="*/3">每隔三小时(*/3)</option>
@@ -256,13 +264,13 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="day">天:</label>
-                                <input type="text" ng-model="cron_time['day']" class="form-control" size="4" id="day" ng-change="input_single_option('day')" placeholder="天">
+                                <label for="day">天</label>
+                                <input type="text" ng-model="cron_time.day" class="form-control" size="4" id="day" ng-change="input_single_option('day')" placeholder="天">
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="day_options">快速选择:</label>
-                                <select id="day_options" ng-model="options['day']" ng-change="select_single_option('day')" class="form-control">
-                                    <option value="">-- 请选择 --</option>
+                                <label for="day_options">快速选择</label>
+                                <select id="day_options" ng-model="options.day" ng-change="select_single_option('day')" class="form-control">
+                                    <option value="">请选择</option>
                                     <option value="*">每天(*)</option>
                                     <option value="*/2">每隔一天(*/2)</option>
                                     <option value="1,15">在每月的第 1 日和第 15 日(1,15)</option>
@@ -301,13 +309,13 @@
                                 </select>
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="month">月份:</label>
-                                <input type="text" ng-model="cron_time['month']" class="form-control" size="4" id="month" ng-change="input_single_option('month')" placeholder="月份">
+                                <label for="month">月份</label>
+                                <input type="text" ng-model="cron_time.month" class="form-control" size="4" id="month" ng-change="input_single_option('month')" placeholder="月份">
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="month_options">快速选择:</label>
-                                <select id="month_options" ng-model="options['month']" ng-change="select_single_option('month')" class="form-control">
-                                    <option value="">-- 请选择 --</option>
+                                <label for="month_options">快速选择</label>
+                                <select id="month_options" ng-model="options.month" ng-change="select_single_option('month')" class="form-control">
+                                    <option value="">请选择</option>
                                     <option value="*">每月(*)</option>
                                     <option value="*/2">每隔一月(*/2)</option>
                                     <option value="*/4">每隔三个月(*/4)</option>
@@ -332,13 +340,13 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="weekday">工作日:</label>
-                                <input type="text" ng-model="cron_time['weekday']" class="form-control" size="4" id="weekday" ng-change="input_single_option('weekday')" placeholder="工作日">
+                                <label for="weekday">工作日</label>
+                                <input type="text" ng-model="cron_time.weekday" class="form-control" size="4" id="weekday" ng-change="input_single_option('weekday')" placeholder="工作日">
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="weekday_options">快速选择:</label>
-                                <select id="weekday_options" ng-model="options['weekday']" class="form-control" ng-change="select_single_option('weekday')">
-                                    <option value="">-- 请选择 --</option>
+                                <label for="weekday_options">快速选择</label>
+                                <select id="weekday_options" ng-model="options.weekday" class="form-control" ng-change="select_single_option('weekday')">
+                                    <option value="">请选择</option>
                                     <option value="*">每天(*)</option>
                                     <option value="1-5">每个工作日(1-5)</option>
                                     <option value="0,6">每个周末(6,0)</option>
@@ -355,23 +363,23 @@
                                 </select>
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="task_user">用户:</label>
-                                <input type="text" ng-model="task_user" class="form-control" id="task_user" placeholder="用户">
+                                <label for="task_user">用户</label>
+                                <input type="text" ng-model="task_user" class="form-control" id="task_user" ng-disabled="task_id" placeholder="用户">
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="task_user_options">选择用户:</label>
-                                <select class="form-control" ng-model="task_user" id="task_user_options" ng-options="user for user in users"></select>
+                                <label for="task_user_options">选择用户</label>
+                                <select class="form-control" ng-model="task_user" id="task_user_options" ng-disabled="task_id" ng-options="user for user in users"></select>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
-                                <label for="task_time">执行时间:</label>
+                                <label for="task_time">执行时间</label>
                                 <input type="text" ng-model="task_time" class="form-control" id="task_time" placeholder="任务执行时间" readonly>
                             </div>
                             <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
-                                <label for="task_command">执行命令:</label>
+                                <label for="task_command">执行命令</label>
                                 <input type="text" ng-model="task_command" class="form-control" size="45" id="task_command" placeholder="任务执行命令">
                             </div>
                         </div>
@@ -380,7 +388,27 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
-                <button class="btn btn-primary" onclick="$('#useraddconfirm').modal('hide')" ng-click="addCronJobs()">添加</button>
+                <button class="btn btn-primary" ng-show="task_id" ng-click="update_cron_jobs()">更新</button>
+                <button class="btn btn-primary" ng-hide="task_id" ng-click="add_cron_jobs()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="cron-delete-confirm" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">删除任务 ？</h3>
+            </div>
+            <div class="modal-body">
+                <p>确认删除当前任务？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" ng-click="del_cron_jobs()">确定</button>
             </div>
         </div>
     </div>
