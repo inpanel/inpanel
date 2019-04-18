@@ -9,15 +9,13 @@
 '''Module for Apache Management.'''
 
 
+import glob
 import json
 import os
 import os.path
 import re
 import string
 
-# import glob
-# import sys
-# import shutil
 from core.utils import is_valid_domain, is_valid_ipv4, is_valid_ipv6
 
 try:
@@ -28,9 +26,8 @@ except:
 
 DEBUG = False
 
-HTTPD_CONF_DIR = '/etc/httpd/'
-# HTTPD_CONF_DIR = '/Users/douzhenjiang/Projects/inpanel/'
-HTTPD_CONF = '/etc/httpd/conf/httpd.conf'
+HTTPDCONF = '/etc/httpd/'
+APACHECONF = '/etc/httpd/conf/httpd.conf'
 SERVERCONF = '/etc/httpd/conf.d/'
 COMMENTFLAG = '#v#'
 GENBY = 'GENDBYINPANEL'
@@ -64,8 +61,10 @@ CONFIGS = {
     'ScriptAlias': '',
     'AddType': '',
     'AddIcon': '',
-    'AddIconByType': ''
+    'AddIconByType': '',
+    'Include': ''
 }
+
 CON_DIRECTIVES = {
     'Directory': '',
     'Files': '',
@@ -124,6 +123,110 @@ RE_DT_START = re.compile(r'<Directory(\s+)(\S+)>')
 RE_DT_CLOSE = re.compile(r'</Directory>')
 
 
+def loadconfig(conf=None, getlineinfo=False):
+    '''Load Apache config and return a dict.
+    '''
+    if not conf:
+        conf = APACHECONF
+    if not os.path.exists(conf):
+        return False
+    return _loadconfig(conf, getlineinfo)
+
+
+def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
+    '''parse Apache httpd.conf and include configs'''
+    if not config:
+        file_i = 0
+        context = '_'
+        config = {
+            '_files': [conf],
+            '_': [{}],
+            '_isdirty': False
+        }
+        context_stack = [context]
+        cconfig = config[context][-1]
+    else:
+        if getlineinfo:
+            if conf not in config['_files']:
+                file_i = len(config['_files'])
+                config['_files'].append(conf)
+            else:
+                file_i = config['_files'].index(conf)
+            print('file_index', file_i)
+        cconfig = config
+        for c in context_stack:
+            cconfig = cconfig[c][-1]
+        context = context_stack[-1]
+
+    line_buffer = []
+
+    configs = {
+        'Alias': [],
+        # 'AddLanguage': [],
+        # 'LoadModule': [],
+        # 'AddIcon': [],
+        # 'Listen': [],
+        # 'IfModule': [],
+        'VirtualHost': []
+    }
+
+    with open(conf) as f:
+        for line_i, line in enumerate(f):
+            line = line.strip()
+
+            if not line or line.startswith('#'):
+                continue
+
+            fields = line.split()
+            key = fields[0].strip(';')
+            # value = ' '.join(fields[1:]).strip(';')
+            if key in CONFIGS:
+                if key in ('IndexOptions', 'DirectoryIndex'):
+                    configs[key] = ' '.join(str(n) for n in fields[1:])
+                # for local test
+                # elif key == 'AddIcon':
+                #     configs[key].append([fields[1], fields[2:]])
+                # elif key == 'AddIconByType':
+                #     configs[key] = ' '.join(str(n) for n in fields[1:])
+                elif key == 'Alias':
+                    configs[key].append([fields[1], fields[2].strip('"')])
+                # elif key == 'AddLanguage':
+                #     configs[key].append(fields[1:])
+                # elif key == 'LoadModule':
+                #     configs[key].append(fields[1:])
+                # elif key == 'Listen':
+                #     port = fields[1].split(':')[-1]
+                #     ip = fields[1][0:-(len(port) + 1)].lstrip('[').rstrip(']')
+                #     configs[key].append({'port': port, 'ip': ip})
+                elif key == 'Include':
+                    include_file = fields[1]
+                    if not include_file.startswith('/'):
+                        include_file = os.path.join(HTTPDCONF, include_file)
+                    include_files = glob.glob(include_file)
+                    # order by domain name, excluding tld
+                    getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
+                    include_files = sorted(include_files, lambda x,y: cmp(getdm(x), getdm(y)))
+                    for subconf in include_files:
+                        if os.path.exists(subconf):
+                            # print(subconf, getlineinfo, config, context_stack)
+                            _parse_includes(subconf, configs, line_i)
+                            # config['aaa'] = 'ddd'
+                            # config['ccc'] = 'ccc'
+                            # _loadconfig(subconf, getlineinfo, config, context_stack)
+                # else:
+                #     configs[key] = fields[1].strip(string.punctuation)
+
+
+        # configs['Gzip'] = _context_check_gzip(LoadModule, IfModule)
+        # configs['VirtualHost'] = VirtualHost
+        return configs
+
+
+def _parse_includes(conf, config, start):
+    config['aaa'] = 'ddd'
+    config['ccc'] = 'ccc'
+    # _loadconfig(conf, config, start)
+
 def getservers(config=None):
     '''Get servers from apache configuration files.
     '''
@@ -148,8 +251,8 @@ def getservers(config=None):
 def getserver(ip, port, server_name, config=None):
     """Get server setting from nginx config files.
     """
-    # if not config or config['_isdirty']:
-    #     config = loadconfig(NGINXCONF, False)
+    # if config is None or ('_isdirty' in config and config['_isdirty']):
+    #     config = loadconfig(APACHECONF, False)
     scontext = _parse_virtualhost_config(SERVERCONF + server_name + '.conf')
     if not scontext:
         return False
@@ -396,7 +499,7 @@ def replace_docroot(vhost, new_docroot):
     vhost_start = re.compile(r'<VirtualHost\s+(.*?)>')
     vhost_end = re.compile(r'</VirtualHost>')
     docroot_re = re.compile(r'(DocumentRoot\s+)(\S+)')
-    file = open(HTTPD_CONF_DIR + vhost + '.conf').read()
+    file = open(HTTPDCONF + vhost + '.conf').read()
     conf_file = StringIO(file)
     in_vhost = False
     curr_vhost = None
@@ -418,73 +521,6 @@ def replace_docroot(vhost, new_docroot):
             yield line
 
 
-def loadconfig(conf=None, getlineinfo=False):
-    """Load apache config and return a dict.
-    """
-    if not conf:
-        conf = HTTPD_CONF
-    if not os.path.exists(conf):
-        return False
-    return _parse_apache_config(conf, getlineinfo)
-
-
-def _parse_apache_config(conf, getlineinfo):
-    '''parse Apache httpd.conf'''
-
-    # if key not in CONFIGS or not val:
-    #     return False
-    # conf = HTTPD_CONF
-    # conf = HTTPD_CONF_DIR + '/httpd.conf'
-    try:
-        os.stat(conf)
-    except OSError:
-        return None
-
-    configs = {}
-    Alias = []
-    AddLanguage = []
-    LoadModule = []
-    AddIcon = []
-    Listen = []
-    IfModule = []
-    with open(conf) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            for i in CONFIGS:
-                if line.startswith(i):
-                    ll = line.split()
-                    if i in ['IndexOptions', 'DirectoryIndex']:
-                        configs[i] = ' '.join(str(n) for n in ll[1:])
-                    elif i == 'AddIcon':
-                        AddIcon.append([ll[1], ll[2:]])
-                    elif i == 'AddIconByType':
-                        configs[i] = ' '.join(str(n) for n in ll[1:])
-                    elif i == 'Alias':
-                        Alias.append([ll[1], ll[2].strip('"')])
-                    elif i == 'AddLanguage':
-                        AddLanguage.append(ll[1:])
-                    elif i == 'LoadModule':
-                        LoadModule.append(ll[1:])
-                    elif i == 'Listen':
-                        port = ll[1].split(':')[-1]
-                        ip = ll[1][0:-(len(port) + 1)].lstrip('[').rstrip(']')
-                        Listen.append({'port': port, 'ip': ip})
-                    else:
-                        # print(ll[1].strip(string.punctuation))
-                        configs[i] = ll[1].strip(string.punctuation)
-
-        configs['Alias'] = Alias
-        configs['Listen'] = Listen
-        configs['AddIcon'] = AddIcon
-        configs['LoadModule'] = LoadModule
-        configs['AddLanguage'] = AddLanguage
-        configs['IfModule'] = IfModule
-        configs['Gzip'] = _context_check_gzip(LoadModule, IfModule)
-        return configs
-
-
 def _context_check_gzip(LoadModule, IfModule):
     mod_status = (
         ['ext_filter_module', 'modules/mod_ext_filter.so'] in LoadModule and
@@ -495,12 +531,20 @@ def _context_check_gzip(LoadModule, IfModule):
     mod_deflate = True
     return mod_status and mod_deflate
 
+def _context_gethttp(config=None):
+    """Get http context config.
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, True)
+    print('config', config)
+    return config['_'][0]
 
 def _context_getservers(disabled=None, config=None, getlineinfo=True):
     '''Get server context configs.
     '''
-    if not config or config['_isdirty']:
-        servers = loadconfig(HTTPD_CONF, getlineinfo)
+    servers = []
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        servers = loadconfig(APACHECONF, getlineinfo)
     if disabled == None or not getlineinfo:
         return servers
     else:
@@ -513,8 +557,8 @@ def _context_getserver(ip, port, servername, config=None, disabled=None, getline
     If disabled is True, return only disabled servers
     If disabled is False, return only normal servers
     '''
-    if not config or config['_isdirty']:
-        config = loadconfig(HTTPD_CONF, getlineinfo)
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, getlineinfo)
     cnfservers = _context_getservers(disabled=disabled, config=config, getlineinfo=getlineinfo)
     if not ip or ip in ('*', '0.0.0.0'):
         ip = '*'
@@ -535,6 +579,320 @@ def _context_getserver(ip, port, servername, config=None, disabled=None, getline
         # if server_name == s_names and ip == s_ip and port == s_port: # any([i in listens for i in find_listen]):
         #     return s
     # return False
+
+
+def _context_getupstreams(server_name, config=None, disabled=None, getlineinfo=True):
+    """Get upstream list related to a server.
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, getlineinfo)
+    upstreams = http_get('upstream', config)
+    if not upstreams: return False
+    if getlineinfo:
+        upstreams = [upstream for upstream in upstreams 
+            if upstream['_param']['value'].startswith('backend_of_%s_' % server_name)]
+    else:
+        upstreams = [upstream for upstream in upstreams 
+            if upstream['_param'].startswith('backend_of_%s_' % server_name)]
+
+    if disabled == None or not getlineinfo:
+        return upstreams
+    else:
+        return [upstream for upstream in upstreams
+                if upstream['_param']['disabled']==disabled]
+
+def _comment(filepath, start, end):
+    """Commend some lines in the file.
+    """
+    if not os.path.exists(filepath): return False
+    data = []
+    with open(filepath) as f:
+        for i, line in enumerate(f):
+            if i>=start and i<=end:
+                if not line.startswith(COMMENTFLAG): data.append(COMMENTFLAG)
+            data.append(line)
+    with open(filepath, 'w') as f: f.write(''.join(data))
+    return True
+
+def _uncomment(filepath, start, end):
+    """Uncommend some lines in the file.
+    """
+    if not os.path.exists(filepath): return False
+    data = []
+    with open(filepath) as f:
+        for i, line in enumerate(f):
+            if i>=start and i<=end:
+                while line.startswith(COMMENTFLAG): line = line[3:]
+            data.append(line)
+    with open(filepath, 'w') as f: f.write(''.join(data))
+    return True
+
+def _delete(filepath, start, end, delete_emptyfile=True):
+    """Delete some lines in the file.
+
+    If delete_emptyfile is set to True, then the empty file will 
+    be deleted from file system.
+    """
+    if not os.path.exists(filepath):
+        return False
+    data = []
+    with open(filepath) as f:
+        for i, line in enumerate(f):
+            if i>=start and i<=end:
+                continue
+            data.append(line)
+    with open(filepath, 'w') as f:
+        f.write(''.join(data))
+    if delete_emptyfile:
+        if ''.join(data).strip() == '':
+            os.unlink(filepath)
+    return True
+
+def _getcontextrange(context, config):
+    """Return the range of the input context, including the file path.
+
+    Return format:
+    [filepath, line_start, line_end]
+    """
+    file_i = context['_range']['begin']['file']
+    filepath = config['_files'][file_i]
+    line_start = context['_range']['begin']['line'][0]
+    line_end = context['_range']['end']['line'][0]
+    return [filepath, line_start, line_end]
+
+def _context_commentserver(ip, port, server_name, config=None):
+    """Comment a context using InPanel's special comment string '#v#'
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, True)
+    scontext = _context_getserver(ip, port, server_name, config=config)
+    if not scontext: return False
+    filepath, line_start, line_end = _getcontextrange(scontext, config)
+    return _comment(filepath, line_start, line_end)
+
+def _context_uncommentserver(ip, port, server_name, config=None):
+    """Uncomment a InPanel's special-commented context.
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, True)
+    scontext = _context_getserver(ip, port, server_name, config=config)
+    if not scontext: return False
+    filepath, line_start, line_end = _getcontextrange(scontext, config)
+    return _uncomment(filepath, line_start, line_end)
+
+def _context_deleteserver(ip, port, server_name, config=None, disabled=None):
+    """Delete a server context.
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, True)
+    scontext = _context_getserver(ip, port, server_name, config=config, disabled=disabled)
+    if not scontext: return False
+    filepath, line_start, line_end = _getcontextrange(scontext, config)
+    config['_isdirty'] = True
+    return _delete(filepath, line_start, line_end)
+
+def _context_commentupstreams(server_name, config=None):
+    """Comment upstreams by server names.
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, True)
+    upstreams = _context_getupstreams(server_name, config=config)
+    if not upstreams: return True
+    for upstream in upstreams:
+        filepath, line_start, line_end = _getcontextrange(upstream, config)
+        if not _comment(filepath, line_start, line_end): return False
+    return True
+
+def _context_uncommentupstreams(server_name, config=None):
+    """Uncomment upstreams by server names.
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, True)
+    upstreams = _context_getupstreams(server_name, config=config)
+    if not upstreams: return True
+    for upstream in upstreams:
+        filepath, line_start, line_end = _getcontextrange(upstream, config)
+        if not _uncomment(filepath, line_start, line_end): return False
+    return True
+
+def _context_deleteupstreams(server_name, config=None, disabled=None):
+    """Delete upstreams by server name.
+    """
+    while True:
+        # we need to reload config after delete one upstream
+        if config is None or ('_isdirty' in config and config['_isdirty']):
+            config = loadconfig(APACHECONF, True)
+        upstreams = _context_getupstreams(server_name, config=config, disabled=disabled)
+        if not upstreams: return True
+        for upstream in upstreams:
+            filepath, line_start, line_end = _getcontextrange(upstream, config)
+            config['_isdirty'] = True
+            if not _delete(filepath, line_start, line_end): return False
+            break   # only delete the first one
+    return True
+
+
+
+def _replace(positions, lines):
+    """Replace the lines specified in list positions to new lines.
+
+    Structure of positions:
+    [
+        (filepath, line_start, line_count),
+        ...
+    ]
+    Parameter positions can not be empty.
+
+    * If the new lines is empty, old lines with be deleted.
+    * If the new lines is less than the old lines, the rest old lines
+      will also be deleted.
+    * If the new lines is more than the old lines, then new value will 
+      append after the last line of the old lines.
+    """
+    # merge line positions by filepath
+    # struct: {'/path/to/file': [3, 4, 10, ...], ...}
+    files = {}
+    for pos in positions:
+        filepath, line_start, line_count = pos
+        if not filepath in files: files[filepath] = []
+        for i in range(line_count):
+            files[filepath].append(line_start+i)
+    # replace line by line
+    for filepath, line_nums in files.items():
+        flines = []
+        with open(filepath) as f:
+            for i, fline in enumerate(f):
+                if i in line_nums:
+                    if len(lines) > 0:
+                        # replace with a new line
+                        line = lines[0]
+                        lines = lines[1:]
+                        # detect the space at the start of the old line
+                        # this aim to keep the indent of the line
+                        space = ''
+                        for c in fline:
+                            if c not in (' ', '\t'): break
+                            space += c
+                        flines.append(''.join([space, line, '\n']))
+                    else:
+                        # no more new line, delete the old line
+                        continue
+                else:
+                    if i > line_nums[-1] and len(lines) > 0:
+                        # exceed the last old line, insert the rest new lines here
+                        # detect the indent of the last line
+                        space = ''
+                        if len(flines)>0: # last line exists
+                            for c in flines[-1]:
+                                if c not in (' ', '\t'): break
+                                space += c
+                        for line in lines:
+                            flines.append(''.join([space, line, '\n']))
+                        lines = []
+                    flines.append(fline)
+        # write back to file
+        with open(filepath, 'w') as f: f.write(''.join(flines))
+
+def _insert(filepath, line_start, lines):
+    """Insert the lines to the specified position.
+    """
+    flines = []
+    with open(filepath) as f:
+        for i, fline in enumerate(f):
+            if i == line_start:
+                # detect the indent of the last not empty line
+                space = ''
+                flines_len = len(flines)
+                if flines_len>0: # last line exists
+                    line_i = -1
+                    while flines[line_i].strip() == '' and -line_i <= flines_len:
+                        line_i -= 1
+                    for c in flines[line_i]:
+                            if c not in (' ', '\t'): break
+                            space += c
+                    if flines[line_i].strip().endswith('{'):
+                        space += '    '
+                for line in lines:
+                    flines.append(''.join([space, line, '\n']))
+            flines.append(fline)
+    # write back to file
+    with open(filepath, 'w') as f: f.write(''.join(flines))
+
+
+
+def http_get(directive, config=None):
+    """Get directive values in http context.
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF)
+    hcontext = _context_gethttp(config)
+    if directive in hcontext:
+        return hcontext[directive]
+    else:
+        return None
+
+def http_getfirst(directive, config=None):
+    """Get the first value of the directive in http context.
+    """
+    values = http_get(directive, config)
+    if values: return values[0]
+    return None
+
+def http_set(directive, values, config=None):
+    """Set a directive in http context.
+
+    If directive exists, the value will be replace in place.
+    If directive not exists, new directive will be created at the beginning of http context.
+
+    Parameter values can be a list or a string.
+    If values is set to empty list or None or empty string, then the directive will be deleted.
+    """
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig(APACHECONF, True)
+    hcontext = _context_gethttp(config)
+
+    if not values:
+        values = []
+    elif isinstance(values, str):
+        values = [values]
+    values = ['%s %s;' % (directive, v) for v in values]
+
+    if directive in hcontext:
+        # update or delete value
+        dvalues = hcontext[directive]
+        lines = [(config['_files'][dvalue['file']], dvalue['line'][0], dvalue['line'][1]) for dvalue in dvalues]
+        _replace(lines, values)
+    else:
+        # add directive to the beginning of http context
+        # some directive like proxy_cache_path should be declare before use the resource,
+        # so we should insert it at the beginning
+        begin = hcontext['_range']['begin']
+        _insert(config['_files'][begin['file']], begin['line'][0]+begin['line'][1], values)
+
+    config['_isdirty'] = True
+
+
+def disableserver(ip, port, servername):
+    """Disable a server.
+    """
+    _context_commentupstreams(servername)
+    return _context_commentserver(ip, port, servername)
+
+
+def enableserver(ip, port, servername):
+    """Enable a server.
+    """
+    _context_uncommentupstreams(servername)
+    return _context_uncommentserver(ip, port, servername)
+
+def deleteserver(server_name, ip, port):
+    '''Delete a server.'''
+    print(SERVERCONF + server_name + '.conf')
+    try:
+        os.unlink(SERVERCONF + server_name + '.conf')
+        return True
+    except:
+        return False
 
 def servername_exists(ip, port, server_name, config=None):
     '''Check if the server_name at given ip:port is already exists.
@@ -586,7 +944,7 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
     servercfg.append('</VirtualHost>')
 
     #print '\n'.join(servercfg)
-    configfile = os.path.join(SERVERCONF, '%s.conf' % serveraname)
+    configfile = os.path.join(SERVERCONF, serveraname + '.conf')
     configfile_exists = os.path.exists(configfile)
 
     # check if need to add a new line at the end of the file to
@@ -642,7 +1000,7 @@ def updateserver(old_name, old_ip, old_port, serveraname, ip, port, serveralias=
     '''
     # compare the old context and the new context
     # to check if the ip:port/server_name change and conflict status
-    config = loadconfig(HTTPD_CONF, True)
+    config = loadconfig(APACHECONF, True)
     oldscontext = _context_getserver(old_ip, old_port, old_name, config)
     if not oldscontext:
         return False
@@ -653,34 +1011,13 @@ def updateserver(old_name, old_ip, old_port, serveraname, ip, port, serveralias=
         return False
 
 
-def deleteserver(server_name, ip, port):
-    '''Delete a server.'''
-    print(SERVERCONF + server_name + '.conf')
-    try:
-        os.unlink(SERVERCONF + server_name + '.conf')
-        return True
-    except:
-        return False
-
-
-def disableserver(ip, port, servername):
-    """Disable a server.
-    """
-    _context_commentupstreams(servername)
-    return _context_commentserver(ip, port, servername)
-
-
-def enableserver(ip, port, servername):
-    """Enable a server.
-    """
-    _context_uncommentupstreams(servername)
-    return _context_uncommentserver(ip, port, servername)
 
 
 if __name__ == '__main__':
-    test_path = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
-    # tmp = loadconfig(test_path)
-    # print(tmp)
+    HTTPDCONF = '/Users/douzhenjiang/test/inpanel/test'
+    APACHECONF = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
+    tmp = loadconfig()
+    print('config', tmp)
     # print(json.dumps(tmp))
     # virtual_host_config('aaa.com', 'DocumentRoot', '/v/asfs34535')
     # virtual_host_config('aaa.com', 'ServerAdmin', '4567896543')
@@ -689,16 +1026,17 @@ if __name__ == '__main__':
     # for line in replace_docroot('aaa.com', 'docroot'):
     #     print(line)
 
-    aaa = '/Users/douzhenjiang/test/inpanel/test/aaa.com.conf'
-    tmp1 = _parse_virtualhost_config(aaa)
-    print(json.dumps(tmp1))
+    # aaa = '/Users/douzhenjiang/test/inpanel/test/aaa.com.conf'
+    # tmp1 = _parse_virtualhost_config(aaa)
+    # print(json.dumps(tmp1))
 
     # print getservers()
 
     # path = os.path.join(SERVERCONF, clist[i])
     # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
     # SERVERCONF = '/Users/douzhenjiang/test/inpanel/test'
-    # addserver('11inpanel.org', '1.1.1.1', 80,
+    # print(servername_exists('1.1.1.1', 80, 'inpanel.org'))
+    # addserver('inpanel.org', '1.1.1.1', 80,
     #           serveralias=['cc.com', 'bb.com'],
     #           serveradmin='root',
     #           documentroot='/var/www/inpanel.org',
@@ -708,3 +1046,4 @@ if __name__ == '__main__':
     #           errorlog='abc/aaa.log',
     #           customlog='abc/aaa_error.log',
     #           version=None)
+    # print(enableserver('*', 80, 'zhoukan.pub'))

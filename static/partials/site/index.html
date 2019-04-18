@@ -74,10 +74,10 @@
                                         <a class="btn btn-default btn-xs" title="设置站点" href="#/site/nginx/edit_{{server.listens[0].ip}}_{{server.listens[0].port}}_{{server.server_names[0]}}">
                                             <i class="glyphicon glyphicon-wrench"></i>
                                         </a>
-                                        <button class="btn btn-default btn-xs" ng-show="server.status!='on'" title="启用该站点" ng-click="nginx_enableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+                                        <button class="btn btn-default btn-xs" ng-show="server.status!='on'" title="启用该站点" ng-click="change_server('nginx', 'enable', server.server_names[0], server.listens[0].ip, server.listens[0].port)">
                                             <i class="glyphicon glyphicon-play"></i>
                                         </button>
-                                        <button class="btn btn-default btn-xs" ng-show="server.status=='on'" title="停用该站点" ng-click="nginx_disableserver(server.listens[0].ip, server.listens[0].port, server.server_names[0])">
+                                        <button class="btn btn-default btn-xs" ng-show="server.status=='on'" title="停用该站点" ng-click="change_server('nginx', 'disable', server.server_names[0], server.listens[0].ip, server.listens[0].port)">
                                             <i class="glyphicon glyphicon-stop"></i>
                                         </button>
                                         <button class="btn btn-default btn-xs" title="删除该站点" ng-click="delete_server_confirm('nginx', server.server_names[0], server.listens[0].ip, server.listens[0].port)">
@@ -150,10 +150,10 @@
                                     <a class="btn btn-default btn-xs" title="设置站点" href="#/site/apache/edit_{{server.ip}}_{{server.port}}_{{server.servername}}">
                                         <i class="glyphicon glyphicon-wrench"></i>
                                     </a>
-                                    <button class="btn btn-default btn-xs" ng-show="server.status!='on'" title="启用该站点" ng-click="apache_enable_server(server.servername, server.ip, server.port)">
+                                    <button class="btn btn-default btn-xs" ng-show="server.status!='on'" title="启用该站点" ng-click="change_server('apache', 'enable', server.servername, server.ip, server.port)">
                                         <i class="glyphicon glyphicon-play"></i>
                                     </button>
-                                    <button class="btn btn-default btn-xs" ng-show="server.status=='on'" title="停用该站点" ng-click="apache_disable_server(server.servername, server.ip, server.port)">
+                                    <button class="btn btn-default btn-xs" ng-show="server.status=='on'" title="停用该站点" ng-click="change_server('apache', 'disable', server.servername, server.ip, server.port)">
                                         <i class="glyphicon glyphicon-stop"></i>
                                     </button>
                                     <button class="btn btn-default btn-xs" title="删除该站点" ng-click="delete_server_confirm('apache', server.servername, server.ip, server.port)">

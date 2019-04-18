@@ -263,27 +263,18 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             });
         }
 
-        $scope.nginx_enableserver = function (ip, port, server_name) {
-            Request.post('/operation/nginx', {
-                'action': 'enableserver',
+        $scope.change_server = function (type, status, name, ip, port) {
+            if (!type || !status || ['nginx', 'apache'].indexOf(type) < 0 || ['enable', 'disable'].indexOf(status) < 0) {
+                return;
+            }
+            Request.post('/operation/' + type, {
+                'action': status + 'server',
                 'ip': ip,
                 'port': port,
-                'server_name': server_name
+                'server_name': name
             }, function (res) {
                 if (res.code == 0) {
-                    $scope.loadnginx(0, 1);
-                }
-            });
-        };
-        $scope.nginx_disableserver = function (ip, port, server_name) {
-            Request.post('/operation/nginx', {
-                'action': 'disableserver',
-                'ip': ip,
-                'port': port,
-                'server_name': server_name
-            }, function (res) {
-                if (res.code == 0) {
-                    $scope.loadnginx(0, 1);
+                    $scope['load' + type](0, 1);
                 }
             });
         };
