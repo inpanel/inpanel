@@ -14,8 +14,8 @@
     </div>
     <div class="tabbable">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='normal'"><a href="#normal" ng-click="tab_sec('normal')" data-toggle="tab">常规</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='special'"><a href="#special" ng-click="tab_sec('special')" data-toggle="tab">特殊</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='normal'"><a href="#normal" ng-click="tab_sec('normal')" data-toggle="tab">普通任务</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="tab_sec('system')" data-toggle="tab">系统任务</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='environment'"><a href="#environment" ng-click="tab_sec('environment')" data-toggle="tab">环境变量</a></li>
         </ul>
         <div class="tab-content">
@@ -30,10 +30,10 @@
                         </div>
                         <div class="col-md-6 col-sm-6 col-xs-7">
                             <div class="form-inline pull-right">
-                                <select class="form-control input-sm" ng-model="curr_user" ng-change="load_normal_list()" ng-options="user for user in users" style="display: inline-block;width: 100px;"></select>
+                                <select class="form-control input-sm" ng-model="cron_normal.user" ng-change="load_normal_list()" ng-options="user for user in users" style="display: inline-block;width: 100px;"></select>
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_normal_list()"><i class="glyphicon glyphicon-refresh"></i></button>
-                                    <button class="btn btn-default" title="添加任务" ng-disabled="!loaded" ng-click="cron_add_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                                    <button class="btn btn-default" title="添加任务" ng-disabled="!loaded" ng-click="add_cron_normal()"><i class="glyphicon glyphicon-plus"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -53,7 +53,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="info in cron_list">
+                            <tr ng-show="cron_normal.list.length < 1">
+                                <td colspan="9">当前列表任务为空</td>
+                            </tr>
+                            <tr ng-repeat="info in cron_normal.list">
                                 <td>{{info.id}}</td>
                                 <td>{{info.minute}}</td>
                                 <td>{{info.hour}}</td>
@@ -63,26 +66,67 @@
                                 <td>{{info.user}}</td>
                                 <td><code>{{info.command}}</code></td>
                                 <td>
-                                    <button class="btn btn-default btn-xs" ng-click="cron_detail(info)">查看</button>
-                                    <button class="btn btn-default btn-xs" ng-click="cron_del_confirm(info)">删除</button>
+                                    <button class="btn btn-default btn-xs" ng-click="cron_detail(info, 'normal')">查看</button>
+                                    <button class="btn btn-default btn-xs" ng-click="cron_del_confirm(info, 'normal')">删除</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='special'" id="special">
-                <div ng-show="loading.special"><div waiting></div></div>
-                <div ng-show="!loading.special">
-                    <div class="pull-left">
-                        <h5>特殊任务列表(In Development)</h5>
-                    </div>
-                    <div class="pull-right">
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_special_list()"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加任务" ng-disabled="!loaded" ng-click="add_special_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
+                <div ng-show="loading.system"><div waiting></div></div>
+                <div ng-show="!loading.system">
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-5">
+                            <h5>系统任务列表</h5>
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-7">
+                            <div class="form-inline pull-right">
+                                <select class="form-control input-sm" ng-model="cron_system.user" ng-change="load_system_list()" ng-options="user for user in users" style="display: inline-block;width: 100px;">
+                                    <option value="">全部</option>
+                                </select>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_system_list()"><i class="glyphicon glyphicon-refresh"></i></button>
+                                    <button class="btn btn-default" title="添加任务" ng-disabled="!loaded" ng-click="add_cron_system()"><i class="glyphicon glyphicon-plus"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <table class="table table-hover table-bordered table-condensed">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">ID</th>
+                                <th style="width: 50px;">分钟</th>
+                                <th style="width: 50px;">小时</th>
+                                <th style="width: 50px;">天</th>
+                                <th style="width: 50px;">月份</th>
+                                <th style="width: 65px;">工作日</th>
+                                <th style="width: 65px;">用户</th>
+                                <th>命令</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-show="cron_system.list.length < 1">
+                                <td colspan="9">当前列表任务为空</td>
+                            </tr>
+                            <tr ng-repeat="info in cron_system.list">
+                                <td>{{info.id}}</td>
+                                <td>{{info.minute}}</td>
+                                <td>{{info.hour}}</td>
+                                <td>{{info.day}}</td>
+                                <td>{{info.month}}</td>
+                                <td>{{info.weekday}}</td>
+                                <td>{{info.user}}</td>
+                                <td><code>{{info.command}}</code></td>
+                                <td>
+                                    <button class="btn btn-default btn-xs" ng-click="cron_detail(info, 'system')">查看</button>
+                                    <button class="btn btn-default btn-xs" ng-click="cron_del_confirm(info, 'system')">删除</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='environment'" id="environment">
@@ -108,8 +152,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3 class="modal-title" ng-show="task_id">查看定时任务</h3>
-                <h3 class="modal-title" ng-hide="task_id">添加定时任务</h3>
+                <h3 class="modal-title" ng-show="task_id">
+                    <span ng-show="task_level=='normal'">查看普通任务</span>
+                    <span ng-show="task_level=='system'">查看系统任务</span>
+                </h3>
+                <h3 class="modal-title" ng-hide="task_id">
+                    <span ng-show="task_level=='normal'">添加普通任务</span>
+                    <span ng-show="task_level=='system'">添加系统任务</span>
+                </h3>
             </div>
             <div class="modal-body">
                 <form class="" onsubmit="return false">
@@ -368,7 +418,9 @@
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
                                 <label for="task_user_options">选择用户</label>
-                                <select class="form-control" ng-model="task_user" id="task_user_options" ng-disabled="task_id" ng-options="user for user in users"></select>
+                                <select class="form-control" ng-model="task_user" id="task_user_options" ng-disabled="task_id" ng-options="user for user in users">
+                                    <option value="">请选择</option>
+                                </select>
                             </div>
                         </div>
                     </div>

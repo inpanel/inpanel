@@ -2103,9 +2103,10 @@ class OperationHandler(RequestHandler):
             else:
                 self.write({'code': -1, 'msg': u'设置保存失败！'})
 
-        user = self.get_argument('user', 'root')
+        user = self.get_argument('user', '')
+        level = self.get_argument('level', 'normal')
         if action == 'cron_list':
-            self.write({'code': 0, 'msg': u'获取定时任务成功！','data': cron.cron_list(user)})
+            self.write({'code': 0, 'msg': u'获取定时任务成功！','data': cron.cron_list(user=user, level=level)})
         elif action in ('cron_add', 'cron_mod'):
             minute = self.get_argument('minute', '')
             hour = self.get_argument('hour', '')
@@ -2115,19 +2116,21 @@ class OperationHandler(RequestHandler):
             weekday = self.get_argument('weekday', '')
             command = self.get_argument('command', '')
             if action == 'cron_add':
-                if cron.cron_add(user, minute, hour, day, month, weekday, command):
+                if cron.cron_add(user, minute, hour, day, month, weekday, command, level):
                     self.write({'code': 0, 'msg': u'定时任务添加成功！'})
                 else:
                     self.write({'code': -1, 'msg': u'定时任务添加失败！'})
             elif action == 'cron_mod':
                 cronid = self.get_argument('cronid', '')
-                if cron.cron_mod(user, cronid, minute, hour, day, month, weekday, command):
+                currlist = self.get_argument('currlist', '')
+                if cron.cron_mod(user, cronid, minute, hour, day, month, weekday, command, level, currlist):
                     self.write({'code': 0, 'msg': u'定时任务修改成功！'})
                 else:
                     self.write({'code': -1, 'msg': u'定时任务修改失败！'})
         elif action == 'cron_del':
             cronid = self.get_argument('cronid', '')
-            if cron.cron_del(user, cronid):
+            currlist = self.get_argument('currlist', '')
+            if cron.cron_del(user, cronid, level, currlist):
                 self.write({'code': 0, 'msg': u'定时任务删除成功！'})
             else:
                 self.write({'code': -1, 'msg': u'定时任务删除失败！'})

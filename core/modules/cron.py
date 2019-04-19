@@ -10,19 +10,10 @@
 
 import os
 import re
-import shlex
-import subprocess
-import getpass
-import json
 
-# from configloader import (loadconfig, raw_loadconfig, raw_saveconfig, readconfig, saveconfig, writeconfig)
 
-cfgdir = '/etc/cron.d/'
 crontab = '/etc/crontab'
-user_dir = '/var/spool/cron/'
-# user_dir = '/Users/douzhenjiang/Projects/inpanel/test/var_spool_cron'
-
-
+cronspool = '/var/spool/cron/'
 cfg_map = {
     'SHELL': 'shell',
     'MAILTO': 'mailto',
@@ -96,37 +87,47 @@ def save_config(filepath, config):
     return False
 
 
-def cron_list(user=None):
-    # return a test list
-    user = user or 'root'
-    return _parse_cron(os.path.join(user_dir, user), 'other', user=user)
-
-
-def _parse_cron(filename, option, user=None):
-    '''parser Cron config to python object (array)
+def cron_list(level='normal', user=None):
     '''
+    parser Cron config to python object (array)
+    return a list of cron jobs
+    '''
+    if level == 'normal':
+        if user is None:
+            return None
+        spool = os.path.join(cronspool, user)
+    elif level == 'system':
+        spool = crontab
+
     try:
-        if not os.path.exists(filename):
+        if not os.path.exists(spool):
             return None
     except OSError:
         return None
 
-    cronlist = []
-    with open(filename) as f:
+    crons = []
+    with open(spool) as f:
         i = 0
         for line in f:
             line = line.strip()
+            line_user = ''
             if re.findall("^\d|^\*|^\-", line):
-                if option == 'other':
+                if level == 'normal':
                     text = re.split('\s+', line, 5)
                     command = text[5]
-                    # user = None
-                else:
+                    line_user = user
+                elif level == 'system':
+                    # this user's list
                     text = re.split('\s+', line, 6)
-                    user = text[5]
+                    if user and user != text[5]:
+                        continue
+                    else:
+                        line_user = text[5]
                     command = text[6]
-                i = i + 1
-                cronlist.append({
+                else:
+                    continue
+                i += 1
+                crons.append({
                     'id': i,
                     'minute': text[0],
                     'hour': text[1],
@@ -134,79 +135,121 @@ def _parse_cron(filename, option, user=None):
                     'month': text[3],
                     'weekday': text[4],
                     'command': command,
-                    'user': user
+                    'user': line_user
                 })
-    return cronlist
+    return crons
 
 
-def cron_add(user, minute, hour, day, month, weekday, command):
-    line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
-    user = user or 'root'
-    with open(os.path.join(user_dir, user), 'a+') as f:
+def cron_add(user, minute, hour, day, month, weekday, command, level):
+    '''add normal or system cron
+    '''
+    if level == 'system':
+        if user is None:
+            return False
+        spool = crontab
+        line = "%s %s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, user, command)
+    else:
+        user = user or 'root'
+        spool = os.path.join(cronspool, user)
+        line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
+
+    with open(spool, 'a+') as f:
         f.write(line)
         return True
 
+    return False
 
-def cron_mod(user, id, minute, hour, day, month, weekday, command):
-    cron_line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
-    with open(os.path.join(user_dir, user), 'r') as f:
+
+def cron_mod(user, id, minute, hour, day, month, weekday, command, level, currlist=''):
+    '''modify normal or system cron
+    '''
+    if user is None or id is None:
+        return False
+    if level == 'system':
+        spool = crontab
+        cron_line = "%s %s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, user, command)
+    else:
+        spool = os.path.join(cronspool, user)
+        cron_line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
+
+    with open(spool, 'r') as f:
         lines = f.readlines()
 
-    i = 0
-    j = 0
+    i, j = 0, 0
     for line in lines:
-        j = j+1
+        j += 1
         if re.findall("^\d|^\*|^\-", line):
-            i = i+1
+            if level == 'normal':
+                i += 1
+            elif level == 'system':
+                # if currlist is this user's list
+                if currlist and currlist == user:
+                    text = re.split('\s+', line, 6)
+                    if user == text[5]:
+                        i += 1
+                else:
+                    i += 1
+            else:
+                continue
             if str(i) == str(id):
                 lines[j-1] = cron_line
                 break
 
-    with open(os.path.join(user_dir, user), 'w+') as f:
+    with open(spool, 'w+') as f:
         f.writelines(lines)
+        return True
 
-    return True
+    return False
 
 
-def cron_del(user, id):
-    with open(os.path.join(user_dir, user), 'r') as f:
+def cron_del(user, id, level, currlist=''):
+    if user is None or id is None:
+        return False
+    spool = crontab if level == 'system' else os.path.join(cronspool, user)
+
+    with open(spool, 'r') as f:
         lines = f.readlines()
 
-    i = 0
-    j = 0
+    i, j = 0, 0
     for line in lines:
-        j = j+1
+        j += 1
         if re.findall("^\d|^\*|^\-", line):
-            i = i+1
+            if level == 'normal':
+                i += 1
+            elif level == 'system':
+                if currlist and currlist == user:
+                    text = re.split('\s+', line, 6)
+                    if user == text[5]:
+                        i += 1
+                else:
+                    i += 1
+            else:
+                continue
             if str(i) == str(id):
                 del lines[j-1]
                 break
 
-    with open(os.path.join(user_dir, user), 'w+') as f:
+    with open(spool, 'w+') as f:
         f.writelines(lines)
+        return True
 
-    return True
-
-
-def listCron():
-    p = subprocess.Popen(['crontab', '-l'],
-                         #  stdout=subprocess.PIPE,
-                         #  stderr=subprocess.PIPE,
-                         close_fds=True)
-    # p.stdout.read()
-    # p.stderr.read()
-    return p.wait() == 0
+    return False
 
 
 if __name__ == "__main__":
+    import json
+    crontab = '/Users/douzhenjiang/test/inpanel/test/crontab'
+    cronspool = '/Users/douzhenjiang/test/inpanel/test/var_spool_cron'
     # print crontab
-    # print listCron()
     # os.system("top")
     # print loadconfig(crontab, cfg_map)
     # print raw_loadconfig(crontab)
-    print(load_config())
+    # print(load_config())
     # print update_config({'shell': 'shelshelshel', 'home': 'homehomehome', 'path':'abc'})
     # print dict((v, k) for k, v in cfg_map.items())
-    config = cron_list('root')
+
+    config = cron_list(level='system', user='root')
+    # config = cron_list(level='system', user='apache')
+    # config = cron_list(level='system')
     print(json.dumps(config))
     # print(cron_add('root', '*','*','*','*','*', 'command'))
