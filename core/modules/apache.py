@@ -31,63 +31,134 @@ APACHECONF = '/etc/httpd/conf/httpd.conf'
 SERVERCONF = '/etc/httpd/conf.d/'
 COMMENTFLAG = '#v#'
 GENBY = 'GENDBYINPANEL'
-ABC = '/etc/httpd/conf.d/abc.com.conf'
 
 CONFIGS = {
-    'ServerTokens': 'OS',
-    'ServerRoot': '/etc/httpd',
-    'Timeout': 60,
-    'DefaultType': 'text/plain',
-    'DocumentRoot': '/var/www/html',
-    'DirectoryIndex': 'index.html index.htm index.php',
-    'AddDefaultCharset': 'UTF-8',
-    'Listen': 80,
-    'ServerAdmin': 'root@localhost',
-    'ServerName': 'www@localhost',
-    'NameVirtualHost': '*:80',
-    'KeepAlive': 'Off',
-    'MaxKeepAliveRequests': 100,
-    'KeepAliveTimeout': 15,
-    'UseCanonicalName': 'Off',
-    'AccessFileName': '.htaccess',
-    'TypesConfig': '/etc/mime.types',
-    'ErrorLog': 'logs/error_log',
-    'LogLevel': 'debug',  # info, notice, warn, error, crit, alert, emerg
-    'ServerSignature': 'On',
-    'IndexOptions': 'FancyIndexing VersionSort NameWidth=* HTMLTable Charset=UTF-8',
-    'Alias': 'alias',
-    'AddLanguage': '',
-    'LoadModule': '',
-    'ScriptAlias': '',
-    'AddType': '',
-    'AddIcon': '',
-    'AddIconByType': '',
-    'Include': ''
+    'servertokens': 'os',
+    'serverroot': '/etc/httpd',
+    'timeout': 60,
+    'defaulttype': 'text/plain',
+    'documentroot': '/var/www/html',
+    'directoryindex': 'index.html index.htm index.php',
+    'adddefaultcharset': 'utf-8',
+    'listen': 80,
+    'serveradmin': 'root@localhost',
+    'servername': 'www@localhost',
+    'namevirtualhost': '*:80',
+    'keepalive': 'off',
+    'maxkeepaliverequests': 100,
+    'keepalivetimeout': 15,
+    'usecanonicalname': 'off',
+    'accessfilename': '.htaccess',
+    'typesconfig': '/etc/mime.types',
+    'errorlog': 'logs/error_log',
+    'loglevel': 'debug',  # info, notice, warn, error, crit, alert, emerg
+    'serversignature': 'on',
+    'indexoptions': 'fancyindexing versionsort namewidth=* htmltable charset=utf-8',
+    'alias': 'alias',
+    'addlanguage': '',
+    'loadmodule': '',
+    'scriptalias': '',
+    'addtype': '',
+    'addicon': '',
+    'addiconbytype': '',
+    'include': '',
+    'aaa': '',
+    'bbb': ''
 }
-
-CON_DIRECTIVES = {
-    'Directory': '',
-    'Files': '',
-    'Limit': '',
-    'Location': '',
-    'VirtualHost': '',
-    'IfModule': ''
+DIRECTIVES = {
+    'acceptfilter':   ('server'),
+    'acceptpathinfo': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'accessfilename': ('server', 'virtualhost'),
+    'adddefaultcharset': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'allowencodedslashes': ('server', 'virtualhost'),
+    'allowoverride': ('directory'),
+    'allowoverridelist': ('directory'),
+    'cgimapextension': ('directory', 'htaccess'),
+    'cgipassauth': ('directory', 'htaccess'),
+    'cgivar': ('directory', 'htaccess'),
+    'contentdigest': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'defaultruntimedir': ('server'),
+    'defaulttype': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'define': ('server', 'virtualhost', 'directory'),
+    'directory': ('server', 'virtualhost'),
+    'directorymatch': ('server', 'virtualhost'),
+    'documentroot': ('server', 'virtualhost'),
+    'else': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'elseif': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'enablemmap': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'enablesendfile': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'error': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'errordocument': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'errorlog': ('server', 'virtualhost'),
+    'errorlogformat': ('server', 'virtualhost'),
+    'extendedstatus': ('server'),
+    'fileetag': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'files': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'filesmatch': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'forcetype': ('directory', 'htaccess'),
+    'gprofdir': ('server', 'virtualhost'),
+    'hostnamelookups': ('server', 'virtualhost', 'directory'),
+    'httpprotocoloptions': ('server', 'virtualhost'),
+    'if': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'ifdefine': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'ifdirective': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'iffile': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'ifmodule': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'ifsection': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'include': ('server', 'virtualhost', 'directory'),
+    'includeoptional': ('server', 'virtualhost', 'directory'),
+    'keepalive': ('server', 'virtualhost'),
+    'keepalivetimeout': ('server', 'virtualhost'),
+    'limit': ('directory', 'htaccess'),
+    'limitexcept': ('directory', 'htaccess'),
+    'limitinternalrecursion': ('server', 'virtualhost'),
+    'limitrequestbody': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'limitrequestfields': ('server', 'virtualhost'),
+    'limitrequestfieldsize': ('server', 'virtualhost'),
+    'limitrequestline': ('server', 'virtualhost'),
+    'limitxmlrequestbody': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'location': ('server', 'virtualhost'),
+    'locationmatch': ('server', 'virtualhost'),
+    'loglevel': ('server', 'virtualhost', 'directory'),
+    'maxkeepaliverequests': ('server', 'virtualhost'),
+    'maxrangeoverlaps': ('server', 'virtualhost', 'directory'),
+    'maxrangereversals': ('server', 'virtualhost', 'directory'),
+    'maxranges': ('server', 'virtualhost', 'directory'),
+    'mergeslashes': ('server', 'virtualhost'),
+    'mergetrailers': ('server', 'virtualhost'),
+    'mutex': ('server'),
+    'namevirtualhost': ('server'),
+    'options': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'protocol': ('server', 'virtualhost'),
+    'protocols': ('server', 'virtualhost'),
+    'protocolshonororder': ('server', 'virtualhost'),
+    'qualifyredirecturl': ('server', 'virtualhost', 'directory'),
+    'regexdefaultoptions': ('server'),
+    'registerhttpmethod': ('server'),
+    'rlimitcpu': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'rlimitmem': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'rlimitnproc': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'scriptinterpretersource': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'seerequesttail': ('server'),
+    'serveradmin': ('server', 'virtualhost'),
+    'serveralias': ('virtualhost'),
+    'servername': ('server', 'virtualhost'),
+    'serverpath': ('virtualhost'),
+    'serverroot': ('server'),
+    'serversignature': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'servertokens': ('server'),
+    'sethandler': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'setinputfilter': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'setoutputfilter': ('server', 'virtualhost', 'directory', 'htaccess'),
+    'timeout': ('server', 'virtualhost'),
+    'traceenable': ('server', 'virtualhost'),
+    'undefine': ('server'),
+    'usecanonicalname': ('server', 'virtualhost', 'directory'),
+    'usecanonicalphysicalport': ('server', 'virtualhost', 'directory'),
+    'virtualhost': ('server'),
+    'aaa': (),
+    'bbb': ()
 }
-VH_TMP = '''<VirtualHost *:80>
-    ServerAdmin webmaster@localhost
-    DocumentRoot /var/www
-    <Directory />
-        Options FollowSymLinks
-        AllowOverride None
-    </Directory>
-    <Directory /var/www/>
-        Options Indexes FollowSymLinks MultiViews
-        AllowOverride None
-        Order allow,deny
-        allow from all
-    </Directory>
-</VirtualHost>
-'''
 
 GZIP = '''<IfModule mod_deflate.c>
     DeflateCompressionLevel 6
@@ -117,11 +188,6 @@ GZIP = '''<IfModule mod_deflate.c>
     SetEnvIfNoCase Request_URI .(?:pdf|doc)$ no-gzip dont-vary
 </IfModule>'''
 
-RE_VH_START = re.compile(r'<VirtualHost(\s+)(\S+)>')
-RE_VH_CLOSE = re.compile(r'</VirtualHost>')
-RE_DT_START = re.compile(r'<Directory(\s+)(\S+)>')
-RE_DT_CLOSE = re.compile(r'</Directory>')
-
 
 def loadconfig(conf=None, getlineinfo=False):
     '''Load Apache config and return a dict.
@@ -135,267 +201,190 @@ def loadconfig(conf=None, getlineinfo=False):
 
 def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
     '''parse Apache httpd.conf and include configs'''
-    if not config:
-        file_i = 0
-        context = '_'
-        config = {
-            '_files': [conf],
-            '_': [{}],
-            '_isdirty': False
-        }
-        context_stack = [context]
-        cconfig = config[context][-1]
+    if config is None:
+        configs = {}
     else:
-        if getlineinfo:
-            if conf not in config['_files']:
-                file_i = len(config['_files'])
-                config['_files'].append(conf)
-            else:
-                file_i = config['_files'].index(conf)
-            print('file_index', file_i)
-        cconfig = config
-        for c in context_stack:
-            cconfig = cconfig[c][-1]
-        context = context_stack[-1]
+        configs = config
 
-    line_buffer = []
+    result = {}
+    directorys = {}  # 附加信息
 
-    configs = {
-        'Alias': [],
-        # 'AddLanguage': [],
-        # 'LoadModule': [],
-        # 'AddIcon': [],
-        # 'Listen': [],
-        # 'IfModule': [],
-        'VirtualHost': []
-    }
-
-    with open(conf) as f:
+    RE_VH_START = re.compile(r'<VirtualHost(\s+)(\S+)>')
+    RE_VH_CLOSE = re.compile(r'</VirtualHost>')
+    RE_DT_START = re.compile(r'<Directory(\s+)(\S+)>')
+    RE_DT_CLOSE = re.compile(r'</Directory>')
+    with open(conf, 'r') as f:
+        id_v = 0
+        enable = False
+        vhost = []
+        id_d = 0
+        enable_d = False
+        v_dirs = {}
+        result_d = {}
         for line_i, line in enumerate(f):
-            line = line.strip()
+            out = line.strip()
 
-            if not line or line.startswith('#'):
+            line_disabled = False
+            if out.startswith(COMMENTFLAG):
+                # deal with our speical comment string
+                while out.startswith(COMMENTFLAG):
+                    out = out[3:]
+                out = out.strip()
+                line_disabled = True
+
+            if not out or out.startswith('#'):
                 continue
 
+            # deal with comment and detect inpanel flag in comment
+            gen_by_inpanel = False
+            fields = out.split('#', 1)
+            if len(fields) > 1 and fields[1].strip() == GENBY:
+                gen_by_inpanel = True
+
+            out = fields[0].strip()
+            line = out.strip(';').lstrip('<').lstrip('</').rstrip('>')
             fields = line.split()
-            key = fields[0].strip(';')
-            # value = ' '.join(fields[1:]).strip(';')
+            key = fields[0].lower()
+            value = ' '.join(fields[1:]).strip(';')
+            # print(key, value, line)
+
+            match = RE_VH_START.search(out)
+            if match:
+                id_d = 0
+                v_dirs = {}
+                result_d[id_v] = []
+                directorys[id_v] = []
+                name_port = match.groups()[1].strip('"').strip('\'')
+                # print(name_port)
+                port = name_port.split(':')[-1]
+                ip = name_port[0:-(len(port) + 1)]
+                ip = ip.lstrip('[').rstrip(']')  # for IPv6
+                vhost = [ip, port, gen_by_inpanel, line_disabled]
+                enable = True
+                enable_d = False
+                continue
+
+            # start of Directory in VirtualHost
+            match_d = RE_DT_START.search(out)
+            if enable is True and match_d:
+                v_dirs = {}
+                path = match_d.groups()[1].strip().strip('"')
+                v_dirs[id_d] = []
+                v_dirs[id_d].append('path ' + path)
+                enable_d = True
+                continue
+
+            # end of Directory in VirtualHost
+            # if '</Directory>' in out:
+            if enable_d is True and RE_DT_CLOSE.search(out):
+                result_d[id_v].append(v_dirs[id_d])
+                id_d += 1
+                enable_d = False
+                v_dirs = {}
+                continue
+
+            # merge of Directory in VirtualHost
+            if enable_d:
+                v_dirs[id_d].append(out)
+                continue
+
+            # end of VirtualHost
+            if RE_VH_CLOSE.search(out):
+                enable_d = False
+                if len(vhost) > 0:
+                    result[id_v] = vhost
+                    if id_v in result_d:
+                        d = _parse_directory(result_d[id_v])
+                        directorys[id_v] = d
+                    else:
+                        directorys[id_v] = []
+                    id_v += 1
+                enable = False
+                continue
+
+            # merge of VirtualHost
+            if enable:
+                # print('merge', out)
+                vhost.append(out)
+                continue
+
             if key in CONFIGS:
-                if key in ('IndexOptions', 'DirectoryIndex'):
+                if key in ('indexoptions', 'directoryindex'):
                     configs[key] = ' '.join(str(n) for n in fields[1:])
-                # for local test
-                # elif key == 'AddIcon':
-                #     configs[key].append([fields[1], fields[2:]])
-                # elif key == 'AddIconByType':
-                #     configs[key] = ' '.join(str(n) for n in fields[1:])
-                elif key == 'Alias':
-                    configs[key].append([fields[1], fields[2].strip('"')])
-                # elif key == 'AddLanguage':
-                #     configs[key].append(fields[1:])
-                # elif key == 'LoadModule':
-                #     configs[key].append(fields[1:])
-                # elif key == 'Listen':
-                #     port = fields[1].split(':')[-1]
-                #     ip = fields[1][0:-(len(port) + 1)].lstrip('[').rstrip(']')
-                #     configs[key].append({'port': port, 'ip': ip})
-                elif key == 'Include':
-                    include_file = fields[1]
-                    if not include_file.startswith('/'):
-                        include_file = os.path.join(HTTPDCONF, include_file)
+                elif key == 'addicon':
+                    if key in configs:
+                        configs[key].append({'path': fields[1], 'exts': fields[2:]})
+                    else:
+                        configs[key] = [{'path': fields[1], 'exts': fields[2:]}]
+                elif key == 'addiconbytype':
+                    configs[key] = ' '.join(str(n) for n in fields[1:])
+                elif key == 'alias':
+                    if key in configs:
+                        configs[key].append({'alias': fields[1], 'origin': fields[2].strip('"')})
+                    else:
+                        configs[key] = [{'alias': fields[1], 'origin': fields[2].strip('"')}]
+                elif key == ('addlanguage', 'loadmodule'):
+                    if key in configs:
+                        configs[key].append(fields[1:])
+                    else:
+                        configs[key] = [fields[1:]]
+                elif key == 'listen':
+                    port = fields[1].split(':')[-1]
+                    ip = fields[1][0:-(len(port) + 1)].lstrip('[').rstrip(']')
+                    if key in configs:
+                        configs[key].append({'port': port, 'ip': ip})
+                    else:
+                        configs[key] = [{'port': port, 'ip': ip}]
+                elif key == 'include':
+                    include_file = fields[1] if fields[1].startswith('/') else os.path.join(HTTPDCONF, fields[1])
                     include_files = glob.glob(include_file)
                     # order by domain name, excluding tld
                     getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
                     include_files = sorted(include_files, lambda x,y: cmp(getdm(x), getdm(y)))
                     for subconf in include_files:
                         if os.path.exists(subconf):
-                            # print(subconf, getlineinfo, config, context_stack)
-                            _parse_includes(subconf, configs, line_i)
-                            # config['aaa'] = 'ddd'
-                            # config['ccc'] = 'ccc'
-                            # _loadconfig(subconf, getlineinfo, config, context_stack)
-                # else:
-                #     configs[key] = fields[1].strip(string.punctuation)
-
-
-        # configs['Gzip'] = _context_check_gzip(LoadModule, IfModule)
-        # configs['VirtualHost'] = VirtualHost
-        return configs
-
-
-def _parse_includes(conf, config, start):
-    config['aaa'] = 'ddd'
-    config['ccc'] = 'ccc'
-    # _loadconfig(conf, config, start)
-
-def getservers(config=None):
-    '''Get servers from apache configuration files.
-    '''
-
-    servers = []
-    # SERVERCONF = '/Users/douzhenjiang/Projects/inpanel/test'
-    # aaa = '/etc/httpd/conf.d/aaa.com.conf'
-    # bbb = '/etc/httpd/conf.d/bbb.com.conf'
-
-    clist = os.listdir(SERVERCONF)  # 列出文件夹下所有的目录与文件
-    for i in range(0, len(clist)):
-        path = os.path.join(SERVERCONF, clist[i])
-        if os.path.isfile(path) and os.path.splitext(path)[1] == '.conf':
-            v = _parse_virtualhost_config(path)
-            if v is not False:
-                servers.extend(v)
-
-    # servers = _parse_virtualhost_config(aaa) + _parse_virtualhost_config(bbb)
-    return servers
-
-
-def getserver(ip, port, server_name, config=None):
-    """Get server setting from nginx config files.
-    """
-    # if config is None or ('_isdirty' in config and config['_isdirty']):
-    #     config = loadconfig(APACHECONF, False)
-    scontext = _parse_virtualhost_config(SERVERCONF + server_name + '.conf')
-    if not scontext:
-        return False
-    return scontext[0]
-    # server = {}
-    # server['_inpanel'] = scontext['_inpanel']
-    # server['server_names'] = []
-    # if 'server_name' in scontext:
-    #     for name in scontext['server_name']:
-    #         server['server_names'].extend(name.split())
-
-
-def _parse_virtualhost_config(conf=''):
-    '''parser VirtualHost config to python object (array)
-    '''
-    try:
-        if not conf or not os.path.isfile(conf):
-            return False
-    except OSError:
-        return False
-
-    with open(conf, 'r') as f:
-        lines = f.readlines()
-        # lines = filter(lambda i: re.search('^((?!#).)*$', i), lines)
-        # print(lines)
-
-    id_v = 0
-    enable = False
-    virtualHosts = []
-    vhost = []
-    result = {}
-    id_d = 0
-    enable_d = False
-    v_dirs = {}
-    result_d = {}
-    directorys = {}  # 附加信息
-    line_disabled = False
-    gen_by_inpanel = False
-    while len(lines) > 0:
-        out = lines.pop(0)
-        if out.startswith(COMMENTFLAG):
-            # deal with our speical comment string
-            while out.startswith(COMMENTFLAG):
-                out = out[3:]
-            out = out.strip()
-            line_disabled = True
-
-        if not out or out.startswith('#'):
-            continue
-
-        # deal with comment and detect inpanel flag in comment
-        fields = out.split('#', 1)
-        if len(fields) > 1 and fields[1].strip() == GENBY:
-            gen_by_inpanel = True
-
-        out = fields[0].strip()
-        match = RE_VH_START.search(out)
-        if match:  # if '<VirtualHost' in out:
-            id_d = 0
-            v_dirs = {}
-            result_d[id_v] = []
-            directorys[id_v] = []
-            name_port = match.groups()[1].strip().strip('"').strip('\'')
-            # print(name_port)
-            port = name_port.split(':')[-1]
-            ip = name_port[0:-(len(port) + 1)]
-            ip = ip.lstrip('[').rstrip(']')  # for IPv6
-            vhost.append(ip)
-            vhost.append(port)
-            enable = True
-            enable_d = False
-            continue
-
-        # start of Directory in VirtualHost
-        match_d = RE_DT_START.search(out)
-        if enable is True and match_d:
-            v_dirs = {}
-            path = match_d.groups()[1].strip().strip('"')
-            v_dirs[id_d] = []
-            v_dirs[id_d].append('path ' + path)
-            enable_d = True
-            continue
-
-        # end of Directory in VirtualHost
-        # if '</Directory>' in out:
-        if enable_d is True and RE_DT_CLOSE.search(out):
-            result_d[id_v].append(v_dirs[id_d])
-            id_d += 1
-            enable_d = False
-            v_dirs = {}
-            continue
-
-        # merge of Directory in VirtualHost
-        if enable_d:
-            v_dirs[id_d].append(out)
-            continue
-
-        # end of VirtualHost
-        if RE_VH_CLOSE.search(out):
-            enable_d = False
-            if len(vhost) > 0:
-                result[id_v] = vhost
-                if id_v in result_d:
-                    d = _parse_directory(result_d[id_v])
-                    directorys[id_v] = d
+                            # print(subconf, getlineinfo, configs, context_stack)
+                            # print('configs', configs)
+                            _loadconfig(subconf, getlineinfo, configs, context_stack)
                 else:
-                    directorys[id_v] = []
-                id_v += 1
-            enable = False
-            vhost = []
-            continue
-
-        # merge of VirtualHost
-        if enable:
-            vhost.append(out)
-            continue
+                    configs[key] = fields[1].strip(string.punctuation)
 
     # print('directorys', directorys)
-    if len(result) == 0:
-        return []
-    for i in result:
-        server = {
-            'ip': result[i][0],
-            'port': result[i][1],
-            'directory': directorys[i],
-            '_inpanel': gen_by_inpanel,
-            'status': 'off' if line_disabled else 'on'
-        }
-        for line in result[i]:
-            line = line.split()
-            key = line[0].lower()
-            if key == 'directoryindex':
-                server['directoryindex'] = ' '.join(str(n) for n in line[1:])
-            elif key == 'serveralias':
-                server['serveralias'] = line[1:]
-            elif key == 'customlog':
-                server['customlog'] = ' '.join(line[1:])
-            elif key in ('serveradmin', 'servername', 'documentroot', 'errorlog', 'options', 'location', 'suexecusergroup'):
-                server[key] = line[1].strip(' ').strip('"')
+    if 'virtualhost' not in configs:
+        configs['virtualhost'] = []
 
-        virtualHosts.append(server)
+    if len(result) > 0:
+        # print('result', result)
+        for i in result:
+            if directorys[i]:
+                server = {'directory': directorys[i]}
+            else:
+                server = {}
+            for j, line in enumerate(result[i]):
+                if j == 0:
+                    server['ip'] = result[i][0]
+                elif j == 1:
+                    server['port'] = result[i][1]
+                elif j == 2:
+                    server['_inpanel'] = result[i][2]
+                elif j == 3:
+                    server['status'] = 'off' if result[i][3] else 'on'
+                else:
+                    fields = line.split()
+                    key = fields[0].lower()
+                    if key == 'directoryindex':
+                        server['directoryindex'] = ' '.join(str(n) for n in fields[1:])
+                    elif key == 'serveralias':
+                        server['serveralias'] = fields[1:]
+                    elif key == 'customlog':
+                        server['customlog'] = ' '.join(fields[1:])
+                    elif key in ('serveradmin', 'servername', 'documentroot', 'errorlog', 'options', 'location', 'suexecusergroup'):
+                        server[key] = fields[1].strip(' ').strip('"')
 
-    return virtualHosts
+            configs['virtualhost'].append(server)
+
+    # configs['gzip'] = _context_check_gzip(LoadModule, IfModule)
+    return configs
 
 
 def _parse_directory(directory):
@@ -444,6 +433,28 @@ def _parse_directory(directory):
         results.append(drct)
     # print(results)
     return results
+
+
+def getservers(config=None):
+    '''Get servers from apache configuration files.
+    '''
+    if not config:
+        config = loadconfig()
+    if 'virtualhost' in config and len(config['virtualhost']) > 0:
+        return config['virtualhost']
+    else:
+        return []
+
+
+def getserver(ip, port, server_name, config=None):
+    '''Get server setting from Apache config files.
+    '''
+    if config is None or ('_isdirty' in config and config['_isdirty']):
+        config = loadconfig()
+    if not config or not 'virtualhost' in config or len(config['virtualhost']) == 0:
+        return False
+    s = [i for i in config['virtualhost'] if i['port'] == port and i['ip'] == ip and i['servername'] == server_name]
+    return s[0] if len(s) == 1 else None
 
 
 def virtual_host_config(site, key, val, port=80):
@@ -732,7 +743,6 @@ def _context_deleteupstreams(server_name, config=None, disabled=None):
     return True
 
 
-
 def _replace(positions, lines):
     """Replace the lines specified in list positions to new lines.
 
@@ -793,6 +803,7 @@ def _replace(positions, lines):
         # write back to file
         with open(filepath, 'w') as f: f.write(''.join(flines))
 
+
 def _insert(filepath, line_start, lines):
     """Insert the lines to the specified position.
     """
@@ -819,7 +830,6 @@ def _insert(filepath, line_start, lines):
     with open(filepath, 'w') as f: f.write(''.join(flines))
 
 
-
 def http_get(directive, config=None):
     """Get directive values in http context.
     """
@@ -831,12 +841,14 @@ def http_get(directive, config=None):
     else:
         return None
 
+
 def http_getfirst(directive, config=None):
     """Get the first value of the directive in http context.
     """
     values = http_get(directive, config)
     if values: return values[0]
     return None
+
 
 def http_set(directive, values, config=None):
     """Set a directive in http context.
@@ -885,6 +897,7 @@ def enableserver(ip, port, servername):
     _context_uncommentupstreams(servername)
     return _context_uncommentserver(ip, port, servername)
 
+
 def deleteserver(server_name, ip, port):
     '''Delete a server.'''
     print(SERVERCONF + server_name + '.conf')
@@ -894,16 +907,15 @@ def deleteserver(server_name, ip, port):
     except:
         return False
 
+
 def servername_exists(ip, port, server_name, config=None):
     '''Check if the server_name at given ip:port is already exists.
     '''
-
     return _context_getserver(ip, port, server_name, config=config) and True or False
 
 
 def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documentroot=None, directoryindex=None, directory=None, errorlog=None, customlog=None, version=None):
     '''Add a new VirtualHost.'''
-
     if not is_valid_domain(serveraname):
         return False
     ip = ip or '*'
@@ -1010,14 +1022,11 @@ def updateserver(old_name, old_ip, old_port, serveraname, ip, port, serveralias=
     if scontext and scontext != oldscontext:
         return False
 
-
-
-
 if __name__ == '__main__':
-    HTTPDCONF = '/Users/douzhenjiang/test/inpanel/test'
-    APACHECONF = '/Users/douzhenjiang/test/inpanel/test/httpd.conf'
-    tmp = loadconfig()
-    print('config', tmp)
+    HTTPDCONF = '/Users/douzhenjiang/Projects/inpanel/test'
+    APACHECONF = '/Users/douzhenjiang/Projects/inpanel/test/httpd.conf'
+    # tmp = loadconfig()
+    # print('config', tmp)
     # print(json.dumps(tmp))
     # virtual_host_config('aaa.com', 'DocumentRoot', '/v/asfs34535')
     # virtual_host_config('aaa.com', 'ServerAdmin', '4567896543')
@@ -1026,15 +1035,28 @@ if __name__ == '__main__':
     # for line in replace_docroot('aaa.com', 'docroot'):
     #     print(line)
 
-    # aaa = '/Users/douzhenjiang/test/inpanel/test/aaa.com.conf'
-    # tmp1 = _parse_virtualhost_config(aaa)
-    # print(json.dumps(tmp1))
+    # aaa = '/Users/douzhenjiang/Projects/inpanel/test/aaa.com.conf'
+    tmp1 = loadconfig()
+    print(json.dumps(tmp1))
+    # s= tmp1['virtualhost']
+    # # s = scontext['virtualhost']
+    # s= [i for i in s if i['port']=='870' and i['ip']=='1.1.1.1' and i['servername']=='inpanel.org']
+    # print(s)
+    # s = getserver('1.1.1.1', '870', 'inpanel.org')
+    # s = json.dumps(getservers())
+    # print(s)
+    # for i in s:
+    #     print('port' in i)
+    #     # if i.port=='80':
+    #     #     print(i)
+    #     #     break
+    # print([i for i in s if i['port']=='870' and i['ip']=='1.1.1.1' and i['servername']=='inpanel.org'])
 
     # print getservers()
 
     # path = os.path.join(SERVERCONF, clist[i])
     # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
-    # SERVERCONF = '/Users/douzhenjiang/test/inpanel/test'
+    # SERVERCONF = '/Users/douzhenjiang/Projects/inpanel/test'
     # print(servername_exists('1.1.1.1', 80, 'inpanel.org'))
     # addserver('inpanel.org', '1.1.1.1', 80,
     #           serveralias=['cc.com', 'bb.com'],
