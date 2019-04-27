@@ -2108,13 +2108,20 @@ class OperationHandler(RequestHandler):
         if action == 'cron_list':
             self.write({'code': 0, 'msg': u'获取定时任务成功！','data': cron.cron_list(user=user, level=level)})
         elif action in ('cron_add', 'cron_mod'):
+            command = self.get_argument('command', '')
+            if command == '':
+                self.write({'code': -1, 'msg': u'请输入命令！'})
+                return
+            if level == 'system' and user == '':
+                self.write({'code': -1, 'msg': u'请输入用户'})
+                return
+
             minute = self.get_argument('minute', '')
             hour = self.get_argument('hour', '')
             day = self.get_argument('day', '')
             month = self.get_argument('month', '')
             weekday = self.get_argument('weekday', '')
             weekday = self.get_argument('weekday', '')
-            command = self.get_argument('command', '')
             if action == 'cron_add':
                 if cron.cron_add(user, minute, hour, day, month, weekday, command, level):
                     self.write({'code': 0, 'msg': u'定时任务添加成功！'})

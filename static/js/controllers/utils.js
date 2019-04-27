@@ -1651,13 +1651,13 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
         };
         $scope.add_cron_normal = function() {
             $scope.form_clear();
-            $scope.task_user = $scope.cron_normal.user;
+            $scope.task_user = $scope.cron_normal.user || "";
             $scope.task_level = 'normal';
             $('#cron-add-confirm').modal();
         };
         $scope.add_cron_system = function() {
             $scope.form_clear();
-            $scope.task_user = $scope.cron_system.user;
+            $scope.task_user = $scope.cron_system.user || "";
             $scope.task_level = 'system';
             $('#cron-add-confirm').modal();
         };

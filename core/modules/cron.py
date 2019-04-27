@@ -144,7 +144,7 @@ def cron_add(user, minute, hour, day, month, weekday, command, level):
     '''add normal or system cron
     '''
     if level == 'system':
-        if user is None:
+        if user is None or user == '' or len(user) == 0:
             return False
         spool = crontab
         line = "%s %s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, user, command)
