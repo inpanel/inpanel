@@ -368,6 +368,7 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
                 elif j == 2:
                     server['_inpanel'] = result[i][2]
                 elif j == 3:
+                    server['disabled'] = result[i][3]
                     server['status'] = 'off' if result[i][3] else 'on'
                 else:
                     fields = line.split()
@@ -440,21 +441,16 @@ def getservers(config=None):
     '''
     if not config:
         config = loadconfig()
-    if 'virtualhost' in config and len(config['virtualhost']) > 0:
-        return config['virtualhost']
-    else:
-        return []
+    return _context_getservers(config=config)
 
 
 def getserver(ip, port, server_name, config=None):
-    '''Get server setting from Apache config files.
+    '''Get server setting from Apache configuration files.
     '''
     if config is None or ('_isdirty' in config and config['_isdirty']):
         config = loadconfig()
-    if not config or not 'virtualhost' in config or len(config['virtualhost']) == 0:
-        return False
-    s = [i for i in config['virtualhost'] if i['port'] == port and i['ip'] == ip and i['servername'] == server_name]
-    return s[0] if len(s) == 1 else None
+    server = _context_getserver(ip, port, server_name, config=config)
+    return server[0] if len(server) >= 1 else None
 
 
 def virtual_host_config(site, key, val, port=80):
@@ -553,9 +549,12 @@ def _context_gethttp(config=None):
 def _context_getservers(disabled=None, config=None, getlineinfo=True):
     '''Get server context configs.
     '''
-    servers = []
+
     if config is None or ('_isdirty' in config and config['_isdirty']):
-        servers = loadconfig(APACHECONF, getlineinfo)
+        config = loadconfig(APACHECONF, getlineinfo)
+    servers = []
+    if 'virtualhost' in config and len(config['virtualhost']) > 0:
+        servers = config['virtualhost']
     if disabled == None or not getlineinfo:
         return servers
     else:
@@ -571,15 +570,13 @@ def _context_getserver(ip, port, servername, config=None, disabled=None, getline
     if config is None or ('_isdirty' in config and config['_isdirty']):
         config = loadconfig(APACHECONF, getlineinfo)
     cnfservers = _context_getservers(disabled=disabled, config=config, getlineinfo=getlineinfo)
+    # print(cnfservers)
     if not ip or ip in ('*', '0.0.0.0'):
         ip = '*'
     if is_valid_ipv6(ip) and not is_valid_ipv4(ip):
         ip = '[' + ip + ']'
-    # for s in cnfservers:
-    #     if servername == s.servername and ip == s.ip and port == s.port:
-    #         return s
-    # found_server = 
-    return any([s.servername and ip == s.ip and port == s.port for s in cnfservers])
+    port = str(port)
+    return [s for s in cnfservers if ip == s['ip'] and port == s['port'] and s['servername'] == servername or 'serveralias' in s and servername in s['serveralias']]
         # if getlineinfo:
         #     s_names = ' '.join([v['value'] for v in s['server_name']]).split()
         #     listens = [v['value'].split()[0] for v in s['listen']]
@@ -922,8 +919,10 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
     if is_valid_ipv6(ip) and not is_valid_ipv4(ip):
         ip = '[' + ip + ']'
     if port:
-        port = int(port) or 80
+        port = str(port) or '80'
     else:
+        return False
+    if not documentroot:
         return False
     # check if any of servername - ip - port pair already exists
     if servername_exists(ip, port, serveraname):
@@ -932,10 +931,7 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
     # start generate the config string
     servercfg = ['<VirtualHost %s:%s> # %s' % (ip, port, GENBY)]
     servercfg.append('    ServerName %s' % serveraname)
-    if documentroot:
-        servercfg.append('    DocumentRoot %s' % documentroot)
-    else:
-        return False
+    servercfg.append('    DocumentRoot %s' % documentroot)
     if serveradmin:
         servercfg.append('    ServerAdmin %s' % serveradmin)
     if serveralias:
@@ -1025,6 +1021,7 @@ def updateserver(old_name, old_ip, old_port, serveraname, ip, port, serveralias=
 if __name__ == '__main__':
     HTTPDCONF = '/Users/douzhenjiang/Projects/inpanel/test'
     APACHECONF = '/Users/douzhenjiang/Projects/inpanel/test/httpd.conf'
+    SERVERCONF = '/Users/douzhenjiang/Projects/inpanel/test/conf.d/'
     # tmp = loadconfig()
     # print('config', tmp)
     # print(json.dumps(tmp))
@@ -1036,15 +1033,19 @@ if __name__ == '__main__':
     #     print(line)
 
     # aaa = '/Users/douzhenjiang/Projects/inpanel/test/aaa.com.conf'
-    tmp1 = loadconfig()
-    print(json.dumps(tmp1))
+    # tmp1 = loadconfig()
+    # print(json.dumps(tmp1))
     # s= tmp1['virtualhost']
     # # s = scontext['virtualhost']
     # s= [i for i in s if i['port']=='870' and i['ip']=='1.1.1.1' and i['servername']=='inpanel.org']
     # print(s)
-    # s = getserver('1.1.1.1', '870', 'inpanel.org')
-    # s = json.dumps(getservers())
+    # s = getserver('1.1.1.1', '80', 'aaaaaaaa.aa')
+    # s = servername_exists('1.1.1.1', 80, 'aaaaaaaa.aa')
     # print(s)
+    # s = addserver('aaaaaaaa.aa', '1.1.1.1', 801, documentroot='/Users/douzhenjiang/Projects/inpanel/test')
+    s = getserver('1.1.1.1', 80, 'aaaaaaaa.aa')
+    s = json.dumps(s)
+    print(s)
     # for i in s:
     #     print('port' in i)
     #     # if i.port=='80':
@@ -1052,7 +1053,7 @@ if __name__ == '__main__':
     #     #     break
     # print([i for i in s if i['port']=='870' and i['ip']=='1.1.1.1' and i['servername']=='inpanel.org'])
 
-    # print getservers()
+    # print json.dumps(_context_getservers(disabled=None))
 
     # path = os.path.join(SERVERCONF, clist[i])
     # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')

@@ -1293,6 +1293,17 @@ class OperationHandler(RequestHandler):
             if not documentroot:
                 self.write({'code': -1, 'msg': u'%s 不是有效的目录！' % documentroot})
                 return
+            autocreate = setting.get('autocreate')
+            if not os.path.exists(documentroot):
+                if autocreate:
+                    try:
+                        os.mkdir(documentroot)
+                    except:
+                        self.write({'code': -1, 'msg': u'站点目录 %s 创建失败！' % documentroot})
+                        return
+                else:
+                    self.write({'code': -1, 'msg': u'站点目录 %s 不存在！' % documentroot})
+                    return
 
             directoryindex = setting.get('directoryindex')
             serveralias = setting.get('serveralias')
@@ -1302,6 +1313,17 @@ class OperationHandler(RequestHandler):
             directory = setting.get('directory')
 
             version = self.get_argument('version', '')  # apache version
+            for diret in directory:
+                if 'path' in diret and diret['path']:
+                    if not os.path.exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
+                        try:
+                            os.mkdir(diret['path'])
+                        except:
+                            self.write({'code': -1, 'msg': u'路径 %s 创建失败！' % diret['path']})
+                            return
+                else:
+                    self.write({'code': -1, 'msg': u'请选择路径！'})
+                    return
             if action == 'addserver':
                 if not apache.addserver(servername, ip, port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
                     errorlog=errorlog, customlog=customlog, version=version):
