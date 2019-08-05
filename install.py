@@ -97,7 +97,7 @@ class Install(object):
             success = False
             print('[ %s ]' % FAILED)
         return success
-    
+
     def handle_dependent(self):
         '''Install dependent software'''
         success = True
@@ -312,7 +312,6 @@ class Install(object):
             print('...%s' % OK)
 
         self.handle_dependent()
-        self.handle_repository()
         self.handle_python()
         self.handle_git()
         self.handle_intranet()
