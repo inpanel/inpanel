@@ -37,7 +37,7 @@
                         <label class="col-sm-2 control-label" for="newpassword">密码验证</label>
                         <div class="col-sm-10">
                             <div class="checkbox">
-                                <label><input ng-model="setting.enable_pwdauth" type="checkbox"> 支持使用密码进行登录验证</label>
+                                <label><input ng-model="setting.enable_pwdauth" type="checkbox">支持使用密码进行登录验证</label>
                             </div>
                         </div>
                     </div>
@@ -45,7 +45,7 @@
                         <label class="col-sm-2 control-label" for="newpasswordc">启用SFTP</label>
                         <div class="col-sm-10">
                             <div class="checkbox">
-                                <label><input ng-model="setting.enable_sftp" type="checkbox"> 开启 SFTP 支持</label>
+                                <label><input ng-model="setting.enable_sftp" type="checkbox">开启 SFTP 支持</label>
                             </div>
                             <span class="help-block">开启后可通过 SFTP 工具上传/下载文件。</span>
                         </div>
@@ -92,7 +92,7 @@
                         <label class="col-sm-2 control-label">启用公钥验证</label>
                         <div class="col-sm-10">
                             <div class="checkbox">
-                                <label><input ng-model="setting.enable_pubkauth" type="checkbox"> 支持使用公钥进行登录验证</label>
+                                <label><input ng-model="setting.enable_pubkauth" type="checkbox">支持使用公钥进行登录验证</label>
                             </div>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                         <label class="col-sm-2 control-label">关闭密码验证</label>
                         <div class="col-sm-10">
                             <div class="checkbox">
-                                <label><input ng-model="setting.disable_pwdauth" type="checkbox"> 禁止使用密码进行登录验证（可选）</label>
+                                <label><input ng-model="setting.disable_pwdauth" type="checkbox">禁止使用密码进行登录验证（可选）</label>
                             </div>
                         </div>
                     </div>
@@ -137,7 +137,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{confirm_title}}</h3>
+                <h3 class="modal-title">{{confirm_title}}</h3>
             </div>
             <div class="modal-body" ng-bind-html-unsafe="confirm_body"></div>
             <div class="modal-footer">
@@ -153,7 +153,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>修改私钥密码</h3>
+                <h3 class="modal-title">修改私钥密码</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">

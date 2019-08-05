@@ -17,7 +17,7 @@
                         <input class="form-control" type="text" ng-model="path">
                         <div class="input-group-btn">
                             <button class="btn btn-default btn-sm" type="submit" title="刷新"><span class="glyphicon glyphicon-refresh"></span>
-                        <button class="btn btn-default btn-sm" type="submit" title="进入"><span class="glyphicon glyphicon-menu-right"></span></button>
+                            <button class="btn btn-default btn-sm" type="submit" title="进入"><span class="glyphicon glyphicon-menu-right"></span></button>
                         </div>
                     </div>
                 </form>
@@ -55,12 +55,12 @@
             </div>
         </div>
 
-        <div style="margin:30px 10px" ng-show="fileloading">
-            <img src="images/loading.gif" style="margin-right:5px"> 正在加载文件列表，请稍候...
+        <div style="margin-top:30px;margin-bottom: 30px;" ng-show="fileloading">
+            <div waiting ng-init="waitingText='正在加载文件列表，请稍候...'"></div>
         </div>
 
         <div ng-show="!fileloading">
-            <table class="table table-hover table-bordered" style="margin-top:15px;">
+            <table class="table table-hover table-bordered table-condensed" style="margin-top:10px;">
                 <thead>
                     <tr>
                         <th style="width:10px"><input type="checkbox" ng-model="selectall"></th>
@@ -189,7 +189,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>操作确认</h3>
+                <h3 class="modal-title">操作确认</h3>
             </div>
             <div class="modal-body">
                 <p>{{overwrite_filename}} 已存在，如何处理？</p>
@@ -222,7 +222,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{newname_title}}</h3>
+                <h3 class="modal-title">{{newname_title}}</h3>
             </div>
             <div class="modal-body">
                 <form class="" onsubmit="return false">
@@ -245,7 +245,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>上传文件到当前目录</h3>
+                <h3 class="modal-title">上传文件到当前目录</h3>
             </div>
             <div class="modal-body">
                 <div style="margin:10px 20px">
@@ -272,7 +272,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>下载资源到当前目录</h3>
+                <h3 class="modal-title">下载资源到当前目录</h3>
             </div>
             <div class="modal-body">
                 <div style="margin:10px 20px">
@@ -293,7 +293,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>压缩 {{compress_name}}</h3>
+                <h3 class="modal-title">压缩 {{compress_name}}</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -338,7 +338,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{selector_title}}</h3>
+                <h3 class="modal-title">{{selector_title}}</h3>
             </div>
             <div class="modal-body">
                 <div selector></div>
@@ -355,7 +355,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>修改用户和用户组</h3>
+                <h3 class="modal-title">修改用户和用户组</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -402,7 +402,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>修改权限</h3>
+                <h3 class="modal-title">修改权限</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -467,7 +467,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{confirm_title}}</h3>
+                <h3 class="modal-title">{{confirm_title}}</h3>
             </div>
             <div class="modal-body" ng-bind-html-unsafe="confirm_body">
             </div>

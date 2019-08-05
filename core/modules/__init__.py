@@ -36,8 +36,6 @@ __all__ = [
     'shell',
     'ssh',
     'user',
-    'utils',
     'vsftpd',
-    'web',
     'yum'
 ]

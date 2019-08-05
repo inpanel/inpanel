@@ -120,7 +120,7 @@
                         </tr>
                     </tbody>
                 </table>
-                <table class="table table-borderless" style="width:400px;">
+                <table class="table table-borderless table-condensed" style="width:400px;">
                     <thead>
                         <tr>
                             <th colspan="2">其它设置</th>
@@ -130,7 +130,7 @@
                         <tr>
                             <td style="width:80px">GZIP压缩</td>
                             <td>
-                                <label><input ng-model="setting.gzip" type="checkbox"> 开启GZIP压缩</label>
+                                <label><input ng-model="setting.gzip" type="checkbox">开启GZIP压缩</label>
                             </td>
                         </tr>
                     </tbody>
@@ -191,7 +191,7 @@
                                                 </span>
                                             </div><br>
                                             <label class="checkbox">
-                                                <input ng-model="cache.autocreate" type="checkbox"> 目录不存在时，自动创建目录
+                                                <input ng-model="cache.autocreate" type="checkbox">目录不存在时，自动创建目录
                                             </label>
                                         </div>
                                     </td>
@@ -283,7 +283,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{selector_title}}</h3>
+                <h3 class="modal-title">{{selector_title}}</h3>
             </div>
             <div class="modal-body">
                 <div selector></div>

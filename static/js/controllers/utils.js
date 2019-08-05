@@ -1469,27 +1469,33 @@ var UtilsRepositoryCtrl = [
     }
 ];
 
-var UtilsCronCtrl = ['$scope', 'Module', 'Request',
-    function ($scope, Module, Request) {
+var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
+    function ($scope, Module, Request, Timeout) {
         var module = 'utils.cron';
         Module.init(module, '定时任务');
-        $scope.loaded = false;
-        $scope.cron_list = [];
-        $scope.loading_cron_list = true;
-        $scope.has_cron_service = false;
         var section = Module.getSection();
-        var enabled_sections = ['base', 'cron'];
+        var enabled_sections = ['normal', 'system', 'environment'];
         Module.initSection(enabled_sections[0]);
+        $scope.loaded = false;
+        $scope.cron_normal = {
+            user: 'root',
+            list: []
+        };
+        $scope.cron_system = {
+            user: '',
+            list: []
+        };
+        $scope.has_cron_service = false;
 
         $scope.load = function () {
             Request.get('/query/service.crond', function(data) {
-                console.log(data);
                 if (data['service.crond'] && data['service.crond'].status) {
                     $scope.has_cron_service = true;
                 }
+                $scope.tab_sec(section);
                 $scope.loaded = true;
+                $scope.load_user();
             });
-            $scope.tab_sec(section);
         };
 
         $scope.tab_sec = function (section) {
@@ -1516,50 +1522,87 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
             weekday: ''
         };
 
+        $scope.task_id = '';
         $scope.task_time = '';
         $scope.task_user = '';
+        $scope.task_level = '';
         $scope.task_email = '';
         $scope.task_command = '';
 
-        $scope.load_base = function (init) {};
-        $scope.load_cron = function (init) {
-            if (!init && !$scope.init_process) {
-                return; // Prevent duplicate requests
-            }
-            $scope.load_cron_list();
+        $scope.first = {
+            normal: true,
+            system: true,
+            environment: true
         };
-        $scope.load_cron_list = function () {
-            if (!$scope.has_cron_service) return;
-            $scope.loading_cron_list = true;
-            Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
-                $scope.loading_cron_list = false;
+        $scope.load_normal = function (init) {
+            if (init || $scope.first.normal) {
+                $scope.load_normal_list();
+            }
+        };
+        $scope.load_system = function (init) {
+            if (init || $scope.first.system) {
+                $scope.load_system_list();
+            }
+        };
+        $scope.load_environment = function (init) {
+            if (init || $scope.first.environment) {
+                $scope.load_environment_list();
+            }
+        };
+
+        $scope.loading = {
+            normal: false,
+            system: false,
+            environment: false
+        };
+        $scope.load_normal_list = function () {
+            if (!$scope.has_cron_service || $scope.loading.normal) return; // Prevent duplicate requests
+            $scope.loading.normal = true;
+            $scope.first.normal = false;
+            Request.post('/operation/cron', {
+                'action': 'cron_list',
+                'user': $scope.cron_normal.user,
+                'level': 'normal'
+            }, function (data) {
+                $scope.loading.normal = false;
                 if (data.code == 0) {
-                    $scope.cron_list = data.data;
+                    $scope.cron_normal.list = data.data;
                 }
             }, false, true);
         };
-        $scope.cron_add_confirm = function() {
-            $scope.load_user();
-            $('#cron-add-confirm').modal();
+        $scope.load_system_list = function () {
+            if (!$scope.has_cron_service || $scope.loading.system) return; // Prevent duplicate requests
+            $scope.loading.system = true;
+            $scope.first.system = false;
+            Request.post('/operation/cron', {
+                'action': 'cron_list',
+                'user': $scope.cron_system.user,
+                'level': 'system',
+            }, function (data) {
+                $scope.loading.system = false;
+                if (data.code == 0) {
+                    $scope.cron_system.list = data.data;
+                }
+            }, false, true);
         };
-        $scope.load_user = function () {
-            if (!$scope.users) {
-                Request.post('/operation/user', {
-                    'action': 'listuser',
-                    'fullinfo': false
-                }, function (data) {
-                    if (data.code == 0) {
-                        $scope.users = data.data;
-                    }
-                }, false, true);
-            }
+        $scope.load_environment_list = function () {
+            if (!$scope.has_cron_service || $scope.loading.environment) return; // Prevent duplicate requests
+            $scope.loading.environment = true;
+            $scope.first.environment = false;
+            Timeout(function() {
+                $scope.loading.environment = false;
+            }, 1000, module);
+            // Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
+            //     $scope.loading.environment = false;
+            //     if (data.code == 0) {}
+            // }, false, true);
         };
+
         $scope.$watch('cron_time', function (n) {
             $scope.task_time = n.minute + ' ' + n.hour + ' ' + n.day + ' ' + n.month + ' ' + n.weekday;
         }, true);
         $scope.select_common_option = function () {
             var option = $scope.common_options;
-            console.log($scope.common_options);
             if (option && option != '') {
                 var option_array = option.split(' ');
 
@@ -1585,31 +1628,199 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request',
         };
         $scope.input_single_option = function (type) {
             if (typeof type === 'undefined' || type === '') {
-                return
+                return;
             };
             $scope.options[type] = $scope.cron_time[type];
         };
         $scope.select_single_option = function (type) {
             if (typeof type === 'undefined' || type === '') {
-                return
+                return;
             };
             $scope.cron_time[type] = $scope.options[type];
         };
-        $scope.addCronJobs = function () {
-            var data = {
-                action: 'add_cron_jobs',
-                command: $scope.task_time + ' ' + $scope.task_command
+
+        $scope.load_user = function () {
+            Request.post('/operation/user', {
+                'action': 'listuser',
+                'fullinfo': false
+            }, function (data) {
+                if (data.code == 0) {
+                    $scope.users = data.data;
+                }
+            }, false, true);
+        };
+        $scope.add_cron_normal = function() {
+            $scope.form_clear();
+            $scope.task_user = $scope.cron_normal.user || "";
+            $scope.task_level = 'normal';
+            $('#cron-add-confirm').modal();
+        };
+        $scope.add_cron_system = function() {
+            $scope.form_clear();
+            $scope.task_user = $scope.cron_system.user || "";
+            $scope.task_level = 'system';
+            $('#cron-add-confirm').modal();
+        };
+        $scope.add_cron_jobs = function () {
+            $('#cron-add-confirm').modal('hide');
+            Request.post('/operation/cron', {
+                action: 'cron_add',
+                minute: $scope.cron_time.minute,
+                hour: $scope.cron_time.hour,
+                day: $scope.cron_time.day,
+                month: $scope.cron_time.month,
+                weekday: $scope.cron_time.weekday,
+                command: $scope.task_command,
+                user: $scope.task_user,
+                email: $scope.task_email,
+                level: $scope.task_level
+            }, function(res) {
+                if (res.code == 0) {
+                    $('#cron-add-confirm').modal('hide');
+                    if ($scope.task_level == 'system') {
+                        $scope.load_system_list();
+                    } else {
+                        $scope.load_normal_list();
+                    }
+                }
+            });
+        };
+        $scope.form_clear = function () {
+            // $scope.cron_time = {
+            //     minute: '',
+            //     hour: '',
+            //     day: '',
+            //     month: '',
+            //     weekday: '',
+            // };
+            $scope.common_options = ''
+            $scope.select_common_option()
+            $scope.task_id = '';
+            $scope.task_user = '';
+            $scope.task_email = '';
+            $scope.task_level = '';
+            $scope.task_command = '';
+        };
+        $scope.cron_detail = function (info, level) {
+            $('#cron-add-confirm').modal();
+            $scope.form_clear();
+            $scope.cron_time = {
+                minute: info.minute,
+                hour: info.hour,
+                day: info.day,
+                month: info.month,
+                weekday: info.weekday,
+            };
+            $scope.options = angular.copy($scope.cron_time);
+            $scope.task_id = info.id;
+            $scope.task_user = info.user;
+            $scope.task_email = '';
+            $scope.task_level = level;
+            $scope.task_command = info.command;
+        };
+        $scope.update_cron_jobs = function () {
+            $('#cron-add-confirm').modal('hide');
+            var currlist = $scope.task_level == 'system' && $scope.cron_system.user ? $scope.cron_system.user : '';
+            Request.post('/operation/cron', {
+                action: 'cron_mod',
+                minute: $scope.cron_time.minute,
+                hour: $scope.cron_time.hour,
+                day: $scope.cron_time.day,
+                month: $scope.cron_time.month,
+                weekday: $scope.cron_time.weekday,
+                command: $scope.task_command,
+                cronid: String($scope.task_id),
+                user: $scope.task_user,
+                level: $scope.task_level,
+                email: $scope.task_email,
+                currlist: currlist
+            }, function(res) {
+                if (res.code == 0) {
+                    $('#cron-add-confirm').modal('hide');
+                    if ($scope.task_level == 'system') {
+                        $scope.load_system_list();
+                    } else {
+                        $scope.load_normal_list();
+                    }
+                }
+            });
+        };
+        $scope.cron_del_confirm = function(info, level) {
+            if (!info || !info.id || !info.user) return;
+            $scope.task_id = info.id;
+            $scope.task_user = info.user;
+            $scope.task_level = level;
+            $('#cron-delete-confirm').modal();
+        };
+        $scope.del_cron_jobs = function () {
+            $('#cron-delete-confirm').modal('hide');
+            // current user's task on system level
+            var currlist = $scope.task_level == 'system' && $scope.cron_system.user ? $scope.cron_system.user : '';
+            Request.post('/operation/cron', {
+                action: 'cron_del',
+                cronid: String($scope.task_id),
+                user: $scope.task_user,
+                level: $scope.task_level,
+                currlist: currlist
+            }, function(res) {
+                if (res.code == 0) {
+                    $('#cron-delete-confirm').modal('hide');
+                    if ($scope.task_level == 'system') {
+                        $scope.load_system_list();
+                    } else {
+                        $scope.load_normal_list();
+                    }
+                }
+            });
+        };
+    }
+];
+
+var UtilsShellCtrl = ['$scope', '$routeParams', 'Module', 'Timeout', 'Request',
+    function($scope, $routeParams, Module, Timeout, Request) {
+        var module = 'utils.shell';
+        Module.init(module, 'SHELL 命令');
+        var section = Module.getSection();
+        var enabled_sections = ['base', 'advance'];
+        Module.initSection(enabled_sections[0]);
+        $scope.loaded = false;
+        $scope.loading = false;
+        $scope.base_cmds = [];
+        $scope.base_cwd = '/';
+        $scope.base_input = '';
+
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            // $scope['load_' + section](init);
+        };
+
+        $scope.send_base_cmd = function() {
+            if ($scope.base_input == '') {
+                return;
             }
-            console.log(data)
-            // Request.post('/operation/task', {
-            //     action: 'add',
-            //     username: $scope.username,
-            //     password: $scope.password ? hex_md5($scope.password) : '',
-            //     passwordc: $scope.passwordc ? hex_md5($scope.passwordc) : '',
-            //     passwordcheck: $scope.passwordcheck
-            // }, function(data) {
-            //     if (data.code == 0) $scope.loadAuthInfo();
-            // });
+            $scope.base_cmds.push('# ' + $scope.base_input);
+            Request.post('/operation/shell', {
+                'action': 'exec_command',
+                'cmd': $scope.base_input,
+                'cwd': $scope.base_cwd
+            }, function (res) {
+                $scope.base_input = '';
+                if (res.code == 0) {
+                    if (res.data) {
+                        $scope.base_cmds.push(res.data.data);
+                        // for (i in res.data.data) {
+                        //     $scope.base_cmds.push(res.data.data[i]);
+                        // }
+                    }
+                }
+            });
         };
     }
 ];

@@ -24,7 +24,7 @@
                             <h5 class="pull-left">物理分区管理</h5>
                             <button class="btn btn-default btn-sm pull-right" title="刷新磁盘列表" ng-click="get_diskinfo()" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
                         </div>
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover table-condensed">
                             <tbody ng-repeat="partition in diskinfo['partitions']">
                                 <tr class="warning">
                                     <td style="width:80px;">设备{{$index+1}}</td>
@@ -71,7 +71,7 @@
 
                     <div style="margin-top:40px;display:none" ng-show="diskinfo['lvscount'] > 0">
                         <h5>LVM逻辑卷（只读）</h5>
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover table-condensed">
                             <tbody>
                                 <tr class="warning">
                                     <td style="width:100px;">设备</td>
@@ -103,7 +103,7 @@
                             <a class="btn btn-default" href="#/storage/remote/new" title="添加网络磁盘" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></a>
                         </div>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width:50px;">序号</th>
@@ -153,7 +153,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>启用交换分区 {{devname}} </h3>
+                <h3 class="modal-title">启用交换分区 {{devname}} </h3>
             </div>
             <div class="modal-body">
                 <p>确定要启用交换分区 {{devname}} 吗？</p>
@@ -171,7 +171,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>停用交换分区 {{devname}} </h3>
+                <h3 class="modal-title">停用交换分区 {{devname}} </h3>
             </div>
             <div class="modal-body">
                 <p>确定要停用交换分区 {{devname}} 吗？</p>
@@ -189,7 +189,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>卸载 {{devname}} </h3>
+                <h3 class="modal-title">卸载 {{devname}} </h3>
             </div>
             <div class="modal-body">
                 <p>确定要卸载 {{devname}} 吗？</p>
@@ -207,7 +207,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>挂载 {{devname}}</h3>
+                <h3 class="modal-title">挂载 {{devname}}</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -237,7 +237,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>格式化 {{devname}} </h3>
+                <h3 class="modal-title">格式化 {{devname}} </h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -262,7 +262,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>在 {{devname}} 下添加分区</h3>
+                <h3 class="modal-title">在 {{devname}} 下添加分区</h3>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info">
@@ -303,7 +303,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>删除分区 {{devname}}</h3>
+                <h3 class="modal-title">删除分区 {{devname}}</h3>
             </div>
             <div class="modal-body">
                 <div class="alert alert-danger">
@@ -328,7 +328,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>扫描设备 {{devname}} 的分区</h3>
+                <h3 class="modal-title">扫描设备 {{devname}} 的分区</h3>
             </div>
             <div class="modal-body">
                 <p>扫描分区前，请先卸载该设备下所有已挂载的分区。</p>
@@ -347,7 +347,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{selector_title}}</h3>
+                <h3 class="modal-title">{{selector_title}}</h3>
             </div>
             <div class="modal-body">
                 <div selector></div>

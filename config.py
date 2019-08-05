@@ -16,8 +16,8 @@ import os
 import sys
 import time
 
-from modules.config import Config
-from modules.utils import is_valid_ip, randstr
+from core.modules.config import Config
+from core.utils import is_valid_ip, randstr
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

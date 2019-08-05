@@ -10,7 +10,7 @@
 
     <div ng-init="checkVirt()" class="row">
         <div class="col-md-6 col-xs-12">
-            <table class="table table-hover">
+            <table class="table table-hover table-condensed">
                 <thead>
                     <tr>
                         <th colspan="3">基础设置</th>
@@ -35,13 +35,13 @@
                     <tr>
                         <td><a href="#/utils/cron">定时任务</a></td>
                         <td class="muted">管理系统定时任务</td>
-                        <td><a class="btn btn-default btn-xs" href="#/utils/cron" ng-disabled="true">正在开发</a></td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/cron">进入管理</a></td>
                     </tr>
                 </tbody>
             </table>
         </div>
         <div class="col-md-6 col-xs-12">
-            <table class="table table-hover">
+            <table class="table table-hover table-condensed">
                 <thead>
                     <tr>
                         <th colspan="3">系统管理</th>
@@ -68,11 +68,16 @@
                         <td class="muted">FTP 用户及进程管理</td>
                         <td><a class="btn btn-default btn-xs" href="#/ftp" ng-disabled="true">正在开发</a></td>
                     </tr>
+                    <tr>
+                        <td><a href="#/utils/shell">执行命令</a></td>
+                        <td class="muted">执行 SHELL 命令</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/shell">进入操作</a></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
         <div class="col-md-6 col-xs-12">
-            <table class="table table-hover">
+            <table class="table table-hover table-condensed">
                 <thead>
                     <tr>
                         <th colspan="3">系统安全</th>
@@ -108,7 +113,7 @@
             </table>
         </div>
         <div class="col-md-6 col-xs-12">
-            <table class="table table-hover">
+            <table class="table table-hover table-condensed">
                 <thead>
                     <tr>
                         <th colspan="3">磁盘存储</th>
@@ -139,7 +144,7 @@
             </table>
         </div>
         <div class="col-md-6 col-xs-12">
-            <table class="table table-hover">
+            <table class="table table-hover table-condensed">
                 <thead>
                     <tr>
                         <th colspan="3">服务器重启</th>
@@ -162,7 +167,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>服务器重启确认</h3>
+                <h3 class="modal-title">服务器重启确认</h3>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info">

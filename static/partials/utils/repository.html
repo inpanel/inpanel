@@ -18,9 +18,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='yum'" id="yum">
-                <div class="well" ng-show="loading">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载，请稍候...
-                </div>
+                <div ng-show="loading"><div waiting></div></div>
                 <div ng-hide="loading">
                     <div class="pull-left"><h5>YUM 源配置文件列表（CentOS）</h5></div>
                     <div class="pull-right">
@@ -30,7 +28,7 @@
                         </div>
                     </div>
                 </div>
-                <table class="table table-hover table-bordered" ng-hide="loading">
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading">
                     <thead>
                         <tr>
                             <th style="width:50px;">序号</th>
@@ -59,33 +57,25 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='apt'" id="apt">
-                <div class="well" ng-show="loading">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载，请稍候...
-                </div>
+                <div ng-show="loading"><div waiting></div></div>
                 <div ng-hide="loading">
                     软件仓库列表 for Ubuntu and Debian
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pacman'" id="pacman">
-                <div class="well" ng-show="loading">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载，请稍候...
-                </div>
+                <div ng-show="loading"><div waiting></div></div>
                 <div ng-hide="loading">
                     软件仓库列表 for Arch
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='dnf'" id="dnf">
-                <div class="well" ng-show="loading">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载，请稍候...
-                </div>
+                <div ng-show="loading"><div waiting></div></div>
                 <div ng-hide="loading">
                     软件仓库列表 for Fedora
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='zypper'" id="zypper">
-                <div class="well" ng-show="loading">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载，请稍候...
-                </div>
+                <div ng-show="loading"><div waiting></div></div>
                 <div ng-hide="loading">
                     软件仓库列表 for openSUSE
                 </div>

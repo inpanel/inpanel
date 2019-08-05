@@ -22,7 +22,7 @@
                         <button class="btn btn-default btn-sm" ng-click="useraddconfirm()" title="添加新用户"><i class="glyphicon glyphicon-plus"></i></button>
                     </div>
                 </div>
-                <table class="table table-hover table-bordered">
+                <table class="table table-hover table-bordered table-condensed">
                     <thead>
                         <tr>
                             <th style="width:50px" class="text-right">ID</th>
@@ -60,7 +60,7 @@
                         <button class="btn btn-default btn-sm" ng-click="groupaddconfirm()" title="添加新用户组"><i class="glyphicon glyphicon-plus"></i></button>
                     </div>
                 </div>
-                <table class="table table-hover table-bordered">
+                <table class="table table-hover table-bordered table-condensed">
                     <thead>
                         <tr>
                             <th style="width:50px" class="text-right">ID</th>
@@ -95,7 +95,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>添加新用户</h3>
+                <h3 class="modal-title">添加新用户</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -164,7 +164,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>修改用户 {{curuser.pw_name}}</h3>
+                <h3 class="modal-title">修改用户 {{curuser.pw_name}}</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -225,7 +225,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>删除用户 {{curuser.pw_name}}</h3>
+                <h3 class="modal-title">删除用户 {{curuser.pw_name}}</h3>
             </div>
             <div class="modal-body">
                 <p>确定要删除用户 {{curuser.pw_name}} 吗？</p>
@@ -243,7 +243,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>添加新用户组</h3>
+                <h3 class="modal-title">添加新用户组</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -268,7 +268,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>修改用户组 {{curgrp_name}}</h3>
+                <h3 class="modal-title">修改用户组 {{curgrp_name}}</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -293,7 +293,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>删除用户组 {{curgrp_name}}</h3>
+                <h3 class="modal-title">删除用户组 {{curgrp_name}}</h3>
             </div>
             <div class="modal-body">
                 <p>确定要删除用户组 {{curgrp_name}} 吗？</p>
@@ -311,7 +311,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>向组 {{curgrp_name}} 中添加成员</h3>
+                <h3 class="modal-title">向组 {{curgrp_name}} 中添加成员</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">
@@ -336,7 +336,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>删除组 {{curgrp_name}} 中的成员</h3>
+                <h3 class="modal-title">删除组 {{curgrp_name}} 中的成员</h3>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" onsubmit="return false">

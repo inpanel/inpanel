@@ -22,6 +22,7 @@ import subprocess
 import time
 import uuid
 
+import core
 import pyDes
 import tornado
 import tornado.gen
@@ -29,25 +30,17 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 from async_process import call_subprocess, callbackable
+from core import api as core_api
+from core import utils
 from modules import (aliyuncs, apache, certificate, cron, fdisk, files,
                      lighttpd, mysql, named, nginx, php, process, proftpd,
-                     pureftpd, remote, ssh, user, utils, vsftpd, yum)
+                     pureftpd, remote, shell, ssh, user, vsftpd, yum)
 from modules.config import Config
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
 from modules.service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
-
-APP_NAME = 'InPanel'
-APP_VERSION = '1.1.1'
-APP_BUILD = '19'
-APP_RELEASETIME = '2019-04-02 15:49:23 GMT'
-PUB_API = {
-    'latest': 'http://api.inpanel.org/?s=latest',
-    'site_packages': 'http://api.inpanel.org/?s=site_packages',
-    'download_package': 'http://api.inpanel.org/?s=site_packages&a=download'
-}
 
 
 class Application(tornado.web.Application):
@@ -93,7 +86,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 pass
 
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
     def check_xsrf_cookie(self):
         token = (self.get_argument("_xsrf", None) or
@@ -151,22 +144,22 @@ class RequestHandler(tornado.web.RequestHandler):
 
 class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class ErrorHandler(tornado.web.ErrorHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class FallbackHandler(tornado.web.FallbackHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class RedirectHandler(tornado.web.RedirectHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class FileDownloadHandler(StaticFileHandler):
@@ -210,13 +203,7 @@ class FileUploadHandler(RequestHandler):
 class VersionHandler(RequestHandler):
     def get(self):
         self.authed()
-        version_info = {
-            'name': APP_NAME,
-            'build': APP_BUILD,
-            'version': APP_VERSION,
-            'releasetime': APP_RELEASETIME
-        }
-        self.write(version_info)
+        self.write(core.version_info)
 
 
 class XsrfHandler(RequestHandler):
@@ -350,7 +337,7 @@ class SitePackageHandler(RequestHandler):
         # fetch from api
         if not packages:
             http = tornado.httpclient.AsyncHTTPClient()
-            response = yield tornado.gen.Task(http.fetch, PUB_API['site_packages'])
+            response = yield tornado.gen.Task(http.fetch, core_api['site_packages'])
             if response.error:
                 self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
                 self.finish()
@@ -403,7 +390,7 @@ class SitePackageHandler(RequestHandler):
         filepath = os.path.join(self.settings['package_path'], filenameext)
 
         self.write({'code': 0, 'msg': '', 'data': {
-            'url': '%s&name=%s&version=%s' % (PUB_API['download_package'], name, version),
+            'url': '%s&name=%s&version=%s' % (core_api['download_package'], name, version),
             'path': filepath,
             'temp': workpath,
         }})
@@ -750,7 +737,7 @@ class SettingHandler(RequestHandler):
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
                 http = tornado.httpclient.AsyncHTTPClient()
-                response = yield tornado.gen.Task(http.fetch, PUB_API['latest'])
+                response = yield tornado.gen.Task(http.fetch, core_api['latest'])
                 if response.error:
                     self.write({'code': -1, 'msg': u'获取新版本信息失败！'})
                 else:
@@ -840,7 +827,8 @@ class SettingHandler(RequestHandler):
             
             if accesskey != '':
                 try:
-                    if len(base64.b64decode(accesskey)) != 32: raise Exception()
+                    if len(base64.b64decode(accesskey)) != 32:
+                        raise Exception()
                 except:
                     self.write({'code': -1, 'msg': u'远程控制密钥格式不正确！'})
                     return
@@ -853,8 +841,8 @@ class SettingHandler(RequestHandler):
 
 
 class OperationHandler(RequestHandler):
-    """Server operation handler
-    """
+    ''''Server operation handler
+    '''
 
     def post(self, op):
         """Run a server operation
@@ -1254,17 +1242,17 @@ class OperationHandler(RequestHandler):
         elif action in ('enableserver', 'disableserver', 'deleteserver'):
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
-            server_name = self.get_argument('server_name', '')
+            name = self.get_argument('server_name', '')
             handler = getattr(apache, action)
             opstr = {
                 'enableserver': u'启用',
                 'disableserver': u'停用',
                 'deleteserver': u'删除',
             }
-            if handler(ip, port, server_name):
-                self.write({'code': 0, 'msg': u'站点 %s %s成功！' % (server_name, opstr[action])})
+            if handler(name, ip, port):
+                self.write({'code': 0, 'msg': u'站点 %s:%s %s成功！' % (name, port, opstr[action])})
             else:
-                self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (server_name, opstr[action])})
+                self.write({'code': -1, 'msg': u'站点 %s:%s %s失败！' % (name, port, opstr[action])})
 
         elif action == 'get_settings':
             # items = self.get_argument('items', '')
@@ -1275,13 +1263,82 @@ class OperationHandler(RequestHandler):
         elif action == 'getserver':
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
-            server_name = self.get_argument('server_name', '')
-            serverinfo = apache.getserver(_u(ip), _u(port), _u(server_name))
+            name = self.get_argument('name', '')
+            serverinfo = apache.getserver(_u(ip), _u(port), _u(name))
             if serverinfo:
                 self.write({'code': 0, 'msg': u'站点信息读取成功！', 'data': serverinfo})
             else:
                 self.write({'code': -1, 'msg': u'站点不存在！'})
 
+        elif action in ('addserver', 'updateserver'):
+            setting = json.loads(self.get_argument('setting', '')) or {}
+
+            ip = setting.get('ip', '')
+            if ip not in ('', '*', '0.0.0.0') and not utils.is_valid_ip(ip):
+                self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % ip})
+                return
+
+            port = int(setting.get('port', 0))
+            if port <= 0 or port > 65535:
+                self.write({'code': -1, 'msg': u'%s 不是有效的端口号!' % setting.get('port')})
+                return
+
+            servername = setting.get('servername')
+            print('servername', servername)
+            if not utils.is_valid_domain(servername):
+                self.write({'code': -1, 'msg': u'%s 不是有效的域名！' % servername})
+                return
+
+            documentroot = setting.get('documentroot', '')
+            if not documentroot:
+                self.write({'code': -1, 'msg': u'%s 不是有效的目录！' % documentroot})
+                return
+            autocreate = setting.get('autocreate')
+            if not os.path.exists(documentroot):
+                if autocreate:
+                    try:
+                        os.mkdir(documentroot)
+                    except:
+                        self.write({'code': -1, 'msg': u'站点目录 %s 创建失败！' % documentroot})
+                        return
+                else:
+                    self.write({'code': -1, 'msg': u'站点目录 %s 不存在！' % documentroot})
+                    return
+
+            directoryindex = setting.get('directoryindex')
+            serveralias = setting.get('serveralias')
+            serveradmin = setting.get('serveradmin')
+            errorlog = setting.get('errorlog')
+            customlog = setting.get('customlog')
+            directory = setting.get('directory')
+
+            version = self.get_argument('version', '')  # apache version
+            for diret in directory:
+                if 'path' in diret and diret['path']:
+                    if not os.path.exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
+                        try:
+                            os.mkdir(diret['path'])
+                        except:
+                            self.write({'code': -1, 'msg': u'路径 %s 创建失败！' % diret['path']})
+                            return
+                else:
+                    self.write({'code': -1, 'msg': u'请选择路径！'})
+                    return
+            if action == 'addserver':
+                if not apache.addserver(servername, ip, port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
+                    errorlog=errorlog, customlog=customlog, version=version):
+                    self.write({'code': -1, 'msg': u'新站点添加失败！请检查站点域名是否重复。', 'data': setting})
+                else:
+                    self.write({'code': 0, 'msg': u'新站点添加成功！', 'data': setting})
+            else:
+                c_ip = _u(self.get_argument('ip', ''))
+                c_port = _u(self.get_argument('port', ''))
+                c_name = _u(self.get_argument('name', ''))
+                if not apache.updateserver(c_name, c_ip, c_port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
+                    errorlog=errorlog, customlog=customlog, version=version):
+                    self.write({'code': -1, 'msg': u'站点设置更新失败！请检查配置信息（如域名是否重复？）', 'data': setting})
+                else:
+                    self.write({'code': 0, 'msg': u'站点设置更新成功！', 'data': setting})
 
     def nginx(self):
         action = self.get_argument('action', '')
@@ -1293,17 +1350,17 @@ class OperationHandler(RequestHandler):
         elif action in ('enableserver', 'disableserver', 'deleteserver'):
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
-            server_name = self.get_argument('server_name', '')
+            name = self.get_argument('server_name', '')
             handler = getattr(nginx, action)
             opstr = {
                 'enableserver': u'启用',
                 'disableserver': u'停用',
                 'deleteserver': u'删除',
             }
-            if handler(ip, port, server_name):
-                self.write({'code': 0, 'msg': u'站点 %s %s成功！' % (server_name, opstr[action])})
+            if handler(ip, port, name):
+                self.write({'code': 0, 'msg': u'站点 %s:%s %s成功！' % (name, port, opstr[action])})
             else:
-                self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (server_name, opstr[action])})
+                self.write({'code': -1, 'msg': u'站点 %s:%s %s失败！' % (name, port, opstr[action])})
 
         elif action == 'gethttpsettings':
             items = self.get_argument('items', '')
@@ -1573,7 +1630,7 @@ class OperationHandler(RequestHandler):
                 if not charset in charsets:
                     self.write({'code': -1, 'msg': u'请选择有效的字符编码！'})
                     return
-            
+
             # skip validate index
             if 'index' in setting:
                 index = setting['index']
@@ -1603,7 +1660,7 @@ class OperationHandler(RequestHandler):
                     if not os.path.exists(ssl_crt) or not os.path.exists(ssl_key):
                         self.write({'code': -1, 'msg': u'SSL证书或密钥不存在！'})
                         return
-            
+
             # validate rewrite_rules
             rewrite_rules = None
             if 'rewrite_enable' in setting and setting['rewrite_enable']:
@@ -1621,7 +1678,7 @@ class OperationHandler(RequestHandler):
                             self.write({'code': -1, 'msg': u'Rewrite 规则 “%s” 格式有误！' % rule})
                             return
                         rewrite_rules.append(rule)
-            
+
             # validate locations
             locations = []
             urlpaths = []
@@ -2067,8 +2124,45 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'设置保存失败！'})
+
+        user = self.get_argument('user', '')
+        level = self.get_argument('level', 'normal')
         if action == 'cron_list':
-            self.write({'code': 0, 'msg': u'获取 Cron 定时任务成功！', 'data': cron.cron_list()})
+            self.write({'code': 0, 'msg': u'获取定时任务成功！','data': cron.cron_list(user=user, level=level)})
+        elif action in ('cron_add', 'cron_mod'):
+            command = self.get_argument('command', '')
+            if command == '':
+                self.write({'code': -1, 'msg': u'请输入命令！'})
+                return
+            if level == 'system' and user == '':
+                self.write({'code': -1, 'msg': u'请输入用户'})
+                return
+
+            minute = self.get_argument('minute', '')
+            hour = self.get_argument('hour', '')
+            day = self.get_argument('day', '')
+            month = self.get_argument('month', '')
+            weekday = self.get_argument('weekday', '')
+            weekday = self.get_argument('weekday', '')
+            if action == 'cron_add':
+                if cron.cron_add(user, minute, hour, day, month, weekday, command, level):
+                    self.write({'code': 0, 'msg': u'定时任务添加成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'定时任务添加失败！'})
+            elif action == 'cron_mod':
+                cronid = self.get_argument('cronid', '')
+                currlist = self.get_argument('currlist', '')
+                if cron.cron_mod(user, cronid, minute, hour, day, month, weekday, command, level, currlist):
+                    self.write({'code': 0, 'msg': u'定时任务修改成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'定时任务修改失败！'})
+        elif action == 'cron_del':
+            cronid = self.get_argument('cronid', '')
+            currlist = self.get_argument('currlist', '')
+            if cron.cron_del(user, cronid, level, currlist):
+                self.write({'code': 0, 'msg': u'定时任务删除成功！'})
+            else:
+                self.write({'code': -1, 'msg': u'定时任务删除失败！'})
 
     def vsftpd(self):
         action = self.get_argument('action', '')
@@ -2089,6 +2183,12 @@ class OperationHandler(RequestHandler):
     def pureftpd(self):
         pureftpd.web_response(self)
 
+    def shell(self):
+        action = self.get_argument('action', '')
+        cmd = self.get_argument('cmd', '')
+        cwd = self.get_argument('cwd', '')
+        if action == 'exec_command':
+            self.write({'code': 0, 'msg': u'命令已发送', 'data': shell.exec_command(_u(cmd), _u(cwd))})
 
 class PageHandler(RequestHandler):
     """Return single page.
@@ -2594,7 +2694,7 @@ class BackendHandler(RequestHandler):
 
         # install the latest version
         http = tornado.httpclient.AsyncHTTPClient()
-        response = yield tornado.gen.Task(http.fetch, PUB_API['latest'])
+        response = yield tornado.gen.Task(http.fetch, core_api['latest'])
         if response.error:
             self._update_job('update', -1, u'获取版本信息失败！')
             return
@@ -4016,7 +4116,7 @@ class RestoreHandler(RequestHandler):
 
         self.write('</body>')
 
-        
+
 class BuyECSHandler(RequestHandler):
     """Aliyun CPS program.
     """

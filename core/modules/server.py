@@ -22,7 +22,7 @@ import subprocess
 import time
 from xml.dom.minidom import parseString
 
-from utils import b2h
+from core.utils import b2h
 
 
 def strfdelta(tdelta, fmt):

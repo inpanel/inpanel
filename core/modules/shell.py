@@ -20,27 +20,40 @@ def run(cmd, shell=False):
         return sbps.call(shlex.split(cmd))
 
 
-def shell_cmd(cmd):
+def exec_command(cmd, cwd):
+    '''executive command
+    '''
     cmd = shlex.split(cmd)
-    print('shell cmd', cmd)
+    cwd = cwd or '/'
+    # print('shell cmd', cmd)
     try:
         p = sbps.Popen(cmd,
                        stdout=sbps.PIPE,
                        stderr=sbps.PIPE,
-                       close_fds=True)
+                       close_fds=True,
+                       shell=True,
+                       cwd=cwd)
+        if p.wait() == 0:
+            result = p.stdout.read()  # result = p.stdout.readlines()
+            # print(p.cc.read())
+        else:
+            result = p.stderr.read()  # result = p.stderr.readlines()
         return {
             'code': p.wait(),
-            'msg': p.stdout.read() if p.wait() == 0 else p.stderr.read()
+            'cwd': cwd,
+            'data': result,
+            'msg': 'success'
         }
     except:
         return {
             'code': -1,
+            'data': '',
             'msg': 'error'
         }
 
 
-# if __name__ == '__main__':
-    # print(shell_cmd('uname -a'))
-    # print(shell_cmd('who -a'))
-    # print(shell_cmd('ls')['code'] == 0)
+if __name__ == '__main__':
+    print(exec_command('cd /var/db', '/var'))
+    # print(exec_command('who -a'))
+    # print(exec_command('ls')['code'] == 0)
     # print(shlex.split('uname -a - b'))

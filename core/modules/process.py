@@ -11,12 +11,13 @@
 import os
 import platform
 
+from core import system as os_type
+
 try:
     from commands import getstatusoutput
 except:
     from subprocess import getstatusoutput
 
-os_type = platform.system()
 
 
 def get_list():

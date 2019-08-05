@@ -94,7 +94,7 @@ directive('srvminiop', function () {
             $scope.$scope = $scope.$parent;
         }],
         template: '<div>\
-        <div class="btn-group btn-group-sm" ng-show="$scope.info[\'service.\'+service]">\
+        <div class="btn-group btn-group-xs" ng-show="$scope.info[\'service.\'+service]">\
                     <button type="button" class="btn btn-default" ng-class="\'active\' | iftrue:$scope.info[\'service.\'+service].autostart" data-toggle="button" title="自动启动"\
                         ng-disabled="$scope.waiting" ng-click="$scope.toggleAutostart(name, service)">\
                         <span class="glyphicon glyphicon-check"></span>\
@@ -111,11 +111,11 @@ directive('srvminiop', function () {
                         ng-click="$scope.restart(name, service)">\
                         <span class="glyphicon glyphicon-refresh"></span>\
                     </button>\
-                    <a class="btn btn-default btn-sm" role="button" href="#/service/{{urlname}}" ng-show="$scope.info[\'service.\'+service]!=null" title="设置">\
+                    <a class="btn btn-default btn-xs" role="button" href="#/service/{{urlname}}" ng-show="$scope.info[\'service.\'+service]!=null" title="设置">\
                         <span class="glyphicon glyphicon-wrench"></span>\
                     </a>\
                 </div>\
-                <a class="btn btn-default btn-sm" role="button" href="#/service/{{urlname}}" ng-show="!$scope.info[\'service.\'+service]">安装服务</a></div>',
+                <a class="btn btn-default btn-xs" role="button" href="#/service/{{urlname}}" ng-show="!$scope.info[\'service.\'+service]">安装服务</a></div>',
         replace: true
     };
 }).
@@ -179,7 +179,7 @@ directive('srvbase', function () {
             $scope.stop = serviceop('stop');
             $scope.restart = serviceop('restart');
         }],
-        template: '<table class="table">\
+        template: '<table class="table table-hover">\
                 <thead>\
                     <tr><th colspan="2">{{name}} 服务操作</th></tr>\
                 </thead>\
@@ -896,11 +896,9 @@ directive('srvfile', function () {
         scope: {},
         controller: ['$scope', function ($scope) {}],
         template: '\
-            <table class="table">\
+            <table class="table table-hover">\
                 <tbody>\
-                    <tr class="warning">\
-                        <td colspan="3" class="text-error">注意：如果您没有配置文件修改经验，请勿随意修改，否则可能导致服务无法启动。</td>\
-                    </tr>\
+                    <tr><td colspan="3">注意：如果您没有配置文件修改经验，请勿随意修改，否则可能导致服务无法启动。</td></tr>\
                     <tr ng-repeat="item in items">\
                         <td style="width:120px;">{{item.name}}</td>\
                         <td>\
@@ -929,11 +927,9 @@ directive('srvlog', function () {
         scope: {},
         controller: ['$scope', function ($scope) {}],
         template: '\
-            <table class="table">\
+            <table class="table table-hover">\
                 <tbody>\
-                    <tr class="warning">\
-                        <td colspan="3" class="text-error">注意：尽量不要对日志文件进行修改，否则可能导致新日志无法写入。</td>\
-                    </tr>\
+                    <tr><td colspan="3">注意：尽量不要对日志文件进行修改，否则可能导致新日志无法写入。</td></tr>\
                     <tr ng-repeat="item in items">\
                         <td style="width:120px;">{{item.name}}</td>\
                         <td>\
@@ -1034,7 +1030,7 @@ directive('selector', function () {
                 <li ng-repeat="pathinfo in pathinfos" ng-show="pathinfos.length>0"><a ng-click="listdir(pathinfo.path)">{{pathinfo.name}}</a></li>\
                 <li><button class="btn btn-default btn-xs" ng-show="onlydir" ng-click="selecthandler(curpath)">选取该目录</button></li>\
             </ul>\
-            <table class="table table-hover">\
+            <table class="table table-hover table-condensed">\
                 <thead><tr><th style="width:20px"></th><th></th><th style="width:80px"></th></tr></thead>\
                 <tbody>\
                     <tr ng-repeat="item in items">\
@@ -1061,5 +1057,17 @@ directive('selector', function () {
 directive('autofocus', function () {
     return function ($scope, element) {
         element[0].focus();
+    };
+}).
+directive('waiting', function () {
+    return {
+        restrict: 'A',
+        transclude: true,
+        scope: {},
+        controller: ['$scope', function ($scope) {
+            $scope.waitingText = $scope.waitingText || '正在加载列表，请稍候......';
+        }],
+        template: '<div class="well"><img src="images/loading.gif" style="margin-right: 10px;">{{waitingText}}</div>',
+        replace: true
     };
 });
