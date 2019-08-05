@@ -19,9 +19,9 @@ sys.path.insert(0, os.path.join(root_path, 'lib'))
 
 import tornado.httpserver
 import tornado.ioloop
-from modules import web
-from modules.config import Config
-from modules.utils import make_cookie_secret
+from core import web
+from core.modules.config import Config
+from core.utils import make_cookie_secret
 
 
 def write_pid():
@@ -41,7 +41,13 @@ def main():
         'static_path': os.path.join(root_path, 'static'),
         'xsrf_cookies': True,
         'cookie_secret': make_cookie_secret(),
+        'gzip': True
     }
+
+    # read configuration from config.ini
+    cfg = Config(settings['conf_path'])
+    server_ip = cfg.get('server', 'ip')
+    server_port = cfg.get('server', 'port')
 
     application = web.Application([
         (r'/xsrf', web.XsrfHandler),
@@ -67,11 +73,6 @@ def main():
         (r'/version', web.VersionHandler),
         (r'/.*', web.ErrorHandler, {'status_code': 404}),
     ], **settings)
-
-    # read configuration from config.ini
-    cfg = Config(settings['conf_path'])
-    server_ip = cfg.get('server', 'ip')
-    server_port = cfg.get('server', 'port')
 
     server = tornado.httpserver.HTTPServer(application)
     server.listen(server_port, address=server_ip)

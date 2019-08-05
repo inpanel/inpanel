@@ -26,6 +26,7 @@ html {
 }
 
 body {
+    font-size: 12px;
     /* Margin bottom by footer height */
     margin-bottom: 90px;
 }
@@ -69,12 +70,13 @@ body {
 .file-list .breadcrumb {
     background: none;
     margin-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
     border: 1px solid #ccc;
 }
 
 .table-bordered thead tr th {
     background-color: #f9f9f9;
-    font-size: 12px;
     color: #444;
     text-transform: uppercase;
     border-bottom-width: 1px;
@@ -134,4 +136,32 @@ span.CodeMirror-matchhighlight {
 
 .CodeMirror-focused span.CodeMirror-matchhighlight {
     background: #e7e4ff !important;
+}
+
+.shell-form {
+    height: auto!important;
+    min-height: 200px;
+    padding: 4px;
+    background-color: #333;
+    color: #fff;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 1em;
+    word-break: break-all;
+}
+.shell-form span {
+    display: block;
+    font-family: monospace;
+    white-space: pre-wrap !important;
+    color: #fff;
+    background-color: #333;
+}
+
+.shell-input {
+    width: 100%;
+    border: 0;
+    background-color: #333;
+    color: #fff;
+    font-family: monospace;
+    font-size: 1em;
 }

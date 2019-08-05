@@ -1,0 +1,77 @@
+<div navbar ng-init="currentItem='utils.remote'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none" ng-init="load()">
+    <div class="module-header">
+        <h3>
+            <span ng-show="action=='new'">新增网络磁盘</span>
+            <span ng-show="action=='edit'">编辑网络磁盘</span>
+        </h3>
+    </div>
+    <div class="tabbable">
+        <div ng-show="loading_info">
+            <div waiting ng-init="waitingText='正在加载详情，请稍候...'"></div>
+        </div>
+        <div class="form-horizontal form-horizontal-small" ng-show="!loading_info">
+            <hr/>
+            <div class="form-group form-inline">
+                <label class="col-sm-2 control-label">协议类别</label>
+                <div class="col-sm-10">
+                    <select class="form-control" ng-model="protocol">
+                        <option value="ftp">FTP</option>
+                        <option value="nfs">NFS</option>
+                        <option value="nfs">CIFS（Windows）</option>
+                        <option value="webdav">WebDAV</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group form-inline">
+                <label class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-10">
+                    <input class="form-control" ng-model="storage_info.name" type="text" placeholder="名称">
+                </div>
+            </div>
+            <div ng-show="protocol == 'webdav' || protocol == 'ftp'">
+                <div class="form-group form-inline">
+                    <label class="col-sm-2 control-label">服务器</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" ng-model="storage_info.address" type="text" placeholder="服务器地址">
+                    </div>
+                </div>
+                <div class="form-group form-inline">
+                    <label class="col-sm-2 control-label">授权账户</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" ng-model="storage_info.account" type="text" placeholder="授权账户">
+                    </div>
+                </div>
+                <div class="form-group form-inline">
+                    <label class="col-sm-2 control-label">授权密码</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" ng-model="storage_info.password" type="text" placeholder="授权密码">
+                    </div>
+                </div>
+            </div>
+            <hr/>
+            <p>
+                <button class="btn btn-primary" ng-show="action=='new'" ng-click="storage_add()">保存新增</button>
+                <button class="btn btn-primary" ng-show="action=='edit'" ng-click="storage_update()">保存修改</button>
+                <button class="btn btn-warning" ng-show="action=='edit'" ng-click="restore()">重置表单</button>
+                <a class="btn btn-default" href="#/storage?s=remote">取消返回</a>
+            </p>
+        </div>
+        <!-- <div ng-show="!status_davfs2" class="well">
+            <div ng-show="checking_davfs2">
+                <p>正在检测 NTP 服务状态...</p>
+            </div>
+            <div ng-show="!checking_davfs2 && (status_davfs2==null)">
+                <p ng-bind-html-unsafe="installMessage"></p>
+                <p style="display:none; " ng-show="showInstallBtn">
+                    <button class="btn btn-default" ng-click="install_davfs2()" ng-disabled="processing">确定并安装</button>
+                </p>
+            </div>
+        </div> -->
+    </div>
+
+</div>

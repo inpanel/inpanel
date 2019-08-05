@@ -46,8 +46,8 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='users'" id="users">
-                <div class="well" ng-show="userloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
+                <div ng-show="userloading">
+                    <div waiting ng-init="waitingText='正在加载用户列表，请稍候...'"></div>
                 </div>
 
                 <div class="panel panel-default" ng-show="!userloading">
@@ -60,7 +60,7 @@
                             </div>
                         </div>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width:20px">#</th>
@@ -92,8 +92,8 @@
             </div>
 
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='operation'" id="operation">
-                <div class="well" ng-show="dbloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库信息，请稍候...
+                <div ng-show="dbloading">
+                    <div waiting ng-init="waitingText='正在加载数据库信息，请稍候...'"></div>
                 </div>
 
                 <div class="panel panel-default" ng-show="!dbloading">
@@ -449,7 +449,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>请选择数据库导出目录</h3>
+                <h3 class="modal-title">请选择数据库导出目录</h3>
             </div>
             <div class="modal-body">
                 <div selector></div>

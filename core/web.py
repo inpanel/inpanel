@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''The Web Module for InPanel.'''
+'''Module for Web Querying'''
 
 import base64
 import binascii
@@ -22,6 +22,7 @@ import subprocess
 import time
 import uuid
 
+import core
 import pyDes
 import tornado
 import tornado.gen
@@ -29,25 +30,17 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 from async_process import call_subprocess, callbackable
+from core import api as core_api
+from core import utils
 from modules import (aliyuncs, apache, certificate, cron, fdisk, files,
                      lighttpd, mysql, named, nginx, php, process, proftpd,
-                     pureftpd, remote, ssh, user, utils, vsftpd, yum)
+                     pureftpd, remote, shell, ssh, user, vsftpd, yum)
 from modules.config import Config
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
 from modules.service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
-
-APP_NAME = 'InPanel'
-APP_VERSION = '1.1.1'
-APP_BUILD = '18'
-APP_RELEASETIME = '2019-02-23 14:13:00 CST'
-PUB_API = {
-    'latest': 'http://api.inpanel.org/?s=latest',
-    'site_packages': 'http://api.inpanel.org/?s=site_packages',
-    'download_package': 'http://api.inpanel.org/?s=site_packages&a=download'
-}
 
 
 class Application(tornado.web.Application):
@@ -73,14 +66,14 @@ class RequestHandler(tornado.web.RequestHandler):
     def initialize(self):
         """Parse JSON data to argument list.
         """
-        self.inifile = os.path.join(self.settings['data_path'], 'config.ini')
+        self.inifile = os.path.join(self.settings['conf_path'])
         self.config = Config(self.inifile)
 
         content_type = self.request.headers.get("Content-Type", "")
         if content_type.startswith("application/json"):
             try:
                 arguments = json.loads(tornado.escape.native_str(self.request.body))
-                for name, value in arguments.iteritems():
+                for name, value in arguments.items():
                     name = _u(name)
                     if isinstance(value, unicode):
                         value = _u(value)
@@ -93,7 +86,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 pass
 
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
     def check_xsrf_cookie(self):
         token = (self.get_argument("_xsrf", None) or
@@ -151,22 +144,22 @@ class RequestHandler(tornado.web.RequestHandler):
 
 class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class ErrorHandler(tornado.web.ErrorHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class FallbackHandler(tornado.web.FallbackHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class RedirectHandler(tornado.web.RedirectHandler):
     def set_default_headers(self):
-        self.set_header('Server', APP_NAME)
+        self.set_header('Server', core.name)
 
 
 class FileDownloadHandler(StaticFileHandler):
@@ -194,7 +187,7 @@ class FileUploadHandler(RequestHandler):
 
         self.write(u'<body style="font-size:14px;overflow:hidden;margin:0;padding:0;">')
 
-        if not self.request.files.has_key('ufile'):
+        if not 'ufile' in self.request.files:
             self.write(u'请选择要上传的文件！')
         else:
             self.write(u'正在上传...<br>')
@@ -210,13 +203,7 @@ class FileUploadHandler(RequestHandler):
 class VersionHandler(RequestHandler):
     def get(self):
         self.authed()
-        version_info = {
-            'name': APP_NAME,
-            'build': APP_BUILD,
-            'version': APP_VERSION,
-            'releasetime': APP_RELEASETIME
-        }
-        self.write(version_info)
+        self.write(core.version_info)
 
 
 class XsrfHandler(RequestHandler):
@@ -321,7 +308,7 @@ class LogoutHandler(RequestHandler):
 
 
 class SitePackageHandler(RequestHandler):
-    """Interface for quering site packages information.
+    """Interface for querying site packages information.
     """
 
     def get(self, op):
@@ -350,7 +337,7 @@ class SitePackageHandler(RequestHandler):
         # fetch from api
         if not packages:
             http = tornado.httpclient.AsyncHTTPClient()
-            response = yield tornado.gen.Task(http.fetch, PUB_API['site_packages'])
+            response = yield tornado.gen.Task(http.fetch, core_api['site_packages'])
             if response.error:
                 self.write({'code': -1, 'msg': u'获取网站系统列表失败！'})
                 self.finish()
@@ -403,14 +390,14 @@ class SitePackageHandler(RequestHandler):
         filepath = os.path.join(self.settings['package_path'], filenameext)
 
         self.write({'code': 0, 'msg': '', 'data': {
-            'url': '%s&name=%s&version=%s' % (PUB_API['download_package'], name, version),
+            'url': '%s&name=%s&version=%s' % (core_api['download_package'], name, version),
             'path': filepath,
             'temp': workpath,
         }})
 
 
 class QueryHandler(RequestHandler):
-    """Interface for quering server information.
+    """Interface for querying server information.
     
     Query one or more items, seperated by comma.
     Examples:
@@ -422,7 +409,7 @@ class QueryHandler(RequestHandler):
     """
     def get(self, items):
         self.authed()
-        
+
         items = items.split(',')
         qdict = {'server': [], 'service': [], 'config': [], 'tool': []}
         for item in items:
@@ -447,44 +434,6 @@ class QueryHandler(RequestHandler):
                 if qdict[sec] == '**': continue
                 qdict[sec].append(q)
 
-        # item : realtime update
-        server_items = {
-            'hostname'      : False,
-            'datetime'      : True,
-            'uptime'        : True,
-            'loadavg'       : True,
-            'cpustat'       : True,
-            'meminfo'       : True,
-            'mounts'        : True, 
-            'netifaces'     : True,
-            'nameservers'   : True,
-            'distribution'  : False,
-            'uname'         : False, 
-            'cpuinfo'       : False,
-            'diskinfo'      : False,
-            'virt'          : False,
-        }
-        service_items = {
-            'inpanel'      : False,
-            'nginx'         : False,
-            'httpd'         : False,
-            'vsftpd'        : False,
-            'mysqld'        : False,
-            'redis'         : False,
-            'memcached'     : False,
-            'mongod'        : False,
-            'php-fpm'       : False,
-            'sendmail'      : False,
-            'postfix'       : False,
-            'sshd'          : False,
-            'iptables'      : False,
-            'crond'         : False,
-            'ntpd'          : False,
-            'named'         : False,
-            'lighttpd'      : False,
-            'proftpd'       : False,
-            'pure-ftpd'     : False,
-        }
         config_items = {
             'fstab'         : False,
         }
@@ -493,46 +442,51 @@ class QueryHandler(RequestHandler):
         }
 
         result = {}
-        for sec, qs in qdict.iteritems():
+        for sec, qs in qdict.items():
             if sec == 'server':
+                server_items = ServerInfo.server_items
                 if qs == '**':
                     qs = server_items.keys()
                 elif qs == '*':
-                    qs = [item for item, relup in server_items.iteritems() if relup==True]
+                    qs = [item for item, relup in server_items.items() if relup==True]
                 for q in qs:
-                    if not server_items.has_key(q): continue
+                    if q not in server_items: continue
                     result['%s.%s' % (sec, q)] = getattr(ServerInfo, q)()
             elif sec == 'service':
+                service_items = Service.service_items
                 autostart_services = Service.autostart_list()
                 if qs == '**':
                     qs = service_items.keys()
                 elif qs == '*':
-                    qs = [item for item, relup in service_items.iteritems() if relup==True]
+                    qs = [item for item, relup in service_items.items() if relup==True]
                 for q in qs:
-                    if not service_items.has_key(q): continue
+                    if q not in service_items:
+                        continue
                     status = Service.status(q)
-                    result['%s.%s' % (sec, q)] = status and {        'status': status,
-                        'autostart': q in autostart_services,
-                    } or None
+                    result['%s.%s' % (sec, q)] = status and { 'status': status, 'autostart': q in autostart_services,} or None
             elif sec == 'config':
                 for q in qs:
                     params = []
                     if q.endswith(')'):
                         q = q.strip(')').split('(', 1)
-                        if len(q) != 2: continue
+                        if len(q) != 2:
+                            continue
                         q, params = q
                         params = params.split(',')
-                    if not config_items.has_key(q): continue
+                    if not q in config_items:
+                        continue
                     result['%s.%s' % (sec, q)] = getattr(ServerSet, q)(*params)
             elif sec == 'tool':
                 for q in qs:
                     params = []
                     if q.endswith(')'):
                         q = q.strip(')').split('(', 1)
-                        if len(q) != 2: continue
+                        if len(q) != 2:
+                            continue
                         q, params = q
                         params = params.split(',')
-                    if not tool_items.has_key(q): continue
+                    if not q in tool_items:
+                        continue
                     result['%s.%s' % (sec, q)] = getattr(ServerTool, q)(*params)
 
         self.write(result)
@@ -611,22 +565,64 @@ class UtilsNetworkHandler(RequestHandler):
 
 
 class UtilsProcessHandler(RequestHandler):
-    """Handler for load process list.
-    """
-    def get(self, sec, x=None):
+    '''Handler for load process list.'''
+    def get(self, sec, pid=None):
         self.authed()
         if sec == 'list':
-            self.write(process.get_process_list())
+            res = process.get_list()
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程列表失败！'})
+
+        if sec == 'info':
+            res = process.get_info(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程信息失败！'})
+        if sec == 'status':
+            res = process.get_status(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程状态信息失败！'})
+        if sec == 'file':
+            res = process.get_file(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程文件使用情况失败！'})
+        if sec == 'io':
+            res = process.get_io(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程IO状态失败！'})
+        if sec == 'memory':
+            res = process.get_memory(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程内存使用情况失败！'})
+        if sec == 'network':
+            res = process.get_network(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程网络状态失败！'})
+
     def post(self, sec, pids):
         self.authed()
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': u'DEMO状态不允许操作进程！'})
             return
+
         if sec == 'kill':
             if process.kill_pids(pids):
-                self.write({'code': 0, 'msg': u'进程停止成功！'})
+                self.write({'code': 0, 'msg': u'进程终止成功！'})
             else:
-                self.write({'code': -1, 'msg': u'进程停止失败！'})
+                self.write({'code': -1, 'msg': u'进程终止失败！'})
 
 class UtilsTimeHandler(RequestHandler):
     """Handler for system datetime setting.
@@ -741,7 +737,7 @@ class SettingHandler(RequestHandler):
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
                 http = tornado.httpclient.AsyncHTTPClient()
-                response = yield tornado.gen.Task(http.fetch, PUB_API['latest'])
+                response = yield tornado.gen.Task(http.fetch, core_api['latest'])
                 if response.error:
                     self.write({'code': -1, 'msg': u'获取新版本信息失败！'})
                 else:
@@ -831,7 +827,8 @@ class SettingHandler(RequestHandler):
             
             if accesskey != '':
                 try:
-                    if len(base64.b64decode(accesskey)) != 32: raise Exception()
+                    if len(base64.b64decode(accesskey)) != 32:
+                        raise Exception()
                 except:
                     self.write({'code': -1, 'msg': u'远程控制密钥格式不正确！'})
                     return
@@ -844,8 +841,8 @@ class SettingHandler(RequestHandler):
 
 
 class OperationHandler(RequestHandler):
-    """Server operation handler
-    """
+    ''''Server operation handler
+    '''
 
     def post(self, op):
         """Run a server operation
@@ -1245,101 +1242,103 @@ class OperationHandler(RequestHandler):
         elif action in ('enableserver', 'disableserver', 'deleteserver'):
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
-            server_name = self.get_argument('server_name', '')
+            name = self.get_argument('server_name', '')
             handler = getattr(apache, action)
             opstr = {
                 'enableserver': u'启用',
                 'disableserver': u'停用',
                 'deleteserver': u'删除',
             }
-            if handler(ip, port, server_name):
-                self.write({'code': 0, 'msg': u'站点 %s %s成功！' % (server_name, opstr[action])})
+            if handler(name, ip, port):
+                self.write({'code': 0, 'msg': u'站点 %s:%s %s成功！' % (name, port, opstr[action])})
             else:
-                self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (server_name, opstr[action])})
-
+                self.write({'code': -1, 'msg': u'站点 %s:%s %s失败！' % (name, port, opstr[action])})
 
         elif action == 'get_settings':
-            items = self.get_argument('items', '')
-            items = items.split(',')
-
-            # if 'limit_conn_zone' in items:
-            #     items.append('limit_zone') # version < 1.1.8
-
-            # data = {}
+            # items = self.get_argument('items', '')
+            # items = items.split(',')
             config = apache.loadconfig()
-            # for item in items:
-                #     if item.endswith('[]'):
-                #         item = item[:-2]
-                #         returnlist = True
-                #         values = apache.http_get(_u(item), config)
-                #     else:
-                #         returnlist = False
-                #         values = [apache.http_getfirst(_u(item), config)]
-                    
-                #     if values:
-                #         if item == 'gzip':
-                #             # eg. gzip off
-                #             values = [v=='on' for v in values if v]
-                #         elif item == 'limit_rate':
-                #             # eg. limit_rate 100k
-                #             values = [v.replace('k', '') for v in values if v]
-                #         elif item == 'limit_conn':
-                #             # eg. limit_conn  one  1
-                #             values = [v.split()[-1] for v in values if v]
-                #         elif item == 'limit_conn_zone':
-                #             # eg. limit_conn_zone $binary_remote_addr  zone=addr:10m
-                #             values = [v.split(':')[-1].replace('m', '') for v in values if v]
-                #         elif item == 'limit_zone': # version < 1.1.8
-                #             # eg. limit_zone addr $binary_remote_addr 10m
-                #             values = [v.split()[-1].replace('m', '') for v in values if v]
-                #         elif item == 'client_max_body_size':
-                #             # eg. client_max_body_size 1m
-                #             values = [v.replace('m', '') for v in values if v]
-                #         elif item == 'keepalive_timeout':
-                #             # eg. keepalive_timeout 75s
-                #             values = [v.replace('s', '') for v in values if v]
-                #         elif item == 'allow':
-                #             # allow all
-                #             values = [v for v in values if v and v!='all']
-                #         elif item == 'deny':
-                #             # deny all
-                #             values = [v for v in values if v and v!='all']
-                #         elif item == 'proxy_cache_path':
-                #             # eg. levels=1:2 keys_zone=newcache:10m inactive=10m max_size=100m
-                #             result = []
-                #             for v in values:
-                #                 info = {}
-                #                 fields = v.split()
-                #                 info['path'] = fields[0]
-                #                 for field in fields[1:]:
-                #                     key, value = field.split('=', 1)
-                #                     if key == 'levels':
-                #                         levels = value.split(':')
-                #                         info['path_level_1'] = levels[0]
-                #                         if len(levels) > 1: info['path_level_2'] = levels[1]
-                #                         if len(levels) > 2: info['path_level_3'] = levels[2]
-                #                     elif key == 'keys_zone':
-                #                         t = value.split(':')
-                #                         info['name'] = t[0]
-                #                         if len(t) > 1: info['mem'] = t[1].replace('m', '')
-                #                     elif key == 'inactive':
-                #                         info['inactive'] = value[:-1]
-                #                         info['inactive_unit'] = value[-1]
-                #                     elif key == 'max_size':
-                #                         info['max_size'] = value[:-1]
-                #                         info['max_size_unit'] = value[-1]
-                #                 result.append(info)
-                #             values = result
-
-                #     if item == 'limit_zone':
-                #         item = 'limit_conn_zone' # version < 1.1.8
-
-                #     if returnlist:
-                #         data[item] = values
-                #     else:
-                #         data[item] = values and values[0] or ''
-            # data = config
             self.write({'code': 0, 'msg': '', 'data': config})
+
+        elif action == 'getserver':
+            ip = self.get_argument('ip', '')
+            port = self.get_argument('port', '')
+            name = self.get_argument('name', '')
+            serverinfo = apache.getserver(_u(ip), _u(port), _u(name))
+            if serverinfo:
+                self.write({'code': 0, 'msg': u'站点信息读取成功！', 'data': serverinfo})
+            else:
+                self.write({'code': -1, 'msg': u'站点不存在！'})
+
+        elif action in ('addserver', 'updateserver'):
+            setting = json.loads(self.get_argument('setting', '')) or {}
+
+            ip = setting.get('ip', '')
+            if ip not in ('', '*', '0.0.0.0') and not utils.is_valid_ip(ip):
+                self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % ip})
+                return
+
+            port = int(setting.get('port', 0))
+            if port <= 0 or port > 65535:
+                self.write({'code': -1, 'msg': u'%s 不是有效的端口号!' % setting.get('port')})
+                return
+
+            servername = setting.get('servername')
+            print('servername', servername)
+            if not utils.is_valid_domain(servername):
+                self.write({'code': -1, 'msg': u'%s 不是有效的域名！' % servername})
+                return
+
+            documentroot = setting.get('documentroot', '')
+            if not documentroot:
+                self.write({'code': -1, 'msg': u'%s 不是有效的目录！' % documentroot})
+                return
+            autocreate = setting.get('autocreate')
+            if not os.path.exists(documentroot):
+                if autocreate:
+                    try:
+                        os.mkdir(documentroot)
+                    except:
+                        self.write({'code': -1, 'msg': u'站点目录 %s 创建失败！' % documentroot})
+                        return
+                else:
+                    self.write({'code': -1, 'msg': u'站点目录 %s 不存在！' % documentroot})
+                    return
+
+            directoryindex = setting.get('directoryindex')
+            serveralias = setting.get('serveralias')
+            serveradmin = setting.get('serveradmin')
+            errorlog = setting.get('errorlog')
+            customlog = setting.get('customlog')
+            directory = setting.get('directory')
+
+            version = self.get_argument('version', '')  # apache version
+            for diret in directory:
+                if 'path' in diret and diret['path']:
+                    if not os.path.exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
+                        try:
+                            os.mkdir(diret['path'])
+                        except:
+                            self.write({'code': -1, 'msg': u'路径 %s 创建失败！' % diret['path']})
+                            return
+                else:
+                    self.write({'code': -1, 'msg': u'请选择路径！'})
+                    return
+            if action == 'addserver':
+                if not apache.addserver(servername, ip, port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
+                    errorlog=errorlog, customlog=customlog, version=version):
+                    self.write({'code': -1, 'msg': u'新站点添加失败！请检查站点域名是否重复。', 'data': setting})
+                else:
+                    self.write({'code': 0, 'msg': u'新站点添加成功！', 'data': setting})
+            else:
+                c_ip = _u(self.get_argument('ip', ''))
+                c_port = _u(self.get_argument('port', ''))
+                c_name = _u(self.get_argument('name', ''))
+                if not apache.updateserver(c_name, c_ip, c_port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
+                    errorlog=errorlog, customlog=customlog, version=version):
+                    self.write({'code': -1, 'msg': u'站点设置更新失败！请检查配置信息（如域名是否重复？）', 'data': setting})
+                else:
+                    self.write({'code': 0, 'msg': u'站点设置更新成功！', 'data': setting})
 
     def nginx(self):
         action = self.get_argument('action', '')
@@ -1351,17 +1350,17 @@ class OperationHandler(RequestHandler):
         elif action in ('enableserver', 'disableserver', 'deleteserver'):
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
-            server_name = self.get_argument('server_name', '')
+            name = self.get_argument('server_name', '')
             handler = getattr(nginx, action)
             opstr = {
                 'enableserver': u'启用',
                 'disableserver': u'停用',
                 'deleteserver': u'删除',
             }
-            if handler(ip, port, server_name):
-                self.write({'code': 0, 'msg': u'站点 %s %s成功！' % (server_name, opstr[action])})
+            if handler(ip, port, name):
+                self.write({'code': 0, 'msg': u'站点 %s:%s %s成功！' % (name, port, opstr[action])})
             else:
-                self.write({'code': -1, 'msg': u'站点 %s %s失败！' % (server_name, opstr[action])})
+                self.write({'code': -1, 'msg': u'站点 %s:%s %s失败！' % (name, port, opstr[action])})
 
         elif action == 'gethttpsettings':
             items = self.get_argument('items', '')
@@ -1486,7 +1485,7 @@ class OperationHandler(RequestHandler):
             directives = ('gzip', 'limit_rate', 'limit_conn', 'limit_conn_zone', 'limit_zone',
                     'client_max_body_size', 'keepalive_timeout', 'allow', 'deny')
             for directive in directives:
-                if not setting.has_key(directive): continue
+                if not directive in setting: continue
                 value = setting[directive]
                 if isinstance(value, unicode):
                     value = _u(value)
@@ -1503,8 +1502,8 @@ class OperationHandler(RequestHandler):
             values = []
             for cache in proxy_caches:
                 fields = []
-                if cache.has_key('path') and cache['path']:
-                    if not os.path.exists(cache['path']) and cache.has_key('autocreate') and cache['autocreate']:
+                if 'path' in cache and cache['path']:
+                    if not os.path.exists(cache['path']) and 'autocreate' in cache and cache['autocreate']:
                         try:
                             os.mkdir(cache['path'])
                         except:
@@ -1514,9 +1513,9 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'请选择缓存目录！'})
                     return
                 fields.append(cache['path'])
-                if not cache.has_key('path_level_1') or not cache['path_level_1'].isdigit() or \
-                   not cache.has_key('path_level_2') or not cache['path_level_2'].isdigit() or \
-                   not cache.has_key('path_level_3') or not cache['path_level_3'].isdigit():
+                if not 'path_level_1' in cache or not cache['path_level_1'].isdigit() or \
+                   not 'path_level_2' in cache or not cache['path_level_2'].isdigit() or \
+                   not 'path_level_3' in cache or not cache['path_level_3'].isdigit():
                     self.write({'code': -1, 'msg': u'缓存目录名长度必须是数字！'})
                     return
                 if int(cache['path_level_1']) + int(cache['path_level_2']) + int(cache['path_level_3']) > 32:
@@ -1527,26 +1526,26 @@ class OperationHandler(RequestHandler):
                 if int(cache['path_level_3']) > 0: levels.append(cache['path_level_3'])
                 fields.append('levels=%s' % (':'.join(levels)))
 
-                if not cache.has_key('name') or cache['name'].strip() == '':
+                if not 'name' in cache or cache['name'].strip() == '':
                     self.write({'code': -1, 'msg': u'缓存区名称不能为空！'})
                     return
-                if not cache.has_key('mem') or not cache['mem'].isdigit():
+                if not 'mem' in cache or not cache['mem'].isdigit():
                     self.write({'code': -1, 'msg': u'缓存计数内存大小必须是数字！'})
                     return
                 fields.append('keys_zone=%s:%sm' % (cache['name'].strip(), cache['mem']))
 
-                if not cache.has_key('inactive') or not cache['inactive'].isdigit():
+                if not 'inactive' in cache or not cache['inactive'].isdigit():
                     self.write({'code': -1, 'msg': u'缓存过期时间必须是数字！'})
                     return
-                if not cache.has_key('inactive_unit') or not cache['inactive_unit'] in ('s', 'm', 'h', 'd'):
+                if not 'inactive_unit' in cache or not cache['inactive_unit'] in ('s', 'm', 'h', 'd'):
                     self.write({'code': -1, 'msg': u'缓存过期时间单位错误！'})
                     return
                 fields.append('inactive=%s%s' % (cache['inactive'], cache['inactive_unit']))
 
-                if not cache.has_key('max_size') or not cache['max_size'].isdigit():
+                if not 'max_size' in cache or not cache['max_size'].isdigit():
                     self.write({'code': -1, 'msg': u'缓存大小限制值必须是数字！'})
                     return
-                if not cache.has_key('max_size_unit') or not cache['max_size_unit'] in ('m', 'g'):
+                if not 'max_size_unit' in cache or not cache['max_size_unit'] in ('m', 'g'):
                     self.write({'code': -1, 'msg': u'缓存大小限制单位错误！'})
                     return
                 fields.append('max_size=%s%s' % (cache['max_size'], cache['max_size_unit']))
@@ -1581,7 +1580,7 @@ class OperationHandler(RequestHandler):
 
             # validate server name
             server_names = None
-            if setting.has_key('server_names'):
+            if 'server_names' in setting:
                 server_names = [s['name'].strip().lower() for s in setting['server_names'] if s['name'].strip()]
                 for server_name in server_names:
                     if server_name != '_' and not utils.is_valid_domain(_u(server_name)):
@@ -1593,15 +1592,15 @@ class OperationHandler(RequestHandler):
 
             # validate listens
             listens = None
-            if setting.has_key('listens'):
+            if 'listens' in setting:
                 listens = setting['listens']
                 ipportpairs = []
                 for listen in listens:
-                    if listen.has_key('ip'):
+                    if 'ip' in listen:
                         if listen['ip'] not in ('', '*', '0.0.0.0') and not utils.is_valid_ip(_u(listen['ip'])):
                             listens = None
                             break
-                    if not listen.has_key('port'):
+                    if not 'port' in listen:
                         listens = None
                         break
                     elif not listen['port'].isdigit():
@@ -1626,19 +1625,19 @@ class OperationHandler(RequestHandler):
             charset = None
             charsets = ('', 'utf-8', 'gb2312', 'gbk', 'gb18030',
                 'big5', 'euc-jp', 'euc-kr', 'iso-8859-2', 'shift_jis')
-            if setting.has_key('charset'):
+            if 'charset' in setting:
                 charset = setting['charset']
                 if not charset in charsets:
                     self.write({'code': -1, 'msg': u'请选择有效的字符编码！'})
                     return
-            
+
             # skip validate index
-            if setting.has_key('index'):
+            if 'index' in setting:
                 index = setting['index']
 
             # validate limit_rate
             limit_rate = None
-            if setting.has_key('limit_rate'):
+            if 'limit_rate' in setting:
                 limit_rate = setting['limit_rate']
                 if not limit_rate == '' and not limit_rate.isdigit():
                     self.write({'code': -1, 'msg': u'下载速度限制必须为数字！'})
@@ -1646,7 +1645,7 @@ class OperationHandler(RequestHandler):
 
             # validate limit_conn
             limit_conn = None
-            if setting.has_key('limit_conn'):
+            if 'limit_conn' in setting:
                 limit_conn = setting['limit_conn']
                 if not limit_conn == '' and not limit_conn.isdigit():
                     self.write({'code': -1, 'msg': u'连接数限制必须为数字！'})
@@ -1654,18 +1653,18 @@ class OperationHandler(RequestHandler):
 
             # validate ssl_crt and ssl_key
             ssl_crt = ssl_key = None
-            if setting.has_key('ssl_crt') and setting.has_key('ssl_key'):
+            if 'ssl_crt' in setting and 'ssl_key' in setting:
                 if setting['ssl_crt'] or setting['ssl_key']:
                     ssl_crt = setting['ssl_crt']
                     ssl_key = setting['ssl_key']
                     if not os.path.exists(ssl_crt) or not os.path.exists(ssl_key):
                         self.write({'code': -1, 'msg': u'SSL证书或密钥不存在！'})
                         return
-            
+
             # validate rewrite_rules
             rewrite_rules = None
-            if setting.has_key('rewrite_enable') and setting['rewrite_enable']:
-                if setting.has_key('rewrite_rules'):
+            if 'rewrite_enable' in setting and setting['rewrite_enable']:
+                if 'rewrite_rules' in setting:
                     rules = setting['rewrite_rules'].split('\n')
                     rewrite_rules = []
                     for rule in rules:
@@ -1679,21 +1678,21 @@ class OperationHandler(RequestHandler):
                             self.write({'code': -1, 'msg': u'Rewrite 规则 “%s” 格式有误！' % rule})
                             return
                         rewrite_rules.append(rule)
-            
+
             # validate locations
             locations = []
             urlpaths = []
-            if setting.has_key('locations'):
+            if 'locations' in setting:
                 locs = setting['locations']
                 for loc in locs:
-                    if not loc.has_key('urlpath'):
+                    if not 'urlpath' in loc:
                         self.write({'code': -1, 'msg': u'站点URL路径输入错误！'})
                         return
-                    if not loc.has_key('engine') \
+                    if not 'engine' in loc \
                         or loc['engine'] not in ('static', 'fastcgi', 'redirect', 'proxy', 'error'):
                         self.write({'code': -1, 'msg': u'站点路径引擎选择存在错误！'})
                         return
-                    if not loc.has_key(loc['engine']):
+                    if not loc['engine'] in loc:
                         self.write({'code': -1, 'msg': u'缺少站点路径配置！'})
                         return
                     location = {}
@@ -1704,11 +1703,11 @@ class OperationHandler(RequestHandler):
                     urlpaths.append(loc['urlpath'])
                     locsetting = loc[loc['engine']]
                     if loc['engine'] in ('static', 'fastcgi'):
-                        if not locsetting.has_key('root'):
+                        if not 'root' in locsetting:
                             self.write({'code': -1, 'msg': u'站点目录不能为空！' % locsetting['root']})
                             return
                         if not os.path.exists(locsetting['root']):
-                            if locsetting.has_key('autocreate') and locsetting['autocreate']:
+                            if 'autocreate' in locsetting and locsetting['autocreate']:
                                 try:
                                     os.mkdir(locsetting['root'])
                                 except:
@@ -1718,11 +1717,12 @@ class OperationHandler(RequestHandler):
                                 self.write({'code': -1, 'msg': u'站点目录 %s 不存在！' % locsetting['root']})
                                 return
                         location['root'] = locsetting['root']
-                        if locsetting.has_key('charset') and locsetting['charset'] in charsets:
+                        if 'charset' in locsetting and locsetting['charset'] in charsets:
                             location['charset'] = locsetting['charset']
-                        if locsetting.has_key('index'): location['index'] = locsetting['index']
-                        if locsetting.has_key('rewrite_enable') and locsetting['rewrite_enable']:
-                            if locsetting.has_key('rewrite_detect_file') and locsetting['rewrite_detect_file']:
+                        if 'index' in locsetting:
+                            location['index'] = locsetting['index']
+                        if 'rewrite_enable' in locsetting and locsetting['rewrite_enable']:
+                            if 'rewrite_detect_file' in locsetting and locsetting['rewrite_detect_file']:
                                 location['rewrite_detect_file'] = True
                             else:
                                 location['rewrite_detect_file'] = False
@@ -1739,10 +1739,10 @@ class OperationHandler(RequestHandler):
                                     return
                                 location['rewrite_rules'].append(rule)
                     if loc['engine'] == 'static':
-                        if locsetting.has_key('autoindex') and locsetting['autoindex']:
+                        if 'autoindex' in locsetting and locsetting['autoindex']:
                             location['autoindex'] = True
                     elif loc['engine'] == 'fastcgi':
-                        if not locsetting.has_key('fastcgi_pass') or not locsetting['fastcgi_pass']:
+                        if not 'fastcgi_pass' in locsetting or not locsetting['fastcgi_pass']:
                             self.write({'code': -1, 'msg': u'请输入FastCGI服务器地址！'})
                             return
                         fastcgi_pass = locsetting['fastcgi_pass']
@@ -1765,26 +1765,26 @@ class OperationHandler(RequestHandler):
                             self.write({'code': -1, 'msg': u'跳转到的 URL 地址“%s”格式有误，请检查是否添加了 http:// 或 https:// 等！' % locsetting['url']})
                             return
                         location['redirect_url'] = locsetting['url']
-                        if locsetting.has_key('type') and locsetting['type'] in ('301', '302'):
+                        if 'type' in locsetting and locsetting['type'] in ('301', '302'):
                             location['redirect_type'] = locsetting['type'] 
-                        if locsetting.has_key('option') and locsetting['option'] in ('keep', 'ignore'):
+                        if 'option' in locsetting and locsetting['option'] in ('keep', 'ignore'):
                             location['redirect_option'] = locsetting['option'] 
                     elif loc['engine'] == 'proxy':
-                        if not locsetting.has_key('backends') or not locsetting['backends']:
+                        if not 'backends' in locsetting or not locsetting['backends']:
                             self.write({'code': -1, 'msg': u'反向代理后端不能为空！'})
                             return
-                        if not locsetting.has_key('protocol') or not locsetting['protocol'] in ('http', 'https'):
+                        if not 'protocol' in locsetting or not locsetting['protocol'] in ('http', 'https'):
                             self.write({'code': -1, 'msg': u'后端协议选择有误！'})
                             return
                         location['proxy_protocol'] = locsetting['protocol']
-                        if locsetting.has_key('host') and utils.is_valid_domain(_u(locsetting['host'])):
+                        if 'host' in locsetting and utils.is_valid_domain(_u(locsetting['host'])):
                             location['proxy_host'] = locsetting['host']
-                        if locsetting.has_key('realip'):
+                        if 'realip' in locsetting:
                             location['proxy_realip'] = locsetting['realip'] and True or False
 
                         backends = [backend for backend in locsetting['backends']
-                            if backend.has_key('server') and backend['server'].strip()]
-                        if locsetting.has_key('charset'):
+                            if 'server' in backend and backend['server'].strip()]
+                        if 'charset' in locsetting:
                             if not locsetting['charset'] in charsets:
                                 self.write({'code': -1, 'msg': u'请选择有效的字符编码！'})
                                 return
@@ -1793,19 +1793,20 @@ class OperationHandler(RequestHandler):
                             self.write({'code': -1, 'msg': u'反向代理后端不能为空！'})
                             return
                         elif len(backends) > 1:   # multi backends have load balance setting
-                            if not locsetting.has_key('balance') or not locsetting['balance'] in ('weight', 'ip_hash', 'least_conn'):
+                            if not 'balance' in locsetting or not locsetting['balance'] in ('weight', 'ip_hash', 'least_conn'):
                                 self.write({'code': -1, 'msg': u'请设置负载均衡策略！'})
                                 return
                             location['proxy_balance'] = locsetting['balance']
-                            if locsetting.has_key('keepalive'):
+                            if 'keepalive' in locsetting:
                                 if locsetting['keepalive'] and not locsetting['keepalive'].isdigit():
                                     self.write({'code': -1, 'msg': u'后端保持连接数必须是数字！'})
                                     return
-                                if locsetting['keepalive']: location['proxy_keepalive'] = locsetting['keepalive']
+                                if locsetting['keepalive']:
+                                    location['proxy_keepalive'] = locsetting['keepalive']
 
                         location['proxy_backends'] = []
                         for backend in backends:
-                            if not backend.has_key('server'):
+                            if not 'server' in backend:
                                 self.write({'code': -1, 'msg': u'后端地址输入有误！'})
                                 return
                             fields = backend['server'].split(':', 1)
@@ -1821,12 +1822,12 @@ class OperationHandler(RequestHandler):
                             if len(backends) > 1:
                                 if location['proxy_balance'] in ('weight', 'ip_hash'):
                                     if location['proxy_balance'] == 'weight':
-                                        if backend.has_key('weight'):
+                                        if 'weight' in backend:
                                             if backend['weight'] and not backend['weight'].isdigit():
                                                 self.write({'code': -1, 'msg': u'后端权重值必须为数字！'})
                                                 return
                                             if backend['weight']: proxy_backend['weight'] = backend['weight']
-                                    if backend.has_key('fail_timeout') and backend.has_key('max_fails'):
+                                    if 'fail_timeout' in backend and 'max_fails' in backend:
                                         if backend['fail_timeout'] and not backend['fail_timeout'].isdigit():
                                             self.write({'code': -1, 'msg': u'后端失效检测超时必须为数字！'})
                                             return
@@ -1837,31 +1838,37 @@ class OperationHandler(RequestHandler):
                                         if backend['max_fails']: proxy_backend['max_fails'] = backend['max_fails']
                             location['proxy_backends'].append(proxy_backend)
                         
-                        if locsetting.has_key('proxy_cache_enable') and locsetting['proxy_cache_enable']:
-                            if not locsetting.has_key('proxy_cache') or locsetting['proxy_cache'] == '':
+                        if 'proxy_cache_enable' in locsetting and locsetting['proxy_cache_enable']:
+                            if not 'proxy_cache' in locsetting or locsetting['proxy_cache'] == '':
                                 self.write({'code': -1, 'msg': u'请选择缓存区域！'})
                                 return
                             location['proxy_cache'] = locsetting['proxy_cache']
-                            if locsetting.has_key('proxy_cache_min_uses') and locsetting['proxy_cache_min_uses'] != '':
+                            if 'proxy_cache_min_uses' in locsetting and locsetting['proxy_cache_min_uses'] != '':
                                 if not locsetting['proxy_cache_min_uses'].isdigit():
                                     self.write({'code': -1, 'msg': u'缓存条件的次数必须为数字！'})
                                     return
                                 location['proxy_cache_min_uses'] = locsetting['proxy_cache_min_uses']
-                            if locsetting.has_key('proxy_cache_methods_post') and locsetting['proxy_cache_methods_post']:
+                            if 'proxy_cache_methods_post' in locsetting and locsetting['proxy_cache_methods_post']:
                                 location['proxy_cache_methods'] = 'POST'
-                            if locsetting.has_key('proxy_cache_key'):
+                            if 'proxy_cache_key' in locsetting:
                                 t = []
                                 ck = locsetting['proxy_cache_key']
-                                if ck.has_key('schema') and ck['schema']: t.append('$scheme')
-                                if ck.has_key('host') and ck['host']: t.append('$host')
-                                if ck.has_key('proxy_host') and ck['proxy_host']: t.append('$proxy_host')
-                                if ck.has_key('uri') and ck['uri']: t.append('$request_uri')
-                                if len(t)>0: location['proxy_cache_key'] = ''.join(t)
-                            if locsetting.has_key('proxy_cache_valid'):
+                                if 'schema' in ck and ck['schema']:
+                                    t.append('$scheme')
+                                if 'host' in ck and ck['host']:
+                                    t.append('$host')
+                                if 'proxy_host' in ck and ck['proxy_host']:
+                                    t.append('$proxy_host')
+                                if 'uri' in ck and ck['uri']:
+                                    t.append('$request_uri')
+                                if len(t) > 0:
+                                    location['proxy_cache_key'] = ''.join(t)
+                            if 'proxy_cache_valid' in locsetting:
                                 t = []
                                 cvs = locsetting['proxy_cache_valid']
                                 for cv in cvs:
-                                    if not cv.has_key('code') or not cv.has_key('time') or not cv.has_key('time_unit'): continue
+                                    if not 'code' in cv or not 'time' in cv or not 'time_unit' in cv:
+                                        continue
                                     if cv['code'] not in ('200', '301', '302', '404', '500', '502', '503', '504', 'any'):
                                         self.write({'code': -1, 'msg': u'缓存过期规则的状态码有误！'})
                                         return
@@ -1873,24 +1880,24 @@ class OperationHandler(RequestHandler):
                                         return
                                     t.append({'code': cv['code'], 'time': '%s%s' % (cv['time'], cv['time_unit'])})
                                 if len(t)>0: location['proxy_cache_valid'] = t
-                            if locsetting.has_key('proxy_cache_use_stale'):
+                            if 'proxy_cache_use_stale' in locsetting:
                                 t = []
                                 cus = locsetting['proxy_cache_use_stale']
-                                for k,v in cus.iteritems():
+                                for k,v in cus.items():
                                     if not k in ('error', 'timeout', 'invalid_header', 'updating',
                                         'http_500', 'http_502', 'http_503', 'http_504', 'http_404') or not v: continue
                                     t.append(k)
                                 if len(t)>0: location['proxy_cache_use_stale'] = t
-                            if locsetting.has_key('proxy_cache_lock') and locsetting['proxy_cache_lock']:
+                            if 'proxy_cache_lock' in locsetting and locsetting['proxy_cache_lock']:
                                 location['proxy_cache_lock'] = True
-                                if locsetting.has_key('proxy_cache_lock_timeout'):
+                                if 'proxy_cache_lock_timeout' in locsetting:
                                     if not locsetting['proxy_cache_lock_timeout'].isdigit():
                                         self.write({'code': -1, 'msg': u'缓存锁定时间必须为数字！'})
                                         return
                                     location['proxy_cache_lock_timeout'] = locsetting['proxy_cache_lock_timeout']
 
                     elif loc['engine'] == 'error':
-                        if not locsetting.has_key('code') or not locsetting['code']:
+                        if not 'code' in locsetting or not locsetting['code']:
                             self.write({'code': -1, 'msg': u'请选择错误代码！'})
                             return
                         if locsetting['code'] not in ('401', '403', '404', '500', '502'):
@@ -2105,7 +2112,57 @@ class OperationHandler(RequestHandler):
             self.write({'code': 0, 'msg': 'SSH 服务配置保存成功！'})
 
     def cron(self):
-        cron.web_response(self)
+        # cron jobs management
+        action = self.get_argument('action', '')
+
+        if action == 'get_settings':
+            self.write({'code': 0, 'msg': u'获取 Cron 服务配置信息成功！', 'data': cron.load_config()})
+        if action == 'save_settings':
+            mailto = self.get_argument('mailto', '')
+            rt = cron.update_config({'mailto': _u(mailto)})
+            if rt:
+                self.write({'code': 0, 'msg': u'设置保存成功！'})
+            else:
+                self.write({'code': -1, 'msg': u'设置保存失败！'})
+
+        user = self.get_argument('user', '')
+        level = self.get_argument('level', 'normal')
+        if action == 'cron_list':
+            self.write({'code': 0, 'msg': u'获取定时任务成功！','data': cron.cron_list(user=user, level=level)})
+        elif action in ('cron_add', 'cron_mod'):
+            command = self.get_argument('command', '')
+            if command == '':
+                self.write({'code': -1, 'msg': u'请输入命令！'})
+                return
+            if level == 'system' and user == '':
+                self.write({'code': -1, 'msg': u'请输入用户'})
+                return
+
+            minute = self.get_argument('minute', '')
+            hour = self.get_argument('hour', '')
+            day = self.get_argument('day', '')
+            month = self.get_argument('month', '')
+            weekday = self.get_argument('weekday', '')
+            weekday = self.get_argument('weekday', '')
+            if action == 'cron_add':
+                if cron.cron_add(user, minute, hour, day, month, weekday, command, level):
+                    self.write({'code': 0, 'msg': u'定时任务添加成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'定时任务添加失败！'})
+            elif action == 'cron_mod':
+                cronid = self.get_argument('cronid', '')
+                currlist = self.get_argument('currlist', '')
+                if cron.cron_mod(user, cronid, minute, hour, day, month, weekday, command, level, currlist):
+                    self.write({'code': 0, 'msg': u'定时任务修改成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'定时任务修改失败！'})
+        elif action == 'cron_del':
+            cronid = self.get_argument('cronid', '')
+            currlist = self.get_argument('currlist', '')
+            if cron.cron_del(user, cronid, level, currlist):
+                self.write({'code': 0, 'msg': u'定时任务删除成功！'})
+            else:
+                self.write({'code': -1, 'msg': u'定时任务删除失败！'})
 
     def vsftpd(self):
         action = self.get_argument('action', '')
@@ -2126,6 +2183,12 @@ class OperationHandler(RequestHandler):
     def pureftpd(self):
         pureftpd.web_response(self)
 
+    def shell(self):
+        action = self.get_argument('action', '')
+        cmd = self.get_argument('cmd', '')
+        cwd = self.get_argument('cwd', '')
+        if action == 'exec_command':
+            self.write({'code': 0, 'msg': u'命令已发送', 'data': shell.exec_command(_u(cmd), _u(cwd))})
 
 class PageHandler(RequestHandler):
     """Return single page.
@@ -2161,20 +2224,21 @@ class BackendHandler(RequestHandler):
 
     def _lock_job(self, lockname):
         cls = BackendHandler
-        if cls.locks.has_key(lockname): return False
+        if lockname in cls.locks:
+            return False
         cls.locks[lockname] = True
         return True
 
     def _unlock_job(self, lockname):
         cls = BackendHandler
-        if not cls.locks.has_key(lockname): return False
+        if not lockname in cls.locks: return False
         del cls.locks[lockname]
         return True
 
     def _start_job(self, jobname):
         cls = BackendHandler
         # check if the job is running
-        if cls.jobs.has_key(jobname) and cls.jobs[jobname]['status'] == 'running':
+        if jobname in cls.jobs and cls.jobs[jobname]['status'] == 'running':
             return False
 
         cls.jobs[jobname] = {'status': 'running', 'msg': ''}
@@ -2188,7 +2252,7 @@ class BackendHandler(RequestHandler):
 
     def _get_job(self, jobname):
         cls = BackendHandler
-        if not cls.jobs.has_key(jobname):
+        if not jobname in cls.jobs:
             return {'status': 'none', 'code': -1, 'msg': ''}
         return cls.jobs[jobname]
 
@@ -2237,7 +2301,7 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
                     return
 
-            if service not in Service.support_services:
+            if service not in Service.service_items:
                 self.write({'code': -1, 'msg': u'未支持的服务！'})
                 return
             if not name: name = service
@@ -2296,12 +2360,12 @@ class BackendHandler(RequestHandler):
             repo = self.get_argument('repo', '*')
             option = self.get_argument('option', '')
             if option == 'update':
-                if not pkg in [v for k,vv in yum.yum_pkg_alias.iteritems() for v in vv]:
+                if not pkg in [v for k,vv in yum.yum_pkg_alias.items() for v in vv]:
                     self.write({'code': -1, 'msg': u'未支持的软件包！'})
                     return
             else:
                 option = 'install'
-                if not yum.yum_pkg_alias.has_key(pkg):
+                if not pkg in yum.yum_pkg_alias:
                     self.write({'code': -1, 'msg': u'未支持的软件包！'})
                     return
                 if repo not in yum.yum_repolist + ('installed', '*'):
@@ -2323,10 +2387,10 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
                     return
 
-            if not yum.yum_pkg_relatives.has_key(pkg):
+            if not pkg in yum.yum_pkg_relatives:
                 self.write({'code': -1, 'msg': u'软件包不存在！'})
                 return
-            if ext and not yum.yum_pkg_relatives[pkg].has_key(ext):
+            if ext and not ext in yum.yum_pkg_relatives[pkg]:
                 self.write({'code': -1, 'msg': u'扩展不存在！'})
                 return
             if jobname == 'yum_install':
@@ -2346,7 +2410,7 @@ class BackendHandler(RequestHandler):
                         _u(ext)))
         elif jobname == 'yum_ext_info':
             pkg = self.get_argument('pkg', '')
-            if not yum.yum_pkg_relatives.has_key(pkg):
+            if not pkg in yum.yum_pkg_relatives:
                 self.write({'code': -1, 'msg': u'软件包不存在！'})
                 return
             self._call(functools.partial(self.yum_ext_info,
@@ -2543,7 +2607,7 @@ class BackendHandler(RequestHandler):
                     .replace('SHOW DB', 'SHOW DATABASES')
                     .replace('REPL CLIENT', 'REPLICATION CLIENT')
                     .replace('REPL SLAVE', 'REPLICATION SLAVE')
-                for priv, value in privs.iteritems() if '_priv' in priv and value == 'Y']
+                for priv, value in privs.items() if '_priv' in priv and value == 'Y']
             self._call(functools.partial(self.mysql_updateuserprivs, password, user, host, privs, dbname))
         elif jobname == 'mysql_setuserpassword':
             password = _u(self.get_argument('password', ''))
@@ -2630,13 +2694,13 @@ class BackendHandler(RequestHandler):
 
         # install the latest version
         http = tornado.httpclient.AsyncHTTPClient()
-        response = yield tornado.gen.Task(http.fetch, PUB_API['latest'])
+        response = yield tornado.gen.Task(http.fetch, core_api['latest'])
         if response.error:
             self._update_job('update', -1, u'获取版本信息失败！')
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = u'%s/tools/init.d/%s/inpanel' % (root_path, distname)
+        initscript = u'%s/core/init.d/%s/inpanel' % (root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
@@ -2646,7 +2710,7 @@ class BackendHandler(RequestHandler):
                 'cmd': u'wget -q "%s" -O %s/inpanel.tar.gz' % (downloadurl, data_path),
             }, {
                 'desc': u'正在创建解压目录...',
-                'cmd': u'mkdir %s/inpanel' % data_path,
+                'cmd': u'mkdir -p %s/inpanel' % data_path,
             }, {
                 'desc': u'正在解压安装包...',
                 'cmd': u'tar zxmf %s/inpanel.tar.gz -C %s/inpanel --strip-components 1' % (data_path, data_path),
@@ -3092,13 +3156,13 @@ class BackendHandler(RequestHandler):
             if version: # install special version
                 if release:
                     pkgs = ['%s-%s-%s.%s' % (p, version, release, arch)
-                        for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
+                        for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
                 else:
                     pkgs = ['%s-%s.%s' % (p, version, arch)
-                        for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
+                        for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
             else:   # or judge by the system
                 pkgs = ['%s.%s' % (p, arch)
-                    for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems() if pinfo['default']]
+                    for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
         repos = [repo, ]
         if repo in ('CentALT', 'ius', 'atomic', '10gen', 'mariadb'):
             repos.extend(['base', 'updates', 'epel'])
@@ -3187,11 +3251,11 @@ class BackendHandler(RequestHandler):
             pkgs = ['%s-%s-%s.%s' % (ext, version, release, arch)]
         else:
             pkgs = ['%s-%s-%s.%s' % (p, version, release, arch)
-                for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems()
-                if pinfo.has_key('base') and pinfo['base']]
+                for p, pinfo in yum.yum_pkg_relatives[pkg].items()
+                if 'base' in pinfo and pinfo['base']]
         ## also remove depends pkgs
-        #for p, pinfo in yum.yum_pkg_relatives[pkg].iteritems():
-        #    if pinfo.has_key('depends'):
+        #for p, pinfo in yum.yum_pkg_relatives[pkg].items():
+        #    if 'depends' in pinfo:
         #        pkgs += pinfo['depends']
         cmd = 'yum erase -y %s' % (' '.join(pkgs), )
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
@@ -3256,7 +3320,7 @@ class BackendHandler(RequestHandler):
  
         self._update_job(jobname, 2, u'正在收集扩展信息...')
 
-        exts = [k for k, v in yum.yum_pkg_relatives[pkg].iteritems() if v.has_key('isext') and v['isext']]
+        exts = [k for k, v in yum.yum_pkg_relatives[pkg].items() if 'isext' in v and v['isext']]
         cmd = 'yum info %s --disableplugin=fastestmirror' % (' '.join(['%s.%s' % (ext, self.settings['arch']) for ext in exts]))
 
         data = []
@@ -4033,7 +4097,7 @@ class RestoreHandler(RequestHandler):
 
         self.write(u'<body style="font-size:14px;overflow:hidden;margin:0;padding:0;">')
 
-        if not self.request.files.has_key('ufile'):
+        if not 'ufile' in self.request.files:
             self.write(u'请选择备份配置文件！')
         else:
             self.write(u'正在上传...')
@@ -4052,7 +4116,7 @@ class RestoreHandler(RequestHandler):
 
         self.write('</body>')
 
-        
+
 class BuyECSHandler(RequestHandler):
     """Aliyun CPS program.
     """
@@ -4198,7 +4262,7 @@ class ECSHandler(RequestHandler):
 
             instances = []
             tasks = []
-            if data.has_key('InstanceStatusSets'):
+            if 'InstanceStatusSets' in data:
                 for instance in data['InstanceStatusSets']:
                     tasks.append(tornado.gen.Task(callbackable(srv.DescribeInstanceAttribute), _u(instance['InstanceName'])))
                     instances.append(instance)
@@ -4269,7 +4333,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            if data.has_key('Images'):
+            if 'Images' in data:
                 images = data['Images']
             else:
                 images = []
@@ -4299,7 +4363,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            if data.has_key('Disks'):
+            if 'Disks' in data:
                 disks = data['Disks']
             else:
                 disks = []
@@ -4327,7 +4391,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            if data.has_key('Snapshots'):
+            if 'Snapshots' in data:
                 snapshots = data['Snapshots']
             else:
                 snapshots = []

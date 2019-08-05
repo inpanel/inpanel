@@ -1,0 +1,85 @@
+<div navbar ng-init="currentItem='utils.repository'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>软件仓库（开发中）</h3>
+    </div>
+
+    <div class="tabbable" ng-init="load()">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='yum'"><a href="#yum" ng-click="tab_sec('yum')" data-toggle="tab">YUM</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='apt'"><a href="#apt" ng-click="tab_sec('apt')" data-toggle="tab">APT</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='pacman'"><a href="#pacman" ng-click="tab_sec('pacman')" data-toggle="tab">Pacman</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='dnf'"><a href="#dnf" ng-click="tab_sec('dnf')" data-toggle="tab">DNF</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='zypper'"><a href="#zypper" ng-click="tab_sec('zypper')" data-toggle="tab">Zypper</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='yum'" id="yum">
+                <div ng-show="loading"><div waiting></div></div>
+                <div ng-hide="loading">
+                    <div class="pull-left"><h5>YUM 源配置文件列表（CentOS）</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>CentOS-Base.repo</td>
+                            <td>
+                                <button class="btn btn-default btn-xs">编辑</button>
+                                <button class="btn btn-default btn-xs">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>CentOS-Debuginfo.repo</td>
+                            <td>
+                                <button class="btn btn-default btn-xs">编辑</button>
+                                <button class="btn btn-default btn-xs">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='apt'" id="apt">
+                <div ng-show="loading"><div waiting></div></div>
+                <div ng-hide="loading">
+                    软件仓库列表 for Ubuntu and Debian
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pacman'" id="pacman">
+                <div ng-show="loading"><div waiting></div></div>
+                <div ng-hide="loading">
+                    软件仓库列表 for Arch
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='dnf'" id="dnf">
+                <div ng-show="loading"><div waiting></div></div>
+                <div ng-hide="loading">
+                    软件仓库列表 for Fedora
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='zypper'" id="zypper">
+                <div ng-show="loading"><div waiting></div></div>
+                <div ng-hide="loading">
+                    软件仓库列表 for openSUSE
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

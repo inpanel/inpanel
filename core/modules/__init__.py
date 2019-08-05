@@ -14,6 +14,7 @@ __all__ = [
     'acme',
     'aliyuncs',
     'apache',
+    'apt',
     'certificate',
     'config',
     'configloader',
@@ -35,8 +36,6 @@ __all__ = [
     'shell',
     'ssh',
     'user',
-    'utils',
     'vsftpd',
-    'web',
     'yum'
 ]

@@ -29,26 +29,26 @@
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_listen">监听端口</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="settings.Listen" ng-disabled="processing" type="text" id="setting_listen" placeholder="监听的端口">
+                            <input class="form-control" ng-model="settings.listen" ng-disabled="processing" type="text" id="setting_listen" placeholder="监听的端口">
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_server_admin">管理员邮箱</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="settings.ServerAdmin" ng-disabled="processing" type="text" id="setting_server_admin" placeholder="网络管理员的电子邮件地址">
+                            <input class="form-control" ng-model="settings.serveradmin" ng-disabled="processing" type="text" id="setting_server_admin" placeholder="网络管理员的电子邮件地址">
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_server_name">主机名称</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="settings.ServerName" ng-disabled="processing" type="text" id="setting_server_name" placeholder="服务器主机名称">
+                            <input class="form-control" ng-model="settings.servername" ng-disabled="processing" type="text" id="setting_server_name" placeholder="服务器主机名称">
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_document_root">主目录</label>
                         <div class="col-sm-10">
                             <div class="input-group">
-                                <input class="form-control" ng-model="settings.DocumentRoot" ng-disabled="processing" type="text" id="setting_document_root" placeholder="服务器主目录">
+                                <input class="form-control" ng-model="settings.documentroot" ng-disabled="processing" type="text" id="setting_document_root" placeholder="服务器主目录">
                                 <span class="input-group-btn">
                                     <button class="btn btn-default" ng-click="selectstaticfolder($index)">
                                         <i class="glyphicon glyphicon-folder-open"></i>
@@ -60,32 +60,56 @@
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_directory_index">默认文档</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="settings.DirectoryIndex" ng-disabled="processing" type="text" id="setting_directory_index" placeholder="默认文档">
+                            <input class="form-control" ng-model="settings.directoryindex" ng-disabled="processing" type="text" id="setting_directory_index" placeholder="默认文档">
                         </div>
                     </div>
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label" for="setting_default_type">默认类型</label>
+                        <label class="col-sm-2 control-label" for="setting_default_type">MIME类型</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="settings.DefaultType" ng-disabled="processing" type="text" id="setting_default_type" placeholder="默认文件类型">
+                            <input class="form-control" ng-model="settings.defaulttype" ng-disabled="processing" type="text" id="setting_default_type" placeholder="默认文件类型">
+                            <select class="form-control" ng-model="settings.defaulttype" ng-disabled="processing" type="text">
+                                <option value="text/plain">纯文本（默认）</option>
+                                <option value="text/html">HTML</option>
+                                <option value="text/xml">XML</option>
+                                <option value="application/octet-stream">流文件</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-group form-inline">
-                        <label class="col-sm-2 control-label" for="setting_default_charset">默认字符集</label>
+                        <label class="col-sm-2 control-label" for="setting_default_charset">默认编码</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="settings.AddDefaultCharset" ng-disabled="processing" type="text" id="setting_default_charset" placeholder="默认字符集">
+                            <input class="form-control" ng-model="settings.adddefaultcharset" ng-disabled="processing" type="text" id="setting_default_charset" placeholder="默认编码">
+                            <select class="form-control" ng-model="settings.adddefaultcharset" ng-disabled="processing" type="text">
+                                <option value="UTF-8">UTF-8（默认）</option>
+                                <option value="GB2312">GB2312</option>
+                                <option value="GBK">GBK</option>
+                                <option value="GB18030">GB18030</option>
+                                <option value="BIG5">BIG5</option>
+                                <option value="EUC-JP">EUC-JP</option>
+                                <option value="EUC-KR">EUC-KR</option>
+                                <option value="ISO-8859-1">ISO-8859-1</option>
+                                <option value="ISO-8859-2">ISO-8859-2</option>
+                                <option value="Shift_JIS">Shift_JIS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">Gzip压缩</label>
+                        <div class="col-sm-10">
+                            <label class="checkbox-inline"><input ng-model="settings.gzip" type="checkbox" class="ng-valid ng-dirty"> 开启Gzip压缩</label>
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_access_file_name">权限控制文件</label>
                         <div class="col-sm-10">
-                            <input class="form-control" ng-model="settings.AccessFileName" ng-disabled="processing" type="text" id="setting_access_file_name" placeholder="AccessFileName">
+                            <input class="form-control" ng-model="settings.accessfilename" ng-disabled="processing" type="text" id="setting_access_file_name" placeholder="AccessFileName">
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label" for="setting_timeout">连接超时</label>
                         <div class="col-sm-10">
                             <div class="input-group">
-                                <input class="form-control" ng-model="settings.Timeout" ng-disabled="processing" type="text" id="setting_timeout" placeholder="连接超时">
+                                <input class="form-control" ng-model="settings.timeout" ng-disabled="processing" type="text" id="setting_timeout" placeholder="连接超时">
                                 <span class="input-group-addon">秒</span>
                             </div>
                         </div>

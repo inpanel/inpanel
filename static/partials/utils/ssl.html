@@ -41,9 +41,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='keys'" id="keys">
-                <div class="well" ng-show="loading_keys">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载私钥列表，请稍候...
-                </div>
+                <div ng-show="loading_keys"><div waiting></div></div>
                 <div ng-show="!loading_keys" style="display:none">
                     <div class="pull-left"><h5>私钥列表（*.key）</h5></div>
                     <div class="pull-right">
@@ -51,7 +49,7 @@
                         <button class="btn btn-default btn-sm" ng-click="rename(item.name)" title="生成私钥">生成私钥</button>
                         <button class="btn btn-default btn-sm" ng-click="rename(item.name)" title="上传私钥">上传私钥</button>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width: 30px;" class="text-right">#</th>
@@ -85,15 +83,13 @@
                 <div ng-show="!loading_csrs">
                     <div class="well" ng-show="host_packages.length==0">未找到网站程序。</div>
                 </div>
-                <div class="well" ng-show="loading_csrs">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载请求文件列表，请稍候...
-                </div>
+                <div ng-show="loading_csrs"><div waiting></div></div>
                 <div ng-show="!loading_csrs">
                     <div class="pull-left"><h5>签名请求列表（*.csr）</h5></div>
                     <div class="pull-right">
                         <button class="btn btn-default btn-sm" ng-click="csr_generate()" title="生成证书签名请求">生成证书签名请求</button>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width: 20px;" class="text-right">#</th>
@@ -126,16 +122,14 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='crts'" id="crts">
-                <div class="well" ng-show="loading_crts">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载证书列表，请稍候...
-                </div>
+                <div ng-show="loading_crts"><div waiting></div></div>
                 <div ng-show="!loading_crts">
                     <div class="pull-left"><h5>证书列表（*.crt）</h5></div>
                     <div class="pull-right">
                         <button class="btn btn-default btn-sm" ng-click="crt_upload()" title="上传证书">上传证书</button>
                         <button class="btn btn-default btn-sm" ng-click="crt_generate()" title="生成自签名证书">生成自签名证书</button>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width: 20px;" class="text-right">#</th>
@@ -174,12 +168,10 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='host'" id="host">
-                <div class="well" ng-show="loading_host">
-                    <img src="images/loading.gif" style="margin-right: 5px;"> 正在加载，请稍候...
-                </div>
+                <div ng-show="loading_host"><div waiting></div></div>
                 <div ng-show="!loading_host">
                     <div class="pull-left"><h5>管理 SSL 主机</h5></div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width: 20px;" class="text-right">#</th>
@@ -239,7 +231,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{curpkg.name}} 安装设置</h3>
+                <h3 class="modal-title">{{curpkg.name}} 安装设置</h3>
             </div>
             <div class="modal-body">
                 <h5>请选择要安装的版本</h5>
@@ -278,7 +270,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{confirm_title}}</h3>
+                <h3 class="modal-title">{{confirm_title}}</h3>
             </div>
             <div class="modal-body" ng-bind-html-unsafe="confirm_body">
             </div>
@@ -295,7 +287,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>删除确认</h3>
+                <h3 class="modal-title">删除确认</h3>
             </div>
             <div class="modal-body">
                 <p>是否确认删除 “{{nginx_server_name}}” 这个站点？</p>
@@ -314,7 +306,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{selector_title}}</h3>
+                <h3 class="modal-title">{{selector_title}}</h3>
             </div>
             <div class="modal-body">
                 <div selector></div>

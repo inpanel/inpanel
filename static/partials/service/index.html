@@ -19,7 +19,7 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='http'" id="http">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th colspan="4">HTTP 服务器软件</th>
@@ -70,7 +70,7 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ftp'" id="ftp">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th colspan="4">FTP 服务器软件</th>
@@ -105,7 +105,7 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='database'" id="database">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th colspan="4">数据库服务</th>
@@ -156,7 +156,7 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='appengine'" id="appengine">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th colspan="4">应用/脚本引擎</th>
@@ -175,7 +175,7 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mail'" id="mail">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th colspan="4">邮件服务</th>
@@ -194,7 +194,7 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th colspan="4">系统服务</th>
@@ -226,11 +226,19 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="width:100px">named</td>
+                            <td style="width:100px">Named</td>
                             <td style="width:60px" ng-bind-html-unsafe="info['service.named']['status'] | service.status"></td>
                             <td class="muted">DNS 域名解析服务器</td>
                             <td style="width:100px">
                                 <div srvminiop ng-init="name='named';service='named';urlname='named'"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width:100px">Samba</td>
+                            <td style="width:60px" ng-bind-html-unsafe="info['service.smb']['status'] | service.status"></td>
+                            <td class="muted">文件资源共享服务器</td>
+                            <td style="width:100px">
+                                <div srvminiop ng-init="name='samba';service='smb';urlname='samba'"></div>
                             </td>
                         </tr>
                         <tr style="display:none" ng-show="info['server.virt'] != 'Virtuozzo/OpenVZ'">

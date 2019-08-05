@@ -241,12 +241,12 @@ var ServiceApacheCtrl = [
         };
 
         $scope.settings = {
-            'listen': 80,
-            'server_admin': 'root@localhost',
+            'Listen': 80,
+            'ServerAdmin': 'root@localhost',
             'server_name': 'localhost:80',
-            'document_root': '/var/www/html',
-            'directory_index': 'index.html index.htm',
-            'default_charset': 'UTF-8',
+            'DocumentRoot': '/var/www/html',
+            'DirectoryIndex': 'index.html index.htm',
+            'AddDefaultCharset': 'UTF-8',
             'limit_rate': '',
             'limit_conn': '',
             'limit_conn_zone': '',
@@ -255,7 +255,7 @@ var ServiceApacheCtrl = [
             'access_status': 'off',
             'allow': '',
             'deny': '',
-            'gzip': ''
+            'Gzip': ''
         };
 
         $scope.getSettings = function () {
@@ -1387,6 +1387,40 @@ var ServicePureFTPdCtrl = [
                     $scope.getsettings();
                 }
                 $scope.processing = false;
+            });
+        };
+    }
+];
+
+var ServiceSambaCtrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.samba';
+        Module.init(module, 'Samba');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/query/service.smb', function (res) {
+                var info = res['service.smb'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
             });
         };
     }

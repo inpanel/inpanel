@@ -8,142 +8,157 @@
         <h3>工具</h3>
     </div>
 
-    <div ng-init="checkVirt()">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th colspan="3">系统设置</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="width:120px;"><a href="#/utils/network">网络设置</a></td>
-                    <td style="width:380px;" class="muted">设置主机名、IP 地址、网关、DNS服务器</td>
-                    <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/utils/network">进入设置</a></td>
-                </tr>
-                <tr>
-                    <td><a href="#/utils/time">时间设置</a></td>
-                    <td class="muted">设置服务器的时间和时区</td>
-                    <td><a class="btn btn-default btn-xs" href="#/utils/time">进入设置</a></td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th colspan="3">系统管理</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="width:120px;"><a href="#/utils/user">用户管理</a></td>
-                    <td style="width:380px;" class="muted">管理系统用户、用户组和用户密码</td>
-                    <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/utils/user">进入管理</a></td>
-                </tr>
-                <tr>
-                    <td><a href="#/utils/process">进程管理</a></td>
-                    <td class="muted">管理系统当前运行的进程</td>
-                    <td><a class="btn btn-default btn-xs" href="#/utils/process">进入管理</a></td>
-                </tr>
-                <tr>
-                    <td>远程管理</td>
-                    <td class="muted">远程服务器的管理（集群、客户端、ECS等）</td>
-                    <td><a class="btn btn-default btn-xs" href="#/ecs" ng-disabled="true">正在开发</a></td>
-                </tr>
-                <tr>
-                    <td>FTP 管理</td>
-                    <td class="muted">使用 FTP 工具来传输和管理文件</td>
-                    <td><a class="btn btn-default btn-xs" href="#/ftp" ng-disabled="true">正在开发</a></td>
-                </tr>
-                <tr>
-                    <td>任务管理</td>
-                    <td class="muted">管理系统定时任务</td>
-                    <td><a class="btn btn-default btn-xs" href="#/task" ng-disabled="true">正在开发</a></td>
-                </tr>
-                <tr>
-                    <td>仓库管理</td>
-                    <td class="muted">管理发行版软件仓库</td>
-                    <td><a class="btn btn-default btn-xs" href="#/repository" ng-disabled="true">正在开发</a></td>
-                </tr>
-                <tr style="display:none;" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
-                    <td><a href="#/utils/partition">磁盘管理</a></td>
-                    <td class="muted">对磁盘进行分区、格式化、挂载等操作</td>
-                    <td><a class="btn btn-default btn-xs" href="#/utils/partition">进入管理</a></td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th colspan="3">系统安全</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="width:120px;"><a href="#/service/ssh?s=pubkauth">SSH 公钥验证</a></td>
-                    <td style="width:380px;" class="muted">防暴力破解，使用更安全的公钥验证替换密码验证</td>
-                    <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/service/ssh?s=pubkauth">进入设置</a></td>
-                </tr>
-                <tr>
-                    <td><a href="#/utils/ssl">SSL/TLS</a></td>
-                    <td class="muted">管理 SSL 私钥、签名请求和证书</td>
-                    <td><a class="btn btn-default btn-xs" href="#/utils/ssl">进入设置</a></td>
-                </tr>
-                <tr>
-                    <td>端口限制</td>
-                    <td class="muted">利用 Linux 防火墙实现网络端口的开关</td>
-                    <td><a class="btn btn-default btn-xs" href="#/utils" ng-disabled="true">正在开发</a></td>
-                </tr>
-                <tr>
-                    <td>日志维护</td>
-                    <td class="muted">维护系统日志</td>
-                    <td><a class="btn btn-default btn-xs" href="#/log" ng-disabled="true">正在开发</a></td>
-                </tr>
-                <tr>
-                    <td>安全优化</td>
-                    <td class="muted">优化系统增强安全</td>
-                    <td><a class="btn btn-default btn-xs" href="#/secure" ng-disabled="true">正在开发</a></td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th colspan="3">数据处理</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="width:120px;">备份管理</td>
-                    <td style="width:380px;" class="muted">重要文件数据的备份和管理</td>
-                    <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/backup" ng-disabled="true">正在开发</a></td>
-                </tr>
-                <tr style="display:none" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
-                    <td><a href="#/utils/autofm">自动格式化挂载</a></td>
-                    <td class="muted">对未挂载的磁盘进行格式化并自动挂载</td>
-                    <td><a class="btn btn-default btn-xs" href="#/utils/autofm">进入设置</a></td>
-                </tr>
-                <tr>
-                    <td><a href="#/utils/movedata">数据移至数据盘</a></td>
-                    <td class="muted">将数据迁移至数据盘，并通过链接保持原路径</td>
-                    <td><a class="btn btn-default btn-xs" href="#/utils/movedata">进入设置</a></td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th colspan="3">服务器重启</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="width:120px;">重启服务器</td>
-                    <td style="width:380px;" class="muted">重启您的服务器</td>
-                    <td style="width:100px;"><button class="btn btn-default btn-xs" ng-click="rebootconfirm()">立即重启</button></td>
-                </tr>
-            </tbody>
-        </table>
+    <div ng-init="checkVirt()" class="row">
+        <div class="col-md-6 col-xs-12">
+            <table class="table table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th colspan="3">基础设置</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width:120px;"><a href="#/utils/network">网络设置</a></td>
+                        <td style="width:380px;" class="muted">设置主机名、IP 地址、网关、DNS服务器</td>
+                        <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/utils/network">进入设置</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/utils/time">时间设置</a></td>
+                        <td class="muted">设置服务器的时间和时区</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/time">进入设置</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/utils/repository">软件仓库</a></td>
+                        <td class="muted">软件仓库的管理</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/repository" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/utils/cron">定时任务</a></td>
+                        <td class="muted">管理系统定时任务</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/cron">进入管理</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <table class="table table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th colspan="3">系统管理</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width:120px;"><a href="#/utils/user">用户管理</a></td>
+                        <td style="width:380px;" class="muted">管理系统用户、用户组和用户密码</td>
+                        <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/utils/user">进入管理</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/utils/process">进程管理</a></td>
+                        <td class="muted">管理系统当前运行的进程</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/process">进入管理</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/ecs">远程管理</a></td>
+                        <td class="muted">远程服务器（集群、客户端）的管理</td>
+                        <td><a class="btn btn-default btn-xs" href="#/ecs" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/ftp">FTP 管理</a></td>
+                        <td class="muted">FTP 用户及进程管理</td>
+                        <td><a class="btn btn-default btn-xs" href="#/ftp" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/utils/shell">执行命令</a></td>
+                        <td class="muted">执行 SHELL 命令</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/shell">进入操作</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <table class="table table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th colspan="3">系统安全</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width:120px;"><a href="#/service/ssh?s=pubkauth">SSH 公钥验证</a></td>
+                        <td style="width:380px;" class="muted">防暴力破解，使用更安全的公钥验证替换密码验证</td>
+                        <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/service/ssh?s=pubkauth">进入设置</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/utils/ssl">SSL/TLS</a></td>
+                        <td class="muted">管理 SSL 私钥、签名请求和证书</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/ssl" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/utils">端口限制</a></td>
+                        <td class="muted">利用 Linux 防火墙实现网络端口的开关</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/log">日志维护</a></td>
+                        <td class="muted">维护系统日志</td>
+                        <td><a class="btn btn-default btn-xs" href="#/log" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/secure">安全优化</a></td>
+                        <td class="muted">优化系统增强安全</td>
+                        <td><a class="btn btn-default btn-xs" href="#/secure" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <table class="table table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th colspan="3">磁盘存储</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width:120px;"><a href="#/storage">磁盘管理</a></td>
+                        <td style="width:380px;" class="muted">对磁盘进行分区、格式化、挂载以及网络磁盘的管理等操作</td>
+                        <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/storage">进入管理</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/storage/backup">备份管理</a></td>
+                        <td class="muted">重要文件数据的备份和管理</td>
+                        <td><a class="btn btn-default btn-xs" href="#/storage/backup" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                    <tr style="display:none" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
+                        <td><a href="#/storage/autofm">自动挂载</a></td>
+                        <td class="muted">对未挂载的磁盘进行格式化并自动挂载</td>
+                        <td><a class="btn btn-default btn-xs" href="#/storage/autofm">进入设置</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/storage/movedata">数据移至数据盘</a></td>
+                        <td class="muted">将数据迁移至数据盘，并通过链接保持原路径</td>
+                        <td><a class="btn btn-default btn-xs" href="#/storage/movedata">进入设置</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6 col-xs-12">
+            <table class="table table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th colspan="3">服务器重启</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width:120px;"><button class="btn btn-link btn-xs" ng-click="rebootconfirm()">重启服务器</button></td>
+                        <td style="width:380px;" class="muted">重启您的服务器</td>
+                        <td style="width:100px;"><button class="btn btn-default btn-xs" ng-click="rebootconfirm()">立即重启</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -152,7 +167,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>服务器重启确认</h3>
+                <h3 class="modal-title">服务器重启确认</h3>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info">

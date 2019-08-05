@@ -465,7 +465,6 @@ var SettingCtrl = [
                 'controllers/service',
                 'controllers/file',
                 'controllers/site',
-                'controllers/task',
                 'controllers/database',
                 'controllers/ecs',
                 'controllers/utils',

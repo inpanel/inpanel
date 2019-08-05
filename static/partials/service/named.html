@@ -5,7 +5,7 @@
 
 <div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="checkInstalled()">
     <div class="module-header">
-        <h3>named - DNS 域名解析服务器</h3>
+        <h3>Named - DNS 域名解析服务器</h3>
     </div>
 
     <div srvinstall ng-init="name='named';pkg='bind';expected_repolist=['base'];"></div>
@@ -25,7 +25,7 @@
                 <div srvbase ng-init="name='named';pkg='bind';service='named';"></div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='settings'" id="settings">
-                <table class="table">
+                <table class="table table-condensed">
                     <thead>
                         <tr>
                             <th colspan="2">基本设置</th>

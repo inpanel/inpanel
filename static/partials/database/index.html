@@ -1,14 +1,14 @@
 <div navbar ng-init="currentItem='database'"></div>
-<div ng-show="!loaded">
+<div ng-hide="loaded">
     <div loading></div>
 </div>
 
-<div id="main" ng-show="loaded" style="display:none">
+<div id="main" ng-init="load()" ng-show="loaded" style="display:none">
     <div class="module-header">
         <h3>数据库管理</h3>
     </div>
 
-    <div class="tabbable" ng-init="load()" ng-show="has_dbserver">
+    <div class="tabbable" ng-show="has_dbserver">
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none"><a href="#mysql" ng-click="sec('mysql')" data-toggle="tab">MySQL 数据库管理</a></li>
         </ul>
@@ -45,8 +45,8 @@
                     </div>
                 </div>
 
-                <div class="well" ng-show="$mysql.password_validated && dbloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载数据库列表，请稍候...
+                <div ng-show="$mysql.password_validated && dbloading">
+                    <div waiting ng-init="waitingText='正在加载数据库列表，请稍候...'"></div>
                 </div>
                 <div class="panel panel-default" ng-show="$mysql.password_validated && !dbloading">
                     <div class="panel-heading">
@@ -58,7 +58,7 @@
                             </div>
                         </div>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width:20px" class="text-right">#</th>
@@ -94,10 +94,9 @@
                     </table>
                 </div>
 
-                <div class="well" ng-show="$mysql.password_validated && userloading">
-                    <img src="images/loading.gif" style="margin-right:5px"> 正在加载用户列表，请稍候...
+                <div ng-show="$mysql.password_validated && userloading">
+                    <div waiting ng-init="waitingText='正在加载用户列表，请稍候...'"></div>
                 </div>
-
                 <div class="panel panel-default" ng-show="$mysql.password_validated && !userloading">
                     <div class="panel-heading">
                         <div class="panel-title">
@@ -108,7 +107,7 @@
                             </div>
                         </div>
                     </div>
-                    <table class="table table-hover table-bordered">
+                    <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
                                 <th style="width:20px" class="text-right">#</th>
@@ -141,17 +140,14 @@
         </div>
     </div>
 
-    <div class="panel panel-info" ng-show="!has_dbserver" value="install" style="display:none">
+    <div class="panel panel-info" ng-hide="has_dbserver" value="install" style="display:none">
         <div class="panel-heading">
-            <div class="panel-title">
-                <i class="glyphicon glyphicon-info-sign"></i>
-                <span> 未检测到数据库</span>
-            </div>
+            <div class="panel-title">未检测到数据库</div>
         </div>
         <div class="panel-body">
-            <p>系统检测到您还未安装数据库。</p>
-            <p>请先安装 MySQL 数据库服务再继续操作。</p>
-            <p style="padding-top:10px"><a class="btn btn-default" href="#/service?s=database">立即安装</a></p>
+            <p>检测到系统中未安装数据库。</p>
+            <p>请先安装数据库服务再继续操作。</p>
+            <p><a class="btn btn-default" href="#/service?s=database">立即安装</a></p>
         </div>
     </div>
 

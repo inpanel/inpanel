@@ -27,19 +27,18 @@ def randstr(length=32):
 
 
 def make_cookie_secret():
-    return base64.b64encode(
-        uuid.uuid4().bytes + uuid.uuid4().bytes)
+    return base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
 
 
 def is_valid_ip(ip):
-    """Validates IP addresses.
-    """
+    '''Validates IP addresses.'''
     return is_valid_ipv4(ip) or is_valid_ipv6(ip)
 
 
 def is_valid_ipv4(ip):
-    """Validates IPv4 addresses.
-    """
+    '''Validates IPv4 addresses.'''
+    if not ip or ip is '':
+        return False
     try:
         socket.inet_pton(socket.AF_INET, ip)
         return True
@@ -48,8 +47,9 @@ def is_valid_ipv4(ip):
 
 
 def is_valid_ipv6(ip):
-    """Validates IPv6 addresses.
-    """
+    '''Validates IPv6 addresses.'''
+    if not ip or ip is '':
+        return False
     try:
         socket.inet_pton(socket.AF_INET6, ip)
         return True
@@ -101,6 +101,9 @@ def ftime(secs):
 
 
 def is_valid_domain(name, allow_localname=True):
+    '''Validates domain name.'''
+    if not name or name is '':
+        return False
     name = name.lower()
     if allow_localname:
         pt = r'^(?:(?:(?:[a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z0-9])\.)*(?:(?:[a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z0-9])$'
@@ -108,9 +111,11 @@ def is_valid_domain(name, allow_localname=True):
         pt = r'^(?:(?:(?:[a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z0-9])\.)+[a-z]{2,6}$'
     return re.match(pt, name) and True or False
 
+
 def is_url(url):
     '''Check that the URL is in the correct format'''
     return re.match('[a-z]+://.+', url) and True or False
+
 
 def version_get(v1, v2):
     """Check if version v1 is great or equal then version v2.
@@ -170,7 +175,7 @@ def loadconfig(cfgfile, delimiter, detail=False):
 
             if item in settings:
                 if detail:
-                    count = settings[item]['count']+1
+                    count = settings[item]['count'] + 1
                 if not commented:
                     settings[item] = detail and {
                         'file': cfgfile,

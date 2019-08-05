@@ -12,12 +12,12 @@
 
 import os
 import shutil
+from config import Config
 
-from modules.config import Config
-from modules.configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
-                                  readconfig, saveconfig, writeconfig)
-from modules.server import ServerInfo
-from modules.shell import run as shell_run
+from configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
+                          readconfig, saveconfig, writeconfig)
+from server import ServerInfo
+from shell import run as shell_run
 
 
 class ServerSet(object):
@@ -58,7 +58,7 @@ class ServerSet(object):
             if config == None:
                 return loadconfig(cfile, cmap)
             else:
-                cmap_reverse = dict((v, k) for k, v in cmap.iteritems())
+                cmap_reverse = dict((v, k) for k, v in cmap.items())
                 return saveconfig(cfile, config, cmap_reverse)
         else:
             return None
@@ -276,7 +276,7 @@ if __name__ == '__main__':
     print('')
 
     configs = ServerSet.ifconfigs()
-    for ifname, config in configs.iteritems():
+    for ifname, config in configs.items():
         print('* Config of %s:' % ifname)
         if 'mac' in config:
             print('  HWADDR: %s' % config['mac'])

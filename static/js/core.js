@@ -1,4 +1,4 @@
-var releasetime = '2019-02-23 14:13:00 CST';
+var releasetime = '2019-04-02 15:49:23 GMT';
 var _v = new Date(releasetime.replace(/-/g, '/')).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
 angular.module('inpanel', ['inpanel.services', 'inpanel.directives', 'inpanel.filters']).
@@ -34,6 +34,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/service/cron', _r('service/cron', ServiceCronCtrl)).
     when('/service/ntp', _r('service/ntp', ServiceNTPCtrl)).
     when('/service/named', _r('service/named', ServiceNamedCtrl)).
+    when('/service/samba', _r('service/samba', ServiceSambaCtrl)).
     when('/service', _r('service/index', ServiceCtrl)).
     when('/file', _r('file/file', FileCtrl)).
     when('/file/go#(:path)', _r('file/file', FileCtrl)).
@@ -47,24 +48,25 @@ config(['$routeProvider', function ($routeProvider) {
     when('/database/mysql/user/new', _r('database/mysql/usernew', DatabaseMySQLNewUserCtrl)).
     when('/database/mysql/user/edit/:section', _r('database/mysql/useredit', DatabaseMySQLEditUserCtrl)).
     when('/ftp', _r('ftp', FtpCtrl)).
-    when('/task', _r('task/index', TaskCtrl)).
-    when('/task/cron/list', _r('task/cron/list', TaskCronListCtrl)).
-    when('/task/cron/new', _r('task/cron/new', TaskCronNewCtrl)).
     when('/utils', _r('utils/index', UtilsCtrl)).
     when('/utils/user', _r('utils/user', UtilsUserCtrl)).
     when('/utils/process', _r('utils/process', UtilsProcessCtrl)).
     when('/utils/network', _r('utils/network', UtilsNetworkCtrl)).
     when('/utils/time', _r('utils/time', UtilsTimeCtrl)).
-    when('/utils/partition', _r('utils/partition', UtilsPartitionCtrl)).
-    when('/utils/autofm', _r('utils/autofm', UtilsAutoFMCtrl)).
-    when('/utils/movedata', _r('utils/movedata', UtilsMoveDataCtrl)).
+    when('/utils/cron', _r('utils/cron', UtilsCronCtrl)).
     when('/utils/ssl', _r('utils/ssl', UtilsSSLCtrl)).
+    when('/utils/repository', _r('utils/repository', UtilsRepositoryCtrl)).
+    when('/utils/shell', _r('utils/shell', UtilsShellCtrl)).
+    when('/storage', _r('storage/index', StorageCtrl)).
+    when('/storage/remote/:section', _r('storage/remote', StorageRemoteCtrl)).
+    when('/storage/autofm', _r('storage/autofm', StorageAutoFMCtrl)).
+    when('/storage/movedata', _r('storage/movedata', StorageMoveDataCtrl)).
+    when('/storage/backup', _r('storage/backup', BackupCtrl)).
     when('/ecs', _r('ecs/ecs', ECSCtrl)).
     when('/ecs/index', _r('ecs/index', ECSIndexCtrl)).
     when('/ecs/account', _r('ecs/account', ECSAccountCtrl)).
     when('/ecs/:section', _r('ecs/setting', ECSSettingCtrl)).
     when('/setting', _r('setting', SettingCtrl)).
-    when('/backup', _r('backup', BackupCtrl)).
     when('/secure', _r('secure', SecureCtrl)).
     when('/application', _r('application/index', ApplicationCtrl)).
     when('/application/shadowsocks', _r('application/shadowsocks', ApplicationShadowsocksCtrl)).
@@ -105,7 +107,7 @@ run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Requ
 }]).
 value('version', {
     'version': '1.1.1',
-    'build': '18',
+    'build': '19',
     'releasetime': releasetime,
     'changelog': 'http://inpanel.org/changelog.html'
 });
