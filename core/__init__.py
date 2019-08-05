@@ -11,7 +11,7 @@
 
 import platform
 
-__version__ = '1.1.1.19'
+__version__ = '1.1.1.20'
 
 name = 'InPanel'
 version = '1.1.1'
