@@ -122,12 +122,13 @@
         </div>
         <div style="margin-top:5px;height:30px;">
             <div class="pull-left">
-                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="multicopy()"><i class="glyphicon glyphicon-duplicate"></i> 批量复制</button>
-                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="multicut()"><i class="glyphicon glyphicon-scissors"></i> 批量剪切</button>
-                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="multidel()"><i class="glyphicon glyphicon-trash"></i> 批量删除</button>
-                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="tarconfirm()"><i class="glyphicon glyphicon-compressed"></i> 批量打包压缩</button>
-                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="chownconfirm()"><i class="glyphicon glyphicon-user"></i> 批量修改用户和组</button>
-                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="chmodconfirm()"><i class="glyphicon glyphicon-cog"></i> 批量修改权限</button>
+                <span>批量操作：</span>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="multicopy()"><i class="glyphicon glyphicon-duplicate"></i> 复制</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="multicut()"><i class="glyphicon glyphicon-scissors"></i> 剪切</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="multidel()"><i class="glyphicon glyphicon-remove"></i> 删除</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="tarconfirm()"><i class="glyphicon glyphicon-compressed"></i> 打包压缩</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="chownconfirm()"><i class="glyphicon glyphicon-user"></i> 用户和组</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="chmodconfirm()"><i class="glyphicon glyphicon-lock"></i> 修改权限</button>
             </div>
             <div class="pull-right">
             </div>
@@ -225,12 +226,10 @@
                 <h3 class="modal-title">{{newname_title}}</h3>
             </div>
             <div class="modal-body">
-                <form class="" onsubmit="return false">
-                <div class="form-group form-inline">
-                    <label class="control-label">{{newname_label}}：</label>
+                <div class="input-group">
+                    <span class="input-group-addon">{{newname_label}}</span>
                     <input class="form-control" type="text" ng-model="newname_name">
                 </div>
-                </form>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
@@ -248,17 +247,19 @@
                 <h3 class="modal-title">上传文件到当前目录</h3>
             </div>
             <div class="modal-body">
-                <div style="margin:10px 20px">
                 <h5>请选择您要上传的文件：</h5>
                 <div ng-include src="'/xsrf'"></div>
-                <form id="uploadform" class="pull-left" target="uploadframe" action="/fileupload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
+                <form id="uploadform" target="uploadframe" action="/fileupload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
                     <input type="hidden" name="_xsrf" value="" id="_xsrf">
                     <input type="hidden" name="path" value="{{curpath}}">
-                    <input name="ufile" type="file">
+                    <div class="input-group">
+                        <input name="ufile" type="file" class="form-control">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" ng-click="doupload()">开始上传</button>
+                        </div>
+                    </div>
                 </form>
-                <button class="btn btn-default btn-sm" ng-click="doupload()">开始上传</button>
                 <iframe frameborder="0" name="uploadframe" width="100%" height="50"></iframe>
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-default" data-dismiss="modal" aria-hidden="true" ng-click="listdir()">关闭</button>
