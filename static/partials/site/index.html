@@ -270,14 +270,16 @@
                         <tr ng-repeat="v in curpkg.versions">
                             <td>{{v.name}}</td>
                             <td>{{v.size}}</td>
-                            <td><label class="radio"><input type="radio" name="pkgver" ng-model="pkgver" ng-click="package_version_select(v)" value="{{v.code}}"></label></td>
+                            <td><input type="radio" name="pkgver" ng-model="pkgver" ng-click="package_version_select(v)" value="{{v.code}}"></td>
                         </tr>
                     </tbody>
                 </table>
                 <h5>请设置要安装到的目录</h5>
-                <div class="input-append">
-                    <input ng-model="installpath" type="text" class="input-large" placeholder="网站系统的安装目录">
-                    <button class="btn btn-default" ng-click="selectinstallpath()"><i class="glyphicon glyphicon-folder-open"></i></button>
+                <div class="input-group">
+                    <input class="form-control" ng-model="installpath" type="text" placeholder="网站系统的安装目录">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" ng-click="selectinstallpath()"><i class="glyphicon glyphicon-folder-open"></i></button>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

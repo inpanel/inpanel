@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
+# Copyright (c) 2017, doudoudzj
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the (new) BSD License.
@@ -15,8 +15,8 @@ __version__ = '1.1.1.20'
 
 name = 'InPanel'
 version = '1.1.1'
-build = '19'
-releasetime = '2019-04-02 15:49:23 GMT+8'
+build = '20'
+releasetime = '2019-08-08 16:40:40 GMT+0800'
 version_info = {
     'name': name,
     'build': build,
