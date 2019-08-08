@@ -17,6 +17,7 @@
             <li ng-class="'active' | iftrue:activeTabName=='normal'"><a href="#normal" ng-click="tab_sec('normal')" data-toggle="tab">普通任务</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="tab_sec('system')" data-toggle="tab">系统任务</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='environment'"><a href="#environment" ng-click="tab_sec('environment')" data-toggle="tab">环境变量</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='local'"><a href="#local" ng-click="tab_sec('local')" data-toggle="tab">本地任务</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='normal'" id="normal">
@@ -133,12 +134,26 @@
                 <div ng-show="loading.environment"><div waiting></div></div>
                 <div ng-show="!loading.environment">
                     <div class="pull-left">
-                        <h5>环境变量(In Development)</h5>
+                        <h5>环境变量(未完成)</h5>
                     </div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_environment_list()"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加环境变量" ng-disabled="!loaded" ng-click="add_environment_confirm()"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button class="btn btn-default" title="添加环境变量" ng-disabled="!loaded" ng-click="add_environment()"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='local'" id="local">
+                <div ng-show="loading.local"><div waiting></div></div>
+                <div ng-show="!loading.local">
+                    <div class="pull-left">
+                        <h5>本地任务(控制面板运行的任务，未完成)</h5>
+                    </div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新列表" ng-disabled="!loaded" ng-click="load_local_list()"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加本地任务" ng-disabled="!loaded" ng-click="add_cron_local()"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
                 </div>

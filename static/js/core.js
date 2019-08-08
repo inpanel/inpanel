@@ -1,4 +1,4 @@
-var releasetime = '2019-04-02 15:49:23 GMT';
+var releasetime = '2019-08-08 16:40:40 GMT+0800';
 var _v = new Date(releasetime.replace(/-/g, '/')).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
 angular.module('inpanel', ['inpanel.services', 'inpanel.directives', 'inpanel.filters']).
@@ -107,7 +107,7 @@ run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Requ
 }]).
 value('version', {
     'version': '1.1.1',
-    'build': '19',
+    'build': '20',
     'releasetime': releasetime,
     'changelog': 'http://inpanel.org/changelog.html'
 });
