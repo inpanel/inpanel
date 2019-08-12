@@ -17,10 +17,19 @@ var UtilsUserCtrl = [
     '$scope', '$routeParams', 'Module', 'Timeout', 'Request',
     function($scope, $routeParams, Module, Timeout, Request) {
         var module = 'utils.user';
+        var section = Module.getSection();
+        var enabled_sections = ['user', 'group'];
         Module.init(module, '用户管理');
-        Module.initSection('user');
+        Module.initSection(enabled_sections[0]);
         $scope.loaded = true;
 
+        $scope.tab_sec = function (section) {
+            // var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            // $scope['load_' + section](init);
+        };
         $scope.loadUsers = function() {
             Request.post('/operation/user', {
                 'action': 'listuser'

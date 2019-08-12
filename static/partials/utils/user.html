@@ -10,18 +10,19 @@
 
     <div class="tabbable">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='user'"><a href="#user" ng-click="sec('user')" data-toggle="tab">用户</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='group'"><a href="#group" ng-click="sec('group')" data-toggle="tab">用户组</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='user'"><a href="#user" ng-click="tab_sec('user')" data-toggle="tab">用户</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='group'"><a href="#group" ng-click="tab_sec('group')" data-toggle="tab">用户组</a></li>
+            <li class="pull-right" ng-show="activeTabName=='user'">
+                <button class="btn btn-default" title="当前用户数量" ng-show="users && users.length">数量: {{users.length}}</button>
+                <button class="btn btn-default" ng-click="useraddconfirm()" title="添加新用户"><i class="glyphicon glyphicon-plus"></i></button>
+            </li>
+            <li class="pull-right" ng-show="activeTabName=='group'">
+                <button class="btn btn-default" title="当前用户组数量" ng-show="groups && groups.length">数量: {{groups.length}}</button>
+                <button class="btn btn-default" ng-click="groupaddconfirm()" title="添加新用户组"><i class="glyphicon glyphicon-plus"></i></button>
+            </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='user'" id="user" ng-init="loadUsers()">
-                <div>
-                    <div class="pull-left"><h5>用户列表</h5></div>
-                    <div class="pull-right">
-                        <button class="btn btn-default btn-sm" title="当前用户数量" ng-show="users && users.length">数量: {{users.length}}</button>
-                        <button class="btn btn-default btn-sm" ng-click="useraddconfirm()" title="添加新用户"><i class="glyphicon glyphicon-plus"></i></button>
-                    </div>
-                </div>
                 <table class="table table-hover table-bordered table-condensed">
                     <thead>
                         <tr>
@@ -53,13 +54,6 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='group'" id="group" ng-init="loadGroups()">
-                <div>
-                    <div class="pull-left"><h5>用户组列表</h5></div>
-                    <div class="pull-right">
-                        <button class="btn btn-default btn-sm" title="当前用户组数量" ng-show="groups && groups.length">数量: {{groups.length}}</button>
-                        <button class="btn btn-default btn-sm" ng-click="groupaddconfirm()" title="添加新用户组"><i class="glyphicon glyphicon-plus"></i></button>
-                    </div>
-                </div>
                 <table class="table table-hover table-bordered table-condensed">
                     <thead>
                         <tr>
