@@ -1858,3 +1858,83 @@ var UtilsShellCtrl = ['$scope', '$routeParams', 'Module', 'Timeout', 'Request',
         };
     }
 ];
+
+var UtilsTransmissionCtrl = [
+    '$scope', '$routeParams', 'Module', 'Message', 'Timeout', 'Request', 'Backend',
+    function($scope, $routeParams, Module, Message, Timeout, Request, Backend) {
+        var module = 'utils.transmission';
+        var section = Module.getSection();
+        var enabled_sections = ['ftp', 'nutstore'];
+        Module.init(module, '文件传输');
+        Module.initSection(enabled_sections[0]);
+        $scope.loaded = true;
+        $scope.remote = {
+            'address': '',
+            'account': '',
+            'password': '',
+            'source': '/',
+            'target': ''
+        };
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+        $scope.load_ftp = function () {
+            console.log('传输到 FTP');
+        };
+        $scope.load_nutstore = function () {
+            console.log('传输到坚果云');
+        };
+        $scope.reset_form = function () {
+            $scope.remote = {
+                'address': 'vhost250.mianbeian.top',
+                'account': 'webmaster@US1508482',
+                'password': 'IkBrqalDoLX4irQ0',
+                'source': '/',
+                'target': '/WEB/'
+            };
+        };
+        $scope.select_files = function () {
+            $scope.selector_title = '请选择需要传输的文件';
+            $scope.selector.onlydir = false;
+            $scope.selector.onlyfile = true;
+            $scope.selector.load($scope.remote.source); // 加载默认
+            $scope.selector.selecthandler = function (path) { // 回调函数
+                $('#selector').modal('hide');
+                $scope.remote.source = path;
+            };
+            $('#selector').modal();
+        };
+        $scope.transmission_ftp = function () {
+            console.log('立即传输', $scope.remote);
+            if ($scope.remote.address == '') {
+                Message.setWarning('请输入服务器地址');
+            } else if ($scope.remote.account == '') {
+                Message.setWarning('请输入授权用户');
+            } else if ($scope.remote.password == '') {
+                Message.setWarning('请输入授权密码');
+            } else if ($scope.remote.source == '') {
+                Message.setWarning('请选择需要传输的文件');
+            } else if ($scope.remote.target == '') {
+                Message.setWarning('请输入远程服务器保存路径');
+            } else {
+                console.log('立即传输2', $scope.remote);
+                $scope.trans_to_ftp();
+            }
+        };
+        $scope.trans_to_ftp = function () {
+            console.log('立即传输', $scope.remote);
+            var op_data = angular.copy($scope.remote);
+            Backend.call($scope, module, '/backend/transtoftp', '/backend/transtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
+                op_data, {
+                    'success': function(data) {
+                        Message.setInfo(data.msg || '传输成功！');
+                    }
+                }
+            );
+        };
+    }
+];

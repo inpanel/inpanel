@@ -21,6 +21,7 @@ __all__ = [
     'cron',
     'fdisk',
     'files',
+    'ftp',
     'lighttpd',
     'mysql',
     'named',

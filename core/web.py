@@ -2673,6 +2673,13 @@ class BackendHandler(RequestHandler):
                 self._call(functools.partial(self.inpanel_config,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(accesskey)))
+        elif jobname == 'transtoftp':
+            address = self.get_argument('address', '')
+            account = self.get_argument('account', '')
+            password = self.get_argument('password', '')
+            source = self.get_argument('source', '')
+            target = self.get_argument('target', '')
+            self._call(functools.partial(self.transtoftp, address, account, password, source, target))
         else:   # undefined job
             self.write({'code': -1, 'msg': u'未定义的操作！'})
             return
@@ -3432,7 +3439,7 @@ class BackendHandler(RequestHandler):
                 msg = u'删除 %s 失败！<p style="margin:10px">%s</p>' % (_d(path), _d(output.strip().replace('\n', '<br>')))
 
         self._finish_job(jobname, code, msg)
-        
+
     @tornado.gen.engine
     def compress(self, zippath, paths):
         """Compress files or directorys.
@@ -3453,8 +3460,8 @@ class BackendHandler(RequestHandler):
         elif zippath.endswith('.tar.bz2'):
             cmd = 'tar jcf %s -C %s %s' % (zippath, basepath, ' '.join(paths))
         elif zippath.endswith('.zip'):
-            self._update_job(jobname, 2, u'正在安装 zip...')
             if not os.path.exists('/usr/bin/zip'):
+                self._update_job(jobname, 2, u'正在安装 zip...')
                 if self.settings['dist_name'] in ('centos', 'redhat'):
                     cmd = 'yum install -y zip unzip'
                     result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
@@ -3480,7 +3487,7 @@ class BackendHandler(RequestHandler):
             msg = u'压缩失败！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
 
         self._finish_job(jobname, code, msg)
-        
+
     @tornado.gen.engine
     def decompress(self, zippath, despath):
         """Decompress a zip file.
@@ -4054,6 +4061,40 @@ class BackendHandler(RequestHandler):
         else:
             code = -1
             msg = u'InPanel 配置更新过程中发生错误！'
+
+        self._finish_job(jobname, code, msg)
+
+    @tornado.gen.engine
+    def transtoftp(self, address, account, password, source, target):
+        """ transmit files to ftp server.
+        """
+        # jobname = 'transtoftp_%s_%s_%s' % (address, source, target)
+        jobname = 'transtoftp_%s' % address
+        if not self._start_job(jobname): return
+
+        self._update_job(jobname, 2, u'正在传输文件 %s...' % source)
+        if not os.path.isfile(source):
+            self._finish_job(jobname, -1, '传输失败！文件不存在')
+            return
+
+        # cmd = 'ftp -n<<!; open %s; user %s %s; put %s %s;close; bye; !;' % (address, account, password, source, target)
+
+        # for step in steps:
+        #     desc = _u(step['desc'])
+        #     cmd = _u(step['cmd'])
+        #     self._update_job('update', 2, desc)
+        #     result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        #     if result != 0:
+        #         self._update_job('update', -1, desc+'失败！')
+        #         break
+
+        result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell=True)
+        if result == 0:
+            code = 0
+            msg = u'文件 %s 已成功传输到 %s 服务器！' % (source, address)
+        else:
+            code = -1
+            msg = u'文件传输失败！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
 
         self._finish_job(jobname, code, msg)
 

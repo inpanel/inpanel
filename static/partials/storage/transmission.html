@@ -1,0 +1,93 @@
+<div navbar ng-init="currentItem='utils.transmission'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>文件传输</h3>
+    </div>
+    <div class="tabbable" ng-init="load()">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='ftp'">
+                <a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTabName=='nutstore'">
+                <a href="#nutstore" ng-click="sec('nutstore')" data-toggle="tab">坚果云(待开发)</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ftp'" id="ftp">
+                <div>
+                    <p>传输文件到FTP</p>
+                </div>
+                <div class="form-horizontal form-horizontal-small">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">服务器</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="remote.address" type="text" placeholder="服务器地址">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">授权账户</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="remote.account" type="text" placeholder="授权账户">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">授权密码</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="remote.password" type="text" placeholder="授权密码">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">本地路径</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" ng-click="select_files()" title="选择文件">
+                                        <i class="glyphicon glyphicon-folder-open"></i>
+                                    </button>
+                                </span>
+                                <input type="text" class="form-control" ng-model="remote.source" ng-disabled="processing" placeholder="请选择本地需要迁移的文件">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">目标路径</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="remote.target" type="text" placeholder="请输入远程服务器保存路径">
+                        </div>
+                    </div>
+                    <hr/>
+                    <p>
+                        <button class="btn btn-primary" ng-click="transmission_ftp()">传输</button>
+                        <button class="btn btn-warning" ng-click="reset_form()">重置</button>
+                    </p>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='nutstore'" id="nutstore">
+                <div>
+                    <p>文件传输到坚果云</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="selector" class="modal fade" style="display: none;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">{{selector_title}}</h3>
+            </div>
+            <div class="modal-body">
+                <div selector></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
