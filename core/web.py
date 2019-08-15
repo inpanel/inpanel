@@ -32,7 +32,7 @@ import tornado.web
 from async_process import call_subprocess, callbackable
 from core import api as core_api
 from core import utils
-from modules import (aliyuncs, apache, certificate, cron, fdisk, files,
+from modules import (aliyuncs, apache, certificate, cron, fdisk, files, ftp,
                      lighttpd, mysql, named, nginx, php, process, proftpd,
                      pureftpd, remote, shell, ssh, user, vsftpd, yum)
 from modules.config import Config
@@ -2482,8 +2482,7 @@ class BackendHandler(RequestHandler):
                         _u(despath)))
         elif jobname == 'ntpdate':
             server = self.get_argument('server', '')
-            self._call(functools.partial(self.ntpdate,
-                        _u(server)))
+            self._call(functools.partial(self.ntpdate, _u(server)))
         elif jobname == 'chown':
             paths = _u(self.get_argument('paths', ''))
             paths = paths.split(',')
@@ -2673,13 +2672,13 @@ class BackendHandler(RequestHandler):
                 self._call(functools.partial(self.inpanel_config,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(accesskey)))
-        elif jobname == 'transtoftp':
+        elif jobname == 'uploadtoftp':
             address = self.get_argument('address', '')
             account = self.get_argument('account', '')
             password = self.get_argument('password', '')
             source = self.get_argument('source', '')
             target = self.get_argument('target', '')
-            self._call(functools.partial(self.transtoftp, address, account, password, source, target))
+            self._call(functools.partial(self.uploadtoftp, _u(address), _u(account), _u(password), _u(source), _u(target)))
         else:   # undefined job
             self.write({'code': -1, 'msg': u'未定义的操作！'})
             return
@@ -4064,38 +4063,30 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
+    # @tornado.web.asynchronous
     @tornado.gen.engine
-    def transtoftp(self, address, account, password, source, target):
-        """ transmit files to ftp server.
-        """
-        # jobname = 'transtoftp_%s_%s_%s' % (address, source, target)
-        jobname = 'transtoftp_%s' % address
+    def uploadtoftp(self, address, account, password, source, target):
+        '''transmit files to ftp server.'''
+        jobname = 'uploadtoftp_%s_%s_%s' % (address, source, target)
+        # jobname = 'uploadtoftp_%s' % address
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, u'正在传输文件 %s...' % source)
         if not os.path.isfile(source):
             self._finish_job(jobname, -1, '传输失败！文件不存在')
             return
 
-        # cmd = 'ftp -n<<!; open %s; user %s %s; put %s %s;close; bye; !;' % (address, account, password, source, target)
-
-        # for step in steps:
-        #     desc = _u(step['desc'])
-        #     cmd = _u(step['cmd'])
-        #     self._update_job('update', 2, desc)
-        #     result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
-        #     if result != 0:
-        #         self._update_job('update', -1, desc+'失败！')
-        #         break
-
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell=True)
-        if result == 0:
+        self._update_job(jobname, 2, u'正在传输文件 %s...' % source)
+        result = yield tornado.gen.Task(callbackable(ftp.uploadtoftp), address, account, password, source, target)
+        # result = yield tornado.gen.Task(callbackable(ftp.uploadtoftpa), address, account, password, source, target)
+        # cmd = 'ping www.baidu.com -c 8'
+        # result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        # print(result)
+        if result == True:
             code = 0
             msg = u'文件 %s 已成功传输到 %s 服务器！' % (source, address)
         else:
             code = -1
-            msg = u'文件传输失败！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
-
+            msg = u'文件传输失败！' # <p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
         self._finish_job(jobname, code, msg)
 
 

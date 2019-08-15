@@ -62,7 +62,7 @@ config(['$routeProvider', function ($routeProvider) {
     when('/storage/autofm', _r('storage/autofm', StorageAutoFMCtrl)).
     when('/storage/movedata', _r('storage/movedata', StorageMoveDataCtrl)).
     when('/storage/backup', _r('storage/backup', BackupCtrl)).
-    when('/storage/transmission', _r('storage/transmission', UtilsTransmissionCtrl)).
+    when('/storage/migrate', _r('storage/migrate', UtilsMigrateCtrl)).
     when('/ecs', _r('ecs/ecs', ECSCtrl)).
     when('/ecs/index', _r('ecs/index', ECSIndexCtrl)).
     when('/ecs/account', _r('ecs/account', ECSAccountCtrl)).

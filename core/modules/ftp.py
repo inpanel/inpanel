@@ -174,7 +174,7 @@ class FTPClient():
         else:
             return False
 
-def transtoftp(address, account, password, source, target):
+def uploadtoftp(address, account, password, source, target):
     try:
         ftp = FTPClient(address, account, password)
         # print('1')
@@ -188,7 +188,7 @@ def transtoftp(address, account, password, source, target):
     except:
         return False
 
-def transtoftpa(*args, **kwds):
+def uploadtoftpa(*args, **kwds):
     import time
     time.sleep(5)
     return True

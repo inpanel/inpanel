@@ -1859,10 +1859,10 @@ var UtilsShellCtrl = ['$scope', '$routeParams', 'Module', 'Timeout', 'Request',
     }
 ];
 
-var UtilsTransmissionCtrl = [
+var UtilsMigrateCtrl = [
     '$scope', '$routeParams', 'Module', 'Message', 'Timeout', 'Request', 'Backend',
     function($scope, $routeParams, Module, Message, Timeout, Request, Backend) {
-        var module = 'utils.transmission';
+        var module = 'utils.migrate';
         var section = Module.getSection();
         var enabled_sections = ['ftp', 'nutstore'];
         Module.init(module, '文件传输');
@@ -1890,11 +1890,11 @@ var UtilsTransmissionCtrl = [
         };
         $scope.reset_form = function () {
             $scope.remote = {
-                'address': 'vhost250.mianbeian.top',
-                'account': 'webmaster@US1508482',
-                'password': 'IkBrqalDoLX4irQ0',
+                'address': '',
+                'account': '',
+                'password': '',
                 'source': '/',
-                'target': '/WEB/'
+                'target': '/var'
             };
         };
         $scope.select_files = function () {
@@ -1908,7 +1908,7 @@ var UtilsTransmissionCtrl = [
             };
             $('#selector').modal();
         };
-        $scope.transmission_ftp = function () {
+        $scope.migrate_ftp = function () {
             console.log('立即传输', $scope.remote);
             if ($scope.remote.address == '') {
                 Message.setWarning('请输入服务器地址');
@@ -1928,12 +1928,22 @@ var UtilsTransmissionCtrl = [
         $scope.trans_to_ftp = function () {
             console.log('立即传输', $scope.remote);
             var op_data = angular.copy($scope.remote);
-            Backend.call($scope, module, '/backend/transtoftp', '/backend/transtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
+            // Backend.call = function ($scope, module, url, statusUrl, data, callback, quiet) {
+            Backend.call($scope, module,
+                '/backend/uploadtoftp',
+                '/backend/uploadtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
                 op_data, {
-                    'success': function(data) {
+                    'wait': function (data) {
+                        Message.setInfo(data.msg || '正在处理');
+                    },
+                    'success': function (data) {
                         Message.setInfo(data.msg || '传输成功！');
+                    },
+                    'error': function (data) {
+                        Message.setError(data.msg || '传输失败！');
                     }
-                }
+                },
+                true
             );
         };
     }
