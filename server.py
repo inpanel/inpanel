@@ -44,11 +44,6 @@ def main():
         'gzip': True
     }
 
-    # read configuration from config.ini
-    cfg = Config(settings['conf_path'])
-    server_ip = cfg.get('server', 'ip')
-    server_port = cfg.get('server', 'port')
-
     application = web.Application([
         (r'/xsrf', web.XsrfHandler),
         (r'/authstatus', web.AuthStatusHandler),
@@ -71,10 +66,20 @@ def main():
         (r'/file/(.+)', web.FileDownloadHandler, {'path': '/'}),
         (r'/fileupload', web.FileUploadHandler),
         (r'/version', web.VersionHandler),
-        (r'/.*', web.ErrorHandler, {'status_code': 404}),
+        (r'/.*', web.ErrorHandler, {'status_code': 404})
     ], **settings)
 
-    server = tornado.httpserver.HTTPServer(application)
+    # read configuration from config.ini
+    cfg = Config(settings['conf_path'])
+    server_ip = cfg.get('server', 'ip')
+    server_port = cfg.get('server', 'port')
+    force_https = cfg.getboolean('server', 'forcehttps')
+
+    ssl = None if not force_https else {
+        'certfile': os.path.join(root_path, 'core', 'certificate', 'inpanel.crt'),
+        'keyfile': os.path.join(root_path, 'core', 'certificate', 'inpanel.key'),
+    }
+    server = tornado.httpserver.HTTPServer(application, ssl_options=ssl)
     server.listen(server_port, address=server_ip)
     write_pid()
     tornado.ioloop.IOLoop.instance().start()

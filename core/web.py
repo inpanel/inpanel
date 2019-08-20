@@ -720,7 +720,8 @@ class SettingHandler(RequestHandler):
         elif section == 'server':
             ip = self.config.get('server', 'ip')
             port = self.config.get('server', 'port')
-            self.write({'ip': ip, 'port': port})
+            forcehttps = self.config.getboolean('server', 'forcehttps')
+            self.write({'forcehttps': forcehttps, 'ip': ip, 'port': port})
             self.finish()
 
         elif section == 'accesskey':
@@ -792,8 +793,6 @@ class SettingHandler(RequestHandler):
                 return
 
             ip = self.get_argument('ip', '*')
-            port = self.get_argument('port', '8888')
-
             if ip != '*' and ip != '':
                 if not utils.is_valid_ip(_u(ip)):
                     self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % ip})
@@ -801,16 +800,23 @@ class SettingHandler(RequestHandler):
                 netifaces = ServerInfo.netifaces()
                 ips = [netiface['ip'] for netiface in netifaces]
                 if not ip in ips:
-                    self.write({'code': -1, 'msg': u'<p>%s 不是该服务器的IP地址！</p>'\
-                                u'<p>可用的IP地址有：<br>%s</p>' % (ip, '<br>'.join(ips))})
+                    msg = u'<p>%s 不是该服务器的IP地址！</p><p>可用的IP地址有：<br>%s</p>' % (ip, '<br>'.join(ips))
+                    self.write({'code': -1, 'msg': msg})
                     return
+
+            port = self.get_argument('port', '8888')
             port = int(port)
             if not port > 0 and port < 65535:
                 self.write({'code': -1, 'msg': u'端口范围必须在 0 到 65535 之间！'})
                 return
-            
+
             self.config.set('server', 'ip', ip)
             self.config.set('server', 'port', port)
+
+            forcehttps = self.get_argument('forcehttps', '')
+            if forcehttps != 'on': forcehttps = 'off'
+            self.config.set('server', 'forcehttps', forcehttps)
+
             self.write({'code': 0, 'msg': u'服务设置更新成功！将在重启服务后生效。'})
 
         elif section == 'accesskey':

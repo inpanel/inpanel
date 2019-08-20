@@ -329,7 +329,7 @@ class Install(object):
         print('============================')
         print('')
         print('The URL of your InPanel is:'),
-        print('\033[4;34mhttp://%s:%s/\033[0m' % (self.detect_ip(), self.listen_port))
+        print('\033[4;34mhttps://%s:%s/\033[0m' % (self.detect_ip(), self.listen_port))
         print('')
         print('\033[5;32mWish you a happy life !\033[0m')
         print('')

@@ -281,6 +281,7 @@ var SettingCtrl = [
         }
         $scope.loadServerInfo = function () {
             Request.get('/setting/server', function (res) {
+                $scope.forcehttps = res.forcehttps;
                 $scope.ip = res.ip;
                 $scope.port = res.port;
             });
@@ -303,8 +304,9 @@ var SettingCtrl = [
         };
         $scope.updateServerInfo = function () {
             Request.post('/setting/server', {
-                port: $scope.port,
-                ip: $scope.ip
+                forcehttps: $scope.forcehttps,
+                ip: $scope.ip,
+                port: $scope.port
             }, function (res) {
                 if (res.code == 0) $scope.loadServerInfo();
             });
