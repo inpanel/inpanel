@@ -1,0 +1,38 @@
+<div class="well" ng-show="$scope.installed&&!$scope.checking">
+    <div ng-show="!uninstalling">
+        <p>确定要卸载 {{name}} 吗？</p>
+    </div>
+    <div ng-show="uninstalling" ng-bind-html-unsafe="uninstallMsg"></div>
+    <p ng-show="!uninstalling">
+        <button class="btn btn-default btn-sm" style="margin-top:10px" ng-click="startUninstall()">开始卸载</button>
+    </p>
+    <table class="table table-condensed" style="margin-top:20px;display:none" ng-show="showVersion">
+        <thead>
+            <tr>
+                <th colspan="2">请确认要卸载的软件信息：</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="width:80px">名称：</td>
+                <td>{{pkginfo.name}}</td>
+            </tr>
+            <tr>
+                <td>版本：</td>
+                <td>{{pkginfo.version}}-{{pkginfo.release}}</td>
+            </tr>
+            <tr>
+                <td>大小：</td>
+                <td>{{pkginfo.size}}</td>
+            </tr>
+            <tr ng-show="pkginfo.from_repo">
+                <td>软件源：</td>
+                <td>{{pkginfo.from_repo}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <p ng-show="showVersion">
+        <button class="btn btn-default"
+            ng-click="uninstall(pkginfo.repo, pkginfo.name, pkginfo.version, pkginfo.release)">确认并卸载</button>
+    </p>
+</div>

@@ -1,0 +1,28 @@
+<div>
+    <div class="btn-group btn-group-xs" ng-show="$scope.info['service.'+service]">
+        <button type="button" class="btn btn-default"
+            ng-class="'active' | iftrue:$scope.info['service.'+service].autostart" data-toggle="button" title="自动启动"
+            ng-disabled="$scope.waiting" ng-click="$scope.toggleAutostart(name, service)">
+            <span class="glyphicon glyphicon-check"></span>
+        </button>
+        <button type="button" class="btn btn-default" ng-show="$scope.info['service.'+service].status=='stopped'"
+            title="启动" ng-disabled="$scope.waiting" ng-click="$scope.start(name, service)">
+            <span class="glyphicon glyphicon-play"></span>
+        </button>
+        <button type="button" class="btn btn-default" ng-show="$scope.info['service.'+service].status=='running'"
+            title="停止" ng-disabled="$scope.waiting" ng-click="$scope.stop(name, service)">
+            <span class="glyphicon glyphicon-stop"></span>
+        </button>
+        <button type="button" class="btn btn-default"
+            ng-disabled="$scope.info['service.'+service].status=='stopped'||$scope.waiting" title="重启"
+            ng-click="$scope.restart(name, service)">
+            <span class="glyphicon glyphicon-refresh"></span>
+        </button>
+        <a class="btn btn-default btn-xs" role="button" href="#/service/{{urlname}}"
+            ng-show="$scope.info['service.'+service]!=null" title="设置">
+            <span class="glyphicon glyphicon-wrench"></span>
+        </a>
+    </div>
+    <a class="btn btn-default btn-xs" role="button" href="#/service/{{urlname}}"
+        ng-show="!$scope.info['service.'+service]">安装服务</a>
+</div>

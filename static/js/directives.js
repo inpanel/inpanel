@@ -4,33 +4,11 @@ directive('navbar', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/navbar.html',
         controller: ['$scope', '$rootScope', function ($scope, $rootScope) {
             $rootScope.navbar_loaded = true;
-        }],
-        template: '<nav class="navbar navbar-default"><div class="container-fluid">\
-            <div class="navbar-header">\
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">\
-                    <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>\
-                </button>\
-                <a class="navbar-brand" href="#/main">InPanel</a>\
-            </div>\
-            <div id="navbar" class="navbar-collapse collapse">\
-                <ul class="nav navbar-nav">\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'main\']"><a href="#/main">首页</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'service(\..*)?\']"><a href="#/service">服务</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'file\']"><a href="#/file">文件</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'site(\..*)?\']"><a href="#/site">网站</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'database\']"><a href="#/database">数据库</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'application(\..*)?\']"><a href="#/application">应用</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'utils(\..*)?\']"><a href="#/utils">工具</a></li>\
-                </ul>\
-                <ul class="nav navbar-nav navbar-right">\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'setting(\..*)?\']"><a href="#/setting">设置</a></li>\
-                    <li ng-class="\'active\' | ifmatch:[currentItem,\'logout\']"><a href="#/logout">退出</a></li>\
-                </ul>\
-            </div>\
-        </div></nav>',
-        replace: true
+        }]
     };
 }).
 directive('loading', function () {
@@ -54,6 +32,8 @@ directive('message', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/message.html',
         controller: ['$scope', '$rootScope', function ($scope, $rootScope) {
             $rootScope.showErrorMsg = false;
             $rootScope.errorMessage = '';
@@ -65,24 +45,7 @@ directive('message', function () {
             $rootScope.infoMessage = '';
             $scope.$rootScope = $rootScope;
             if (!$scope.id) $scope.id = 'message';
-        }],
-        template: '<div id="{{id}}" style="position:fixed;left:0;bottom:0;width:100%;z-index:100">\
-            <div class="container">\
-                <div class="alert alert-danger" style="display:none;margin-bottom:3px" ng-show="$rootScope.showErrorMsg">\
-                <button ng-click="$rootScope.showErrorMsg=false" type="button" class="close">&times;</button>\
-                <span ng-bind-html-unsafe="$rootScope.errorMessage"></span></div>\
-                <div class="alert alert-success" style="display:none;margin-bottom:3px" ng-show="$rootScope.showSuccessMsg">\
-                <button ng-click="$rootScope.showSuccessMsg=false" type="button" class="close">&times;</button>\
-                <span ng-bind-html-unsafe="$rootScope.successMessage"></span></div>\
-                <div class="alert alert-warning" style="display:none;margin-bottom:3px" ng-show="$rootScope.showWarningMsg">\
-                <button ng-click="$rootScope.showWarningMsg=false" type="button" class="close">&times;</button>\
-                <span ng-bind-html-unsafe="$rootScope.warningMessage"></span></div>\
-                <div class="alert alert-info" style="display:none;margin-bottom:3px" ng-show="$rootScope.showInfoMsg">\
-                <button ng-click="$rootScope.showInfoMsg=false" type="button" class="close">&times;</button>\
-                <span ng-bind-html-unsafe="$rootScope.infoMessage"></span></div>\
-            </div>\
-            </div>',
-        replace: true
+        }]
     };
 }).
 directive('srvminiop', function () {
@@ -90,33 +53,11 @@ directive('srvminiop', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/srvminiop.html',
         controller: ['$scope', function ($scope) {
             $scope.$scope = $scope.$parent;
-        }],
-        template: '<div>\
-        <div class="btn-group btn-group-xs" ng-show="$scope.info[\'service.\'+service]">\
-                    <button type="button" class="btn btn-default" ng-class="\'active\' | iftrue:$scope.info[\'service.\'+service].autostart" data-toggle="button" title="自动启动"\
-                        ng-disabled="$scope.waiting" ng-click="$scope.toggleAutostart(name, service)">\
-                        <span class="glyphicon glyphicon-check"></span>\
-                    </button>\
-                    <button type="button" class="btn btn-default" ng-show="$scope.info[\'service.\'+service].status==\'stopped\'" title="启动" ng-disabled="$scope.waiting"\
-                        ng-click="$scope.start(name, service)">\
-                        <span class="glyphicon glyphicon-play"></span>\
-                    </button>\
-                    <button type="button" class="btn btn-default" ng-show="$scope.info[\'service.\'+service].status==\'running\'" title="停止" ng-disabled="$scope.waiting"\
-                        ng-click="$scope.stop(name, service)">\
-                        <span class="glyphicon glyphicon-stop"></span>\
-                    </button>\
-                    <button type="button" class="btn btn-default" ng-disabled="$scope.info[\'service.\'+service].status==\'stopped\'||$scope.waiting" title="重启"\
-                        ng-click="$scope.restart(name, service)">\
-                        <span class="glyphicon glyphicon-refresh"></span>\
-                    </button>\
-                    <a class="btn btn-default btn-xs" role="button" href="#/service/{{urlname}}" ng-show="$scope.info[\'service.\'+service]!=null" title="设置">\
-                        <span class="glyphicon glyphicon-wrench"></span>\
-                    </a>\
-                </div>\
-                <a class="btn btn-default btn-xs" role="button" href="#/service/{{urlname}}" ng-show="!$scope.info[\'service.\'+service]">安装服务</a></div>',
-        replace: true
+        }]
     };
 }).
 directive('srvbase', function () {
@@ -124,6 +65,8 @@ directive('srvbase', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/srvbase.html',
         controller: ['$rootScope', '$scope', 'Request', 'Backend', function ($rootScope, $scope, Request, Backend) {
             $scope.$scope = $scope.$parent;
             $scope.pkginfo = null;
@@ -178,77 +121,7 @@ directive('srvbase', function () {
             $scope.start = serviceop('start');
             $scope.stop = serviceop('stop');
             $scope.restart = serviceop('restart');
-        }],
-        template: '<table class="table table-hover">\
-                <thead>\
-                    <tr><th colspan="2">{{name}} 服务操作</th></tr>\
-                </thead>\
-                <tbody>\
-                    <tr>\
-                        <td style="width:120px;">软件安装版本：</td>\
-                        <td>\
-                            <span ng-show="!pkginfo">正在获取...</span>\
-                            <span style="display:none" ng-show="pkginfo">\
-                            {{pkginfo.name}} {{\'v\'+pkginfo.version+\'-\'+pkginfo.release | iftrue:pkginfo.version}} {{"("+pkginfo.from_repo+")" | iftrue:pkginfo.from_repo}}\
-                            </span>\
-                        </td>\
-                    </tr>\
-                    <tr>\
-                        <td style="width:120px;">软件官方网站：</td>\
-                        <td>\
-                            <span ng-show="!pkginfo">正在获取...</span>\
-                            <span style="display:none" ng-show="pkginfo">\
-                            <a href="{{pkginfo.url}}" target="_blank" ng-show="pkginfo.url">{{pkginfo.url}}</a>\
-                            </span>\
-                        </td>\
-                    </tr>\
-                    <tr>\
-                        <td style="width:120px;">软件授权协议：</td>\
-                        <td>\
-                            <span ng-show="!pkginfo">正在获取...</span>\
-                            <span style="display:none" ng-show="pkginfo">{{pkginfo.license}}</span>\
-                        </td>\
-                    </tr>\
-                    <tr>\
-                        <td style="width:120px;">当前服务状态：</td>\
-                        <td ng-bind-html-unsafe="$scope.status | service.status"></td>\
-                    </tr>\
-                    <tr>\
-                        <td>开机是否启动：</td>\
-                        <td>\
-                            <button class="btn btn-default btn-xs" ng-class="\'active\' | iftrue:$scope.autostart" data-toggle="button"\
-                ng-click="toggleAutostart()">\
-                <span class="glyphicon glyphicon-check"></span> 开机自动启动\
-                            </button>\
-                        </td>\
-                    </tr>\
-                    <tr>\
-                        <td>启动/停止服务：</td>\
-                        <td>\
-                            <button class="btn btn-default btn-xs" ng-show="$scope.status==\'stopped\'" ng-disabled="$scope.waiting"\
-                                ng-click="start()">\
-                                <span class="glyphicon glyphicon-play"></span> 启动服务\
-                            </button>\
-                            <button class="btn btn-default btn-xs" ng-show="$scope.status==\'running\'" ng-disabled="$scope.waiting"\
-                                ng-click="stop()">\
-                                <span class="glyphicon glyphicon-stop"></span> 停止服务\
-                            </button>\
-                            <button class="btn btn-default btn-xs" ng-disabled="$scope.status==\'stopped\'||$scope.waiting"\
-                                ng-click="restart()">\
-                                <span class="glyphicon glyphicon-refresh"></span> 重启服务\
-                            </button>\
-                        </td>\
-                    </tr>\
-                    <tr>\
-                        <td style="width:120px;">软件摘要信息：</td>\
-                        <td>\
-                            <span ng-show="!pkginfo">正在获取...</span>\
-                            <span style="display:none" ng-show="pkginfo">{{pkginfo.summary}}</span>\
-                        </td>\
-                    </tr>\
-                </tbody>\
-                </table>',
-        replace: true
+        }]
     };
 }).
 directive('srvinstall', function () {
@@ -256,6 +129,8 @@ directive('srvinstall', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/srvinstall.html',
         controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
             $scope.$scope = $scope.$parent;
 
@@ -437,40 +312,7 @@ directive('srvinstall', function () {
                     true
                 );
             };
-        }],
-        template: '<div class="well" style="display:none" ng-show="!$scope.installed&&!$scope.checking">\
-                <div ng-show="!installing">\
-                    <p>系统检测到 {{name}} 当前尚未安装。</p>\
-                    <p>是否要开始安装？</p>\
-                </div>\
-                <div ng-show="installing" ng-bind-html-unsafe="installMsg"></div>\
-                <p ng-show="!installing">\
-                <button class="btn btn-default" style="margin-top:10px" onclick="history.back()">取消返回</button>\
-                <button class="btn btn-default" style="margin-top:10px" ng-click="startInstall()">开始安装</button>\
-                </p>\
-                <table class="table table-condensed" style="margin-top:20px;display:none" ng-show="showVerList&&pkgs.length>0">\
-                    <thead>\
-                        <tr>\
-                            <th>版本</th>\
-                            <th style="width:70px">大小</th>\
-                            <th style="width:70px">软件源</th>\
-                            <th style="width:80px"></th>\
-                        </tr>\
-                    </thead>\
-                    <tbody>\
-                        <tr ng-repeat="pkg in pkgs">\
-                            <td>{{pkg.name}} v{{pkg.version}}-{{pkg.release}}</td>\
-                            <td>{{pkg.size}}</td>\
-                            <td>{{\'已安装\'|iftrue:pkg.repo==\'installed\'}}{{pkg.repo|iftrue:pkg.repo!=\'installed\'}}</td>\
-                            <td>\
-                                <button class="btn btn-default btn-xs" ng-show="pkg.repo==\'installed\'" ng-click="uninstall(pkg.repo, pkg.name, pkg.version, pkg.release)">清除此版本</button>\
-                                <button class="btn btn-default btn-xs" ng-show="pkg.repo!=\'installed\'" ng-click="install(pkg.repo, pkg.name, pkg.version, pkg.release)">安装此版本</button>\
-                            </td>\
-                        </tr>\
-                    </tbody>\
-                </table>\
-            </div>',
-        replace: true
+        }]
     };
 }).
 directive('srvupdate', function () {
@@ -478,6 +320,8 @@ directive('srvupdate', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/srvupdate.html',
         controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
             $scope.$scope = $scope.$parent;
 
@@ -581,35 +425,7 @@ directive('srvupdate', function () {
                     true
                 );
             };
-        }],
-        template: '<div class="well" style="display:none" ng-show="$scope.installed&&!$scope.checking">\
-                <div ng-show="!updating">\
-                    <p>在此检测并查找可用的新版本并升级。</p>\
-                </div>\
-                <div ng-show="updating" ng-bind-html-unsafe="updateMsg"></div>\
-                <p ng-show="!updating"><button class="btn btn-default btn-sm" style="margin-top:10px" ng-click="startUpdate()">检测新版本</button></p>\
-                <table class="table table-condensed" style="margin-top:20px;display:none" ng-show="showVerList&&pkgs.length>0">\
-                    <thead>\
-                        <tr>\
-                            <th>版本</th>\
-                            <th style="width:70px">大小</th>\
-                            <th style="width:70px">软件源</th>\
-                            <th style="width:90px">操作</th>\
-                        </tr>\
-                    </thead>\
-                    <tbody>\
-                        <tr ng-repeat="pkg in pkgs">\
-                            <td>{{pkg.name}} v{{pkg.version}}-{{pkg.release}}</td>\
-                            <td>{{pkg.size}}</td>\
-                            <td>{{\'已安装\'|iftrue:pkg.repo==\'installed\'}}{{pkg.repo|iftrue:pkg.repo!=\'installed\'}}</td>\
-                            <td>\
-                                <button class="btn btn-default btn-xs" ng-show="pkg.repo!=\'installed\'" ng-click="update(pkg.repo, pkg.name, pkg.version, pkg.release)">升级到此版本</button>\
-                            </td>\
-                        </tr>\
-                    </tbody>\
-                </table>\
-            </div>',
-        replace: true
+        }]
     };
 }).
 directive('srvext', function () {
@@ -617,6 +433,8 @@ directive('srvext', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/srvext.html',
         controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
             $scope.$scope = $scope.$parent;
 
@@ -756,38 +574,7 @@ directive('srvext', function () {
                     true
                 );
             };
-        }],
-        template: '<div class="well" style="display:none" ng-show="$scope.installed&&!$scope.checking">\
-                <div ng-show="!operating">\
-                    <p>点击下面的按钮检测扩展安装情况。</p>\
-                </div>\
-                <div ng-show="operating" ng-bind-html-unsafe="showMsg"></div>\
-                <p ng-show="!operating"><button class="btn btn-default btn-sm" style="margin-top:10px" ng-click="start()">检测扩展</button></p>\
-                <table class="table table-condensed" style="margin-top:20px;display:none" ng-show="showExtList&&exts.length>0">\
-                    <thead>\
-                        <tr>\
-                            <th>扩展名称</th>\
-                            <th>版本</th>\
-                            <th style="width:70px">软件源</th>\
-                            <th style="width:70px">大小</th>\
-                            <th style="width:90px">操作</th>\
-                        </tr>\
-                    </thead>\
-                    <tbody>\
-                        <tr ng-repeat="ext in exts">\
-                            <td>{{ext.name}}</td>\
-                            <td>{{ext.version}}-{{ext.release}}</td>\
-                            <td>{{\'已安装\'|iftrue:ext.repo==\'installed\'}}{{ext.repo|iftrue:ext.repo!=\'installed\'}}</td>\
-                            <td>{{ext.size}}</td>\
-                            <td>\
-                                <button class="btn btn-default btn-xs" ng-show="ext.repo==\'installed\'" ng-click="uninstall(ext.repo, ext.name, ext.version, ext.release)">删除扩展</button>\
-                                <button class="btn btn-default btn-xs" ng-show="ext.repo!=\'installed\'" ng-click="install(ext.repo, ext.name, ext.version, ext.release)">安装该扩展</button>\
-                            </td>\
-                        </tr>\
-                    </tbody>\
-                </table>\
-            </div>',
-        replace: true
+        }]
     };
 }).
 directive('srvuninstall', function () {
@@ -795,6 +582,8 @@ directive('srvuninstall', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/srvuninstall.html',
         controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
             $scope.$scope = $scope.$parent;
 
@@ -866,27 +655,7 @@ directive('srvuninstall', function () {
                     true
                 );
             };
-        }],
-        template: '<div class="well" ng-show="$scope.installed&&!$scope.checking">\
-                <div ng-show="!uninstalling">\
-                    <p>确定要卸载 {{name}} 吗？</p>\
-                </div>\
-                <div ng-show="uninstalling" ng-bind-html-unsafe="uninstallMsg"></div>\
-                <p ng-show="!uninstalling"><button class="btn btn-default btn-sm" style="margin-top:10px" ng-click="startUninstall()">开始卸载</button></p>\
-                <table class="table table-condensed" style="margin-top:20px;display:none" ng-show="showVersion">\
-                    <thead>\
-                        <tr><th colspan="2">请确认要卸载的软件信息：</th></tr>\
-                    </thead>\
-                    <tbody>\
-                        <tr><td style="width:80px">名称：</td><td>{{pkginfo.name}}</td></tr>\
-                        <tr><td>版本：</td><td>{{pkginfo.version}}-{{pkginfo.release}}</td></tr>\
-                        <tr><td>大小：</td><td>{{pkginfo.size}}</td></tr>\
-                        <tr ng-show="pkginfo.from_repo"><td>软件源：</td><td>{{pkginfo.from_repo}}</td></tr>\
-                    </tbody>\
-                </table>\
-                <p ng-show="showVersion"><button class="btn btn-default" ng-click="uninstall(pkginfo.repo, pkginfo.name, pkginfo.version, pkginfo.release)">确认并卸载</button>\
-            </div>',
-        replace: true
+        }]
     };
 }).
 directive('srvfile', function () {
@@ -894,30 +663,9 @@ directive('srvfile', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
-        controller: ['$scope', function ($scope) {}],
-        template: '\
-            <table class="table table-hover">\
-                <tbody>\
-                    <tr><td colspan="3">注意：如果您没有配置文件修改经验，请勿随意修改，否则可能导致服务无法启动。</td></tr>\
-                    <tr ng-repeat="item in items">\
-                        <td style="width:120px;">{{item.name}}</td>\
-                        <td>\
-                            <i class="glyphicon glyphicon-folder-open" ng-show="item.isdir"></i>\
-                            <i class="glyphicon glyphicon-file" ng-show="item.isfile"></i>\
-                            {{item.path}}\
-                        </td>\
-                        <td style="width:100px">\
-                            <a class="btn btn-default btn-xs" href="#/file?path={{item.path}}" ng-show="item.isdir">\
-                                打开 <i class="icon-chevron-right"></i>\
-                            </a>\
-                            <a class="btn btn-default btn-xs" href="#/file?file={{item.path}}" ng-show="item.isfile">\
-                                打开 <i class="icon-chevron-right"></i>\
-                            </a>\
-                        </td>\
-                    </tr>\
-                </tbody>\
-            </table>',
-        replace: true
+        replace: true,
+        templateUrl: template_path + '/partials/directives/srvfile.html',
+        controller: ['$scope', function ($scope) {}]
     };
 }).
 directive('srvlog', function () {
@@ -925,30 +673,9 @@ directive('srvlog', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
-        controller: ['$scope', function ($scope) {}],
-        template: '\
-            <table class="table table-hover">\
-                <tbody>\
-                    <tr><td colspan="3">注意：尽量不要对日志文件进行修改，否则可能导致新日志无法写入。</td></tr>\
-                    <tr ng-repeat="item in items">\
-                        <td style="width:120px;">{{item.name}}</td>\
-                        <td>\
-                            <i class="glyphicon glyphicon-folder-open" ng-show="item.isdir"></i>\
-                            <i class="glyphicon glyphicon-file" ng-show="item.isfile"></i>\
-                            {{item.path}}\
-                        </td>\
-                        <td style="width:100px">\
-                            <a class="btn btn-default btn-xs" href="#/file?path={{item.path}}" ng-show="item.isdir">\
-                                打开 <i class="icon-chevron-right"></i>\
-                            </a>\
-                            <a class="btn btn-default btn-xs" href="#/file?file={{item.path}}" ng-show="item.isfile">\
-                                打开 <i class="icon-chevron-right"></i>\
-                            </a>\
-                        </td>\
-                    </tr>\
-                </tbody>\
-            </table>',
-        replace: true
+        replace: true,
+        templateUrl: template_path + '/partials/directives/srvlog.html',
+        controller: ['$scope', function ($scope) {}]
     };
 }).
 directive('selector', function () {
@@ -956,6 +683,8 @@ directive('selector', function () {
         restrict: 'A',
         transclude: true,
         scope: {},
+        replace: true,
+        templateUrl: template_path + '/partials/directives/selector.html',
         controller: ['$scope', 'Request', function ($scope, Request) {
             $scope.$scope = $scope.$parent;
             $scope.onlydir = true;
@@ -1015,43 +744,7 @@ directive('selector', function () {
             };
             //$scope.listdir();
             $scope.$parent.selector = $scope;
-        }],
-        template: '<div>\
-            <div ng-show="onlydir&&!onlyfile&&!otherdir">\
-                <p>当前目录为：{{path}}</p>\
-                <p>\
-                    <button class="btn btn-default btn-sm" ng-click="selecthandler(path)">选择当前目录</button>\
-                    <button class="btn btn-default btn-sm" ng-click="otherdir=true;listdir(path)">选择其它目录</button>\
-                </p>\
-            </div>\
-            <div ng-show="otherdir">\
-            <ul class="breadcrumb" style="margin-bottom:0">\
-                <li><a ng-click="listdir(\'/\')">根目录</a></li>\
-                <li ng-repeat="pathinfo in pathinfos" ng-show="pathinfos.length>0"><a ng-click="listdir(pathinfo.path)">{{pathinfo.name}}</a></li>\
-                <li><button class="btn btn-default btn-xs" ng-show="onlydir" ng-click="selecthandler(curpath)">选取该目录</button></li>\
-            </ul>\
-            <table class="table table-hover table-condensed">\
-                <thead><tr><th style="width:20px"></th><th></th><th style="width:80px"></th></tr></thead>\
-                <tbody>\
-                    <tr ng-repeat="item in items">\
-                        <td>\
-                            <i class="glyphicon glyphicon-folder-open" title="文件夹" ng-show="item.isdir"></i>\
-                            <i class="glyphicon glyphicon-file" title="文件" ng-show="item.isreg"></i>\
-                            <i class="glyphicon glyphicon-link" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>\
-                            <i class="glyphicon glyphicon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>\
-                        </td><td>\
-                            <a class="black" ng-click="listdir(curpath_pre+\'/\'+item.name)" ng-show="item.isdir||(item.islnk&&item.link_isdir)">{{item.name}}</a>\
-                            <a class="black" ng-show="item.isreg||(item.islnk&&!item.link_isdir)">{{item.name}}</a>\
-                            <span class="text-info" ng-show="item.islnk">-> {{item.linkto}}</span>\
-                        </td><td>\
-                            <button class="btn btn-default btn-xs" ng-show="onlydir&&(item.isdir||(item.islnk&&item.link_isdir))" ng-click="selecthandler(curpath_pre+\'/\'+item.name)">选取该目录</button>\
-                            <button class="btn btn-default btn-xs" ng-show="onlyfile&&(item.isreg||(item.islnk&&item.link_isreg))" ng-click="selecthandler(curpath_pre+\'/\'+item.name)">选取该文件</button>\
-                        </td>\
-                    </tr>\
-                </tbody>\
-            </table>\
-            </div>',
-        replace: true
+        }]
     };
 }).
 directive('autofocus', function () {

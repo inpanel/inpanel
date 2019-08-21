@@ -1,0 +1,23 @@
+<table class="table table-hover">
+    <tbody>
+        <tr>
+            <td colspan="3">注意：如果您没有配置文件修改经验，请勿随意修改，否则可能导致服务无法启动。</td>
+        </tr>
+        <tr ng-repeat="item in items">
+            <td style="width:120px;">{{item.name}}</td>
+            <td>
+                <i class="glyphicon glyphicon-folder-open" ng-show="item.isdir"></i>
+                <i class="glyphicon glyphicon-file" ng-show="item.isfile"></i>
+                {{item.path}}
+            </td>
+            <td style="width:100px">
+                <a class="btn btn-default btn-xs" href="#/file?path={{item.path}}" ng-show="item.isdir">
+                    打开 <i class="icon-chevron-right"></i>
+                </a>
+                <a class="btn btn-default btn-xs" href="#/file?file={{item.path}}" ng-show="item.isfile">
+                    打开 <i class="icon-chevron-right"></i>
+                </a>
+            </td>
+        </tr>
+    </tbody>
+</table>
