@@ -22,7 +22,10 @@ var UtilsUserCtrl = [
         Module.init(module, '用户管理');
         Module.initSection(enabled_sections[0]);
         $scope.loaded = true;
-
+        $scope.loading = {
+            user: true,
+            group: true
+        }
         $scope.tab_sec = function (section) {
             // var init = Module.getSection() != section
             section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
@@ -31,18 +34,22 @@ var UtilsUserCtrl = [
             // $scope['load_' + section](init);
         };
         $scope.loadUsers = function() {
+            $scope.loading.user = true;
             Request.post('/operation/user', {
                 'action': 'listuser'
             }, function(data) {
+                $scope.loading.user = false;
                 if (data.code == 0) {
                     $scope.users = data.data;
                 }
             }, false, true);
         };
         $scope.loadGroups = function() {
+            $scope.loading.group = true;
             Request.post('/operation/user', {
                 'action': 'listgroup'
             }, function(data) {
+                $scope.loading.group = false;
                 if (data.code == 0) {
                     $scope.groups = data.data;
                 }
