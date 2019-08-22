@@ -39,6 +39,7 @@ def main():
         'conf_path': os.path.join(root_path, 'data', 'config.ini'),
         'index_path': os.path.join(root_path, 'static', 'index.html'),
         'static_path': os.path.join(root_path, 'static'),
+        'plugins_path': os.path.join(root_path, 'plugins'),
         'xsrf_cookies': True,
         'cookie_secret': make_cookie_secret(),
         'gzip': True
@@ -62,6 +63,7 @@ def main():
         (r'/client/(.+)', web.ClientHandler),
         (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)',
          web.StaticFileHandler, {'path': settings['static_path']}),
+        (r'/plugins/(.*)', web.StaticFileHandler, {'path': settings['plugins_path']}),
         (r'/($)', web.StaticFileHandler, {'path': settings['index_path']}),
         (r'/file/(.+)', web.FileDownloadHandler, {'path': '/'}),
         (r'/fileupload', web.FileUploadHandler),

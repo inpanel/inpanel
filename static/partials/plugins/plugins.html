@@ -1,0 +1,13 @@
+<div navbar ng-init="currentItem='plugins'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>插件主界面</h3>
+    </div>
+
+    <div ng-init="load()">
+        <div plugins ng-init="pluginsName='acme'"></div>
+        <div plugins pluginsName="acme"></div>
+    </div>
+</div>
