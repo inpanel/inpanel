@@ -2802,8 +2802,10 @@ class BackendHandler(RequestHandler):
                     lines.append(line)
             if not dot_found:
                 with open('/etc/hosts', 'w') as f: f.writelines(lines)
-
-        cmd = '/etc/init.d/%s %s' % (service, action)
+        if self.settings['dist_verint'] < 7:
+            cmd = '/etc/init.d/%s %s' % (service, action)
+        else:
+            cmd = '/bin/systemctl %s %s.service' % (action, service)
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             code = 0
@@ -3040,7 +3042,7 @@ class BackendHandler(RequestHandler):
             with open('/etc/yum.repos.d/mariadb.repo', 'w') as f:
                 f.write(yum.yum_repostr['mariadb'][self.settings['arch']])
 
-        elif repo == 'atomic' and dist_verint < 7:
+        elif repo == 'atomic':
             # REF: http://www.atomicorp.com/channels/atomic/
             result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['atomic'], shell=True)
             if result != 0: error = True
@@ -3120,8 +3122,12 @@ class BackendHandler(RequestHandler):
                         if len(fields) != 2: continue
                         field_name = fields[0].strip().lower().replace(' ', '_')
                         field_value = fields[1].strip()
-                        if field_name == 'name': data.append({})
-                        data[-1][field_name] = field_value
+                        if field_name == 'name':
+                            data.append({})
+                        if field_name == 'repo':
+                            data[-1][field_name] = field_value.split('/')[0] # compatible to repo: "base/7/x86_64"
+                        else:
+                            data[-1][field_name] = field_value
 
         if matched:
             code = 0
