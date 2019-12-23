@@ -1,7 +1,9 @@
-var releasetime = '2019-08-08 16:40:40 GMT+0800';
-var _v = new Date(releasetime.replace(/-/g, '/')).getTime() / 1000;
+var releasetime = '2019-12-24 04:11:32 GMT+0800';
+var _v = new Date(releasetime).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
+
 var inpanel = angular.module('inpanel', ['inpanel.services', 'inpanel.directives', 'inpanel.filters']);
+
 inpanel.config(['$routeProvider', function ($routeProvider) {
     var _r = function (t, c, a) {
         var r = {
@@ -77,7 +79,8 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     otherwise({
         redirectTo: '/sorry'
     });
-}])
+}]);
+
 inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Request) {
     $rootScope.sec = function (sec) {
         $location.search('s', sec)
@@ -104,10 +107,11 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
         'page_number': 1
     };
     $rootScope.$proxyroot = location_path;
-}])
+}]);
+
 inpanel.value('version', {
     'version': '1.1.1',
-    'build': '20',
+    'build': '21',
     'releasetime': releasetime,
     'changelog': 'http://inpanel.org/changelog.html'
 });
