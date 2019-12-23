@@ -32,7 +32,7 @@ import tornado.web
 from async_process import call_subprocess, callbackable
 from core import api as core_api
 from core import utils
-from modules import (aliyuncs, apache, certificate, cron, fdisk, files,
+from modules import (aliyuncs, apache, certificate, cron, fdisk, files, ftp,
                      lighttpd, mysql, named, nginx, php, process, proftpd,
                      pureftpd, remote, shell, ssh, user, vsftpd, yum)
 from modules.config import Config
@@ -720,7 +720,8 @@ class SettingHandler(RequestHandler):
         elif section == 'server':
             ip = self.config.get('server', 'ip')
             port = self.config.get('server', 'port')
-            self.write({'ip': ip, 'port': port})
+            forcehttps = self.config.getboolean('server', 'forcehttps')
+            self.write({'forcehttps': forcehttps, 'ip': ip, 'port': port})
             self.finish()
 
         elif section == 'accesskey':
@@ -792,8 +793,6 @@ class SettingHandler(RequestHandler):
                 return
 
             ip = self.get_argument('ip', '*')
-            port = self.get_argument('port', '8888')
-
             if ip != '*' and ip != '':
                 if not utils.is_valid_ip(_u(ip)):
                     self.write({'code': -1, 'msg': u'%s 不是有效的IP地址！' % ip})
@@ -801,16 +800,23 @@ class SettingHandler(RequestHandler):
                 netifaces = ServerInfo.netifaces()
                 ips = [netiface['ip'] for netiface in netifaces]
                 if not ip in ips:
-                    self.write({'code': -1, 'msg': u'<p>%s 不是该服务器的IP地址！</p>'\
-                                u'<p>可用的IP地址有：<br>%s</p>' % (ip, '<br>'.join(ips))})
+                    msg = u'<p>%s 不是该服务器的IP地址！</p><p>可用的IP地址有：<br>%s</p>' % (ip, '<br>'.join(ips))
+                    self.write({'code': -1, 'msg': msg})
                     return
+
+            port = self.get_argument('port', '8888')
             port = int(port)
             if not port > 0 and port < 65535:
                 self.write({'code': -1, 'msg': u'端口范围必须在 0 到 65535 之间！'})
                 return
-            
+
             self.config.set('server', 'ip', ip)
             self.config.set('server', 'port', port)
+
+            forcehttps = self.get_argument('forcehttps', '')
+            if forcehttps != 'on': forcehttps = 'off'
+            self.config.set('server', 'forcehttps', forcehttps)
+
             self.write({'code': 0, 'msg': u'服务设置更新成功！将在重启服务后生效。'})
 
         elif section == 'accesskey':
@@ -2482,8 +2488,7 @@ class BackendHandler(RequestHandler):
                         _u(despath)))
         elif jobname == 'ntpdate':
             server = self.get_argument('server', '')
-            self._call(functools.partial(self.ntpdate,
-                        _u(server)))
+            self._call(functools.partial(self.ntpdate, _u(server)))
         elif jobname == 'chown':
             paths = _u(self.get_argument('paths', ''))
             paths = paths.split(',')
@@ -2673,6 +2678,13 @@ class BackendHandler(RequestHandler):
                 self._call(functools.partial(self.inpanel_config,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(accesskey)))
+        elif jobname == 'uploadtoftp':
+            address = self.get_argument('address', '')
+            account = self.get_argument('account', '')
+            password = self.get_argument('password', '')
+            source = self.get_argument('source', '')
+            target = self.get_argument('target', '')
+            self._call(functools.partial(self.uploadtoftp, _u(address), _u(account), _u(password), _u(source), _u(target)))
         else:   # undefined job
             self.write({'code': -1, 'msg': u'未定义的操作！'})
             return
@@ -2790,8 +2802,10 @@ class BackendHandler(RequestHandler):
                     lines.append(line)
             if not dot_found:
                 with open('/etc/hosts', 'w') as f: f.writelines(lines)
-
-        cmd = '/etc/init.d/%s %s' % (service, action)
+        if self.settings['dist_verint'] < 7:
+            cmd = '/etc/init.d/%s %s' % (service, action)
+        else:
+            cmd = '/bin/systemctl %s %s.service' % (action, service)
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             code = 0
@@ -3028,7 +3042,7 @@ class BackendHandler(RequestHandler):
             with open('/etc/yum.repos.d/mariadb.repo', 'w') as f:
                 f.write(yum.yum_repostr['mariadb'][self.settings['arch']])
 
-        elif repo == 'atomic' and dist_verint < 7:
+        elif repo == 'atomic':
             # REF: http://www.atomicorp.com/channels/atomic/
             result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['atomic'], shell=True)
             if result != 0: error = True
@@ -3108,8 +3122,12 @@ class BackendHandler(RequestHandler):
                         if len(fields) != 2: continue
                         field_name = fields[0].strip().lower().replace(' ', '_')
                         field_value = fields[1].strip()
-                        if field_name == 'name': data.append({})
-                        data[-1][field_name] = field_value
+                        if field_name == 'name':
+                            data.append({})
+                        if field_name == 'repo':
+                            data[-1][field_name] = field_value.split('/')[0] # compatible to repo: "base/7/x86_64"
+                        else:
+                            data[-1][field_name] = field_value
 
         if matched:
             code = 0
@@ -3432,7 +3450,7 @@ class BackendHandler(RequestHandler):
                 msg = u'删除 %s 失败！<p style="margin:10px">%s</p>' % (_d(path), _d(output.strip().replace('\n', '<br>')))
 
         self._finish_job(jobname, code, msg)
-        
+
     @tornado.gen.engine
     def compress(self, zippath, paths):
         """Compress files or directorys.
@@ -3453,8 +3471,8 @@ class BackendHandler(RequestHandler):
         elif zippath.endswith('.tar.bz2'):
             cmd = 'tar jcf %s -C %s %s' % (zippath, basepath, ' '.join(paths))
         elif zippath.endswith('.zip'):
-            self._update_job(jobname, 2, u'正在安装 zip...')
             if not os.path.exists('/usr/bin/zip'):
+                self._update_job(jobname, 2, u'正在安装 zip...')
                 if self.settings['dist_name'] in ('centos', 'redhat'):
                     cmd = 'yum install -y zip unzip'
                     result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
@@ -3480,7 +3498,7 @@ class BackendHandler(RequestHandler):
             msg = u'压缩失败！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
 
         self._finish_job(jobname, code, msg)
-        
+
     @tornado.gen.engine
     def decompress(self, zippath, despath):
         """Decompress a zip file.
@@ -4055,6 +4073,32 @@ class BackendHandler(RequestHandler):
             code = -1
             msg = u'InPanel 配置更新过程中发生错误！'
 
+        self._finish_job(jobname, code, msg)
+
+    # @tornado.web.asynchronous
+    @tornado.gen.engine
+    def uploadtoftp(self, address, account, password, source, target):
+        '''transmit files to ftp server.'''
+        jobname = 'uploadtoftp_%s_%s_%s' % (address, source, target)
+        # jobname = 'uploadtoftp_%s' % address
+        if not self._start_job(jobname): return
+
+        if not os.path.isfile(source):
+            self._finish_job(jobname, -1, '传输失败！文件不存在')
+            return
+
+        self._update_job(jobname, 2, u'正在传输文件 %s...' % source)
+        result = yield tornado.gen.Task(callbackable(ftp.uploadtoftp), address, account, password, source, target)
+        # result = yield tornado.gen.Task(callbackable(ftp.uploadtoftpa), address, account, password, source, target)
+        # cmd = 'ping www.baidu.com -c 8'
+        # result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        # print(result)
+        if result == True:
+            code = 0
+            msg = u'文件 %s 已成功传输到 %s 服务器！' % (source, address)
+        else:
+            code = -1
+            msg = u'文件传输失败！' # <p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
         self._finish_job(jobname, code, msg)
 
 

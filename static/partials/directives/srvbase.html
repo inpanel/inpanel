@@ -1,0 +1,72 @@
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th colspan="2">{{name}} 服务操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="width:120px;">软件安装版本：</td>
+            <td>
+                <span ng-show="!pkginfo">正在获取...</span>
+                <span style="display:none" ng-show="pkginfo">
+                    {{pkginfo.name}} {{'v'+pkginfo.version+'-'+pkginfo.release | iftrue:pkginfo.version}}
+                    {{"("+pkginfo.from_repo+")" | iftrue:pkginfo.from_repo}}
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:120px;">软件官方网站：</td>
+            <td>
+                <span ng-show="!pkginfo">正在获取...</span>
+                <span style="display:none" ng-show="pkginfo">
+                    <a href="{{pkginfo.url}}" target="_blank" ng-show="pkginfo.url">{{pkginfo.url}}</a>
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:120px;">软件授权协议：</td>
+            <td>
+                <span ng-show="!pkginfo">正在获取...</span>
+                <span style="display:none" ng-show="pkginfo">{{pkginfo.license}}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:120px;">当前服务状态：</td>
+            <td ng-bind-html-unsafe="$scope.status | service.status"></td>
+        </tr>
+        <tr>
+            <td>开机是否启动：</td>
+            <td>
+                <button class="btn btn-default btn-xs" ng-class="'active' | iftrue:$scope.autostart"
+                    data-toggle="button" ng-click="toggleAutostart()">
+                    <span class="glyphicon glyphicon-check"></span> 开机自动启动
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>启动/停止服务：</td>
+            <td>
+                <button class="btn btn-default btn-xs" ng-show="$scope.status=='stopped'" ng-disabled="$scope.waiting"
+                    ng-click="start()">
+                    <span class="glyphicon glyphicon-play"></span> 启动服务
+                </button>
+                <button class="btn btn-default btn-xs" ng-show="$scope.status=='running'" ng-disabled="$scope.waiting"
+                    ng-click="stop()">
+                    <span class="glyphicon glyphicon-stop"></span> 停止服务
+                </button>
+                <button class="btn btn-default btn-xs" ng-disabled="$scope.status=='stopped'||$scope.waiting"
+                    ng-click="restart()">
+                    <span class="glyphicon glyphicon-refresh"></span> 重启服务
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:120px;">软件摘要信息：</td>
+            <td>
+                <span ng-show="!pkginfo">正在获取...</span>
+                <span style="display:none" ng-show="pkginfo">{{pkginfo.summary}}</span>
+            </td>
+        </tr>
+    </tbody>
+</table>

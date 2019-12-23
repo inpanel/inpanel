@@ -17,23 +17,39 @@ var UtilsUserCtrl = [
     '$scope', '$routeParams', 'Module', 'Timeout', 'Request',
     function($scope, $routeParams, Module, Timeout, Request) {
         var module = 'utils.user';
+        var section = Module.getSection();
+        var enabled_sections = ['user', 'group'];
         Module.init(module, '用户管理');
-        Module.initSection('user');
+        Module.initSection(enabled_sections[0]);
         $scope.loaded = true;
-
+        $scope.loading = {
+            user: true,
+            group: true
+        }
+        $scope.tab_sec = function (section) {
+            // var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            // $scope['load_' + section](init);
+        };
         $scope.loadUsers = function() {
+            $scope.loading.user = true;
             Request.post('/operation/user', {
                 'action': 'listuser'
             }, function(data) {
+                $scope.loading.user = false;
                 if (data.code == 0) {
                     $scope.users = data.data;
                 }
             }, false, true);
         };
         $scope.loadGroups = function() {
+            $scope.loading.group = true;
             Request.post('/operation/user', {
                 'action': 'listgroup'
             }, function(data) {
+                $scope.loading.group = false;
                 if (data.code == 0) {
                     $scope.groups = data.data;
                 }
@@ -1846,6 +1862,96 @@ var UtilsShellCtrl = ['$scope', '$routeParams', 'Module', 'Timeout', 'Request',
                     }
                 }
             });
+        };
+    }
+];
+
+var UtilsMigrateCtrl = [
+    '$scope', '$routeParams', 'Module', 'Message', 'Timeout', 'Request', 'Backend',
+    function($scope, $routeParams, Module, Message, Timeout, Request, Backend) {
+        var module = 'utils.migrate';
+        var section = Module.getSection();
+        var enabled_sections = ['ftp', 'nutstore'];
+        Module.init(module, '文件传输');
+        Module.initSection(enabled_sections[0]);
+        $scope.loaded = true;
+        $scope.remote = {
+            'address': '',
+            'account': '',
+            'password': '',
+            'source': '/',
+            'target': ''
+        };
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+        $scope.load_ftp = function () {
+            console.log('传输到 FTP');
+        };
+        $scope.load_nutstore = function () {
+            console.log('传输到坚果云');
+        };
+        $scope.reset_form = function () {
+            $scope.remote = {
+                'address': '',
+                'account': '',
+                'password': '',
+                'source': '/',
+                'target': '/var'
+            };
+        };
+        $scope.select_files = function () {
+            $scope.selector_title = '请选择需要传输的文件';
+            $scope.selector.onlydir = false;
+            $scope.selector.onlyfile = true;
+            $scope.selector.load($scope.remote.source); // 加载默认
+            $scope.selector.selecthandler = function (path) { // 回调函数
+                $('#selector').modal('hide');
+                $scope.remote.source = path;
+            };
+            $('#selector').modal();
+        };
+        $scope.migrate_ftp = function () {
+            console.log('立即传输', $scope.remote);
+            if ($scope.remote.address == '') {
+                Message.setWarning('请输入服务器地址');
+            } else if ($scope.remote.account == '') {
+                Message.setWarning('请输入授权用户');
+            } else if ($scope.remote.password == '') {
+                Message.setWarning('请输入授权密码');
+            } else if ($scope.remote.source == '') {
+                Message.setWarning('请选择需要传输的文件');
+            } else if ($scope.remote.target == '') {
+                Message.setWarning('请输入远程服务器保存路径');
+            } else {
+                console.log('立即传输2', $scope.remote);
+                $scope.trans_to_ftp();
+            }
+        };
+        $scope.trans_to_ftp = function () {
+            console.log('立即传输', $scope.remote);
+            var op_data = angular.copy($scope.remote);
+            // Backend.call = function ($scope, module, url, statusUrl, data, callback, quiet) {
+            Backend.call($scope, module,
+                '/backend/uploadtoftp',
+                '/backend/uploadtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
+                op_data, {
+                    'wait': function (data) {
+                        Message.setInfo(data.msg || '正在处理');
+                    },
+                    'success': function (data) {
+                        Message.setInfo(data.msg || '传输成功！');
+                    },
+                    'error': function (data) {
+                        Message.setError(data.msg || '传输失败！');
+                    }
+                },
+                true
+            );
         };
     }
 ];

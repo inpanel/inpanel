@@ -42,7 +42,7 @@
                     <div class="form-group form-inline">
                         <label class="col-sm-2 control-label">密码检测</label>
                         <div class="col-sm-10 checkbox">
-                            <label><input ng-model="passwordcheck" ng-disabled="processing" type="checkbox">开启密码安全级别检测</label>
+                            <label><input ng-model="passwordcheck" ng-disabled="processing" type="checkbox"> 开启密码安全级别检测</label>
                         </div>
                     </div>
                     <div class="form-group form-inline">
@@ -66,6 +66,12 @@
                         <div class="col-sm-10">
                             <input class="form-control" ng-model="port" ng-disabled="processing" type="text" id="bind_port" placeholder="服务绑定的端口">
 
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">强制HTTPS</label>
+                        <div class="col-sm-10 checkbox">
+                            <label><input ng-model="forcehttps" ng-disabled="processing" type="checkbox"> 强制使用 HTTPS 访问面板</label>
                         </div>
                     </div>
                     <div class="form-group form-inline">

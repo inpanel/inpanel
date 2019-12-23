@@ -18,19 +18,20 @@
 
 from __future__ import absolute_import, division, with_statement
 
-import cStringIO
 import collections
 import logging
-import pycurl
 import threading
 import time
 
-from tornado import httputil
-from tornado import ioloop
-from tornado import stack_context
-
+import pycurl
+from tornado import httputil, ioloop, stack_context
 from tornado.escape import utf8
-from tornado.httpclient import HTTPRequest, HTTPResponse, HTTPError, AsyncHTTPClient, main
+from tornado.httpclient import (AsyncHTTPClient, HTTPError, HTTPRequest, HTTPResponse, main)
+
+try:
+    from io import StringIO  # python 3
+except ImportError:
+    from cStringIO import StringIO  # python 2
 
 
 class CurlAsyncHTTPClient(AsyncHTTPClient):
@@ -199,7 +200,7 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
                     (request, callback) = self._requests.popleft()
                     curl.info = {
                         "headers": httputil.HTTPHeaders(),
-                        "buffer": cStringIO.StringIO(),
+                        "buffer": StringIO(),
                         "request": request,
                         "callback": callback,
                         "curl_start_time": time.time(),
@@ -243,7 +244,7 @@ class CurlAsyncHTTPClient(AsyncHTTPClient):
             starttransfer=curl.getinfo(pycurl.STARTTRANSFER_TIME),
             total=curl.getinfo(pycurl.TOTAL_TIME),
             redirect=curl.getinfo(pycurl.REDIRECT_TIME),
-            )
+        )
         try:
             info["callback"](HTTPResponse(
                 request=info["request"], code=code, headers=info["headers"],
@@ -326,7 +327,7 @@ def _curl_setup_request(curl, request, buffer, headers):
         curl.setopt(pycurl.PROXYPORT, request.proxy_port)
         if request.proxy_username:
             credentials = '%s:%s' % (request.proxy_username,
-                    request.proxy_password)
+                                     request.proxy_password)
             curl.setopt(pycurl.PROXYUSERPWD, credentials)
     else:
         curl.setopt(pycurl.PROXY, '')
@@ -374,7 +375,7 @@ def _curl_setup_request(curl, request, buffer, headers):
 
     # Handle curl's cryptic options for every individual HTTP method
     if request.method in ("POST", "PUT"):
-        request_buffer = cStringIO.StringIO(utf8(request.body))
+        request_buffer = StringIO(utf8(request.body))
         curl.setopt(pycurl.READFUNCTION, request_buffer.read)
         if request.method == "POST":
             def ioctl(cmd):
@@ -435,6 +436,7 @@ def _curl_debug(debug_type, debug_msg):
             logging.debug('%s %s', debug_types[debug_type], line)
     elif debug_type == 4:
         logging.debug('%s %r', debug_types[debug_type], debug_msg)
+
 
 if __name__ == "__main__":
     AsyncHTTPClient.configure(CurlAsyncHTTPClient)

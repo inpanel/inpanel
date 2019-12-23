@@ -12,22 +12,19 @@
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='list'"><a href="#list" ng-click="tab_sec('list')" data-toggle="tab">进程列表</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='other'"><a href="#other" ng-click="tab_sec('other')" data-toggle="tab">待续</a></li>
+            <li class="pull-right" ng-show="activeTabName=='list'">
+                <button class="btn btn-default btn-sm" title="当前进程数量" ng-show="process && process.total">数量: {{process.total}}</button>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-default" title="刷新进程列表" ng-click="refresh()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-refresh"></i></button>
+                    <button class="btn btn-default" title="开启自动刷新" ng-click="auto_refresh_open()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-play"></i></button>
+                    <button class="btn btn-default" title="关闭自动刷新" ng-click="auto_refresh_close()" ng-disabled="!auto_refresh"><i class="glyphicon glyphicon-stop"></i></button>
+                </div>
+            </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='list'" id="list">
                 <div ng-show="init_process"><div waiting></div></div>
                 <div ng-show="!init_process">
-                    <div class="pull-left">
-                        <h5>进程列表</h5>
-                    </div>
-                    <div class="pull-right">
-                        <button class="btn btn-default btn-sm" title="当前进程数量" ng-show="process && process.total">数量: {{process.total}}</button>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新进程列表" ng-click="refresh()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="开启自动刷新" ng-click="auto_refresh_open()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-play"></i></button>
-                            <button class="btn btn-default" title="关闭自动刷新" ng-click="auto_refresh_close()" ng-disabled="!auto_refresh"><i class="glyphicon glyphicon-stop"></i></button>
-                        </div>
-                    </div>
                     <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>

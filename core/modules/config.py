@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
-# Copyright (c) 2012 - 2016, VPSMate development team
+# Copyright (c) 2017, doudoudzj
+# Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -34,6 +34,7 @@ class Config(object):
                 'server': {
                     'ip': '*',
                     'port': '8888',
+                    'forcehttps': 'off', # force use https
                     'lastcheckupdate': 0,
                     'updateinfo': ''
                 },

@@ -26,17 +26,19 @@ This module also defines the `HTTPRequest` class which is exposed via
 
 from __future__ import absolute_import, division, with_statement
 
-import Cookie
 import logging
 import socket
 import time
 
-from tornado.escape import utf8, native_str, parse_qs_bytes
-from tornado import httputil
-from tornado import iostream
+from tornado import httputil, iostream, stack_context
+from tornado.escape import native_str, parse_qs_bytes, utf8
 from tornado.netutil import TCPServer
-from tornado import stack_context
 from tornado.util import b, bytes_type
+
+try:
+    from http import cookies as Cookie
+except ImportError:
+    import Cookie
 
 try:
     import ssl  # Python 2.6+
@@ -260,9 +262,8 @@ class HTTPConnection(object):
                 return
 
             self.request_callback(self._request)
-        except _BadRequestException, e:
-            logging.info("Malformed HTTP request from %s: %s",
-                         self.address[0], e)
+        except _BadRequestException as e:
+            logging.info("Malformed HTTP request from %s: %s", self.address[0], e)
             self.stream.close()
             return
 
@@ -479,7 +480,7 @@ class HTTPRequest(object):
                                      socket.SOCK_STREAM,
                                      0, socket.AI_NUMERICHOST)
             return bool(res)
-        except socket.gaierror, e:
+        except socket.gaierror as e:
             if e.args[0] == socket.EAI_NONAME:
                 return False
             raise

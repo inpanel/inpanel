@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
-# Copyright (c) 2012 - 2016, VPSMate development team
+# Copyright (c) 2017, doudoudzj
+# Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
 # InPanel is distributed under the terms of The New BSD License.
@@ -53,8 +53,8 @@ yum_reporpms = {
         },
         7: {
             'x86_64': [
-                'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-6.1810.2.el7.centos.x86_64.rpm',
-                'http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-6.1810.2.el7.centos.x86_64.rpm'
+                'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-7.1908.0.el7.centos.x86_64.rpm',
+                'http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-7.1908.0.el7.centos.x86_64.rpm'
             ]
         }
     },
@@ -76,31 +76,23 @@ yum_reporpms = {
         },
         6: {
             'x86_64': [
-                # 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
-                'https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm',
-                # 'http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm',
-                # 'https://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/epel-release-6-8.noarch.rpm',
-                # 'https://mirrors.aliyun.com/epel/6/x86_64/epel-release-6-8.noarch.rpm'
+                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
             ],
             'i386':   [
-                # 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
-                'https://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm',
-                # 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
-                # 'https://mirrors.aliyun.com/epel/6/i386/epel-release-6-8.noarch.rpm'
+                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
             ],
             'i686':   [
-                # 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
-                'https://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm',
-                # 'http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm',
-                # 'https://mirrors.aliyun.com/epel/6/i386/epel-release-6-8.noarch.rpm'
+                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
             ],
         },
         7: {
             'x86_64': [
-                # 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm'
-                'https://dl.fedoraproject.org/pub/epel/7/x86_64/epel-release-7-11.noarch.rpm'
-                # 'http://centos.ustc.edu.cn/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm',
-                # 'https://mirrors.aliyun.com/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm'
+                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm'
+            ],
+        },
+        8: {
+            'x86_64': [
+                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm'
             ],
         },
     },

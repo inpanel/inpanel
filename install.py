@@ -195,14 +195,19 @@ class Install(object):
     def config_firewall(self):
         '''config firewall'''
         print('* Config firewall...'),
-        if os.path.exists('/etc/init.d/iptables'):
-            self._run('iptables -A INPUT -m state --state NEW -p tcp --dport %s -j ACCEPT' % self.listen_port)
-            self._run('iptables -A OUTPUT -m state --state NEW -p tcp --sport %s -j ACCEPT' % self.listen_port)
-            self._run('service iptables save')
-            self._run('/etc/init.d/iptables restart')
-            print('[ %s ]' % OK)
-        else:
-            print('Not Installed, No configuration required.')
+        if self.distname in ('centos', 'redhat'):
+            if self.version < 7 and os.path.exists('/etc/init.d/iptables'):
+                self._run('iptables -A INPUT -m state --state NEW -p tcp --dport %s -j ACCEPT' % self.listen_port)
+                self._run('iptables -A OUTPUT -m state --state NEW -p tcp --sport %s -j ACCEPT' % self.listen_port)
+                self._run('service iptables save')
+                self._run('/etc/init.d/iptables restart')
+                print('[ %s ]' % OK)
+            elif os.path.exists('/etc/firewalld/firewalld.conf'):
+                self._run('firewall-cmd --permanent --zone=public --add-port=%s/tcp' % self.listen_port)
+                self._run('systemctl restart firewalld.service')
+                print('[ %s ]' % OK)
+            else:
+                print('Not Installed, No configuration required.')
 
     def config_account(self):
         '''set username and password'''

@@ -206,8 +206,9 @@ factory('Backend', ['Timeout', 'Request', function (Timeout, Request) {
         Request.post(url, data, function (data) {
             if (data.code == -1) {
                 if (callback) {
-                    if (typeof callback.error == 'function')
+                    if (typeof callback.error == 'function') {
                         callback.error.call(null, data.data);
+                    }
                 }
                 return;
             }
@@ -217,23 +218,26 @@ factory('Backend', ['Timeout', 'Request', function (Timeout, Request) {
                         $scope.waiting = false;
                         if (data.code == 0) {
                             if (callback) {
-                                if (typeof callback == 'function')
+                                if (typeof callback == 'function') {
                                     callback.call(null, data);
-                                else if (typeof callback.success == 'function')
+                                } else if (typeof callback.success == 'function') {
                                     callback.success.call(null, data);
+                                }
                             }
                         } else {
                             if (callback) {
-                                if (typeof callback == 'function')
+                                if (typeof callback == 'function'){
                                     callback.call(null, data);
-                                else if (typeof callback.error == 'function')
+                                } else if (typeof callback.error == 'function') {
                                     callback.error.call(null, data);
+                                }
                             }
                         }
                     } else {
                         if (callback) {
-                            if (typeof callback.wait == 'function')
+                            if (typeof callback.wait == 'function') {
                                 callback.wait.call(null, data);
+                            }
                         }
                         Timeout(getStatus, 500, module);
                     }
@@ -242,8 +246,9 @@ factory('Backend', ['Timeout', 'Request', function (Timeout, Request) {
             Timeout(getStatus, 500, module);
         }, function (data) {
             if (callback) {
-                if (typeof callback.error == 'function')
+                if (typeof callback.error == 'function') {
                     callback.error.call(null, data);
+                }
             }
         });
     };

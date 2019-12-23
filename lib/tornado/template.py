@@ -174,7 +174,6 @@ with ``{# ... #}``.
 
 from __future__ import absolute_import, division, with_statement
 
-import cStringIO
 import datetime
 import linecache
 import logging
@@ -184,7 +183,14 @@ import re
 import threading
 
 from tornado import escape
-from tornado.util import bytes_type, ObjectDict
+from tornado.util import ObjectDict, bytes_type
+
+try:
+    from io import StringIO  # python 3
+except ImportError:
+    from cStringIO import StringIO  # python 2
+
+
 
 _DEFAULT_AUTOESCAPE = "xhtml_escape"
 _UNSET = object()
@@ -196,6 +202,7 @@ class Template(object):
     We compile into Python from the given template_string. You can generate
     the template from variables with generate().
     """
+
     def __init__(self, template_string, name="<string>", loader=None,
                  compress_whitespace=None, autoescape=_UNSET):
         self.name = name
@@ -258,7 +265,7 @@ class Template(object):
             raise
 
     def _generate_python(self, loader, compress_whitespace):
-        buffer = cStringIO.StringIO()
+        buffer = StringIO()
         try:
             # named_blocks maps from names to _NamedBlock objects
             named_blocks = {}
@@ -288,6 +295,7 @@ class Template(object):
 
 class BaseLoader(object):
     """Base class for template loaders."""
+
     def __init__(self, autoescape=_DEFAULT_AUTOESCAPE, namespace=None):
         """Creates a template loader.
 
@@ -335,6 +343,7 @@ class Loader(BaseLoader):
     {% extends %} and {% include %}. Loader caches all templates after
     they are loaded the first time.
     """
+
     def __init__(self, root_directory, **kwargs):
         super(Loader, self).__init__(**kwargs)
         self.root = os.path.abspath(root_directory)
@@ -360,6 +369,7 @@ class Loader(BaseLoader):
 
 class DictLoader(BaseLoader):
     """A template loader that loads from a dictionary."""
+
     def __init__(self, dict, **kwargs):
         super(DictLoader, self).__init__(**kwargs)
         self.dict = dict
@@ -699,7 +709,7 @@ def _parse(reader, template, in_block=None):
             # innermost ones.  This is useful when generating languages
             # like latex where curlies are also meaningful
             if (curly + 2 < reader.remaining() and
-                reader[curly + 1] == '{' and reader[curly + 2] == '{'):
+                    reader[curly + 1] == '{' and reader[curly + 2] == '{'):
                 curly += 1
                 continue
             break
@@ -766,7 +776,7 @@ def _parse(reader, template, in_block=None):
         if allowed_parents is not None:
             if not in_block:
                 raise ParseError("%s outside %s block" %
-                            (operator, allowed_parents))
+                                 (operator, allowed_parents))
             if in_block not in allowed_parents:
                 raise ParseError("%s block cannot be attached to %s block" % (operator, in_block))
             body.chunks.append(_IntermediateControlBlock(contents, line))
