@@ -38,7 +38,7 @@ rm -f /etc/init.d/inpanel
 
 - 免费、简洁、开源
 - 快速在线安装、小巧且节省资源
-- 当前支持 CentOS/Redhat 5.4+、6.x
+- 当前支持 CentOS/Redhat 5.4+、6.x、7.x、8.x
 - 基于发行版软件源的软件管理机制
 - 轻松构建 Linux + Nginx + MySQL + PHP 环境
 - 强大的在线文件管理和回收站机制

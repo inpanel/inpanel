@@ -41,8 +41,7 @@
 - [ ] 新增：安装软件时，对依赖包处理和安装
 - [ ] 新增：卸载软件时，对依赖包的处理
 - [ ] 新增：远程服务器的管理，整合 ECSMate 的部分功能
-- [ ] 支持：CentOS 7
-- [ ] 支持：RHEL 7
-- [ ] 支持：主流发行版: CentOS/RHEL/Fedora/Ubuntu/openSUSE/Debian/Arch/Slackware/FreeBSD
+- [x] 支持：CentOS 7(RHEL 7)
+- [ ] 支持：主流发行版: Ubuntu/openSUSE/Debian/Arch/Slackware/FreeBSD
 - [ ] 支持：软件自定义安装
 
