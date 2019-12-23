@@ -1,4 +1,4 @@
-var releasetime = '2019-12-24 04:11:32 GMT+0800';
+var releasetime = '2019-12-24 05:58:01 GMT+0800';
 var _v = new Date(releasetime).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
 
