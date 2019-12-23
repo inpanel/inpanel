@@ -34,7 +34,7 @@ class Config(object):
                 'server': {
                     'ip': '*',
                     'port': '8888',
-                    'forcehttps': 'on', # force use https
+                    'forcehttps': 'off', # force use https
                     'lastcheckupdate': 0,
                     'updateinfo': ''
                 },
