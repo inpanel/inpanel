@@ -1955,3 +1955,46 @@ var UtilsMigrateCtrl = [
         };
     }
 ];
+
+var UtilsFirewallCtrl = [
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
+    function($scope, Module, $routeParams, Timeout, Request, Message, Backend, $location) {
+        var module = 'utils.firewall';
+        Module.init(module, '防火墙');
+        $scope.loaded = false;
+        // $scope.action = '';
+        var section = Module.getSection();
+        var enabled_sections = ['iptables', 'firewalld'];
+        Module.initSection(enabled_sections[0]);
+        $scope.loading = false;
+
+        $scope.load = function () {
+            $scope.loaded = true;
+            $scope.tab_sec(section);
+        };
+
+        $scope.tab_sec = function (section) {
+            var init = Module.getSection() != section
+            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
+            $scope.sec(section);
+            Module.setSection(section);
+            $scope['load_' + section](init);
+        };
+        $scope.load_iptables = function (init) {
+            if (init) {
+                $scope.loading = true;
+                Timeout(function() {
+                    $scope.loading = false;
+                }, 1000, module);
+            }
+        };
+        $scope.load_firewalld = function (init) {
+            if (init) {
+                $scope.loading = true;
+                Timeout(function() {
+                    $scope.loading = false;
+                }, 1000, module);
+            }
+        };
+    }
+];
