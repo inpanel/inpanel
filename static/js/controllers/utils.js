@@ -1964,7 +1964,7 @@ var UtilsFirewallCtrl = [
         $scope.loaded = false;
         // $scope.action = '';
         var section = Module.getSection();
-        var enabled_sections = ['iptables', 'firewalld'];
+        var enabled_sections = ['iptables', 'firewalld', 'ufw'];
         Module.initSection(enabled_sections[0]);
         $scope.loading = false;
 

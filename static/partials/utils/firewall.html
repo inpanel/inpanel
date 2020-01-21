@@ -12,6 +12,8 @@
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='iptables'"><a href="#iptables" ng-click="tab_sec('iptables')" data-toggle="tab">iptables</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='firewalld'"><a href="#firewalld" ng-click="tab_sec('firewalld')" data-toggle="tab">firewalld</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='ufw'"><a href="#ufw" ng-click="tab_sec('ufw')" data-toggle="tab">ufw</a></li>
+            
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='firewalld'" id="firewalld">
@@ -24,6 +26,12 @@
                 <div ng-show="loading"><div waiting></div></div>
                 <div ng-hide="loading">
                     iptables 规则列表
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='ufw'" id="ufw">
+                <div ng-show="loading"><div waiting></div></div>
+                <div ng-hide="loading">
+                    ufw 规则列表
                 </div>
             </div>
         </div>
