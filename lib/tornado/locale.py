@@ -172,7 +172,7 @@ def load_gettext_translations(directory, domain):
             os.stat(os.path.join(directory, lang, "LC_MESSAGES", domain + ".mo"))
             _translations[lang] = gettext.translation(domain, directory,
                                                       languages=[lang])
-        except Exception, e:
+        except Exception as e:
             logging.error("Cannot load translation for '%s': %s", lang, str(e))
             continue
     _supported_locales = frozenset(_translations.keys() + [_default_locale])

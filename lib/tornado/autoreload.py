@@ -266,9 +266,9 @@ def main():
                 # something that tries to import __main__ (e.g. the unittest
                 # module) will see the right things.
                 exec f.read() in globals(), globals()
-    except SystemExit, e:
+    except SystemExit as e:
         logging.info("Script exited with status %s", e.code)
-    except Exception, e:
+    except Exception as e:
         logging.warning("Script exited with uncaught exception", exc_info=True)
         if isinstance(e, SyntaxError):
             watch(e.filename)

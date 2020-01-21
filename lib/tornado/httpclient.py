@@ -54,7 +54,7 @@ class HTTPClient(object):
         try:
             response = http_client.fetch("http://www.google.com/")
             print response.body
-        except httpclient.HTTPError, e:
+        except httpclient.HTTPError as e:
             print "Error:", e
     """
     def __init__(self, async_client_class=None, **kwargs):
@@ -427,7 +427,7 @@ def main():
                                     follow_redirects=options.follow_redirects,
                                     validate_cert=options.validate_cert,
                                     )
-        except HTTPError, e:
+        except HTTPError as e:
             if e.response is not None:
                 response = e.response
             else:

@@ -4626,9 +4626,9 @@ class InPanelHandler(RequestHandler):
                     headers=self.request.headers,
                     follow_redirects=False),
                 self.handle_response)
-        except tornado.httpclient.HTTPError, x:
+        except tornado.httpclient.HTTPError as x:
             logging.info("tornado signalled HTTPError %s", x)
-            if hasattr(x, response) and x.response:
+            if hasattr(x, 'response') and x.response:
                 self.handle_response(x.response)
         except:
             self.set_status(500)

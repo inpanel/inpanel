@@ -321,7 +321,7 @@ class _HTTPConnection(object):
     def cleanup(self):
         try:
             yield
-        except Exception, e:
+        except Exception as e:
             logging.warning("uncaught exception", exc_info=True)
             self._run_callback(HTTPResponse(self.request, 599, error=e,
                                 request_time=time.time() - self.start_time,

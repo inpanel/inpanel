@@ -49,7 +49,7 @@ class pxssh (spawn):
             s.prompt()
             print s.before
             s.logout()
-        except pxssh.ExceptionPxssh, e:
+        except pxssh.ExceptionPxssh as e:
             print "pxssh failed on login."
             print str(e)
 
