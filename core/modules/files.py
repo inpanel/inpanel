@@ -416,20 +416,20 @@ def chmod(path, perms, recursively=False):
 
 
 if __name__ == '__main__':
-    print '* List directory of /root:'
+    print('* List directory of /root:')
     for item in listdir('/root'):
-        print '  name: %s' % item['name']
-        print '  isdir: %s' % str(item['isdir'])
-        print '  isreg: %s' % str(item['isreg'])
-        print '  islnk: %s' % str(item['islnk'])
-        print '  perms: %s' % str(item['perms'])
-        print '  uname: %s' % item['uname']
-        print '  gname: %s' % item['gname']
-        print '  size: %s' % item['size']
-        print '  atime: %s' % item['atime']
-        print '  mtime: %s' % item['mtime']
-        print '  ctime: %s' % item['ctime']
-        print '  istext: %s' % str(istext(os.path.join('/root', item['name'])))
-        print '  mimetype: %s' % mimetype(os.path.join('/root', item['name']))
+        print('  name: %s' % item['name'])
+        print('  isdir: %s' % str(item['isdir']))
+        print('  isreg: %s' % str(item['isreg']))
+        print('  islnk: %s' % str(item['islnk']))
+        print('  perms: %s' % str(item['perms']))
+        print('  uname: %s' % item['uname'])
+        print('  gname: %s' % item['gname'])
+        print('  size: %s' % item['size'])
+        print('  atime: %s' % item['atime'])
+        print('  mtime: %s' % item['mtime'])
+        print('  ctime: %s' % item['ctime'])
+        print('  istext: %s' % str(istext(os.path.join('/root', item['name']))))
+        print('  mimetype: %s' % mimetype(os.path.join('/root', item['name'])))
         print
     print

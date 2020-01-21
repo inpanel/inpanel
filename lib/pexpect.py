@@ -198,7 +198,7 @@ def run (command, timeout=-1, withexitstatus=False, events=None, extra_args=None
 
         from pexpect import *
         def print_ticks(d):
-            print d['event_count'],
+            print(d['event_count'],)
         run ("mencoder dvd://1 -o video.avi -oac copy -ovc copy", events={TIMEOUT:print_ticks}, timeout=5)
 
     The 'events' argument should be a dictionary of patterns and responses.
@@ -1302,7 +1302,7 @@ class spawn (object):
 
                 p = pexpect.spawn('/bin/ls')
                 p.expect (pexpect.EOF)
-                print p.before
+                print(p.before)
 
         If you are trying to optimize for speed then see expect_list().
         """

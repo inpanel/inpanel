@@ -758,62 +758,62 @@ if __name__ == '__main__':
     for partition in partitions:
         print('* Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor']))
         if 'vname' in partition:
-            print '  Volumn name: %s' % partition['vname']
+            print('  Volumn name: %s' % partition['vname'])
         print('  Partition size: %s (%s free)' % (partition['size'], partition['unpartition']))
         if 'uuid' in partition:
-            print '  Partition UUID: %s' % partition['uuid']
+            print('  Partition UUID: %s' % partition['uuid'])
         if 'fstype' in partition:
-            print '  Partition fstype: %s' % partition['fstype']
-        print '  Partition is PV: %s' % partition['is_pv']
-        print '  Partition is LV: %s' % partition['is_lv']
-        print '  Partition is HW: %s' % partition['is_hw']
+            print('  Partition fstype: %s' % partition['fstype'])
+        print('  Partition is PV: %s' % partition['is_pv'])
+        print('  Partition is LV: %s' % partition['is_lv'])
+        print('  Partition is HW: %s' % partition['is_hw'])
         if 'mount' in partition:
-            print '  Mount point: %s' % partition['mount']
+            print('  Mount point: %s' % partition['mount'])
         if partition['is_hw']:
-            print '  Partition count: %d' % partition['partcount']
+            print('  Partition count: %d' % partition['partcount'])
         print
         for subpartition in partition['partitions']:
-            print '  - Subpartition name: %s (%d, %d)' % (subpartition['name'], subpartition['major'], subpartition['minor'])
+            print('  - Subpartition name: %s (%d, %d)' % (subpartition['name'], subpartition['major'], subpartition['minor']))
             if 'vname' in subpartition:
-                print '  - Volumn name: %s' % subpartition['vname']
-            print '  - Subpartition size: %s' % subpartition['size']
+                print('  - Volumn name: %s' % subpartition['vname'])
+            print('  - Subpartition size: %s' % subpartition['size'])
             if 'uuid' in subpartition:
-                print '  - Subpartition UUID: %s' % subpartition['uuid']
+                print('  - Subpartition UUID: %s' % subpartition['uuid'])
             if 'fstype' in subpartition:
-                print '  - Subpartition fstype: %s' % subpartition['fstype']
-            print '  - Subpartition is PV: %s' % subpartition['is_pv']
-            print '  - Subpartition is LV: %s' % subpartition['is_lv']
-            print '  - Subpartition is HW: %s' % subpartition['is_hw']
+                print('  - Subpartition fstype: %s' % subpartition['fstype'])
+            print('  - Subpartition is PV: %s' % subpartition['is_pv'])
+            print('  - Subpartition is LV: %s' % subpartition['is_lv'])
+            print('  - Subpartition is HW: %s' % subpartition['is_hw'])
             if 'mount' in subpartition:
-                print '  - Mount point: %s' % subpartition['mount']
+                print('  - Mount point: %s' % subpartition['mount'])
             if subpartition['is_hw']:
-                print '  - Subpartition count: %d' % subpartition['partcount']
+                print('  - Subpartition count: %d' % subpartition['partcount'])
             print
         print
 
-    print '* LVM partitions:'
+    print('* LVM partitions:')
     for partition in diskinfo['lvm']['partitions']:
-        print '  - Partition name: %s (%d, %d)' % \
+        print('  - Partition name: %s (%d, %d)' % \)
             (partition['name'], partition['major'], partition['minor'])
         if 'vname' in partition:
-            print '  - Volumn name: %s' % partition['vname']
-        print '  - Partition size: %s' % partition['size']
+            print('  - Volumn name: %s' % partition['vname'])
+        print('  - Partition size: %s' % partition['size'])
         if 'uuid' in partition:
-            print '  - Partition UUID: %s' % partition['uuid']
+            print('  - Partition UUID: %s' % partition['uuid'])
         if 'fstype' in partition:
-            print '  - Partition fstype: %s' % partition['fstype']
-        print '  - Partition is PV: %s' % partition['is_pv']
-        print '  - Partition is LV: %s' % partition['is_lv']
-        print '  - Partition is HW: %s' % partition['is_hw']
+            print('  - Partition fstype: %s' % partition['fstype'])
+        print('  - Partition is PV: %s' % partition['is_pv'])
+        print('  - Partition is LV: %s' % partition['is_lv'])
+        print('  - Partition is HW: %s' % partition['is_hw'])
         if 'mount' in partition:
-            print '  - Mount point: %s' % partition['mount']
+            print('  - Mount point: %s' % partition['mount'])
         if partition['is_hw']:
-            print '  - Partition count: %d' % partition['partcount']
+            print('  - Partition count: %d' % partition['partcount'])
         print
 
-    print '* Support file systems:'
+    print('* Support file systems:')
     for fstype in ServerTool.supportfs():
-        print '  - %s' % fstype
+        print('  - %s' % fstype)
     print
 
-    print '* Virtual Tech: %s' % ServerInfo.virt()
+    print('* Virtual Tech: %s' % ServerInfo.virt())

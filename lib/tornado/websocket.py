@@ -48,13 +48,13 @@ class WebSocketHandler(tornado.web.RequestHandler):
 
       class EchoWebSocket(websocket.WebSocketHandler):
           def open(self):
-              print "WebSocket opened"
+              print("WebSocket opened")
 
           def on_message(self, message):
               self.write_message(u"You said: " + message)
 
           def on_close(self):
-              print "WebSocket closed"
+              print("WebSocket closed")
 
     Web Sockets are not standard HTTP connections. The "handshake" is HTTP,
     but after the handshake, the protocol is message-based. Consequently,

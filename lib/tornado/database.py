@@ -42,7 +42,7 @@ class Connection(object):
 
         db = database.Connection("localhost", "mydatabase")
         for article in db.query("SELECT * FROM articles"):
-            print article.title
+            print(article.title)
 
     Cursors are hidden by the implementation, but other than that, the methods
     are very similar to the DB-API.

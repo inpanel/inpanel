@@ -71,7 +71,7 @@ class IOStream(object):
             stream.read_bytes(int(headers["Content-Length"]), on_body)
 
         def on_body(data):
-            print data
+            print(data)
             stream.close()
             ioloop.IOLoop.instance().stop()
 
@@ -726,17 +726,17 @@ def _merge_prefix(deque, size):
     string of up to size bytes.
 
     >>> d = collections.deque(['abc', 'de', 'fghi', 'j'])
-    >>> _merge_prefix(d, 5); print d
+    >>> _merge_prefix(d, 5); print(d)
     deque(['abcde', 'fghi', 'j'])
 
     Strings will be split as necessary to reach the desired size.
-    >>> _merge_prefix(d, 7); print d
+    >>> _merge_prefix(d, 7); print(d)
     deque(['abcdefg', 'hi', 'j'])
 
-    >>> _merge_prefix(d, 3); print d
+    >>> _merge_prefix(d, 3); print(d)
     deque(['abc', 'defg', 'hi', 'j'])
 
-    >>> _merge_prefix(d, 100); print d
+    >>> _merge_prefix(d, 100); print(d)
     deque(['abcdefghij'])
     """
     if len(deque) == 1 and len(deque[0]) <= size:

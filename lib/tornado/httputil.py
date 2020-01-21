@@ -46,7 +46,7 @@ class HTTPHeaders(dict):
     ['A=B', 'C=D']
 
     >>> for (k,v) in sorted(h.get_all()):
-    ...    print '%s: %s' % (k,v)
+    ...    print('%s: %s' % (k,v))
     ...
     Content-Type: text/html
     Set-Cookie: A=B

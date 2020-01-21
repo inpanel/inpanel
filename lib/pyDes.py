@@ -71,8 +71,8 @@ k = des("DESCRYPT", CBC, "\0\0\0\0\0\0\0\0", pad=None, padmode=PAD_PKCS5)
 #   data = b"Please encrypt my data"
 #   k = des(b"DESCRYPT", CBC, b"\0\0\0\0\0\0\0\0", pad=None, padmode=PAD_PKCS5)
 d = k.encrypt(data)
-print "Encrypted: %r" % d
-print "Decrypted: %r" % k.decrypt(d)
+print("Encrypted: %r" % d)
+print("Decrypted: %r" % k.decrypt(d))
 assert k.decrypt(d, padmode=PAD_PKCS5) == data
 
 
@@ -587,7 +587,7 @@ class des(_baseDes):
             else:
                 data += (self.block_size - (len(data) %
                                             self.block_size)) * self.getPadding()
-            # print "Len of data: %f" % (len(data) / self.block_size)
+            # print("Len of data: %f" % (len(data) / self.block_size))
 
         if self.getMode() == CBC:
             if self.getIV():
@@ -606,7 +606,7 @@ class des(_baseDes):
             # Test code for caching encryption results
             #lines += 1
             # if data[i:i+8] in tdict:
-                #print "Cached result for: %s" % data[i:i+8]
+                #print("Cached result for: %s" % data[i:i+8])
             #    cached += 1
             #    result.append(tdict[data[i:i+8]])
             #    i += 8
@@ -645,7 +645,7 @@ class des(_baseDes):
             #tdict[data[i:i+8]] = d
             i += 8
 
-        # print "Lines: %d, cached: %d" % (lines, cached)
+        # print("Lines: %d, cached: %d" % (lines, cached))
 
         # Return the full crypted string
         if _pythonMajorVersion < 3:

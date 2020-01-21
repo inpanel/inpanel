@@ -1912,16 +1912,16 @@ class OperationHandler(RequestHandler):
                         location['error_code'] = locsetting['code']
                     locations.append(location)
 
-            #print server_names
-            #print listens
-            #print charset
-            #print index
-            #print locations
-            #print limit_rate
-            #print limit_conn
-            #print ssl_crt
-            #print ssl_key
-            #print rewrite_rules
+            #print(server_names)
+            #print(listens)
+            #print(charset)
+            #print(index)
+            #print(locations)
+            #print(limit_rate)
+            #print(limit_conn)
+            #print(ssl_crt)
+            #print(ssl_key)
+            #print(rewrite_rules)
 
             if action == 'addserver':
                 if not nginx.addserver(server_names, listens,
