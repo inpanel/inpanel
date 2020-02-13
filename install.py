@@ -211,8 +211,8 @@ class Install(object):
 
     def config_account(self):
         '''set username and password'''
-        username = self.input('Admin username [default: admin]: ').strip()
-        password = self.input('Admin password [default: admin]: ').strip()
+        username = self.input('Admin Username [default: admin]: ').strip()
+        password = self.input('Admin Password [default: admin]: ').strip()
         if len(username) == 0:
             username = 'admin'
         if len(password) == 0:
@@ -228,44 +228,37 @@ class Install(object):
         s.close()
         return ip
 
-    def handle_port(self):
+    def config_port(self):
         # config listen port
-        start_port = int(self.listen_port)
-        # 2^16-1 = 65535
-        while (start_port < 65536):
-            res = self.find_free_port(start_port)
-            if res:
-                break
-            else:
-                start_port = start_port + 1
-        self.listen_port = start_port
-        # self.listen_port = 8899
+        # port = self.find_free_port()
+        port = self.input('InPanel Port [default: %d, minimum: 5000]: ' % self.listen_port).strip()
+        if port and port.isdigit() and int(port) >= 5000:
+            self.listen_port = int(port)
         self._run('%s/config.py port "%s"' % (self.installpath, self.listen_port))
-        print('* InPanel will work on port %s' % self.listen_port)
+        print('* InPanel will work on port "%s"' % self.listen_port)
 
-    def find_free_port(self, port_number):
-        # find an unuse port
-        enabled = False
-        local_ip = socket.gethostbyname(socket.gethostname())
-        skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        ip_list = tuple(set(('127.0.0.1', '0.0.0.0', local_ip)))
-        print(ip_list)
-        for ip in ip_list:
-            print(ip)
-            try:
-                res = skt.connect_ex((str(ip), int(port_number)))
-                # res = skt.connect_ex(('127.0.0.1', port_number))
-                if res == 0:
-                    # print('Port %d is open' % port_number)
-                    enabled = True
-                else:
-                    # print('Port %d is not open' % port_number)
-                    enabled = False
-                skt.close()
-            except:
-                enabled = False
-
-        return enabled
+    # def find_free_port(self, port_number):
+    #     # find an unuse port
+    #     enabled = False
+    #     local_ip = socket.gethostbyname(socket.gethostname())
+    #     skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #     ip_list = tuple(set(('127.0.0.1', '0.0.0.0', local_ip)))
+    #     print(ip_list)
+    #     for ip in ip_list:
+    #         print(ip)
+    #         try:
+    #             res = skt.connect_ex((str(ip), int(port_number)))
+    #             # res = skt.connect_ex(('127.0.0.1', port_number))
+    #             if res == 0:
+    #                 # print('Port %d is open' % port_number)
+    #                 enabled = True
+    #             else:
+    #                 # print('Port %d is not open' % port_number)
+    #                 enabled = False
+    #             skt.close()
+    #         except:
+    #             enabled = False
+    #     return enabled
 
     def handle_vpsmate(self):
         # handle VPSMate
@@ -322,8 +315,8 @@ class Install(object):
         self.handle_intranet()
         self.handle_inpanel()
         self.handle_vpsmate()
-        # self.handle_port()
         self.config_account()
+        self.config_port()
         self.config_firewall()
         self.start_service()
         print('')
