@@ -793,8 +793,7 @@ if __name__ == '__main__':
 
     print('* LVM partitions:')
     for partition in diskinfo['lvm']['partitions']:
-        print('  - Partition name: %s (%d, %d)' % \)
-            (partition['name'], partition['major'], partition['minor'])
+        print('  - Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor'])
         if 'vname' in partition:
             print('  - Volumn name: %s' % partition['vname'])
         print('  - Partition size: %s' % partition['size'])
