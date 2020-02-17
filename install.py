@@ -16,9 +16,11 @@ import platform
 import shlex
 import socket
 import subprocess
-# import urllib2
+import urllib2
 import sys
 # import re
+import string
+
 
 OK = '\033[1;32mOK\033[0m'
 FAILED = '\033[1;31mFAILED\033[0m'
@@ -222,10 +224,7 @@ class Install(object):
         print('* Username and password set successfully!')
 
     def detect_ip(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('www.baidu.com', 80))
-        ip = s.getsockname()[0]
-        s.close()
+        ip = string.strip(urllib2.urlopen('http://members.3322.org/dyndns/getip').readline())
         return ip
 
     def config_port(self):
