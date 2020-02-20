@@ -174,7 +174,7 @@ class Install(object):
         try:
             opts, args = getopt.getopt(sys.argv[1:], '', ["dev", "repository="])
         except getopt.GetoptError:
-            print('Error: install.py --dev --repository=<https://github.com/inpanel/inpanel.git>')
+            print('Error: install.py --dev --repository=https://github.com/inpanel/inpanel.git')
             print('   or: install.py --dev')
             sys.exit(2)
         for opt_name, arg_value in opts:
