@@ -87,40 +87,44 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
         self.set_header('Server', core.name)
+        if 'Origin' in self.request.headers:
+            self.set_header('Access-Control-Allow-Origin', self.request.headers.get('Origin'))
+            self.set_header('Access-Control-Allow-Headers', 'X-ACCESS-TOKEN, Content-Type')
+            self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
+    def options(self, *args, **kwargs):
+        self.set_status(204)
+        self.finish()
 
     def check_xsrf_cookie(self):
-        token = (self.get_argument("_xsrf", None) or
-                 self.request.headers.get("X-XSRF-TOKEN"))
-        if not token:
-            raise tornado.web.HTTPError(403, "'_xsrf' argument missing from POST")
-        if self.xsrf_token != token:
-            raise tornado.web.HTTPError(403, "XSRF cookie does not match POST argument")
+        # check for the access token
+        if self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"):
+            if self.config.get('auth', 'accesskeyenable') != 'on':
+                raise tornado.web.HTTPError(403, "Access Token Not Allowed")
+        else:
+            # check xsrf cookie
+            token = (self.get_argument("_xsrf", None) or self.request.headers.get("X-XSRF-TOKEN"))
+            if not token:
+                raise tornado.web.HTTPError(403, "'_xsrf' argument missing from POST")
+            if self.xsrf_token != token:
+                raise tornado.web.HTTPError(403, "XSRF cookie does not match POST argument")
 
     def authed(self):
-        # check for the access token, token only available within 30 mins
-        access_token = (self.get_argument("_access", None) or
-                    self.request.headers.get("X-ACCESS-TOKEN"))
-        if access_token and self.config.get('auth', 'accesskeyenable'):
-            accesskey = self.config.get('auth', 'accesskey')
-            try:
-                accesskey = base64.b64decode(accesskey)
-                key = accesskey[:24]
-                iv = accesskey[24:]
-                k = pyDes.triple_des(key, pyDes.CBC, iv, pad=None, padmode=pyDes.PAD_PKCS5)
-                data = k.decrypt(base64.b64decode(access_token))
-                if not data.startswith('timestamp:'): raise Exception()
-                if time.time() - int(data.replace('timestamp:', '')) > 30*60: raise Exception()
-                return  # token auth ok
-            except:
-                pass
-
-        # get the cookie within 30 mins
-        if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
-            # regenerate the cookie timestamp per 5 mins
-            if self.get_secure_cookie('authed', None, 5.0/1440) == None:
-                self.set_secure_cookie('authed', 'yes', None)
+        # check for the access token
+        access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
+        if access_token:
+            if self.config.get('auth', 'accesskeyenable') != 'on':
+                raise tornado.web.HTTPError(403, 'Access Token Not Allowed')
+            elif access_token != self.config.get('auth', 'accesskey'):
+                raise tornado.web.HTTPError(403, 'Access Token Error')
         else:
-            raise tornado.web.HTTPError(403, "Please login first")
+            # get the cookie within 30 mins
+            if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
+                # regenerate the cookie timestamp per 5 mins
+                if self.get_secure_cookie('authed', None, 5.0/1440) == None:
+                    self.set_secure_cookie('authed', 'yes', None)
+            else:
+                raise tornado.web.HTTPError(403, "Please Login First")
 
     def getlastactive(self):
         # get last active from cookie
@@ -133,7 +137,8 @@ class RequestHandler(tornado.web.RequestHandler):
     @property
     def xsrf_token(self):
         if not hasattr(self, "_xsrf_token"):
-            token = self.get_cookie("XSRF-TOKEN")
+            token = self.get_cookie("XSRF-TOKEN") #  or self.request.headers.get("X-XSRF-TOKEN"))
+            # token = (self.get_cookie("XSRF-TOKEN") or self.request.headers.get("X-XSRF-TOKEN"))
             if not token:
                 token = binascii.b2a_hex(uuid.uuid4().bytes)
                 expires_days = 30 if self.current_user else None
@@ -171,13 +176,21 @@ class FileDownloadHandler(StaticFileHandler):
         StaticFileHandler.get(self, path)
 
     def authed(self):
-        # get the cookie within 30 mins
-        if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
-            # regenerate the cookie timestamp per 5 mins
-            if self.get_secure_cookie('authed', None, 5.0/1440) == None:
-                self.set_secure_cookie('authed', 'yes', None)
+        # check for the access token
+        access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
+        if access_token and self.config.get('auth', 'accesskeyenable') == 'on':
+            if access_token != self.config.get('auth', 'accesskey'):
+                raise tornado.web.HTTPError(403, 'Access Token Error')
+                # print('access_token matched')
+                # return
         else:
-            raise tornado.web.HTTPError(403, "Please login first")
+            # get the cookie within 30 mins
+            if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
+                # regenerate the cookie timestamp per 5 mins
+                if self.get_secure_cookie('authed', None, 5.0/1440) == None:
+                    self.set_secure_cookie('authed', 'yes', None)
+            else:
+                raise tornado.web.HTTPError(403, "Please login first")
 
 
 class FileUploadHandler(RequestHandler):
@@ -830,7 +843,7 @@ class SettingHandler(RequestHandler):
             if accesskeyenable == 'on' and accesskey == '':
                 self.write({'code': -1, 'msg': u'远程控制密钥不能为空！'})
                 return
-            
+
             if accesskey != '':
                 try:
                     if len(base64.b64decode(accesskey)) != 32:
@@ -4117,16 +4130,22 @@ class BackupHandler(RequestHandler):
             self.set_header('Content-Transfer-Encoding', 'binary')
             with open(path) as f: self.write(f.read())
         else:
-            self.write('配置文件不存在！')
+            self.write(u'配置文件不存在！')
 
     def authed(self):
-        # get the cookie within 30 mins
-        if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
-            # regenerate the cookie timestamp per 5 mins
-            if self.get_secure_cookie('authed', None, 5.0/1440) == None:
-                self.set_secure_cookie('authed', 'yes', None)
+        # check for the access token
+        access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
+        if access_token and self.config.get('auth', 'accesskeyenable') == 'on':
+            if access_token != self.config.get('auth', 'accesskey'):
+                raise tornado.web.HTTPError(403, 'Access Token Error')
         else:
-            raise tornado.web.HTTPError(403, "Please login first")
+            # check the cookie within 30 mins
+            if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
+                # regenerate the cookie timestamp per 5 mins
+                if self.get_secure_cookie('authed', None, 5.0/1440) == None:
+                    self.set_secure_cookie('authed', 'yes', None)
+            else:
+                raise tornado.web.HTTPError(403, "Please Login First")
 
 
 class RestoreHandler(RequestHandler):
