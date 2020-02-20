@@ -16,9 +16,10 @@ import platform
 import shlex
 import socket
 import subprocess
-# import urllib2
+import urllib2
 import sys
 # import re
+import getopt
 
 OK = '\033[1;32mOK\033[0m'
 FAILED = '\033[1;31mFAILED\033[0m'
@@ -170,8 +171,23 @@ class Install(object):
         if self.installpath:
             self._run('rm -rf %s' % self.installpath)
         branch = 'master'
-        if len(sys.argv) == 2 and sys.argv[1] == '--dev':
-            branch = 'dev'
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], '', ["dev", "repository="])
+        except getopt.GetoptError:
+            print('Error: install.py --dev --repository=<https://github.com/inpanel/inpanel.git>')
+            print('   or: install.py --dev')
+            sys.exit(2)
+        for opt_name, arg_value in opts:
+            if opt_name in ("--dev"):
+                branch = 'dev'
+            elif opt_name in ("--repository"):
+                self.repository = arg_value
+           # elif opt_name in ("--port"):
+           #     self.listen_port = arg_value
+
+        print('Repository   : %s' % self.repository)
+        print('Branch       : %s' % branch)
+        print('Install path : %s' % self.installpath)
         self._run('git clone -b %s %s %s' % (branch, self.repository, self.installpath))
 
         # install new code
@@ -222,10 +238,7 @@ class Install(object):
         print('* Username and password set successfully!')
 
     def detect_ip(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('www.baidu.com', 80))
-        ip = s.getsockname()[0]
-        s.close()
+        ip = urllib2.urlopen('http://ip.42.pl/raw').readline()
         return ip
 
     def config_port(self):
