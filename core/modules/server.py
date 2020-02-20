@@ -158,7 +158,7 @@ class ServerInfo(object):
     def meminfo(self):
         # OpenVZ may not have some varirables
         # so init them first
-        mem_total = mem_free = mem_buffers = mem_cached = swap_total = swap_free = 0
+        mem_total = mem_free = mem_available = mem_buffers = mem_cached = swap_total = swap_free = 0
 
         with open('/proc/meminfo', 'r') as f:
             for line in f:
@@ -170,6 +170,8 @@ class ServerInfo(object):
                     mem_total = value
                 elif item == 'MemFree':
                     mem_free = value
+                elif item == 'MemAvailable':
+                    mem_available = value
                 elif item == 'Buffers':
                     mem_buffers = value
                 elif item == 'Cached':
@@ -185,6 +187,7 @@ class ServerInfo(object):
             'mem_total': b2h(mem_total),
             'mem_used': b2h(mem_used),
             'mem_free': b2h(mem_free),
+            'mem_available': b2h(mem_available),
             'mem_buffers': b2h(mem_buffers),
             'mem_cached': b2h(mem_cached),
             'swap_total': b2h(swap_total),
@@ -192,6 +195,7 @@ class ServerInfo(object):
             'swap_free': b2h(swap_free),
             'mem_used_rate': div_percent(mem_used, mem_total),
             'mem_free_rate': div_percent(mem_free, mem_total),
+            'mem_available_rate': div_percent(mem_available, mem_total),
             'swap_used_rate': div_percent(swap_used, swap_total),
             'swap_free_rate': div_percent(swap_free, swap_total),
         }
@@ -692,6 +696,7 @@ if __name__ == '__main__':
     print('* Memory total: %s' % meminfo['mem_total'])
     print('* Memory used: %s (%s)' %(meminfo['mem_used'], meminfo['mem_used_rate']))
     print('* Memory free: %s (%s)' %(meminfo['mem_free'], meminfo['mem_free_rate']))
+    print('* Memory available: %s (%s)' %(meminfo['mem_available'], meminfo['mem_available_rate']))
     print('* Memory buffers: %s' % meminfo['mem_buffers'])
     print('* Memory cached: %s' % meminfo['mem_cached'])
     print('* Swap total: %s' % meminfo['swap_total'])
@@ -793,8 +798,7 @@ if __name__ == '__main__':
 
     print('* LVM partitions:')
     for partition in diskinfo['lvm']['partitions']:
-        print('  - Partition name: %s (%d, %d)' % \)
-            (partition['name'], partition['major'], partition['minor'])
+        print('  - Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor']))
         if 'vname' in partition:
             print('  - Volumn name: %s' % partition['vname'])
         print('  - Partition size: %s' % partition['size'])

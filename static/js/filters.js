@@ -123,6 +123,19 @@ filter('space.free', function () {
         }
     };
 }).
+filter('space.available', function () {
+    return function (input) {
+        if (!input) return '';
+        var rate = parseInt(input);
+        if (rate < 10) {
+            return '<span class="label label-default">' + input + '</span>';
+        } else if (rate < 25) {
+            return '<span class="label label-warning">' + input + '</span>';
+        } else {
+            return '<span class="label label-success">' + input + '</span>';
+        }
+    };
+}).
 filter('service.status', function () {
     return function (input) {
         if (!input) return '<span class="label label-info">未安装</span>';

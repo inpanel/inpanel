@@ -89,7 +89,7 @@
                                 </td>
                         </tr>
                         <tr>
-                            <td>内存使用：</td>
+                            <td>内存概览：</td>
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" style="width:300px">
                                     <tr>
@@ -99,16 +99,22 @@
                                         <td style="width:80px"></td>
                                     </tr>
                                     <tr>
-                                        <td>已使用：</td>
+                                        <td>已用内存：</td>
                                         <td class="text-right">{{ info['server.meminfo']['mem_used'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_used_rate'] | space.used"></td>
                                     </tr>
                                     <tr>
-                                        <td>剩余可用：</td>
+                                        <td>空闲内存：</td>
                                         <td class="text-right">{{ info['server.meminfo']['mem_free'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_free_rate'] | space.free"></td>
+                                    </tr>
+				    <tr>
+                                        <td>可用内存：</td>
+                                        <td class="text-right">{{ info['server.meminfo']['mem_available'] }}</td>
+                                        <td></td>
+                                        <td ng-bind-html-unsafe="info['server.meminfo']['mem_available_rate'] | space.available"></td>
                                     </tr>
                                     <tr>
                                         <td>Buffers：</td>
@@ -409,6 +415,6 @@
                     </tbody>
                 </table>
             </div>
-        </div>
+	</div>
     </div>
 </div>
