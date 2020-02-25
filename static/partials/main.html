@@ -93,19 +93,19 @@
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" style="width:300px">
                                     <tr>
-                                        <td style="width:80px">总大小：</td>
+                                        <td style="width:80px">物理大小：</td>
                                         <td class="text-right" style="width:80px">{{ info['server.meminfo']['mem_total'] }}</td>
                                         <td style="width:20px"></td>
                                         <td style="width:80px"></td>
                                     </tr>
                                     <tr>
-                                        <td>已用内存：</td>
+                                        <td>物理已用：</td>
                                         <td class="text-right">{{ info['server.meminfo']['mem_used'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_used_rate'] | space.used"></td>
                                     </tr>
                                     <tr>
-                                        <td>空闲内存：</td>
+                                        <td>物理空闲：</td>
                                         <td class="text-right">{{ info['server.meminfo']['mem_free'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_free_rate'] | space.free"></td>
@@ -132,7 +132,7 @@
                             </td>
                         </tr>
                         <tr ng-show="info['server.meminfo']['swap_total'] != '0B'">
-                            <td>交换空间：</td>
+                            <td>SWAP ：</td>
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" style="width:300px">
                                     <tr>
@@ -142,16 +142,22 @@
                                         <td style="width:80px"></td>
                                     </tr>
                                     <tr>
-                                        <td>已使用：</td>
+                                        <td>已用大小：</td>
                                         <td class="text-right">{{ info['server.meminfo']['swap_used'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['swap_used_rate'] | space.used"></td>
                                     </tr>
                                     <tr>
-                                        <td>剩余可用：</td>
+                                        <td>空闲空间：</td>
                                         <td class="text-right">{{ info['server.meminfo']['swap_free'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['swap_free_rate'] | space.free"></td>
+                                    </tr>
+				    <tr>
+                                        <td>Swappiness：</td>
+                                        <td class="text-right">{{ info['server.meminfo']['swap_swappiness'] }}</td>
+                                        <td></td>
+					<td></td>
                                     </tr>
                                 </table>
                             </td>
