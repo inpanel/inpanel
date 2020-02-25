@@ -61,7 +61,7 @@ filter('netiface.updown', function () {
 }).
 filter('netiface.encap', function () {
     return function (input) {
-        if (input == 'Local Loopback') return '本地环路';
+        if (input == 'Local Loopback') return '本地回环';
         if (input == 'Ethernet') return '以太网';
         if (input == 'Point-to-Point Protocol') return '点对点';
         if (input == 'UNSPEC') return '未识别';
