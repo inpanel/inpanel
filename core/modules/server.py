@@ -158,7 +158,7 @@ class ServerInfo(object):
     def meminfo(self):
         # OpenVZ may not have some varirables
         # so init them first
-        mem_total = mem_free = mem_available = mem_buffers = mem_cached = swap_total = swap_free = 0
+        mem_total = mem_free = mem_available = mem_buffers = mem_cached = mem_slab = swap_total = swap_free = swap_swappiness = 0
 
         with open('/proc/meminfo', 'r') as f:
             for line in f:
@@ -176,12 +176,16 @@ class ServerInfo(object):
                     mem_buffers = value
                 elif item == 'Cached':
                     mem_cached = value
+                elif item == 'Slab':
+                    mem_slab = value
                 elif item == 'SwapTotal':
                     swap_total = value
                 elif item == 'SwapFree':
                     swap_free = value
+        with open('/proc/sys/vm/swappiness', 'r') as f:
+            swap_swappiness = f.readline()
 
-        mem_used = mem_total - mem_free
+        mem_used = mem_total - mem_free - mem_buffers - mem_cached - mem_slab
         swap_used = swap_total - swap_free
         return {
             'mem_total': b2h(mem_total),
@@ -190,9 +194,11 @@ class ServerInfo(object):
             'mem_available': b2h(mem_available),
             'mem_buffers': b2h(mem_buffers),
             'mem_cached': b2h(mem_cached),
+            'mem_slab': b2h(mem_slab),
             'swap_total': b2h(swap_total),
             'swap_used': b2h(swap_used),
             'swap_free': b2h(swap_free),
+            'swap_swappiness': swap_swappiness,
             'mem_used_rate': div_percent(mem_used, mem_total),
             'mem_free_rate': div_percent(mem_free, mem_total),
             'mem_available_rate': div_percent(mem_available, mem_total),
@@ -699,9 +705,11 @@ if __name__ == '__main__':
     print('* Memory available: %s (%s)' %(meminfo['mem_available'], meminfo['mem_available_rate']))
     print('* Memory buffers: %s' % meminfo['mem_buffers'])
     print('* Memory cached: %s' % meminfo['mem_cached'])
+    print('* Memory slab: %s' % meminfo['mem_slab'])
     print('* Swap total: %s' % meminfo['swap_total'])
     print('* Swap used: %s (%s)' %(meminfo['swap_used'], meminfo['swap_used_rate']))
     print('* Swap free: %s (%s)' %(meminfo['swap_free'], meminfo['swap_free_rate']))
+    print('* Swappiness: %s' % meminfo['swap_swappiness'])
     print
 
     mounts = ServerInfo.mounts(True)
