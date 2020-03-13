@@ -20,6 +20,7 @@ import urllib2
 import sys
 # import re
 import getopt
+import readline
 
 OK = '\033[1;32mOK\033[0m'
 FAILED = '\033[1;31mFAILED\033[0m'
@@ -50,12 +51,50 @@ class Install(object):
         self.initd_script = '/etc/init.d/inpanel'
         self.installpath = '/usr/local/inpanel'
         self.listen_port = 8888
+        self.username = 'admin'
+        self.password = 'admin'
         self.repository = 'https://github.com/inpanel/inpanel.git'
+        self.branch = 'master'
         self.distname = self.dist[0].lower()
         self.version = self.dist[1]
         self.version = self.version[0:self.version.find('.', self.version.index('.') + 1)]
         self.os = platform.system()
         print('Platform %s %s [%s]' % (self.dist[0], self.dist[1], self.os))
+    def handle_options(self):
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], 'b:r:u:p:P:vh', \
+            ["dev", "branch=", "repository=", "username=", "password=", "port=", "version","help"])
+        except getopt.GetoptError:
+            print('Error: invalid arguments')
+            print('Try \'install.py --help\' for more information.')
+            sys.exit(2)
+        for opt_name, arg_value in opts:
+            if opt_name in ('--dev'):
+                self.branch = 'dev'
+            elif opt_name in ('-b', '--branch'):
+                self.branch = arg_value
+            elif opt_name in ('-r', '--repository'):
+                self.repository = arg_value
+            elif opt_name in ('-u', '--username'):
+                self.username = arg_value
+            elif opt_name in ('-p', '--password'):
+                self.password = arg_value
+            elif opt_name in ('-P', '--port'):
+                self.listen_port = arg_value
+            elif opt_name in ('-v', '--version'):
+                print('v1.1.1 b21')
+                sys.exit(0)
+            elif opt_name in ("--help"):
+                print('Usage: install.py [OPTIONS...]')
+                print('-r, --repository=<address>      set repository')
+                print('-b, --branch=<value>            set branch')
+                print('-u, --username=<value>          set username')
+                print('-p, --password=<value>          set password')
+                print('-P, --port=<value>              set listen port')
+                print('-v, --version                   output version information and exit')
+                print('-h, --help                      display this help and exit')
+                print('')
+                sys.exit(0)
 
     def _run(self, cmd, shell=False):
         if shell:
@@ -170,25 +209,12 @@ class Install(object):
 
         if self.installpath:
             self._run('rm -rf %s' % self.installpath)
-        branch = 'master'
-        try:
-            opts, args = getopt.getopt(sys.argv[1:], '', ["dev", "repository="])
-        except getopt.GetoptError:
-            print('Error: install.py --dev --repository=https://github.com/inpanel/inpanel.git')
-            print('   or: install.py --dev')
-            sys.exit(2)
-        for opt_name, arg_value in opts:
-            if opt_name in ("--dev"):
-                branch = 'dev'
-            elif opt_name in ("--repository"):
-                self.repository = arg_value
-           # elif opt_name in ("--port"):
-           #     self.listen_port = arg_value
-
+        print('')
         print('Repository   : %s' % self.repository)
-        print('Branch       : %s' % branch)
+        print('Branch       : %s' % self.branch)
         print('Install path : %s' % self.installpath)
-        self._run('git clone -b %s %s %s' % (branch, self.repository, self.installpath))
+        print('')
+        self._run('git clone -b %s %s %s' % (self.branch, self.repository, self.installpath))
 
         # install new code
         # self._run('mv inpanel %s' % self.installpath)
@@ -227,14 +253,16 @@ class Install(object):
 
     def config_account(self):
         '''set username and password'''
-        username = self.input('Admin Username [default: admin]: ').strip()
-        password = self.input('Admin Password [default: admin]: ').strip()
-        if len(username) == 0:
-            username = 'admin'
-        if len(password) == 0:
-            password = 'admin'
-        self._run('%s/config.py username "%s"' % (self.installpath, username))
-        self._run('%s/config.py password "%s"' % (self.installpath, password))
+        if self.username == 'admin' or not self.username:
+            self.username = self.input('Admin Username [default: admin]: ').strip()
+        if self.password == 'admin' or not self.password:
+            self.password = self.input('Admin Password [default: admin]: ').strip()
+        if len(self.username) == 0:
+            self.username = 'admin'
+        if len(self.password) == 0:
+            self.password = 'admin'
+        self._run('%s/config.py username "%s"' % (self.installpath, self.username))
+        self._run('%s/config.py password "%s"' % (self.installpath, self.password))
         print('* Username and password set successfully!')
 
     def detect_ip(self):
@@ -244,9 +272,10 @@ class Install(object):
     def config_port(self):
         # config listen port
         # port = self.find_free_port()
-        port = self.input('InPanel Port [default: %d, minimum: 5000]: ' % self.listen_port).strip()
-        if port and port.isdigit() and int(port) >= 5000:
-            self.listen_port = int(port)
+        if self.listen_port == 8888 or not self.listen_port.isdigit() or int(self.listen_port) < 5000:
+            port = self.input('InPanel Port [default: 8888, minimum: 5000]: ').strip()
+            if port and port.isdigit() and int(port) >= 5000:
+                self.listen_port = int(port)
         self._run('%s/config.py port "%s"' % (self.installpath, self.listen_port))
         print('* InPanel will work on port "%s"' % self.listen_port)
 
@@ -312,6 +341,7 @@ class Install(object):
             pass
 
     def install(self):
+        self.handle_options()
         '''check platform environment to install software'''
         print('* Checking Platform...'),
         if not self.check_platform():
@@ -342,6 +372,8 @@ class Install(object):
         print('The URL of your InPanel is:'),
         print('\033[4;34mhttp://%s:%s/\033[0m' % (self.detect_ip(), self.listen_port))
         print('')
+        print('Username is: %s' % self.username)
+        print('Password is: %s' % self.password)
         print('\033[5;32mWish you a happy life !\033[0m')
         print('')
         print('')
