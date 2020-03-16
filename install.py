@@ -16,11 +16,18 @@ import platform
 import shlex
 import socket
 import subprocess
-import urllib2
 import sys
 # import re
 import getopt
 import readline
+try:
+    # For Python 3
+    import urllib.request
+except ImportError:
+    # For Python 2
+    import urllib2
+
+
 
 OK = '\033[1;32mOK\033[0m'
 FAILED = '\033[1;31mFAILED\033[0m'
