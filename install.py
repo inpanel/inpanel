@@ -20,12 +20,12 @@ import sys
 # import re
 import getopt
 import readline
+
 try:
-    # For Python 3
-    import urllib.request
+    import urllib2 as request # For Python 2
 except ImportError:
-    # For Python 2
-    import urllib2
+    import urllib.request as request  # For Python 3
+
 
 
 
@@ -273,7 +273,7 @@ class Install(object):
         print('* Username and password set successfully!')
 
     def detect_ip(self):
-        ip = urllib2.urlopen('http://ip.42.pl/raw').readline()
+        ip = request.urlopen('http://ip.42.pl/raw').readline()
         return ip
 
     def config_port(self):
