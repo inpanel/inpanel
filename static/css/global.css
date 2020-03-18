@@ -79,13 +79,11 @@ body {
     width: 116px;
 }
 
-
 /* CodeMirror patch */
 .CodeMirror {
     font-family: "Courier New", "Lucida Console", "Lucida Sans Typewriter", "Consolas";
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
-    line-height: 20px;
+    border: 1px solid #ddd;
+    font-size: 13px;
 }
 
 .activeline {
