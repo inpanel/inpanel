@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for config.ini Management.'''
+'''Module for Configurations Management.'''
 
 import os
 
@@ -21,50 +21,54 @@ except:
 
 class Config(object):
 
-    def __init__(self, inifile='data/config.ini'):
-        self.inifile = inifile
+    def __init__(self, inifile=None, configs=None):
+        self.inifile = 'data/config.ini' if inifile is None else inifile
         self.cfg = ConfigParser()
 
-        with FileLock(inifile):
-            if os.path.exists(inifile):
-                self.cfg.read(inifile)
+        with FileLock(self.inifile):
+            if os.path.exists(self.inifile):
+                self.cfg.read(self.inifile)
 
             # initialize configurations
-            default_configs = {
-                'server': {
-                    'ip': '*',
-                    'port': '8888',
-                    'forcehttps': 'off', # force use https
-                    'lastcheckupdate': 0,
-                    'updateinfo': ''
-                },
-                'auth': {
-                    'username': 'admin',
-                    'password': '',         # empty password never validated
-                    'passwordcheck': 'on',
-                    'accesskey': '',        # empty access key never validated
-                    'accesskeyenable': 'off',
-                },
-                'runtime': {
-                    'mode': '',             # format: demo | dev | prod
-                    'loginlock': 'off',
-                    'loginfails': 0,
-                    'loginlockexpire': 0,
-                },
-                'file': {
-                    'lastdir': '/root',
-                    'lastfile': '',
-                },
-                'time': {
-                    'timezone': '' # format: timezone = Asia/Shanghai
-                },
-                'ecs': {
-                    'accounts': ''
-                },
-                'inpanel': {
-                    'Instance Name': 'Access key'
+            if configs is None:
+                default_configs = {
+                    'server': {
+                        'ip': '*',
+                        'port': '8888',
+                        'forcehttps': 'off', # force use https
+                        'lastcheckupdate': 0,
+                        'updateinfo': ''
+                    },
+                    'auth': {
+                        'username': 'admin',
+                        'password': '',         # empty password never validated
+                        'passwordcheck': 'on',
+                        'accesskey': '',        # empty access key never validated
+                        'accesskeyenable': 'off',
+                    },
+                    'runtime': {
+                        'mode': '',             # format: demo | dev | prod
+                        'loginlock': 'off',
+                        'loginfails': 0,
+                        'loginlockexpire': 0,
+                    },
+                    'file': {
+                        'lastdir': '/root',
+                        'lastfile': '',
+                    },
+                    'time': {
+                        'timezone': '' # format: timezone = Asia/Shanghai
+                    },
+                    'ecs': {
+                        'accounts': ''
+                    },
+                    'inpanel': {
+                        'Instance Name': 'Access key'
+                    }
                 }
-            }
+            else:
+                default_configs = configs
+
             needupdate = False
             for sec, secdata in default_configs.items():
                 if not self.cfg.has_section(sec):
