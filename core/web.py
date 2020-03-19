@@ -42,6 +42,11 @@ from modules.service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
+try:
+    from shlex import quote  # For Python 3
+except ImportError:
+    from pipes import quote  # For Python 3
+
 
 class Application(tornado.web.Application):
     def __init__(self, handlers=None, default_host="", transforms=None,
@@ -2838,7 +2843,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, u'正在设置系统时间...')
 
-        cmd = 'date -s \'%s\'' % (newdatetime, )
+        cmd = 'date -s %s' % (quote(newdatetime), )
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             code = 0
@@ -3389,7 +3394,7 @@ class BackendHandler(RequestHandler):
  
         self._update_job(jobname, 2, u'正在复制 %s 到 %s...' % (_d(srcpath), _d(despath)))
 
-        cmd = 'cp -rf %s %s' % (srcpath, despath)
+        cmd = 'cp -rf %s %s' % (quote(srcpath), quote(despath))
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell='*' in srcpath)
         if result == 0:
             code = 0
@@ -3419,10 +3424,10 @@ class BackendHandler(RequestHandler):
             if not os.path.exists(srcpath):
                 self._finish_job(jobname, -1, u'不可识别的源！')
                 return
-            cmd = 'cp -rf %s/* %s' % (srcpath, despath)
+            cmd = 'cp -rf %s/* %s' % (quote(srcpath), quote(despath))
             shell = True
         else:
-            cmd = 'mv %s %s' % (srcpath, despath)
+            cmd = 'mv %s %s' % (quote(srcpath), quote(despath))
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell=shell)
         if result == 0:
             code = 0
@@ -3433,7 +3438,7 @@ class BackendHandler(RequestHandler):
 
         if despath_exists and code == 0:
             # remove the srcpath
-            cmd = 'rm -rf %s' % (srcpath, )
+            cmd = 'rm -rf %s' % (quote(srcpath), )
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
                 code = 0
@@ -3453,7 +3458,7 @@ class BackendHandler(RequestHandler):
  
         for path in paths:
             self._update_job(jobname, 2, u'正在删除 %s...' % _d(path))
-            cmd = 'rm -rf %s' % (path)
+            cmd = 'rm -rf %s' % (quote(path))
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
                 code = 0
@@ -3470,19 +3475,16 @@ class BackendHandler(RequestHandler):
         """
         jobname = 'compress_%s_%s' % (zippath, ','.join(paths))
         if not self._start_job(jobname): return
-        
         self._update_job(jobname, 2, u'正在压缩生成 %s...' % _d(zippath))
 
         shell = False
-        if zippath.endswith('.gz'): path = ' '.join(paths)
 
-        basepath = os.path.dirname(zippath)+'/'
-        paths = [path.replace(basepath, '') for path in paths]
-
+        basepath = os.path.dirname(zippath) + '/'
+        path = ' '.join([quote(item.replace(basepath, '')) for item in paths])
         if zippath.endswith('.tar.gz') or zippath.endswith('.tgz'):
-            cmd = 'tar zcf %s -C %s %s' % (zippath, basepath, ' '.join(paths))
+            cmd = 'tar zcf %s -C %s %s' % (quote(zippath), quote(basepath), path)
         elif zippath.endswith('.tar.bz2'):
-            cmd = 'tar jcf %s -C %s %s' % (zippath, basepath, ' '.join(paths))
+            cmd = 'tar jcf %s -C %s %s' % (quote(zippath), quote(basepath), path)
         elif zippath.endswith('.zip'):
             if not os.path.exists('/usr/bin/zip'):
                 self._update_job(jobname, 2, u'正在安装 zip...')
@@ -3494,9 +3496,10 @@ class BackendHandler(RequestHandler):
                     else:
                         self._update_job(jobname, -1, u'zip 安装失败！')
                         return
-            cmd = 'cd %s; zip -rq9 %s %s' % (basepath, zippath, ' '.join(paths))
+            cmd = 'cd %s; zip -rq9 %s %s' % (quote(basepath), quote(zippath), path)
             shell = True
         elif zippath.endswith('.gz'):
+            path = ' '.join([quote(item) for item in paths])
             cmd = 'gzip -f %s' % path
         else:
             self._finish_job(jobname, -1, u'不支持的类型！')
@@ -3521,9 +3524,9 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, u'正在解压 %s...' % _d(zippath))
         if zippath.endswith('.tar.gz') or zippath.endswith('.tgz'):
-            cmd = 'tar zxf %s -C %s' % (zippath, despath)
+            cmd = 'tar zxf %s -C %s' % (quote(zippath), quote(despath))
         elif zippath.endswith('.tar.bz2'):
-            cmd = 'tar jxf %s -C %s' % (zippath, despath)
+            cmd = 'tar jxf %s -C %s' % (quote(zippath), quote(despath))
         elif zippath.endswith('.zip'):
             if not os.path.exists('/usr/bin/unzip'):
                 self._update_job(jobname, 2, u'正在安装 unzip...')
@@ -3535,9 +3538,9 @@ class BackendHandler(RequestHandler):
                     else:
                         self._update_job(jobname, -1, u'unzip 安装失败！')
                         return
-            cmd = 'unzip -q -o %s -d %s' % (zippath, despath)
+            cmd = 'unzip -q -o %s -d %s' % (quote(zippath), quote(despath))
         elif zippath.endswith('.gz'):
-            cmd = 'gunzip -f %s' % zippath
+            cmd = 'gunzip -f %s' % quote(zippath)
         else:
             self._finish_job(jobname, -1, u'不支持的类型！')
             return
@@ -3615,9 +3618,9 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, u'正在下载 %s...' % _d(url))
 
         if os.path.isdir(path): # download to the directory
-            cmd = 'wget -q "%s" --directory-prefix=%s' % (url, path)
+            cmd = 'wget -q "%s" --directory-prefix=%s' % (quote(url), quote(path))
         else:
-            cmd = 'wget -q "%s" -O %s' % (url, path)
+            cmd = 'wget -q "%s" -O %s' % (quote(url), quote(path))
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             code = 0
