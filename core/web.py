@@ -43,7 +43,7 @@ from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
 try:
-    from shlex import quote  # For Python 3
+    from shlex import quote  # For Python 2
 except ImportError:
     from pipes import quote  # For Python 3
 
