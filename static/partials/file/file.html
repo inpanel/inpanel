@@ -86,10 +86,11 @@
                             <i class="glyphicon glyphicon-file" title="文件" ng-show="item.isreg"></i>
                             <i class="glyphicon glyphicon-link" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>
                             <i class="glyphicon glyphicon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>
+                            &nbsp;
                             <a class="black" ng-click="listdir(curpath+'/'+item.name)" ng-show="item.isdir||(item.islnk&&item.link_isdir)">{{item.name}}</a>
                             <a class="black" ng-click="editfile(item.name)" ng-show="item.isreg||(item.islnk&&!item.link_isdir)">{{item.name}}</a>
-                            <span class="text-info" ng-show="item.islnk&&!item.link_broken">-> {{item.linkto}}</span>
-                            <span class="text-error" ng-show="item.islnk&&item.link_broken">-> {{item.linkto}} (错误链接)</span>
+                            <span class="text-info" ng-show="item.islnk&&!item.link_broken"><br />-> {{item.linkto}}</span>
+                            <span class="text-error" ng-show="item.islnk&&item.link_broken">(原文件已丢失)<br />-> {{item.linkto}}</span>
                         </td>
                         <td class="text-right" style="padding-right:15px">{{item.size}}</td>
                         <td><a class="black" ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.uname|iftrue:item.uname!=''}}{{item.uid|iftrue:item.uname==''}}</a></td>

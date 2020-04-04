@@ -853,7 +853,7 @@ var FileTrashCtrl = [
                 'uuid': uuid
             }, function(data) {
                 if (data.code == 0) {
-                    var path = data.data.realpath;
+                    var path = data.data.originpath;
                     Backend.call(
                         $scope,
                         module,
