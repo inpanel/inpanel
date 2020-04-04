@@ -1,9 +1,7 @@
-var releasetime = '2019-12-24 05:58:01 GMT+0800';
+var releasetime = '2020-04-05 03:30:00 GMT+0800';
 var _v = new Date(releasetime).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
-
 var inpanel = angular.module('inpanel', ['inpanel.services', 'inpanel.directives', 'inpanel.filters']);
-
 inpanel.config(['$routeProvider', function ($routeProvider) {
     var _r = function (t, c, a) {
         var r = {
@@ -59,6 +57,7 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/utils/ssl', _r('utils/ssl', UtilsSSLCtrl)).
     when('/utils/repository', _r('utils/repository', UtilsRepositoryCtrl)).
     when('/utils/shell', _r('utils/shell', UtilsShellCtrl)).
+    when('/utils/firewall', _r('utils/firewall', UtilsFirewallCtrl)).
     when('/storage', _r('storage/index', StorageCtrl)).
     when('/storage/remote/:section', _r('storage/remote', StorageRemoteCtrl)).
     when('/storage/autofm', _r('storage/autofm', StorageAutoFMCtrl)).
@@ -80,7 +79,6 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
         redirectTo: '/sorry'
     });
 }]);
-
 inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Request) {
     $rootScope.sec = function (sec) {
         $location.search('s', sec)
@@ -108,10 +106,9 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
     };
     $rootScope.$proxyroot = location_path;
 }]);
-
 inpanel.value('version', {
     'version': '1.1.1',
-    'build': '21',
+    'build': '22',
     'releasetime': releasetime,
     'changelog': 'http://inpanel.org/changelog.html'
 });

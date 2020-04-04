@@ -19,7 +19,7 @@
 To load a locale and generate a translated string::
 
     user_locale = locale.get("es_LA")
-    print user_locale.translate("Sign out")
+    print(user_locale.translate("Sign out"))
 
 locale.get() returns the closest matching locale, not necessarily the
 specific locale you requested. You can support pluralization with
@@ -28,7 +28,7 @@ additional arguments to translate(), e.g.::
     people = [...]
     message = user_locale.translate(
         "%(list)s is online", "%(list)s are online", len(people))
-    print message % {"list": user_locale.list(people)}
+    print(message % {"list": user_locale.list(people)})
 
 The first string is chosen if len(people) == 1, otherwise the second
 string is chosen.
@@ -172,7 +172,7 @@ def load_gettext_translations(directory, domain):
             os.stat(os.path.join(directory, lang, "LC_MESSAGES", domain + ".mo"))
             _translations[lang] = gettext.translation(domain, directory,
                                                       languages=[lang])
-        except Exception, e:
+        except Exception as e:
             logging.error("Cannot load translation for '%s': %s", lang, str(e))
             continue
     _supported_locales = frozenset(_translations.keys() + [_default_locale])

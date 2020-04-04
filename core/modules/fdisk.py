@@ -178,12 +178,11 @@ def scan(disk, size=''):
 
 if __name__ == '__main__':
     # !!!!!!!!!!! DANGEROUS TESTING !!!!!!!!!!!
-    # print '* Add partition to sdb with 5G:',
-    # print add('/dev/sdb', '5G')
+    # print('* Add partition to sdb with 5G:',)
+    # print(add('/dev/sdb', '5G'))
 
-    # print '* Delete partition /dev/sdb1:',
-    # print delete('/dev/sdb1')
+    # print('* Delete partition /dev/sdb1:')
+    # print(delete('/dev/sdb1'))
 
-    print '* Rescan partitions of /dev/sdb:',
-    print scan('/dev/sdb')
-    print
+    print('* Rescan partitions of /dev/sdb:')
+    print(scan('/dev/sdb'))

@@ -76,11 +76,10 @@ def main():
     server_ip = cfg.get('server', 'ip')
     server_port = cfg.get('server', 'port')
     force_https = cfg.getboolean('server', 'forcehttps')
+    sslkey = cfg.get('server', 'sslkey')
+    sslcrt = cfg.get('server', 'sslcrt')
 
-    ssl = None if not force_https else {
-        'certfile': os.path.join(root_path, 'core', 'certificate', 'inpanel.crt'),
-        'keyfile': os.path.join(root_path, 'core', 'certificate', 'inpanel.key'),
-    }
+    ssl = {'certfile': sslcrt,'keyfile': sslkey} if force_https else None
     server = tornado.httpserver.HTTPServer(application, ssl_options=ssl)
     server.listen(server_port, address=server_ip)
     write_pid()

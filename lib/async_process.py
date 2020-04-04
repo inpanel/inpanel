@@ -79,7 +79,7 @@ def on_subprocess_result(context, callback, fd, result):
         context.pipe.wait()
         if callback:
             callback((context.pipe.returncode, context.pipe.stdout.read()))
-    except Exception, e:
+    except Exception as e:
         logging.error(e)
     finally:
         context.ioloop.remove_handler(fd)

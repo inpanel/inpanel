@@ -71,7 +71,7 @@ class IOStream(object):
             stream.read_bytes(int(headers["Content-Length"]), on_body)
 
         def on_body(data):
-            print data
+            print(data)
             stream.close()
             ioloop.IOLoop.instance().stop()
 
@@ -124,7 +124,7 @@ class IOStream(object):
         self._connecting = True
         try:
             self.socket.connect(address)
-        except socket.error, e:
+        except socket.error as e:
             # In non-blocking mode we expect connect() to raise an
             # exception with EINPROGRESS or EWOULDBLOCK.
             #
@@ -400,7 +400,7 @@ class IOStream(object):
         """
         try:
             chunk = self.socket.recv(self.read_chunk_size)
-        except socket.error, e:
+        except socket.error as e:
             if e.args[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
                 return None
             else:
@@ -419,7 +419,7 @@ class IOStream(object):
         """
         try:
             chunk = self._read_from_socket()
-        except socket.error, e:
+        except socket.error as e:
             # ssl.SSLError is a subclass of socket.error
             logging.warning("Read error on %d: %s",
                             self.socket.fileno(), e)
@@ -538,7 +538,7 @@ class IOStream(object):
                 self._write_buffer_frozen = False
                 _merge_prefix(self._write_buffer, num_bytes)
                 self._write_buffer.popleft()
-            except socket.error, e:
+            except socket.error as e:
                 if e.args[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
                     self._write_buffer_frozen = True
                     break
@@ -694,14 +694,14 @@ class SSLIOStream(IOStream):
             # called when there is nothing to read, so we have to use
             # read() instead.
             chunk = self.socket.read(self.read_chunk_size)
-        except ssl.SSLError, e:
+        except ssl.SSLError as e:
             # SSLError is a subclass of socket.error, so this except
             # block must come first.
             if e.args[0] == ssl.SSL_ERROR_WANT_READ:
                 return None
             else:
                 raise
-        except socket.error, e:
+        except socket.error as e:
             if e.args[0] in (errno.EWOULDBLOCK, errno.EAGAIN):
                 return None
             else:
@@ -726,17 +726,17 @@ def _merge_prefix(deque, size):
     string of up to size bytes.
 
     >>> d = collections.deque(['abc', 'de', 'fghi', 'j'])
-    >>> _merge_prefix(d, 5); print d
+    >>> _merge_prefix(d, 5); print(d)
     deque(['abcde', 'fghi', 'j'])
 
     Strings will be split as necessary to reach the desired size.
-    >>> _merge_prefix(d, 7); print d
+    >>> _merge_prefix(d, 7); print(d)
     deque(['abcdefg', 'hi', 'j'])
 
-    >>> _merge_prefix(d, 3); print d
+    >>> _merge_prefix(d, 3); print(d)
     deque(['abc', 'defg', 'hi', 'j'])
 
-    >>> _merge_prefix(d, 100); print d
+    >>> _merge_prefix(d, 100); print(d)
     deque(['abcdefghij'])
     """
     if len(deque) == 1 and len(deque[0]) <= size:

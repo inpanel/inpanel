@@ -379,7 +379,7 @@ def main():
             unittest.main(module=None, argv=argv)
         else:
             unittest.main(defaultTest="all", argv=argv)
-    except SystemExit, e:
+    except SystemExit as e:
         if e.code == 0:
             logging.info('PASS')
         else:

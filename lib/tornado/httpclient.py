@@ -53,9 +53,9 @@ class HTTPClient(object):
         http_client = httpclient.HTTPClient()
         try:
             response = http_client.fetch("http://www.google.com/")
-            print response.body
-        except httpclient.HTTPError, e:
-            print "Error:", e
+            print(response.body)
+        except httpclient.HTTPError as e:
+            print("Error:", e)
     """
     def __init__(self, async_client_class=None, **kwargs):
         self._io_loop = IOLoop()
@@ -104,9 +104,9 @@ class AsyncHTTPClient(object):
 
         def handle_request(response):
             if response.error:
-                print "Error:", response.error
+                print("Error:", response.error)
             else:
-                print response.body
+                print(response.body)
             ioloop.IOLoop.instance().stop()
 
         http_client = httpclient.AsyncHTTPClient()
@@ -427,15 +427,15 @@ def main():
                                     follow_redirects=options.follow_redirects,
                                     validate_cert=options.validate_cert,
                                     )
-        except HTTPError, e:
+        except HTTPError as e:
             if e.response is not None:
                 response = e.response
             else:
                 raise
         if options.print_headers:
-            print response.headers
+            print(response.headers)
         if options.print_body:
-            print response.body
+            print(response.body)
     client.close()
 
 if __name__ == "__main__":

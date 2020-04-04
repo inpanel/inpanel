@@ -49,7 +49,7 @@ def inpanel_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, in
         s.prompt()
         s.logout()
         return True
-    except pxssh.ExceptionPxssh, e:
+    except pxssh.ExceptionPxssh:
         return False
 
 
@@ -64,7 +64,7 @@ def inpanel_uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
         s.prompt()
         s.logout()
         return True
-    except pxssh.ExceptionPxssh, e:
+    except pxssh.ExceptionPxssh:
         return False
 
 

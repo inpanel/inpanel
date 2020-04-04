@@ -120,7 +120,7 @@ def fork_processes(num_processes, max_restarts=100):
     while children:
         try:
             pid, status = os.wait()
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.EINTR:
                 continue
             raise

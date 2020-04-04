@@ -158,7 +158,7 @@ class ServerInfo(object):
     def meminfo(self):
         # OpenVZ may not have some varirables
         # so init them first
-        mem_total = mem_free = mem_buffers = mem_cached = swap_total = swap_free = 0
+        mem_total = mem_free = mem_available = mem_buffers = mem_cached = mem_slab = swap_total = swap_free = swap_swappiness = 0
 
         with open('/proc/meminfo', 'r') as f:
             for line in f:
@@ -170,28 +170,38 @@ class ServerInfo(object):
                     mem_total = value
                 elif item == 'MemFree':
                     mem_free = value
+                elif item == 'MemAvailable':
+                    mem_available = value
                 elif item == 'Buffers':
                     mem_buffers = value
                 elif item == 'Cached':
                     mem_cached = value
+                elif item == 'Slab':
+                    mem_slab = value
                 elif item == 'SwapTotal':
                     swap_total = value
                 elif item == 'SwapFree':
                     swap_free = value
+        with open('/proc/sys/vm/swappiness', 'r') as f:
+            swap_swappiness = f.readline()
 
-        mem_used = mem_total - mem_free
+        mem_used = mem_total - mem_free - mem_buffers - mem_cached - mem_slab
         swap_used = swap_total - swap_free
         return {
             'mem_total': b2h(mem_total),
             'mem_used': b2h(mem_used),
             'mem_free': b2h(mem_free),
+            'mem_available': b2h(mem_available),
             'mem_buffers': b2h(mem_buffers),
             'mem_cached': b2h(mem_cached),
+            'mem_slab': b2h(mem_slab),
             'swap_total': b2h(swap_total),
             'swap_used': b2h(swap_used),
             'swap_free': b2h(swap_free),
+            'swap_swappiness': swap_swappiness,
             'mem_used_rate': div_percent(mem_used, mem_total),
             'mem_free_rate': div_percent(mem_free, mem_total),
+            'mem_available_rate': div_percent(mem_available, mem_total),
             'swap_used_rate': div_percent(swap_used, swap_total),
             'swap_free_rate': div_percent(swap_free, swap_total),
         }
@@ -692,11 +702,14 @@ if __name__ == '__main__':
     print('* Memory total: %s' % meminfo['mem_total'])
     print('* Memory used: %s (%s)' %(meminfo['mem_used'], meminfo['mem_used_rate']))
     print('* Memory free: %s (%s)' %(meminfo['mem_free'], meminfo['mem_free_rate']))
+    print('* Memory available: %s (%s)' %(meminfo['mem_available'], meminfo['mem_available_rate']))
     print('* Memory buffers: %s' % meminfo['mem_buffers'])
     print('* Memory cached: %s' % meminfo['mem_cached'])
+    print('* Memory slab: %s' % meminfo['mem_slab'])
     print('* Swap total: %s' % meminfo['swap_total'])
     print('* Swap used: %s (%s)' %(meminfo['swap_used'], meminfo['swap_used_rate']))
     print('* Swap free: %s (%s)' %(meminfo['swap_free'], meminfo['swap_free_rate']))
+    print('* Swappiness: %s' % meminfo['swap_swappiness'])
     print
 
     mounts = ServerInfo.mounts(True)
@@ -758,62 +771,61 @@ if __name__ == '__main__':
     for partition in partitions:
         print('* Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor']))
         if 'vname' in partition:
-            print '  Volumn name: %s' % partition['vname']
+            print('  Volumn name: %s' % partition['vname'])
         print('  Partition size: %s (%s free)' % (partition['size'], partition['unpartition']))
         if 'uuid' in partition:
-            print '  Partition UUID: %s' % partition['uuid']
+            print('  Partition UUID: %s' % partition['uuid'])
         if 'fstype' in partition:
-            print '  Partition fstype: %s' % partition['fstype']
-        print '  Partition is PV: %s' % partition['is_pv']
-        print '  Partition is LV: %s' % partition['is_lv']
-        print '  Partition is HW: %s' % partition['is_hw']
+            print('  Partition fstype: %s' % partition['fstype'])
+        print('  Partition is PV: %s' % partition['is_pv'])
+        print('  Partition is LV: %s' % partition['is_lv'])
+        print('  Partition is HW: %s' % partition['is_hw'])
         if 'mount' in partition:
-            print '  Mount point: %s' % partition['mount']
+            print('  Mount point: %s' % partition['mount'])
         if partition['is_hw']:
-            print '  Partition count: %d' % partition['partcount']
+            print('  Partition count: %d' % partition['partcount'])
         print
         for subpartition in partition['partitions']:
-            print '  - Subpartition name: %s (%d, %d)' % (subpartition['name'], subpartition['major'], subpartition['minor'])
+            print('  - Subpartition name: %s (%d, %d)' % (subpartition['name'], subpartition['major'], subpartition['minor']))
             if 'vname' in subpartition:
-                print '  - Volumn name: %s' % subpartition['vname']
-            print '  - Subpartition size: %s' % subpartition['size']
+                print('  - Volumn name: %s' % subpartition['vname'])
+            print('  - Subpartition size: %s' % subpartition['size'])
             if 'uuid' in subpartition:
-                print '  - Subpartition UUID: %s' % subpartition['uuid']
+                print('  - Subpartition UUID: %s' % subpartition['uuid'])
             if 'fstype' in subpartition:
-                print '  - Subpartition fstype: %s' % subpartition['fstype']
-            print '  - Subpartition is PV: %s' % subpartition['is_pv']
-            print '  - Subpartition is LV: %s' % subpartition['is_lv']
-            print '  - Subpartition is HW: %s' % subpartition['is_hw']
+                print('  - Subpartition fstype: %s' % subpartition['fstype'])
+            print('  - Subpartition is PV: %s' % subpartition['is_pv'])
+            print('  - Subpartition is LV: %s' % subpartition['is_lv'])
+            print('  - Subpartition is HW: %s' % subpartition['is_hw'])
             if 'mount' in subpartition:
-                print '  - Mount point: %s' % subpartition['mount']
+                print('  - Mount point: %s' % subpartition['mount'])
             if subpartition['is_hw']:
-                print '  - Subpartition count: %d' % subpartition['partcount']
+                print('  - Subpartition count: %d' % subpartition['partcount'])
             print
         print
 
-    print '* LVM partitions:'
+    print('* LVM partitions:')
     for partition in diskinfo['lvm']['partitions']:
-        print '  - Partition name: %s (%d, %d)' % \
-            (partition['name'], partition['major'], partition['minor'])
+        print('  - Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor']))
         if 'vname' in partition:
-            print '  - Volumn name: %s' % partition['vname']
-        print '  - Partition size: %s' % partition['size']
+            print('  - Volumn name: %s' % partition['vname'])
+        print('  - Partition size: %s' % partition['size'])
         if 'uuid' in partition:
-            print '  - Partition UUID: %s' % partition['uuid']
+            print('  - Partition UUID: %s' % partition['uuid'])
         if 'fstype' in partition:
-            print '  - Partition fstype: %s' % partition['fstype']
-        print '  - Partition is PV: %s' % partition['is_pv']
-        print '  - Partition is LV: %s' % partition['is_lv']
-        print '  - Partition is HW: %s' % partition['is_hw']
+            print('  - Partition fstype: %s' % partition['fstype'])
+        print('  - Partition is PV: %s' % partition['is_pv'])
+        print('  - Partition is LV: %s' % partition['is_lv'])
+        print('  - Partition is HW: %s' % partition['is_hw'])
         if 'mount' in partition:
-            print '  - Mount point: %s' % partition['mount']
+            print('  - Mount point: %s' % partition['mount'])
         if partition['is_hw']:
-            print '  - Partition count: %d' % partition['partcount']
+            print('  - Partition count: %d' % partition['partcount'])
         print
 
-    print '* Support file systems:'
+    print('* Support file systems:')
     for fstype in ServerTool.supportfs():
-        print '  - %s' % fstype
+        print('  - %s' % fstype)
     print
 
-    print '* Virtual Tech: %s' % ServerInfo.virt()
+    print('* Virtual Tech: %s' % ServerInfo.virt())

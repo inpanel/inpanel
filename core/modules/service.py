@@ -145,6 +145,4 @@ class Service(object):
 if __name__ == '__main__':
     autostart_services = Service.autostart_list()
     for service in Service.support_services:
-        print '* Status of %s: %s (autostart: %s)' % (service,
-                                                      Service.status(service), str(service in autostart_services))
-    print
+        print('* Status of %s: %s (autostart: %s)' % (service, Service.status(service), str(service in autostart_services)))

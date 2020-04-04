@@ -42,6 +42,11 @@ from modules.service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
+try:
+    from shlex import quote  # For Python 3
+except ImportError:
+    from pipes import quote  # For Python 2
+
 
 class Application(tornado.web.Application):
     def __init__(self, handlers=None, default_host="", transforms=None,
@@ -87,40 +92,44 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
         self.set_header('Server', core.name)
+        if 'Origin' in self.request.headers:
+            self.set_header('Access-Control-Allow-Origin', self.request.headers.get('Origin'))
+            self.set_header('Access-Control-Allow-Headers', 'X-ACCESS-TOKEN, Content-Type')
+            self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
+    def options(self, *args, **kwargs):
+        self.set_status(204)
+        self.finish()
 
     def check_xsrf_cookie(self):
-        token = (self.get_argument("_xsrf", None) or
-                 self.request.headers.get("X-XSRF-TOKEN"))
-        if not token:
-            raise tornado.web.HTTPError(403, "'_xsrf' argument missing from POST")
-        if self.xsrf_token != token:
-            raise tornado.web.HTTPError(403, "XSRF cookie does not match POST argument")
+        # check for the access token
+        if self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"):
+            if self.config.get('auth', 'accesskeyenable') != 'on':
+                raise tornado.web.HTTPError(403, "Access Token Not Allowed")
+        else:
+            # check xsrf cookie
+            token = (self.get_argument("_xsrf", None) or self.request.headers.get("X-XSRF-TOKEN"))
+            if not token:
+                raise tornado.web.HTTPError(403, "'_xsrf' argument missing from POST")
+            if self.xsrf_token != token:
+                raise tornado.web.HTTPError(403, "XSRF cookie does not match POST argument")
 
     def authed(self):
-        # check for the access token, token only available within 30 mins
-        access_token = (self.get_argument("_access", None) or
-                    self.request.headers.get("X-ACCESS-TOKEN"))
-        if access_token and self.config.get('auth', 'accesskeyenable'):
-            accesskey = self.config.get('auth', 'accesskey')
-            try:
-                accesskey = base64.b64decode(accesskey)
-                key = accesskey[:24]
-                iv = accesskey[24:]
-                k = pyDes.triple_des(key, pyDes.CBC, iv, pad=None, padmode=pyDes.PAD_PKCS5)
-                data = k.decrypt(base64.b64decode(access_token))
-                if not data.startswith('timestamp:'): raise Exception()
-                if time.time() - int(data.replace('timestamp:', '')) > 30*60: raise Exception()
-                return  # token auth ok
-            except:
-                pass
-
-        # get the cookie within 30 mins
-        if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
-            # regenerate the cookie timestamp per 5 mins
-            if self.get_secure_cookie('authed', None, 5.0/1440) == None:
-                self.set_secure_cookie('authed', 'yes', None)
+        # check for the access token
+        access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
+        if access_token:
+            if self.config.get('auth', 'accesskeyenable') != 'on':
+                raise tornado.web.HTTPError(403, 'Access Token Not Allowed')
+            elif access_token != self.config.get('auth', 'accesskey'):
+                raise tornado.web.HTTPError(403, 'Access Token Error')
         else:
-            raise tornado.web.HTTPError(403, "Please login first")
+            # get the cookie within 30 mins
+            if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
+                # regenerate the cookie timestamp per 5 mins
+                if self.get_secure_cookie('authed', None, 5.0/1440) == None:
+                    self.set_secure_cookie('authed', 'yes', None)
+            else:
+                raise tornado.web.HTTPError(403, "Please Login First")
 
     def getlastactive(self):
         # get last active from cookie
@@ -133,7 +142,8 @@ class RequestHandler(tornado.web.RequestHandler):
     @property
     def xsrf_token(self):
         if not hasattr(self, "_xsrf_token"):
-            token = self.get_cookie("XSRF-TOKEN")
+            token = self.get_cookie("XSRF-TOKEN") #  or self.request.headers.get("X-XSRF-TOKEN"))
+            # token = (self.get_cookie("XSRF-TOKEN") or self.request.headers.get("X-XSRF-TOKEN"))
             if not token:
                 token = binascii.b2a_hex(uuid.uuid4().bytes)
                 expires_days = 30 if self.current_user else None
@@ -171,13 +181,21 @@ class FileDownloadHandler(StaticFileHandler):
         StaticFileHandler.get(self, path)
 
     def authed(self):
-        # get the cookie within 30 mins
-        if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
-            # regenerate the cookie timestamp per 5 mins
-            if self.get_secure_cookie('authed', None, 5.0/1440) == None:
-                self.set_secure_cookie('authed', 'yes', None)
+        # check for the access token
+        access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
+        if access_token and self.config.get('auth', 'accesskeyenable') == 'on':
+            if access_token != self.config.get('auth', 'accesskey'):
+                raise tornado.web.HTTPError(403, 'Access Token Error')
+                # print('access_token matched')
+                # return
         else:
-            raise tornado.web.HTTPError(403, "Please login first")
+            # get the cookie within 30 mins
+            if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
+                # regenerate the cookie timestamp per 5 mins
+                if self.get_secure_cookie('authed', None, 5.0/1440) == None:
+                    self.set_secure_cookie('authed', 'yes', None)
+            else:
+                raise tornado.web.HTTPError(403, "Please login first")
 
 
 class FileUploadHandler(RequestHandler):
@@ -721,7 +739,9 @@ class SettingHandler(RequestHandler):
             ip = self.config.get('server', 'ip')
             port = self.config.get('server', 'port')
             forcehttps = self.config.getboolean('server', 'forcehttps')
-            self.write({'forcehttps': forcehttps, 'ip': ip, 'port': port})
+            sslkey = self.config.get('server', 'sslkey')
+            sslcrt = self.config.get('server', 'sslcrt')
+            self.write({'forcehttps': forcehttps, 'ip': ip, 'port': port, 'sslkey': sslkey, 'sslcrt': sslcrt})
             self.finish()
 
         elif section == 'accesskey':
@@ -813,9 +833,33 @@ class SettingHandler(RequestHandler):
             self.config.set('server', 'ip', ip)
             self.config.set('server', 'port', port)
 
+            sslkey = self.get_argument('sslkey', '')
+            if sslkey == '' or os.path.exists(sslkey):
+                self.config.set('server', 'sslkey', sslkey)
+            else:
+                self.write({'code': -1, 'msg': u'SSL私钥文件不存在，请仔细检查！'})
+                return
+
+            sslcrt = self.get_argument('sslcrt', '')
+            if sslcrt == '' or os.path.exists(sslcrt):
+                self.config.set('server', 'sslcrt', sslcrt)
+            else:
+                self.write({'code': -1, 'msg': u'SSL证书文件不存在，请仔细检查！'})
+                return
+
             forcehttps = self.get_argument('forcehttps', '')
-            if forcehttps != 'on': forcehttps = 'off'
-            self.config.set('server', 'forcehttps', forcehttps)
+            if forcehttps == 'on':
+                if not os.path.exists(sslkey):
+                    self.config.set('server', 'forcehttps', 'off')
+                    self.write({'code': -1, 'msg': u'请填写SSL私钥文件！'})
+                    return
+                elif not os.path.exists(sslcrt):
+                    self.config.set('server', 'forcehttps', 'off')
+                    self.write({'code': -1, 'msg': u'请填写SSL证书文件！'})
+                    return
+                self.config.set('server', 'forcehttps', forcehttps)
+            else:
+                self.config.set('server', 'forcehttps', 'off')
 
             self.write({'code': 0, 'msg': u'服务设置更新成功！将在重启服务后生效。'})
 
@@ -830,7 +874,7 @@ class SettingHandler(RequestHandler):
             if accesskeyenable == 'on' and accesskey == '':
                 self.write({'code': -1, 'msg': u'远程控制密钥不能为空！'})
                 return
-            
+
             if accesskey != '':
                 try:
                     if len(base64.b64decode(accesskey)) != 32:
@@ -1912,16 +1956,16 @@ class OperationHandler(RequestHandler):
                         location['error_code'] = locsetting['code']
                     locations.append(location)
 
-            #print server_names
-            #print listens
-            #print charset
-            #print index
-            #print locations
-            #print limit_rate
-            #print limit_conn
-            #print ssl_crt
-            #print ssl_key
-            #print rewrite_rules
+            #print(server_names)
+            #print(listens)
+            #print(charset)
+            #print(index)
+            #print(locations)
+            #print(limit_rate)
+            #print(limit_conn)
+            #print(ssl_crt)
+            #print(ssl_key)
+            #print(rewrite_rules)
 
             if action == 'addserver':
                 if not nginx.addserver(server_names, listens,
@@ -2825,7 +2869,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, u'正在设置系统时间...')
 
-        cmd = 'date -s \'%s\'' % (newdatetime, )
+        cmd = 'date -s %s' % (quote(newdatetime), )
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             code = 0
@@ -3376,7 +3420,7 @@ class BackendHandler(RequestHandler):
  
         self._update_job(jobname, 2, u'正在复制 %s 到 %s...' % (_d(srcpath), _d(despath)))
 
-        cmd = 'cp -rf %s %s' % (srcpath, despath)
+        cmd = 'cp -rf %s %s' % (quote(srcpath), quote(despath))
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell='*' in srcpath)
         if result == 0:
             code = 0
@@ -3406,10 +3450,10 @@ class BackendHandler(RequestHandler):
             if not os.path.exists(srcpath):
                 self._finish_job(jobname, -1, u'不可识别的源！')
                 return
-            cmd = 'cp -rf %s/* %s' % (srcpath, despath)
+            cmd = 'cp -rf %s/* %s' % (quote(srcpath), quote(despath))
             shell = True
         else:
-            cmd = 'mv %s %s' % (srcpath, despath)
+            cmd = 'mv %s %s' % (quote(srcpath), quote(despath))
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell=shell)
         if result == 0:
             code = 0
@@ -3420,7 +3464,7 @@ class BackendHandler(RequestHandler):
 
         if despath_exists and code == 0:
             # remove the srcpath
-            cmd = 'rm -rf %s' % (srcpath, )
+            cmd = 'rm -rf %s' % (quote(srcpath), )
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
                 code = 0
@@ -3440,7 +3484,7 @@ class BackendHandler(RequestHandler):
  
         for path in paths:
             self._update_job(jobname, 2, u'正在删除 %s...' % _d(path))
-            cmd = 'rm -rf %s' % (path)
+            cmd = 'rm -rf %s' % (quote(path))
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
                 code = 0
@@ -3457,19 +3501,16 @@ class BackendHandler(RequestHandler):
         """
         jobname = 'compress_%s_%s' % (zippath, ','.join(paths))
         if not self._start_job(jobname): return
-        
         self._update_job(jobname, 2, u'正在压缩生成 %s...' % _d(zippath))
 
         shell = False
-        if zippath.endswith('.gz'): path = ' '.join(paths)
 
-        basepath = os.path.dirname(zippath)+'/'
-        paths = [path.replace(basepath, '') for path in paths]
-
+        basepath = os.path.dirname(zippath) + '/'
+        path = ' '.join([quote(item.replace(basepath, '')) for item in paths])
         if zippath.endswith('.tar.gz') or zippath.endswith('.tgz'):
-            cmd = 'tar zcf %s -C %s %s' % (zippath, basepath, ' '.join(paths))
+            cmd = 'tar zcf %s -C %s %s' % (quote(zippath), quote(basepath), path)
         elif zippath.endswith('.tar.bz2'):
-            cmd = 'tar jcf %s -C %s %s' % (zippath, basepath, ' '.join(paths))
+            cmd = 'tar jcf %s -C %s %s' % (quote(zippath), quote(basepath), path)
         elif zippath.endswith('.zip'):
             if not os.path.exists('/usr/bin/zip'):
                 self._update_job(jobname, 2, u'正在安装 zip...')
@@ -3481,9 +3522,10 @@ class BackendHandler(RequestHandler):
                     else:
                         self._update_job(jobname, -1, u'zip 安装失败！')
                         return
-            cmd = 'cd %s; zip -rq9 %s %s' % (basepath, zippath, ' '.join(paths))
+            cmd = 'cd %s; zip -rq9 %s %s' % (quote(basepath), quote(zippath), path)
             shell = True
         elif zippath.endswith('.gz'):
+            path = ' '.join([quote(item) for item in paths])
             cmd = 'gzip -f %s' % path
         else:
             self._finish_job(jobname, -1, u'不支持的类型！')
@@ -3508,9 +3550,9 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, u'正在解压 %s...' % _d(zippath))
         if zippath.endswith('.tar.gz') or zippath.endswith('.tgz'):
-            cmd = 'tar zxf %s -C %s' % (zippath, despath)
+            cmd = 'tar zxf %s -C %s' % (quote(zippath), quote(despath))
         elif zippath.endswith('.tar.bz2'):
-            cmd = 'tar jxf %s -C %s' % (zippath, despath)
+            cmd = 'tar jxf %s -C %s' % (quote(zippath), quote(despath))
         elif zippath.endswith('.zip'):
             if not os.path.exists('/usr/bin/unzip'):
                 self._update_job(jobname, 2, u'正在安装 unzip...')
@@ -3522,9 +3564,9 @@ class BackendHandler(RequestHandler):
                     else:
                         self._update_job(jobname, -1, u'unzip 安装失败！')
                         return
-            cmd = 'unzip -q -o %s -d %s' % (zippath, despath)
+            cmd = 'unzip -q -o %s -d %s' % (quote(zippath), quote(despath))
         elif zippath.endswith('.gz'):
-            cmd = 'gunzip -f %s' % zippath
+            cmd = 'gunzip -f %s' % quote(zippath)
         else:
             self._finish_job(jobname, -1, u'不支持的类型！')
             return
@@ -3602,9 +3644,9 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, u'正在下载 %s...' % _d(url))
 
         if os.path.isdir(path): # download to the directory
-            cmd = 'wget -q "%s" --directory-prefix=%s' % (url, path)
+            cmd = 'wget -q "%s" --directory-prefix=%s' % (quote(url), quote(path))
         else:
-            cmd = 'wget -q "%s" -O %s' % (url, path)
+            cmd = 'wget -q "%s" -O %s' % (quote(url), quote(path))
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             code = 0
@@ -4117,16 +4159,22 @@ class BackupHandler(RequestHandler):
             self.set_header('Content-Transfer-Encoding', 'binary')
             with open(path) as f: self.write(f.read())
         else:
-            self.write('配置文件不存在！')
+            self.write(u'配置文件不存在！')
 
     def authed(self):
-        # get the cookie within 30 mins
-        if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
-            # regenerate the cookie timestamp per 5 mins
-            if self.get_secure_cookie('authed', None, 5.0/1440) == None:
-                self.set_secure_cookie('authed', 'yes', None)
+        # check for the access token
+        access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
+        if access_token and self.config.get('auth', 'accesskeyenable') == 'on':
+            if access_token != self.config.get('auth', 'accesskey'):
+                raise tornado.web.HTTPError(403, 'Access Token Error')
         else:
-            raise tornado.web.HTTPError(403, "Please login first")
+            # check the cookie within 30 mins
+            if self.get_secure_cookie('authed', None, 30.0/1440) == 'yes':
+                # regenerate the cookie timestamp per 5 mins
+                if self.get_secure_cookie('authed', None, 5.0/1440) == None:
+                    self.set_secure_cookie('authed', 'yes', None)
+            else:
+                raise tornado.web.HTTPError(403, "Please Login First")
 
 
 class RestoreHandler(RequestHandler):
@@ -4626,9 +4674,9 @@ class InPanelHandler(RequestHandler):
                     headers=self.request.headers,
                     follow_redirects=False),
                 self.handle_response)
-        except tornado.httpclient.HTTPError, x:
+        except tornado.httpclient.HTTPError as x:
             logging.info("tornado signalled HTTPError %s", x)
-            if hasattr(x, response) and x.response:
+            if hasattr(x, 'response') and x.response:
                 self.handle_response(x.response)
         except:
             self.set_status(500)

@@ -472,14 +472,14 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 'pkg': 'nginx',
                 'repo': 'installed'
             }, {
-                    'success': function (res) {
-                        $scope.nginx_version = res.data[0].version;
-                    },
-                    'error': function (error) {
-                        $scope.nginx_version = '';
-                        //$scope.loaded = true;
-                    }
-                }, true);
+                'success': function (res) {
+                    $scope.nginx_version = res.data[0].version;
+                },
+                'error': function (error) {
+                    $scope.nginx_version = '';
+                    //$scope.loaded = true;
+                }
+            }, true);
         };
         $scope.load_proxy_caches = function () {
             // load proxy cache list
@@ -527,6 +527,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                         if (typeof listen.port != 'undefined') t.port = listen.port;
                         if (typeof listen.ssl != 'undefined') t.ssl = listen.ssl;
                         if (typeof listen.default_server != 'undefined') t.default_server = listen.default_server;
+                        if (t.ssl) $scope.ssl_enabled = true;
                         s.listens.push(t);
                     }
                     if (d.index) s.index = d.index;
@@ -670,7 +671,9 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             $scope.setting.listens.splice(i, 1);
         };
         $scope.addlisten = function () {
-            $scope.setting.listens.push(angular.copy(listen_tmpl));
+            var sn = angular.copy(listen_tmpl);
+            sn.ssl = $scope.ssl_enabled;
+            $scope.setting.listens.push(sn);
         };
 
         // location operation
@@ -762,6 +765,9 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         };
         $scope.ssl_status_set = function (i) {
             $scope.ssl_enabled = i || false;
+            for (i in $scope.setting.listens) {
+                $scope.setting.listens[i].ssl = $scope.ssl_enabled
+            }
         };
         // ssl selector
         $scope.selectsslcrt = function (i) {
@@ -852,10 +858,10 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
-                    'success': function (res) {
-                        Message.setInfo(res.msg);
-                    }
-                }, true);
+                'success': function (res) {
+                    Message.setInfo(res.msg);
+                }
+            }, true);
         };
         // initially add
         if ($scope.action == 'new') {

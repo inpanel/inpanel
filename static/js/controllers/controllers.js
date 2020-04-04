@@ -284,6 +284,8 @@ var SettingCtrl = [
                 $scope.forcehttps = res.forcehttps;
                 $scope.ip = res.ip;
                 $scope.port = res.port;
+                $scope.sslkey = res.sslkey;
+                $scope.sslcrt = res.sslcrt;
             });
         }
         $scope.loadAccessKey = function () {
@@ -306,11 +308,38 @@ var SettingCtrl = [
             Request.post('/setting/server', {
                 forcehttps: $scope.forcehttps,
                 ip: $scope.ip,
-                port: $scope.port
+                port: $scope.port,
+                sslkey: $scope.sslkey,
+                sslcrt: $scope.sslcrt
             }, function (res) {
                 if (res.code == 0) $scope.loadServerInfo();
             });
         };
+
+        // ssl selector
+        $scope.selectsslcrt = function () {
+            $scope.selector_title = '请选择证书文件（*.crt）';
+            $scope.selector.onlydir = false;
+            $scope.selector.onlyfile = true;
+            $scope.selector.load('/');
+            $scope.selector.selecthandler = function (path) {
+                $('#selector').modal('hide');
+                $scope.sslcrt = path;
+            };
+            $('#selector').modal();
+        };
+        $scope.selectsslkey = function () {
+            $scope.selector_title = '请选择私钥文件（*.key）';
+            $scope.selector.onlydir = false;
+            $scope.selector.onlyfile = true;
+            $scope.selector.load('/');
+            $scope.selector.selecthandler = function (path) {
+                $('#selector').modal('hide');
+                $scope.sslkey = path;
+            };
+            $('#selector').modal();
+        };
+
         $scope.updateAccessKey = function () {
             Request.post('/setting/accesskey', {
                 accesskey: $scope.accesskey,

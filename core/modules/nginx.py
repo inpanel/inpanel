@@ -493,7 +493,8 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
     with open(conf) as f:
         for line_i, line in enumerate(f):
             line = line.strip()
-            if DEBUG: print '----------', line
+            if DEBUG:
+                print('----------' + line)
 
             # deal with our speical comment string
             line_disabled = False

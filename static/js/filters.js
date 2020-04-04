@@ -61,7 +61,7 @@ filter('netiface.updown', function () {
 }).
 filter('netiface.encap', function () {
     return function (input) {
-        if (input == 'Local Loopback') return '本地环路';
+        if (input == 'Local Loopback') return '本地回环';
         if (input == 'Ethernet') return '以太网';
         if (input == 'Point-to-Point Protocol') return '点对点';
         if (input == 'UNSPEC') return '未识别';
@@ -111,6 +111,19 @@ filter('space.used', function () {
     };
 }).
 filter('space.free', function () {
+    return function (input) {
+        if (!input) return '';
+        var rate = parseInt(input);
+        if (rate < 10) {
+            return '<span class="label label-default">' + input + '</span>';
+        } else if (rate < 25) {
+            return '<span class="label label-warning">' + input + '</span>';
+        } else {
+            return '<span class="label label-success">' + input + '</span>';
+        }
+    };
+}).
+filter('space.available', function () {
     return function (input) {
         if (!input) return '';
         var rate = parseInt(input);

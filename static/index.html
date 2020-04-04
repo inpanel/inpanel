@@ -26,35 +26,43 @@
 
     <div class="container" style="display:none" ng-show="navbar_loaded">
         <div ng-view></div>
-        <div id="_authconfirm" class="modal fade" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h3 class="modal-title">登录即将超时 !</h3>
-                    </div>
-                    <div class="modal-body">
-                        <p>您的登录即将超时，是否保持登陆状态 ？</p>
-                    </div>
-                    <div class="modal-footer">
-                        <a class="btn btn-default" data-dismiss="modal" aria-hidden="true" href="#/logout">退出登录</a>
-                        <button class="btn btn-primary" onclick="$('#_authconfirm').modal('hide')" ng-click="_authrenew()">继续访问</button>
-                    </div>
+    </div>
+
+    <div id="_authconfirm" class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title">登录即将超时 !</h3>
+                </div>
+                <div class="modal-body">
+                    <p>您的登录即将超时，是否保持登陆状态 ？</p>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-default" data-dismiss="modal" aria-hidden="true" href="#/logout">退出登录</a>
+                    <button class="btn btn-primary" onclick="$('#_authconfirm').modal('hide')" ng-click="_authrenew()">继续访问</button>
                 </div>
             </div>
         </div>
     </div>
-    <footer id="footer" style="display:none" ng-show="navbar_loaded">
+
+    <div class="footer-sticky" style="display:none" ng-show="navbar_loaded"></div>
+    <div class="footer" style="display:none" ng-show="navbar_loaded">
         <div class="container">
-            <div class="text-muted pull-left">Powered by <a href="https://inpanel.org" target="_blank">InPanel</a></div>
-            <div class="text-muted pull-right">
-                <a href="https://inpanel.org/forum.html" target="_blank"><span class="glyphicon glyphicon-comment"></span> 社区</a>
-            </div>
+            <footer class="navbar navbar-default">
+                <div class="container-fluid">
+                    <p class="navbar-text pull-left">
+                        <span>Powered by <a href="http://inpanel.org" target="_blank">InPanel</a></span>
+                    </p>
+                    <p class="navbar-text pull-right">
+                        <span><a href="http://inpanel.pub" target="_blank">InPanel Pub</a></span>
+                    </p>
+                </div>
+            </footer>
         </div>
-    </footer>
-    <div class="well" style="width:300px; margin:100px auto auto;" ng-show="!navbar_loaded">
-        <img src="images/loading.gif" style="margin-right:5px"> 正在加载，请稍候...
     </div>
+
+    <div class="well" style="width:300px; margin:100px auto auto;" ng-show="!navbar_loaded"><img src="images/loading.gif" style="margin-right:5px"> 正在加载，请稍候...</div>
 
     <!--[if lte IE 6]>
     <script src="lib/ie6warning/warning.js"></script>

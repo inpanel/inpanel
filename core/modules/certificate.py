@@ -19,7 +19,7 @@ from files import listfile
 class Certificate():
 
     def __init__(self):
-        # self.path_current = os.path.dirname(os.path.realpath(__file__))
+        # self.path_current = os.path.dirname(os.path.abspath(__file__))
         self.path_home = '/usr/local/inpanel/data/certificate/'
         self.path_acc = os.path.join(self.path_home, 'client.key')
         self.path_crt = os.path.join(self.path_home, 'crt')

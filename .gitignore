@@ -4,3 +4,5 @@
 *.pyc
 *.iml
 test/
+dist/
+build/

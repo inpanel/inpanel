@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
-# Copyright (c) 2012 - 2016, VPSMate development team
+# Copyright (c) 2017, doudoudzj
+# Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the (new) BSD License.
@@ -232,7 +232,7 @@ def encode(content, charset):
 def delete(path):
     if not os.path.exists(path) and not os.path.islink(path):
         return False
-    path = os.path.realpath(path)
+    path = os.path.abspath(path)
     mounts = _getmounts()
     mount = ''
     for m in mounts:
@@ -245,13 +245,12 @@ def delete(path):
     _inittrash(mounts)
     try:
         uuid = str(uuid4())
+        filename = os.path.basename(path)
         db = anydbm.open(os.path.join(trashpath, '.fileinfo'), 'c')
-        db[uuid] = '\t'.join(
-            [os.path.basename(path), path, str(int(time.time()))])
-        db.close()
+        db[uuid] = '\t'.join([filename, path, str(int(time.time()))])
+        
         os.rename(path, os.path.join(trashpath, uuid))
         # deal with the .filename.bak
-        filename = os.path.basename(path)
         dirname = os.path.dirname(path)
         bakfilepath = os.path.join(dirname, '.%s.bak' % filename)
         if os.path.exists(bakfilepath):
@@ -259,6 +258,8 @@ def delete(path):
         return True
     except:
         return False
+    finally:
+        db.close()
 
 
 def _getmounts():
@@ -294,8 +295,7 @@ def tlist():
     # gather informations in each mount point's trash
     items = []
     for mount in mounts:
-        db = anydbm.open(os.path.join(
-            mount, '.deleted_files', '.fileinfo'), 'c')
+        db = anydbm.open(os.path.join(mount, '.deleted_files', '.fileinfo'), 'c')
         for uuid, info in db.items():
             fields = info.split('\t')
             item = {
@@ -332,7 +332,7 @@ def titem(mount, uuid):
             'time': ftime(float(fields[2])),
             'mount': mount
         }
-        info['realpath'] = os.path.join(trashpath, uuid)
+        info['originpath'] = os.path.join(trashpath, uuid)
         return info
     except:
         return False
@@ -416,20 +416,20 @@ def chmod(path, perms, recursively=False):
 
 
 if __name__ == '__main__':
-    print '* List directory of /root:'
+    print('* List directory of /root:')
     for item in listdir('/root'):
-        print '  name: %s' % item['name']
-        print '  isdir: %s' % str(item['isdir'])
-        print '  isreg: %s' % str(item['isreg'])
-        print '  islnk: %s' % str(item['islnk'])
-        print '  perms: %s' % str(item['perms'])
-        print '  uname: %s' % item['uname']
-        print '  gname: %s' % item['gname']
-        print '  size: %s' % item['size']
-        print '  atime: %s' % item['atime']
-        print '  mtime: %s' % item['mtime']
-        print '  ctime: %s' % item['ctime']
-        print '  istext: %s' % str(istext(os.path.join('/root', item['name'])))
-        print '  mimetype: %s' % mimetype(os.path.join('/root', item['name']))
+        print('  name: %s' % item['name'])
+        print('  isdir: %s' % str(item['isdir']))
+        print('  isreg: %s' % str(item['isreg']))
+        print('  islnk: %s' % str(item['islnk']))
+        print('  perms: %s' % str(item['perms']))
+        print('  uname: %s' % item['uname'])
+        print('  gname: %s' % item['gname'])
+        print('  size: %s' % item['size'])
+        print('  atime: %s' % item['atime'])
+        print('  mtime: %s' % item['mtime'])
+        print('  ctime: %s' % item['ctime'])
+        print('  istext: %s' % str(istext(os.path.join('/root', item['name']))))
+        print('  mimetype: %s' % mimetype(os.path.join('/root', item['name'])))
         print
     print

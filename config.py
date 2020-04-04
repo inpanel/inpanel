@@ -41,13 +41,13 @@ accesskeyenable: set the remote access switch. value: on or off
     option, value = sys.argv[1:]
     if option == 'ip':
         if value != '*' and not is_valid_ip(value):
-            print 'Error: %s is not a valid IP address' % value
+            print('Error: %s is not a valid IP address' % value)
             sys.exit(-1)
         config.set('server', 'ip', value)
     elif option == 'port':
         port = int(value)
         if not port > 0 and port < 65535:
-            print 'Error: port number should between 0 and 65535'
+            print('Error: port number should between 0 and 65535')
             sys.exit(-1)
         config.set('server', 'port', value)
     elif option == 'username':
@@ -59,7 +59,7 @@ accesskeyenable: set the remote access switch. value: on or off
         config.set('auth', 'password', '%s:%s' % (pwd, key))
     elif option == 'loginlock':
         if value not in ('on', 'off'):
-            print 'Error: loginlock value should be either on or off'
+            print('Error: loginlock value should be either on or off')
             sys.exit(-1)
         if value == 'on':
             config.set('runtime', 'loginlock', 'on')
@@ -76,11 +76,11 @@ accesskeyenable: set the remote access switch. value: on or off
                 if len(base64.b64decode(value)) != 32:
                     raise Exception()
             except:
-                print 'Error: invalid accesskey format'
+                print('Error: invalid accesskey format')
                 sys.exit(-1)
         config.set('auth', 'accesskey', value)
     elif option == 'accesskeyenable':
         if value not in ('on', 'off'):
-            print 'Error: accesskeyenable value should be either on or off'
+            print('Error: accesskeyenable value should be either on or off')
             sys.exit(-1)
         config.set('auth', 'accesskeyenable', value)
