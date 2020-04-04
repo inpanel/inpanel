@@ -739,7 +739,9 @@ class SettingHandler(RequestHandler):
             ip = self.config.get('server', 'ip')
             port = self.config.get('server', 'port')
             forcehttps = self.config.getboolean('server', 'forcehttps')
-            self.write({'forcehttps': forcehttps, 'ip': ip, 'port': port})
+            sslkey = self.config.get('server', 'sslkey')
+            sslcrt = self.config.get('server', 'sslcrt')
+            self.write({'forcehttps': forcehttps, 'ip': ip, 'port': port, 'sslkey': sslkey, 'sslcrt': sslcrt})
             self.finish()
 
         elif section == 'accesskey':
@@ -831,9 +833,33 @@ class SettingHandler(RequestHandler):
             self.config.set('server', 'ip', ip)
             self.config.set('server', 'port', port)
 
+            sslkey = self.get_argument('sslkey', '')
+            if sslkey == '' or os.path.exists(sslkey):
+                self.config.set('server', 'sslkey', sslkey)
+            else:
+                self.write({'code': -1, 'msg': u'SSL私钥文件不存在，请仔细检查！'})
+                return
+
+            sslcrt = self.get_argument('sslcrt', '')
+            if sslcrt == '' or os.path.exists(sslcrt):
+                self.config.set('server', 'sslcrt', sslcrt)
+            else:
+                self.write({'code': -1, 'msg': u'SSL证书文件不存在，请仔细检查！'})
+                return
+
             forcehttps = self.get_argument('forcehttps', '')
-            if forcehttps != 'on': forcehttps = 'off'
-            self.config.set('server', 'forcehttps', forcehttps)
+            if forcehttps == 'on':
+                if not os.path.exists(sslkey):
+                    self.config.set('server', 'forcehttps', 'off')
+                    self.write({'code': -1, 'msg': u'请填写SSL私钥文件！'})
+                    return
+                elif not os.path.exists(sslcrt):
+                    self.config.set('server', 'forcehttps', 'off')
+                    self.write({'code': -1, 'msg': u'请填写SSL证书文件！'})
+                    return
+                self.config.set('server', 'forcehttps', forcehttps)
+            else:
+                self.config.set('server', 'forcehttps', 'off')
 
             self.write({'code': 0, 'msg': u'服务设置更新成功！将在重启服务后生效。'})
 

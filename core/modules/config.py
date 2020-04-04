@@ -37,7 +37,9 @@ class Config(object):
                         'port': '8888',
                         'forcehttps': 'off',  # force use https
                         'lastcheckupdate': 0,
-                        'updateinfo': ''
+                        'updateinfo': '',
+                        'sslkey': '/usr/local/inpanel/core/certificate/inpanel.key',
+                        'sslcrt': '/usr/local/inpanel/core/certificate/inpanel.crt'
                     },
                     'auth': {
                         'username': 'admin',
