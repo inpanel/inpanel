@@ -63,14 +63,15 @@ class Install(object):
         self.repository = 'https://github.com/inpanel/inpanel.git'
         self.branch = 'master'
         self.distname = self.dist[0].lower()
-        self.version = self.dist[1]
-        self.version = self.version[0:self.version.find('.', self.version.index('.') + 1)]
+        self.sys_version = self.dist[1]
+        self.sys_version = self.sys_version[0:self.sys_version.find('.', self.sys_version.index('.') + 1)]
         self.os = platform.system()
         print('Platform %s %s [%s]' % (self.dist[0], self.dist[1], self.os))
+
     def handle_options(self):
         try:
             opts, args = getopt.getopt(sys.argv[1:], 'b:r:u:p:P:vh', \
-            ["dev", "branch=", "repository=", "username=", "password=", "port=", "version","help"])
+            ['dev', 'branch=', 'repository=', 'username=', 'password=', 'port=', 'version', 'help'])
         except getopt.GetoptError:
             print('Error: invalid arguments')
             print('Try \'install.py --help\' for more information.')
@@ -89,9 +90,9 @@ class Install(object):
             elif opt_name in ('-P', '--port'):
                 self.listen_port = arg_value
             elif opt_name in ('-v', '--version'):
-                print('v1.1.1 b21')
+                print('v1.1.1 b22')
                 sys.exit(0)
-            elif opt_name in ("--help"):
+            elif opt_name in ('--help'):
                 print('Usage: install.py [OPTIONS...]')
                 print('-r, --repository=<address>      set repository')
                 print('-b, --branch=<value>            set branch')
@@ -112,18 +113,18 @@ class Install(object):
     def check_platform(self):
         supported = True
         if self.distname == 'centos':
-            if float(self.version) < 5.4:
+            if float(self.sys_version) < 5.4:
                 supported = False
         elif self.distname == 'redhat':
-            if float(self.version) < 5.4:
+            if float(self.sys_version) < 5.4:
                 supported = False
         elif self.os == 'Darwin':
             supported = True
         elif self.distname == 'ubuntu':
-            if float(self.version) < 10.10:
+            if float(self.sys_version) < 10.10:
                 supported = False
         elif self.distname == 'debian':
-            if float(self.version) < 6.0:
+            if float(self.sys_version) < 6.0:
                 supported = False
         else:
             supported = False
@@ -245,7 +246,7 @@ class Install(object):
         '''config firewall'''
         print('* Config firewall...'),
         if self.distname in ('centos', 'redhat'):
-            if self.version < 7 and os.path.exists('/etc/init.d/iptables'):
+            if self.sys_version < 7 and os.path.exists('/etc/init.d/iptables'):
                 self._run('iptables -A INPUT -m state --state NEW -p tcp --dport %s -j ACCEPT' % self.listen_port)
                 self._run('iptables -A OUTPUT -m state --state NEW -p tcp --sport %s -j ACCEPT' % self.listen_port)
                 self._run('service iptables save')
