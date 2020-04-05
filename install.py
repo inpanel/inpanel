@@ -19,6 +19,7 @@ import subprocess
 import sys
 # import re
 import getopt
+import readline
 
 try:
     import urllib2 as request # For Python 2
