@@ -219,6 +219,7 @@ filter('site.default_server', function () {
 }).
 filter('bytes2human', function () {
     return function (n) {
+        if (!n) return 0;
         var symbols = ['G', 'M', 'K'];
         var x = symbols.length;
         var units = [];

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
+# Copyright (c) 2017 - 2020, doudoudzj
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -8,23 +8,22 @@
 
 '''Module for process Management.'''
 
-import os
-import platform
-
-from core import system as os_type
+from os import listdir
+from os.path import exists
+from platform import system
 
 try:
     from commands import getstatusoutput
 except:
     from subprocess import getstatusoutput
 
-
+os_type = system()
 
 def get_list():
     '''get process list'''
     res = []
     if os_type == 'Linux':
-        for pid in os.listdir('/proc'):
+        for pid in listdir('/proc'):
             if pid.isdigit():
                 res.append(get_base(pid))
     elif os_type == 'Darwin':
@@ -35,19 +34,20 @@ def get_list():
 
 
 def get_name(pid):
+    '''get name by pid'''
     if not pid:
-        return False
+        return None
     name = None
     if os_type == 'Linux':
-        comm = '/proc/%s/comm' % pid
-        if os.path.exists(comm):
-            with open(comm, 'r') as f:
+        p = '/proc/%s/comm' % pid
+        if exists(p):
+            with open(p, 'r') as f:
                 line = f.readline()
                 name = line.strip()
         if not name:
-            status = '/proc/%s/status' % pid
-            if os.path.exists(status):
-                with open(status, 'r') as f:
+            p = '/proc/%s/status' % pid
+            if exists(p):
+                with open(p, 'r') as f:
                     line = f.readline()
                     name = line.split()[1]
     elif os_type == 'Darwin':
@@ -60,7 +60,7 @@ def get_name(pid):
 def kill_process(name):
     '''kill process by name'''
     if not name:
-        return
+        return None
     pids = get_pids(name)
     # print('pid', pids)
     if pids:
@@ -72,12 +72,12 @@ def kill_process(name):
 def kill_pids(pids):
     '''kill process by pids'''
     if not pids:
-        return
+        return None
     if isinstance(pids, list):
         pids = ' '.join(pids)  # to string
     if os_type in ('Linux', 'Darwin'):
-        s_cmd = u'/bin/kill -9 %s' % pids
-        status, result = getstatusoutput(s_cmd)
+        cmd = u'/bin/kill -9 %s' % pids
+        status, result = getstatusoutput(cmd)
         return status == 0
     else:
         return False
@@ -86,11 +86,11 @@ def kill_pids(pids):
 def get_pids(name):
     '''get pids of a process'''
     if not name:
-        return
+        return None
     res = []
     if os_type in ('Linux', 'Darwin'):
-        s_cmd = u"/bin/ps auxww | grep %s | grep -v grep | awk '{print $2}'" % name
-        status, result = getstatusoutput(s_cmd)
+        cmd = u"/bin/ps auxww | grep %s | grep -v grep | awk '{print $2}'" % name
+        status, result = getstatusoutput(cmd)
         if status == 0 and result:
             res = ' '.join(result.split()).split(' ')  # list
     return res
@@ -99,54 +99,61 @@ def get_pids(name):
 def get_cmdline(pid):
     '''parse cmdline'''
     if not pid:
-        return
+        return None
     if os_type == 'Linux':
-        if os.path.exists('/proc/%s/cmdline' % pid):
-            with open('/proc/%s/cmdline' % pid, 'r') as f:
-                line = f.readline()
-                return line.strip()
-        else:
-            return ''
+        p = '/proc/%s/cmdline' % pid
+        if not exists(p):
+            return None
+        with open(p, 'r') as f:
+            line = f.readline()
+            return line.strip()
 
 
 def get_base(pid):
     '''get base info'''
     if not pid:
-        return
+        return None
     res = {
         'name': '',
         'state': '',
+        'tgid': '',
         'pid': '',
         'ppid': '',
         'fdsize': '',
         'vmpeak': '',
-        'vmsize': ''
+        'vmsize': '',
+        'vmrss': ''
     }
     if os_type == 'Linux':
-        if os.path.exists('/proc/%s/status' % pid):
-            f = open('/proc/%s/status' % pid, 'r')
+        p = '/proc/%s/status' % pid
+        if not exists(p):
+            return None
+        with open(p, 'r') as f:
             line = f.readline()
             while line:
                 out = line.strip()
+                label = out.split()
                 if out.startswith('Name'):
-                    res['name'] = out.split()[1]
-                if out.startswith('State'):
-                    res['state'] = out.split()[1]
-                if out.startswith('Pid'):
-                    res['pid'] = out.split()[1]
-                if out.startswith('PPid'):
-                    res['ppid'] = out.split()[1]
-                if out.startswith('FDSize'):
-                    res['fdsize'] = out.split()[1]
-                if out.startswith('VmPeak'):
-                    res['vmpeak'] = out.split()[1]
-                if out.startswith('VmSize'):
-                    res['vmsize'] = out.split()[1]
-                # print(line),
+                    res['name'] = label[1]
+                elif out.startswith('State'):
+                    res['state'] = label[1]
+                elif out.startswith('Tgid'):
+                    res['tgid'] = label[1]
+                elif out.startswith('Pid'):
+                    res['pid'] = label[1]
+                elif out.startswith('PPid'):
+                    res['ppid'] = label[1]
+                elif out.startswith('FDSize'):
+                    res['fdsize'] = label[1]
+                elif out.startswith('VmPeak'):
+                    res['vmpeak'] = label[1]
+                elif out.startswith('VmSize'):
+                    res['vmsize'] = label[1]
+                elif out.startswith('VmRSS'):
+                    res['vmrss'] = label[1]
+                elif out.startswith('Threads'):
+                    break # No need to read the following content
                 line = f.readline()
-                if res['name'] and res['state'] and res['pid'] and res['ppid'] and res['fdsize'] and res['vmpeak'] and res['vmsize']:
-                    break
-            f.close()
     return res
 
 
@@ -160,31 +167,31 @@ def get_file(pid):
 def get_environ(pid):
     '''parse environ'''
     if not pid:
-        return
+        return None
     res = ''
     if os_type == 'Linux':
-        if os.path.exists('/proc/%s/environ' % pid):
-            with open('/proc/%s/environ' % pid, 'r') as f:
-                line = f.readline()
-                res = line.strip()
+        p = '/proc/%s/environ' % pid
+        if not exists(p):
+            return None
+        with open(p, 'r') as f:
+            line = f.readline()
+            res = line.strip()
     return res
 
 
 def get_status(pid):
     '''parse status'''
     if not pid:
-        return
+        return None
     res = {}
     if os_type == 'Linux':
-        sts = '/proc/%s/status' % pid
-        # sts = '/Users/douzhenjiang/test/inpanel/test/proc_status.txt'
-        # if os_type in ('Linux', 'Darwin'):
-        if os.path.exists(sts):
-            f = open(sts, 'r')
+        p = '/proc/%s/status' % pid
+        if not exists(p):
+            return None
+        with open(p, 'r') as f:
             line = f.readline()
             while line:
                 out = line.strip()
-                # print('aaaaaaasplit', out.split())
                 tmp = out.split()
                 if out.startswith('Uid') or out.startswith('Gid') or out.startswith('Vm'):
                     res[tmp[0].split(':')[0].lower()] = tmp[1:]
@@ -193,81 +200,76 @@ def get_status(pid):
                 else:
                     res[tmp[0].split(':')[0].lower()] = tmp[1] if len(tmp) > 1 else ''
                 line = f.readline()
-            f.close()
     return res
 
 
 def get_io(pid):
     '''parse io'''
     if not pid:
-        return
+        return None
     res = {}
     if os_type == 'Linux':
-        sts = '/proc/%s/io' % pid
-        # sts = '/Users/douzhenjiang/test/inpanel/test/proc_io.txt'
-        # if os_type in ('Linux', 'Darwin'):
-        if os.path.exists(sts):
-            f = open(sts, 'r')
+        p = '/proc/%s/io' % pid
+        if not exists(p):
+            return None
+        with open(p, 'r') as f:
             line = f.readline()
             while line:
                 out = line.strip()
                 res[out.split()[0].split(':')[0].lower()] = out.split()[1]
                 line = f.readline()
-            f.close()
     return res
 
 
 def get_memory(pid):
     '''get memory, parse statm'''
     if not pid:
-        return
+        return None
     res = ''
     if os_type == 'Linux':
-        if os.path.exists('/proc/%s/statm' % pid):
-            with open('/proc/%s/statm' % pid, 'r') as f:
-                line = f.readline()
-                line = line.strip()
-                res = line.split()
+        p = '/proc/%s/statm' % pid
+        if not exists(p):
+            return None
+        with open(p, 'r') as f:
+            line = f.readline()
+            line = line.strip()
+            res = line.split()
     return res
 
 
 def get_info(pid):
     '''parse stat'''
     if not pid:
-        return
+        return None
     res = {}
     if os_type == 'Linux':
-        sts = '/proc/%s/stat' % pid
-        # sts = '/Users/douzhenjiang/test/inpanel/test/proc_stat.txt'
-        # if os_type in ('Linux', 'Darwin'):
-        if os.path.exists(sts):
-            f = open(sts, 'r')
+        p = '/proc/%s/stat' % pid
+        if not exists(p):
+            return None
+        with open(p, 'r') as f:
             line = f.readline()
             while line:
                 out = line.strip()
                 res = out.split()
                 line = f.readline()
-            f.close()
     return res
 
 
 def get_network(pid):
     '''parse network'''
     if not pid:
-        return
+        return None
     res = {}
     if os_type == 'Linux':
-        sts = '/proc/%s/stat' % pid
-        # sts = '/Users/douzhenjiang/test/inpanel/test/proc_stat.txt'
-        # if os_type in ('Linux', 'Darwin'):
-        if os.path.exists(sts):
-            f = open(sts, 'r')
+        p = '/proc/%s/stat' % pid
+        if not exists(p):
+            return None
+        with open(p, 'r') as f:
             line = f.readline()
             while line:
                 out = line.strip()
                 res = out.split()
                 line = f.readline()
-            f.close()
     return res
 
 

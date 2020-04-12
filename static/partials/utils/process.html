@@ -28,25 +28,27 @@
                     <table class="table table-hover table-bordered table-condensed">
                         <thead>
                             <tr>
+                                <th style="width:50px;">#</th>
                                 <th style="width:50px;">状态</th>
-                                <th style="width:50px;" class="text-right">PID</th>
+                                <th style="width:50px;">PID</th>
                                 <th>名称</th>
                                 <th>父进程</th>
                                 <th>文件句柄</th>
-                                <th>使用内存</th>
-                                <th>峰值内存</th>
+                                <th>物理内存</th>
+                                <th>虚拟内存</th>
                                 <th style="width:130px">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="info in process.process">
+                                <td>{{$index+1}}</td>
                                 <td ng-bind-html-unsafe="info.state | process.status"></td>
                                 <td>{{info.pid}}</td>
                                 <td>{{info.name}}</td>
                                 <td>{{info.ppid}}</td>
                                 <td>{{info.fdsize}}</td>
-                                <td>{{info.vmsize}}</td>
-                                <td>{{info.vmpeak}}</td>
+                                <td>{{info.vmrss * 1024 | bytes2human}}</td>
+                                <td>{{info.vmsize * 1024 | bytes2human}}</td>
                                 <td>
                                     <button class="btn btn-default btn-xs" ng-click="process_detail(info)">查看</button>
                                     <button class="btn btn-default btn-xs" ng-click="processkillconfirm(info)">终止</button>
@@ -116,16 +118,24 @@
                             </div>
                             <table class="table table-bordered table-condensed" ng-show="current_process_loaded.status && current_process.status">
                                 <tbody>
-                                    <tr>
-                                        <td>Name</td>
-                                        <td>{{current_process.status.name}}</td>
-                                    </tr>
+                                    <tr><td>Name</td><td>{{current_process.status.name}}</td></tr>
+                                    <tr><td>Tgid</td><td>{{current_process.status.tgid}}</td></tr>
                                     <tr><td>Pid</td><td>{{current_process.status.pid}}</td></tr>
                                     <tr><td>状态</td><td ng-bind-html-unsafe="current_process.status.state | process.status"></td></tr>
                                     <tr><td>PPid</td><td>{{current_process.status.ppid}}</td></tr>
                                     <tr><td>FDSize</td><td>{{current_process.status.fdsize}}</td></tr>
-                                    <tr><td>VmPeak</td><td>{{current_process.status.vmpeak[0]}}</td></tr>
-                                    <tr><td>VmSize</td><td>{{current_process.status.vmsize[0]}}</td></tr>
+                                    <tr><td>Groups</td><td>{{current_process.status.groups}}</td></tr>
+                                    <tr><td>VmPeak</td><td>{{current_process.status.vmpeak[0]}} {{current_process.status.vmpeak[1]}}</td></tr>
+                                    <tr><td>VmSize</td><td>{{current_process.status.vmsize[0]}} {{current_process.status.vmsize[1]}}</td></tr>
+                                    <tr><td>VmLck</td><td>{{current_process.status.vmlock[0]}} {{current_process.status.vmlock[1]}}</td></tr>
+                                    <tr><td>VmHWM</td><td>{{current_process.status.vmhwm[0]}} {{current_process.status.vmhwm[1]}}</td></tr>
+                                    <tr><td>VmRSS</td><td>{{current_process.status.vmrss[0]}} {{current_process.status.vmrss[1]}}</td></tr>
+                                    <tr><td>VmData</td><td>{{current_process.status.vmdata[0]}} {{current_process.status.vmdata[1]}}</td></tr>
+                                    <tr><td>VmStk</td><td>{{current_process.status.vmstk[0]}} {{current_process.status.vmstk[1]}}</td></tr>
+                                    <tr><td>VmExe</td><td>{{current_process.status.vmexe[0]}} {{current_process.status.vmexe[1]}}</td></tr>
+                                    <tr><td>VmLib</td><td>{{current_process.status.vmlib[0]}} {{current_process.status.vmlib[1]}}</td></tr>
+                                    <tr><td>VmPTE</td><td>{{current_process.status.vmpte[0]}} {{current_process.status.vmpte[1]}}</td></tr>
+                                    <tr><td>VmSwap</td><td>{{current_process.status.vmswap[0]}} {{current_process.status.vmswap[1]}}</td></tr>
                                 </tbody>
                             </table>
                         </div>
