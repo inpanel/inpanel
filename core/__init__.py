@@ -11,12 +11,12 @@
 
 import platform
 
-__version__ = '1.1.1.22'
+__version__ = '1.1.1.23'
 
 name = 'InPanel'
 version = '1.1.1'
-build = '22'
-releasetime = '2020-04-05 03:30:00 GMT+0800'
+build = '23'
+releasetime = '2020-05-13 10:20:00 GMT+0800'
 version_info = {
     'name': name,
     'build': build,
