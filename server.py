@@ -8,26 +8,24 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-import os
-import shlex
-import subprocess
 import sys
+from os import getpid
+from os.path import dirname, join
 
-
-root_path = os.path.dirname(__file__)
-sys.path.insert(0, os.path.join(root_path, 'lib'))
+root_path = dirname(__file__)
+sys.path.insert(0, join(root_path, 'lib'))
 
 import tornado.httpserver
 import tornado.ioloop
 from core import web
-from core.modules.config import Config
+from core.modules.configuration import configurations
 from core.utils import make_cookie_secret
 
 
 def write_pid():
     pidfile = '/var/run/inpanel.pid'
     pidfp = open(pidfile, 'w')
-    pidfp.write(str(os.getpid()))
+    pidfp.write(str(getpid()))
     pidfp.close()
 
 
@@ -35,11 +33,11 @@ def main():
     # settings of tornado application
     settings = {
         'root_path': root_path,
-        'data_path': os.path.join(root_path, 'data'),
-        'conf_path': os.path.join(root_path, 'data', 'config.ini'),
-        'index_path': os.path.join(root_path, 'static', 'index.html'),
-        'static_path': os.path.join(root_path, 'static'),
-        'plugins_path': os.path.join(root_path, 'plugins'),
+        'data_path': join(root_path, 'data'),
+        'conf_path': join(root_path, 'data', 'config.ini'),
+        'index_path': join(root_path, 'static', 'index.html'),
+        'static_path': join(root_path, 'static'),
+        'plugins_path': join(root_path, 'plugins'),
         'xsrf_cookies': True,
         'cookie_secret': make_cookie_secret(),
         'gzip': True
@@ -72,7 +70,7 @@ def main():
     ], **settings)
 
     # read configuration from config.ini
-    cfg = Config(settings['conf_path'])
+    cfg = configurations(settings['conf_path'])
     server_ip = cfg.get('server', 'ip')
     server_port = cfg.get('server', 'port')
     force_https = cfg.getboolean('server', 'forcehttps')

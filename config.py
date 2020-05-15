@@ -8,15 +8,15 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-import base64
 import datetime
-import hashlib
+from hashlib import md5
 import hmac
-import os
 import sys
 import time
+from base64 import b64decode
+from os.path import dirname, join
 
-from core.modules.config import Config
+from core.modules.configuration import configurations
 from core.utils import is_valid_ip, randstr
 
 if __name__ == "__main__":
@@ -35,8 +35,8 @@ accesskeyenable: set the remote access switch. value: on or off
 ''' % sys.argv[0])
         sys.exit()
 
-    data_path = os.path.join(os.path.dirname(__file__), 'data')
-    config = Config(data_path + '/config.ini')
+    data_path = join(dirname(__file__), 'data')
+    config = configurations(data_path + '/config.ini')
 
     option, value = sys.argv[1:]
     if option == 'ip':
@@ -54,8 +54,8 @@ accesskeyenable: set the remote access switch. value: on or off
         config.set('auth', 'username', value)
     elif option == 'password':
         key = randstr()
-        md5 = hashlib.md5(value).hexdigest()
-        pwd = hmac.new(key, md5).hexdigest()
+        hmd5 = md5(value).hexdigest()
+        pwd = hmac.new(key, hmd5).hexdigest()
         config.set('auth', 'password', '%s:%s' % (pwd, key))
     elif option == 'loginlock':
         if value not in ('on', 'off'):
@@ -73,7 +73,7 @@ accesskeyenable: set the remote access switch. value: on or off
     elif option == 'accesskey':
         if value != '':
             try:
-                if len(base64.b64decode(value)) != 32:
+                if len(b64decode(value)) != 32:
                     raise Exception()
             except:
                 print('Error: invalid accesskey format')

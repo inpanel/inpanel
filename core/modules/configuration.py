@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017, doudoudzj
-# Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -9,68 +8,71 @@
 
 '''Module for Configurations Management.'''
 
-import os
+from os.path import exists
 
 from lib.filelock import FileLock
 
 try:
     from ConfigParser import ConfigParser  # python 2.x
 except:
-    from configparser import ConfigParser  # python 3.x
+    from configparser import ConfigParser
 
+
+def configurations(inifile=None, configs=None):
+    '''the configurations for InPanel'''
+    default_configs = {
+        'server': {
+            'ip': '*',
+            'port': '8888',
+            'forcehttps': 'off',  # force use https
+            'lastcheckupdate': 0,
+            'updateinfo': '',
+            'sslkey': '/usr/local/inpanel/core/certificate/inpanel.key',
+            'sslcrt': '/usr/local/inpanel/core/certificate/inpanel.crt'
+        },
+        'auth': {
+            'username': 'admin',
+            'password': '',  # empty password never validated
+            'passwordcheck': 'on',
+            'accesskey': '',  # empty access key never validated
+            'accesskeyenable': 'off',
+        },
+        'runtime': {
+            'mode': '',  # format: demo | dev | prod
+            'loginlock': 'off',
+            'loginfails': 0,
+            'loginlockexpire': 0,
+        },
+        'file': {
+            'lastdir': '/root',
+            'lastfile': '',
+        },
+        'time': {
+            'timezone': ''  # format: timezone = Asia/Shanghai
+        },
+        'ecs': {
+            'accounts': ''
+        },
+        'inpanel': {
+            'Instance Name': 'Access key'
+        }
+    } if configs is None else configs
+
+    return Config('data/config.ini' if inifile is None else inifile, default_configs)
 
 class Config(object):
-
     def __init__(self, inifile=None, configs=None):
-        self.inifile = 'data/config.ini' if inifile is None else inifile
+        if inifile is None:
+            return None
+        self.inifile = inifile
         self.cfg = ConfigParser()
 
         with FileLock(self.inifile):
-            if os.path.exists(self.inifile):
+            if exists(self.inifile):
                 self.cfg.read(self.inifile)
 
             # initialize configurations
-            if configs is None:
-                default_configs = {
-                    'server': {
-                        'ip': '*',
-                        'port': '8888',
-                        'forcehttps': 'off',  # force use https
-                        'lastcheckupdate': 0,
-                        'updateinfo': '',
-                        'sslkey': '/usr/local/inpanel/core/certificate/inpanel.key',
-                        'sslcrt': '/usr/local/inpanel/core/certificate/inpanel.crt'
-                    },
-                    'auth': {
-                        'username': 'admin',
-                        'password': '',         # empty password never validated
-                        'passwordcheck': 'on',
-                        'accesskey': '',        # empty access key never validated
-                        'accesskeyenable': 'off',
-                    },
-                    'runtime': {
-                        'mode': '',             # format: demo | dev | prod
-                        'loginlock': 'off',
-                        'loginfails': 0,
-                        'loginlockexpire': 0,
-                    },
-                    'file': {
-                        'lastdir': '/root',
-                        'lastfile': '',
-                    },
-                    'time': {
-                        'timezone': ''  # format: timezone = Asia/Shanghai
-                    },
-                    'ecs': {
-                        'accounts': ''
-                    },
-                    'inpanel': {
-                        'Instance Name': 'Access key'
-                    }
-                }
-            else:
-                default_configs = configs
-
+            default_configs = {} if configs is None else configs
             needupdate = False
             for sec, secdata in default_configs.items():
                 if not self.cfg.has_section(sec):
@@ -109,7 +111,10 @@ class Config(object):
         return self.cfg.remove_option(section, option)
 
     def get(self, section, option):
-        return self.cfg.get(section, option)
+        if self.cfg.has_option(section, option):
+            return self.cfg.get(section, option)
+        else:
+            return None
 
     def getboolean(self, section, option):
         return self.cfg.getboolean(section, option)
@@ -149,10 +154,7 @@ class Config(object):
         config_list = []
         sections = self.cfg.sections()
         for section in sections:
-            sec = {
-                'section': section,
-                'option': {}
-            }
+            sec = {'section': section, 'option': {}}
             options = self.cfg.options(section)
             for key in options:
                 sec['option'][key] = self.cfg.get(section, key)
@@ -190,7 +192,6 @@ class Config(object):
             return self.update(False)
         except:
             return False
-
 
 if __name__ == '__main__':
     import json
