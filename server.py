@@ -63,7 +63,7 @@ def main():
          web.StaticFileHandler, {'path': settings['static_path']}),
         (r'/plugins/(.*)', web.StaticFileHandler, {'path': settings['plugins_path']}),
         (r'/($)', web.StaticFileHandler, {'path': settings['index_path']}),
-        (r'/file/(.+)', web.FileDownloadHandler, {'path': '/'}),
+        (r'/download/(.+)', web.FileDownloadHandler, {'path': '/'}),
         (r'/fileupload', web.FileUploadHandler),
         (r'/version', web.VersionHandler),
         (r'/.*', web.ErrorHandler, {'status_code': 404})

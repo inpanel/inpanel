@@ -72,10 +72,11 @@ var FileCtrl = [
         $scope.fileloading = false;
         $scope.listdir = function(path, clearselect, callback) {
             if (path) $scope.path = path;
-            if ($scope.path == '')
+            if ($scope.path == '') {
                 $scope.path = '/root';
-            else if ($scope.path != '/' && $scope.path.substr(-1) == '/')
+            } else if ($scope.path != '/' && $scope.path.substr(-1) == '/') {
                 $scope.path = $scope.path.substr(0, $scope.path.length - 1);
+            }
             $scope.path = $scope.path.replace('//', '/');
 
             var curpath = $scope.path;
@@ -88,6 +89,10 @@ var FileCtrl = [
             }, function(data) {
                 if (data.code == 0) {
                     $scope.items = data.data;
+                    for (var i = 0; i < $scope.items.length; i++) {
+                        var path = curpath.split('/')[0] == '' ? curpath.substr(1) : curpath;
+                        $scope.items[i]['download'] = encodeURIComponent(path + '/' + $scope.items[i].name);
+                    }
                     $scope.curpath = curpath;
                     $scope.lastpath = curpath;
                     if (clearselect) {
