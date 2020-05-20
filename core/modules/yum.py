@@ -53,8 +53,8 @@ yum_reporpms = {
         },
         7: {
             'x86_64': [
-                'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-7.1908.0.el7.centos.x86_64.rpm',
-                'http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-7.1908.0.el7.centos.x86_64.rpm'
+                'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-8.2003.0.el7.centos.x86_64.rpm',
+                'http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-8.2003.0.el7.centos.x86_64.rpm'
             ]
         }
     },
