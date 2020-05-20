@@ -18,6 +18,8 @@ sys.path.insert(0, join(root_path, 'lib'))
 import tornado.httpserver
 import tornado.ioloop
 from core import web
+from core.modules.repo_yum import WebRequestRepoYUM
+from core.modules.certificate import WebRequestSSLTLS
 from core.modules.configuration import configurations
 from core.utils import make_cookie_secret
 
@@ -52,7 +54,8 @@ def main():
         (r'/utils/network/(.+?)(?:/(.+))?', web.UtilsNetworkHandler),
         (r'/utils/process/(.+?)(?:/(.+))?', web.UtilsProcessHandler),
         (r'/utils/time/(.+?)(?:/(.+))?', web.UtilsTimeHandler),
-        (r'/utils/ssl/(.+?)(?:/(.+))?', web.UtilsSSLHandler),
+        (r'/utils/ssl/(.+?)(?:/(.+))?', WebRequestSSLTLS),
+        (r'/repos/yum/(.+?)(?:/(.+))?', WebRequestRepoYUM),
         (r'/setting/(.+)', web.SettingHandler),
         (r'/operation/(.+)', web.OperationHandler),
         (r'/page/(.+)/(.+)', web.PageHandler),

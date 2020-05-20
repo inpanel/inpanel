@@ -34,7 +34,7 @@ import tornado.web
 from async_process import call_subprocess, callbackable
 from core import api as core_api
 from core import utils
-from modules import (aliyuncs, apache, certificate, cron, fdisk, files, ftp,
+from modules import (aliyuncs, apache, cron, fdisk, files, ftp,
                      lighttpd, mysql, named, nginx, php, process, proftpd,
                      pureftpd, remote, shell, ssh, user, vsftpd, yum)
 from modules.configuration import configurations
@@ -671,58 +671,6 @@ class UtilsTimeHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'时区设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'时区设置保存失败！'})
-
-
-class UtilsSSLHandler(RequestHandler):
-    """Handler for SSL/TLS setting.
-    """
-    def get(self, sec, x=None):
-        self.authed()
-        if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 SSL ！'})
-            return
-        certs = certificate.Certificate()
-        if sec == 'keys':
-            keys_list = certs.get_keys_list()
-            if keys_list is None:
-                self.write({'code': -1, 'msg': u'获取私钥失败！'})
-            else:
-                self.write({'code': 0, 'msg': u'获取私钥成功！', 'list': keys_list})
-        elif sec == 'crts':
-            crts_list = certs.get_crts_list()
-            if crts_list is None:
-                self.write({'code': -1, 'msg': u'获取证书失败！'})
-            else:
-                self.write({'code': 0, 'msg': u'获取证书成功！', 'list': crts_list})
-        elif sec == 'csrs':
-            csrs_list = certs.get_csrs_list()
-            if csrs_list is None:
-                self.write({'code': -1, 'msg': u'获取证书签名请求失败！'})
-            else:
-                self.write({'code': 0, 'msg': u'获取证书签名请求成功！', 'list': csrs_list})
-        elif sec == 'host':
-            host_list = certs.get_host_list()
-            if host_list is None:
-                self.write({'code': -1, 'msg': u'获取站点失败！'})
-            else:
-                self.write({'code': 0, 'msg': u'获取站点成功！', 'list': host_list})
-        else:
-            self.write({'code': -1, 'msg': u'未定义的操作！'})
-
-    def post(self, sec, x=None):
-        self.authed()
-        if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 SSL ！'})
-            return
-        action = self.get_argument('action', '')
-        certs = certificate.Certificate()
-
-        if sec == 'keys':
-            if action == 'add_domain_keys':
-                # this is a test
-                # for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
-                #     certs.create_domain_key(domain)
-                self.write({'code': 0, 'msg': u'创建测试私钥成功！(正在测试的功能)'})
 
 class SettingHandler(RequestHandler):
     """Settings for InPanel
