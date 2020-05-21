@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
+# Copyright (c) 2017, doudoudzj
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the (new) BSD License.
@@ -8,7 +8,7 @@
 
 """Module for Cron Jobs Management."""
 
-import os
+from os.path import exists, join
 import re
 
 
@@ -24,7 +24,7 @@ cfg_map = {
 
 def load_config():
     try:
-        if not os.path.exists(crontab):
+        if not exists(crontab):
             return {}
     except OSError:
         return {}
@@ -57,7 +57,7 @@ def update_config(configs):
 
 def save_config(filepath, config):
     try:
-        if not os.path.exists(filepath):
+        if not exists(filepath):
             return False
     except OSError:
         return False
@@ -95,12 +95,12 @@ def cron_list(level='normal', user=None):
     if level == 'normal':
         if user is None:
             return None
-        spool = os.path.join(cronspool, user)
+        spool = join(cronspool, user)
     elif level == 'system':
         spool = crontab
 
     try:
-        if not os.path.exists(spool):
+        if not exists(spool):
             return None
     except OSError:
         return None
@@ -150,7 +150,7 @@ def cron_add(user, minute, hour, day, month, weekday, command, level):
         line = "%s %s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, user, command)
     else:
         user = user or 'root'
-        spool = os.path.join(cronspool, user)
+        spool = join(cronspool, user)
         line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
 
     with open(spool, 'a+') as f:
@@ -169,7 +169,7 @@ def cron_mod(user, id, minute, hour, day, month, weekday, command, level, currli
         spool = crontab
         cron_line = "%s %s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, user, command)
     else:
-        spool = os.path.join(cronspool, user)
+        spool = join(cronspool, user)
         cron_line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
 
     with open(spool, 'r') as f:
@@ -205,7 +205,7 @@ def cron_mod(user, id, minute, hour, day, month, weekday, command, level, currli
 def cron_del(user, id, level, currlist=''):
     if user is None or id is None:
         return False
-    spool = crontab if level == 'system' else os.path.join(cronspool, user)
+    spool = crontab if level == 'system' else join(cronspool, user)
 
     with open(spool, 'r') as f:
         lines = f.readlines()

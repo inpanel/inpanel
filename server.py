@@ -21,6 +21,7 @@ from core import web
 from core.modules.repo_yum import WebRequestRepoYUM
 from core.modules.certificate import WebRequestSSLTLS
 from core.modules.configuration import configurations
+from core.modules.process import WebRequestProcess
 from core.utils import make_cookie_secret
 
 
@@ -52,7 +53,7 @@ def main():
         (r'/logout', web.LogoutHandler),
         (r'/query/(.+)', web.QueryHandler),
         (r'/utils/network/(.+?)(?:/(.+))?', web.UtilsNetworkHandler),
-        (r'/utils/process/(.+?)(?:/(.+))?', web.UtilsProcessHandler),
+        (r'/utils/process/(.+?)(?:/(.+))?', WebRequestProcess),
         (r'/utils/time/(.+?)(?:/(.+))?', web.UtilsTimeHandler),
         (r'/utils/ssl/(.+?)(?:/(.+))?', WebRequestSSLTLS),
         (r'/repos/yum/(.+?)(?:/(.+))?', WebRequestRepoYUM),

@@ -35,7 +35,7 @@ from async_process import call_subprocess, callbackable
 from core import api as core_api
 from core import utils
 from modules import (aliyuncs, apache, cron, fdisk, files, ftp,
-                     lighttpd, mysql, named, nginx, php, process, proftpd,
+                     lighttpd, mysql, named, nginx, php, proftpd,
                      pureftpd, remote, shell, ssh, user, vsftpd, yum)
 from modules.configuration import configurations
 from modules.sc import ServerSet
@@ -582,67 +582,6 @@ class UtilsNetworkHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'DNS设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'DNS设置保存失败！'})
-
-
-class UtilsProcessHandler(RequestHandler):
-    '''Handler for load process list.'''
-    def get(self, sec, pid=None):
-        self.authed()
-        if sec == 'list':
-            res = process.get_list()
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程列表失败！'})
-
-        if sec == 'info':
-            res = process.get_info(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程信息失败！'})
-        if sec == 'status':
-            res = process.get_status(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程状态信息失败！'})
-        if sec == 'file':
-            res = process.get_file(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程文件使用情况失败！'})
-        if sec == 'io':
-            res = process.get_io(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程IO状态失败！'})
-        if sec == 'memory':
-            res = process.get_memory(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程内存使用情况失败！'})
-        if sec == 'network':
-            res = process.get_network(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程网络状态失败！'})
-
-    def post(self, sec, pids):
-        self.authed()
-        if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': u'DEMO状态不允许操作进程！'})
-            return
-
-        if sec == 'kill':
-            if process.kill_pids(pids):
-                self.write({'code': 0, 'msg': u'进程终止成功！'})
-            else:
-                self.write({'code': -1, 'msg': u'进程终止失败！'})
 
 class UtilsTimeHandler(RequestHandler):
     """Handler for system datetime setting.

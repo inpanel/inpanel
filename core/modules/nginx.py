@@ -9,9 +9,9 @@
 
 '''Module for Nginx Management'''
 
-import glob
 import os
 import re
+from glob import glob
 
 from core.utils import is_valid_ipv4, is_valid_ipv6, version_get
 
@@ -564,7 +564,7 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
                         includepath = value
                         if not includepath.startswith('/'):
                             includepath = os.path.join(os.path.dirname(config['_files'][0]), includepath)
-                        confs = glob.glob(includepath)
+                        confs = glob(includepath)
                         # order by domain name, excluding tld
                         getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
                         confs = sorted(confs, lambda x,y: cmp(getdm(x), getdm(y)))

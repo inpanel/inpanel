@@ -12,12 +12,76 @@ from os import listdir
 from os.path import exists
 from platform import system
 
+from core.web import RequestHandler
+
 try:
     from commands import getstatusoutput
 except:
     from subprocess import getstatusoutput
 
 os_type = system()
+
+
+class WebRequestProcess(RequestHandler):
+    '''Handler for load process list.'''
+    def get(self, sec, pid=None):
+        self.authed()
+        if sec == 'list':
+            res = get_list()
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程列表失败！'})
+
+        if sec == 'info':
+            res = get_info(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程信息失败！'})
+        if sec == 'status':
+            res = get_status(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程状态信息失败！'})
+        if sec == 'file':
+            res = get_file(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程文件使用情况失败！'})
+        if sec == 'io':
+            res = get_io(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程IO状态失败！'})
+        if sec == 'memory':
+            res = get_memory(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程内存使用情况失败！'})
+        if sec == 'network':
+            res = get_network(pid)
+            if res:
+                self.write({'code': 0, 'data': res})
+            else:
+                self.write({'code': -1, 'msg': u'获取进程网络状态失败！'})
+
+    def post(self, sec, pids):
+        self.authed()
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': u'DEMO状态不允许操作进程！'})
+            return
+
+        if sec == 'kill':
+            if kill_pids(pids):
+                self.write({'code': 0, 'msg': u'进程终止成功！'})
+            else:
+                self.write({'code': -1, 'msg': u'进程终止失败！'})
+
 
 def get_list():
     '''get process list'''
