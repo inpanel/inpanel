@@ -1438,15 +1438,13 @@ var UtilsRepositoryCtrl = [
         var section = Module.getSection();
         var enabled_sections = ['yum', 'apt', 'pacman', 'dnf', 'zypper'];
         Module.initSection(enabled_sections[0]);
-        // $scope.loading = false;
-        // $scope.yumloading = false;
         $scope.loading = {
             yum: true,
             apt: true,
             pacman: true,
             dnf: true,
             zypper: true
-        }
+        };
 
         $scope.load = function () {
             $scope.loaded = true;
@@ -1461,7 +1459,7 @@ var UtilsRepositoryCtrl = [
             $scope['load_' + section](init);
         };
         $scope.load_yum = function (init) {
-            if (!init && typeof init != undefined && !$scope.loading.yum) {
+            if (!init && !$scope.loading.yum) {
                 return; // Prevent duplicate requests
             }
             $scope.loading.yum = true;
@@ -1471,13 +1469,10 @@ var UtilsRepositoryCtrl = [
                 if (res && res.code == 0) {
                     $scope.repos_yum = res.data;
                 }
-                if (!$scope.loaded) {
-                    $scope.loaded = true;
-                }
             });
         };
         $scope.load_apt = function (init) {
-            if (!init && typeof init == undefined && !$scope.loading.apt) {
+            if (!init && !$scope.loading.apt) {
                 return; // Prevent duplicate requests
             }
             $scope.loading.apt = true;
@@ -1485,15 +1480,12 @@ var UtilsRepositoryCtrl = [
             Request.get('/repos/yum/list', function (res) {
                 $scope.loading.apt = false;
                 if (res && res.code == 0) {
-                    $scope.repos_yum = res.data;
-                }
-                if (!$scope.loaded) {
-                    $scope.loaded = true;
+                    $scope.repos_apt = res.data;
                 }
             });
         };
         $scope.load_pacman = function (init) {
-            if (!init && typeof init == undefined && !$scope.loading.pacman) {
+            if (!init && !$scope.loading.pacman) {
                 return; // Prevent duplicate requests
             }
             $scope.loading.pacman = true;
@@ -1501,15 +1493,12 @@ var UtilsRepositoryCtrl = [
             Request.get('/repos/yum/list', function (res) {
                 $scope.loading.pacman = false;
                 if (res && res.code == 0) {
-                    $scope.repos_yum = res.data;
-                }
-                if (!$scope.loaded) {
-                    $scope.loaded = true;
+                    $scope.repos_pacman = res.data;
                 }
             });
         };
         $scope.load_dnf = function (init) {
-            if (!init && typeof init == undefined && !$scope.loading.dnf) {
+            if (!init && !$scope.loading.dnf) {
                 return; // Prevent duplicate requests
             }
             $scope.loading.dnf = true;
@@ -1517,15 +1506,12 @@ var UtilsRepositoryCtrl = [
             Request.get('/repos/yum/list', function (res) {
                 $scope.loading.dnf = false;
                 if (res && res.code == 0) {
-                    $scope.repos_yum = res.data;
-                }
-                if (!$scope.loaded) {
-                    $scope.loaded = true;
+                    $scope.repos_dnf = res.data;
                 }
             });
         };
         $scope.load_zypper = function (init) {
-            if (!init && typeof init == undefined && !$scope.loading.zypper) {
+            if (!init && !$scope.loading.zypper) {
                 return; // Prevent duplicate requests
             }
             $scope.loading.zypper = true;
@@ -1533,10 +1519,7 @@ var UtilsRepositoryCtrl = [
             Request.get('/repos/yum/list', function (res) {
                 $scope.loading.zypper = false;
                 if (res && res.code == 0) {
-                    $scope.repos_yum = res.data;
-                }
-                if (!$scope.loaded) {
-                    $scope.loaded = true;
+                    $scope.repos_zypper = res.data;
                 }
             });
         };

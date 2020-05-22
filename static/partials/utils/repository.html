@@ -5,7 +5,7 @@
 
 <div id="main" ng-show="loaded" style="display:none">
     <div class="module-header">
-        <h3>软件仓库（开发中）</h3>
+        <h3>软件仓库</h3>
     </div>
 
     <div class="tabbable" ng-init="load()">
@@ -19,10 +19,10 @@
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='yum'" id="yum">
                 <div class="clearfix">
-                    <div class="pull-left"><h5>YUM 源配置文件列表（CentOS）</h5></div>
+                    <div class="pull-left"><h5>软件仓库源列表 for YUM</h5></div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_yum()" ng-disabled="loading.yum"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_yum(true)" ng-disabled="loading.yum"><i class="glyphicon glyphicon-refresh"></i></button>
                             <button class="btn btn-default" title="添加配置源" ng-click="add_yum()" ng-disabled="loading.yum"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
@@ -49,17 +49,42 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='apt'" id="apt">
-                <div ng-show="loading.apt"><div waiting></div></div>
-                <div ng-hide="loading.apt">
-                    软件仓库列表 for Ubuntu and Debian
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库列表 for Ubuntu and Debian</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_apt(true)" ng-disabled="loading.apt"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_apt()" ng-disabled="loading.apt"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div ng-show="loading.apt"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.apt">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="repo in repos_apt">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pacman'" id="pacman">
                 <div class="clearfix">
                     <div class="pull-left"><h5>软件仓库列表 for Arch</h5></div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_pacman()" ng-disabled="loading.pacman"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_pacman(true)" ng-disabled="loading.pacman"><i class="glyphicon glyphicon-refresh"></i></button>
                             <button class="btn btn-default" title="添加配置源" ng-click="add_pacman()" ng-disabled="loading.pacman"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
@@ -86,16 +111,66 @@
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='dnf'" id="dnf">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
-                    软件仓库列表 for Fedora
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库列表 for Fedora</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_dnf(true)" ng-disabled="loading.dnf"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_dnf()" ng-disabled="loading.dnf"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div ng-show="loading.dnf"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.dnf">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="repo in repos_dnf">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='zypper'" id="zypper">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
-                    软件仓库列表 for openSUSE
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库列表 for openSUSE</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_zypper(true)" ng-disabled="loading.zypper"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_zypper()" ng-disabled="loading.zypper"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div ng-show="loading.zypper"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.zypper">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="repo in repos_zypper">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
