@@ -1438,7 +1438,15 @@ var UtilsRepositoryCtrl = [
         var section = Module.getSection();
         var enabled_sections = ['yum', 'apt', 'pacman', 'dnf', 'zypper'];
         Module.initSection(enabled_sections[0]);
-        $scope.loading = false;
+        // $scope.loading = false;
+        // $scope.yumloading = false;
+        $scope.loading = {
+            yum: true,
+            apt: true,
+            pacman: true,
+            dnf: true,
+            zypper: true
+        }
 
         $scope.load = function () {
             $scope.loaded = true;
@@ -1452,35 +1460,85 @@ var UtilsRepositoryCtrl = [
             Module.setSection(section);
             $scope['load_' + section](init);
         };
-        $scope.load_yum = function () {
-            $scope.loading = true;
-            Timeout(function() {
-                $scope.loading = false;
-            }, 1000, module);
+        $scope.load_yum = function (init) {
+            if (!init && typeof init != undefined && !$scope.loading.yum) {
+                return; // Prevent duplicate requests
+            }
+            $scope.loading.yum = true;
+            $scope.repos_yum = [];
+            Request.get('/repos/yum/list', function (res) {
+                $scope.loading.yum = false;
+                if (res && res.code == 0) {
+                    $scope.repos_yum = res.data;
+                }
+                if (!$scope.loaded) {
+                    $scope.loaded = true;
+                }
+            });
         };
-        $scope.load_apt = function () {
-            $scope.loading = true;
-            Timeout(function() {
-                $scope.loading = false;
-            }, 1000, module);
+        $scope.load_apt = function (init) {
+            if (!init && typeof init == undefined && !$scope.loading.apt) {
+                return; // Prevent duplicate requests
+            }
+            $scope.loading.apt = true;
+            $scope.repos_apt = [];
+            Request.get('/repos/yum/list', function (res) {
+                $scope.loading.apt = false;
+                if (res && res.code == 0) {
+                    $scope.repos_yum = res.data;
+                }
+                if (!$scope.loaded) {
+                    $scope.loaded = true;
+                }
+            });
         };
-        $scope.load_pacman = function () {
-            $scope.loading = true;
-            Timeout(function() {
-                $scope.loading = false;
-            }, 1000, module);
+        $scope.load_pacman = function (init) {
+            if (!init && typeof init == undefined && !$scope.loading.pacman) {
+                return; // Prevent duplicate requests
+            }
+            $scope.loading.pacman = true;
+            $scope.repos_pacman = [];
+            Request.get('/repos/yum/list', function (res) {
+                $scope.loading.pacman = false;
+                if (res && res.code == 0) {
+                    $scope.repos_yum = res.data;
+                }
+                if (!$scope.loaded) {
+                    $scope.loaded = true;
+                }
+            });
         };
-        $scope.load_dnf = function () {
-            $scope.loading = true;
-            Timeout(function() {
-                $scope.loading = false;
-            }, 1000, module);
+        $scope.load_dnf = function (init) {
+            if (!init && typeof init == undefined && !$scope.loading.dnf) {
+                return; // Prevent duplicate requests
+            }
+            $scope.loading.dnf = true;
+            $scope.repos_dnf = [];
+            Request.get('/repos/yum/list', function (res) {
+                $scope.loading.dnf = false;
+                if (res && res.code == 0) {
+                    $scope.repos_yum = res.data;
+                }
+                if (!$scope.loaded) {
+                    $scope.loaded = true;
+                }
+            });
         };
-        $scope.load_zypper = function () {
-            $scope.loading = true;
-            Timeout(function() {
-                $scope.loading = false;
-            }, 1000, module);
+        $scope.load_zypper = function (init) {
+            if (!init && typeof init == undefined && !$scope.loading.zypper) {
+                return; // Prevent duplicate requests
+            }
+            $scope.loading.zypper = true;
+            $scope.repos_zypper = [];
+            Request.get('/repos/yum/list', function (res) {
+                $scope.loading.zypper = false;
+                if (res && res.code == 0) {
+                    $scope.repos_yum = res.data;
+                }
+                if (!$scope.loaded) {
+                    $scope.loaded = true;
+                }
+            });
         };
     }
 ];

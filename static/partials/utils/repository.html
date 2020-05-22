@@ -18,17 +18,17 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='yum'" id="yum">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
+                <div class="clearfix">
                     <div class="pull-left"><h5>YUM 源配置文件列表（CentOS）</h5></div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新配置列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加配置源" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_yum()" ng-disabled="loading.yum"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_yum()" ng-disabled="loading.yum"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
                 </div>
-                <table class="table table-hover table-bordered table-condensed" ng-hide="loading">
+                <div ng-show="loading.yum"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.yum">
                     <thead>
                         <tr>
                             <th style="width:50px;">序号</th>
@@ -37,36 +37,53 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>CentOS-Base.repo</td>
+                        <tr ng-repeat="repo in repos_yum">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
                             <td>
-                                <button class="btn btn-default btn-xs">编辑</button>
-                                <button class="btn btn-default btn-xs">删除</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>CentOS-Debuginfo.repo</td>
-                            <td>
-                                <button class="btn btn-default btn-xs">编辑</button>
-                                <button class="btn btn-default btn-xs">删除</button>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='apt'" id="apt">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
+                <div ng-show="loading.apt"><div waiting></div></div>
+                <div ng-hide="loading.apt">
                     软件仓库列表 for Ubuntu and Debian
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pacman'" id="pacman">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
-                    软件仓库列表 for Arch
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库列表 for Arch</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_pacman()" ng-disabled="loading.pacman"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_pacman()" ng-disabled="loading.pacman"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div ng-show="loading.pacman"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.pacman">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="repo in repos_pacman">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='dnf'" id="dnf">
                 <div ng-show="loading"><div waiting></div></div>

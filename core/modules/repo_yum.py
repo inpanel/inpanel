@@ -33,7 +33,7 @@ class WebRequestRepoYUM(RequestHandler):
             if items is None:
                 self.write({'code': -1, 'msg': u'获取配置失败！'})
             else:
-                self.write({'code': 0, 'msg': u'获取配置成功！', 'list': items})
+                self.write({'code': 0, 'msg': '', 'data': items})
         elif sec == 'item':
             if repo is None:
                 repo = self.get_argument('repo', None)
@@ -44,7 +44,7 @@ class WebRequestRepoYUM(RequestHandler):
             if data is None:
                 self.write({'code': -1, 'msg': u'配置文件不存在！'})
             else:
-                self.write({'code': 0, 'msg': u'获取配置成功！', 'data': data})
+                self.write({'code': 0, 'msg': '', 'data': data})
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
 
