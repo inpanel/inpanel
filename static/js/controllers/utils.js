@@ -1523,6 +1523,39 @@ var UtilsRepositoryCtrl = [
                 }
             });
         };
+
+        $scope.yum_add_confirm = function() {
+            $scope.currepo = {
+                'serverid': '',
+                'name': '',
+                'enabled': 1,
+                'baseurl': '',
+                'gpgcheck': 0,
+                'repo': ''
+            };
+            $('#yum-add-confirm').modal();
+        };
+        $scope.yum_add = function() {
+            Request.post('/repos/yum/add', $scope.currepo, function(data) {
+                if (data.code == 0) {
+                    $scope.load_yum(true);
+                }
+            });
+        };
+
+        $scope.yum_del_confirm = function(i) {
+            $scope.delrepo = $scope.repos_yum[i];
+            $('#yum-del-confirm').modal();
+        };
+        $scope.yum_del = function() {
+            Request.post('/repos/yum/del', {
+                repo: $scope.delrepo
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.load_yum(true);
+                }
+            });
+        };
     }
 ];
 

@@ -13,6 +13,7 @@ from os import listdir
 from os.path import abspath, exists, isdir, join
 from platform import system
 
+from .files import delete
 from core.modules.configuration import Config
 from core.web import RequestHandler
 
@@ -54,7 +55,52 @@ class WebRequestRepoYUM(RequestHandler):
             self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 YUM ！'})
             return
 
-        if sec == 'edit':
+        if sec in ('edit', 'add'):
+            if repo is None:
+                repo = self.get_argument('repo', None)
+            if repo is None:
+                self.write({'code': -1, 'msg': u'配置文件不能为空！'})
+                return
+            serverid = self.get_argument('serverid', '')
+            if serverid == '':
+                self.write({'code': -1, 'msg': u'仓库标识ID不能为空！'})
+                return
+            name = self.get_argument('name', '')
+            if name == '':
+                self.write({'code': -1, 'msg': u'仓库名称不能为空！'})
+                return
+            baseurl = self.get_argument('baseurl', '')
+            if baseurl == '':
+                self.write({'code': -1, 'msg': u'仓库路径不能为空！'})
+                return
+            enabled = self.get_argument('enabled', True)
+            gpgcheck = self.get_argument('gpgcheck', False)
+            data = {
+                serverid: {
+                    'name': name,
+                    'enabled': 0 if not enabled else 1,
+                    'baseurl': baseurl,
+                    'gpgcheck': 0 if not gpgcheck else 1,
+                    'gpgkey': ''
+                }
+            }
+            if sec == 'edit':
+                if not exists(join(config_path, repo)):
+                    self.write({'code': -1, 'msg': u'配置文件不存在！'})
+                    return
+                if set_item(repo, data) is True:
+                    self.write({'code': 0, 'msg': u'配置修改成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'配置修改失败！'})
+            else:
+                if exists(join(config_path, repo)):
+                    self.write({'code': -1, 'msg': u'配置文件已存在！'})
+                    return
+                if add_item(repo, data) is True:
+                    self.write({'code': 0, 'msg': u'配置添加成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'配置修改失败！'})
+        elif sec == 'del':
             if repo is None:
                 repo = self.get_argument('repo', None)
             if repo is None:
@@ -63,31 +109,10 @@ class WebRequestRepoYUM(RequestHandler):
             if not exists(join(config_path, repo)):
                 self.write({'code': -1, 'msg': u'配置文件不存在！'})
                 return
-            data = self.get_argument('data', '')
-            if data == '':
-                self.write({'code': -1, 'msg': u'配置不能为空！'})
-                return
-            if set_item(repo, data) is True:
-                self.write({'code': 0, 'msg': u'配置修改成功！'})
+            if del_item(repo) is True:
+                self.write({'code': 0, 'msg': u'配置文件已移入回收站！'})
             else:
-                self.write({'code': -1, 'msg': u'配置修改失败！'})
-        elif sec == 'add':
-            if repo is None:
-                repo = self.get_argument('repo', None)
-            if repo is None:
-                self.write({'code': -1, 'msg': u'配置文件不能为空！'})
-                return
-            if exists(join(config_path, repo)):
-                self.write({'code': -1, 'msg': u'配置文件已存在！'})
-                return
-            data = self.get_argument('data', '')
-            if data == '':
-                self.write({'code': -1, 'msg': u'配置不能为空！'})
-                return
-            if add_item(repo, data) is True:
-                self.write({'code': 0, 'msg': u'配置添加成功！'})
-            else:
-                self.write({'code': -1, 'msg': u'配置修改失败！'})
+                self.write({'code': -1, 'msg': u'删除失败！'})
         else:
             self.write({'code': -1, 'msg': u'未定义的操作！'})
 
@@ -122,7 +147,6 @@ def set_item(repo, data):
         return None
     repo_file = join(config_path, repo)
     if exists(repo_file):
-        data = loads(data) or {}
         config = Config(repo_file, data)
         return True
         # return config.update()
@@ -139,10 +163,16 @@ def add_item(repo, data):
     if exists(repo_file):
         return False
     else:
-        data = loads(data) or {}
         config = Config(repo_file, data)
         return True
         # return config.update()
+
+def del_item(repo):
+    '''delete repo file'''
+    if not repo:
+        return None
+    repo_file = join(config_path, repo)
+    return delete(repo_file)
 
 if __name__ == '__main__':
     import json

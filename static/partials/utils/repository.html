@@ -23,7 +23,7 @@
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-default" title="刷新配置列表" ng-click="load_yum(true)" ng-disabled="loading.yum"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加配置源" ng-click="add_yum()" ng-disabled="loading.yum"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="yum_add_confirm()" ng-disabled="loading.yum"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
                 </div>
@@ -41,8 +41,8 @@
                             <td class="text-right">{{$index+1}}</td>
                             <td>{{repo}}</td>
                             <td>
-                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
-                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                                <button class="btn btn-default btn-xs" ng-click="yum_mod_confirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="yum_del_confirm($index)">删除</button>
                             </td>
                         </tr>
                     </tbody>
@@ -171,6 +171,80 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="yum-add-confirm" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">添加YUM</h3>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">配置文件：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="currepo.repo">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">仓库标识ID：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="currepo.serverid">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">仓库名称：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="currepo.name">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">仓库路径：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="currepo.baseurl">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">密钥监测：</label>
+                        <div class="col-sm-9 checkbox">
+                            <label><input type="checkbox" ng-checked="currepo.gpgcheck"> 是否检查密钥？</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">状态：</label>
+                        <div class="col-sm-9 checkbox">
+                            <label><input type="checkbox" ng-model="currepo.enabled"> 是否启用？</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#yum-add-confirm').modal('hide')" ng-click="yum_add()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="yum-del-confirm" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">删除YUM源</h3>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除YUM源配置文件 {{delrepo}} 吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-danger" onclick="$('#yum-del-confirm').modal('hide')" ng-click="yum_del()">确认删除</button>
             </div>
         </div>
     </div>
