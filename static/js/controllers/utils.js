@@ -1445,7 +1445,13 @@ var UtilsRepositoryCtrl = [
             dnf: true,
             zypper: true
         };
-
+        $scope.supported = {
+            yum: true,
+            apt: false,
+            pacman: false,
+            dnf: false,
+            zypper: false
+        };
         $scope.load = function () {
             $scope.loaded = true;
             $scope.tab_sec(section);

@@ -10,11 +10,11 @@
 
     <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='yum'"><a href="#yum" ng-click="tab_sec('yum')" data-toggle="tab">YUM</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='apt'"><a href="#apt" ng-click="tab_sec('apt')" data-toggle="tab">APT</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='pacman'"><a href="#pacman" ng-click="tab_sec('pacman')" data-toggle="tab">Pacman</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='dnf'"><a href="#dnf" ng-click="tab_sec('dnf')" data-toggle="tab">DNF</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='zypper'"><a href="#zypper" ng-click="tab_sec('zypper')" data-toggle="tab">Zypper</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='yum'" ng-show="supported.yum"><a href="#yum" ng-click="tab_sec('yum')" data-toggle="tab">YUM</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='apt'" ng-show="supported.apt"><a href="#apt" ng-click="tab_sec('apt')" data-toggle="tab">APT</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='pacman'" ng-show="supported.pacman"><a href="#pacman" ng-click="tab_sec('pacman')" data-toggle="tab">Pacman</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='dnf'" ng-show="supported.dnf"><a href="#dnf" ng-click="tab_sec('dnf')" data-toggle="tab">DNF</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='zypper'" ng-show="supported.zypper"><a href="#zypper" ng-click="tab_sec('zypper')" data-toggle="tab">Zypper</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='yum'" id="yum">
@@ -189,25 +189,25 @@
                     <div class="form-group form-inline">
                         <label class="col-sm-3 control-label">配置文件：</label>
                         <div class="col-sm-9">
-                            <input class="form-control" type="text" ng-model="currepo.repo">
+                            <input class="form-control" type="text" ng-model="currepo.repo" placeholder=".repo配置文件">
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-3 control-label">仓库标识ID：</label>
                         <div class="col-sm-9">
-                            <input class="form-control" type="text" ng-model="currepo.serverid">
+                            <input class="form-control" type="text" ng-model="currepo.serverid" placeholder="仓库标识ID，ID需唯一">
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-3 control-label">仓库名称：</label>
                         <div class="col-sm-9">
-                            <input class="form-control" type="text" ng-model="currepo.name">
+                            <input class="form-control" type="text" ng-model="currepo.name" placeholder="仓库名称">
                         </div>
                     </div>
                     <div class="form-group form-inline">
                         <label class="col-sm-3 control-label">仓库路径：</label>
                         <div class="col-sm-9">
-                            <input class="form-control" type="text" ng-model="currepo.baseurl">
+                            <input class="form-control" type="text" ng-model="currepo.baseurl" placeholder="仓库路径">
                         </div>
                     </div>
                     <div class="form-group form-inline">
