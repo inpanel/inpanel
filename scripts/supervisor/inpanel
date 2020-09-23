@@ -1,0 +1,16 @@
+[program:inpanel]
+directory=/usr/local/inpanel/
+command=/usr/bin/python inpanel
+autostart=true
+autorestart=true
+startsecs=10
+stdout_logfile=/var/log/inpanel/stdout.log
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=10
+stdout_capture_maxbytes=1MB
+stderr_logfile=/var/log/inpanel/stderr.log
+stderr_logfile_maxbytes=1MB
+stderr_logfile_backups=10
+stderr_capture_maxbytes=1MB
+user = git
+environment = HOME="/root", USER="root"
