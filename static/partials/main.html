@@ -93,22 +93,34 @@
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" style="width:300px">
                                     <tr>
-                                        <td style="width:80px">物理大小：</td>
+                                        <td style="width:100px">总大小：</td>
                                         <td class="text-right" style="width:80px">{{ info['server.meminfo']['mem_total'] }}</td>
                                         <td style="width:20px"></td>
                                         <td style="width:80px"></td>
                                     </tr>
                                     <tr>
-                                        <td>物理已用：</td>
+                                        <td>已用大小：</td>
                                         <td class="text-right">{{ info['server.meminfo']['mem_used'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_used_rate'] | space.used"></td>
                                     </tr>
                                     <tr>
-                                        <td>物理空闲：</td>
+                                        <td>空闲内存：</td>
                                         <td class="text-right">{{ info['server.meminfo']['mem_free'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_free_rate'] | space.free"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>缓冲区大小：</td>
+                                        <td class="text-right">{{ info['server.meminfo']['mem_buffers'] }}</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>缓存大小：</td>
+                                        <td class="text-right">{{ info['server.meminfo']['mem_cached'] }}</td>
+                                        <td></td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td>可用内存：</td>
@@ -116,23 +128,17 @@
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_available_rate'] | space.available"></td>
                                     </tr>
-                                    <tr>
-                                        <td>Buffers：</td>
-                                        <td class="text-right">{{ info['server.meminfo']['mem_buffers'] }}</td>
+                                    <tr ng-show="info['server.meminfo']['mem_available'] == '0B'">
+                                        <td>可用内存(计算)：</td>
+                                        <td class="text-right">{{ info['server.meminfo']['mem_available_computed'] }}</td>
                                         <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Cached：</td>
-                                        <td class="text-right">{{ info['server.meminfo']['mem_cached'] }}</td>
-                                        <td></td>
-                                        <td></td>
+                                        <td ng-bind-html-unsafe="info['server.meminfo']['mem_available_computed_rate'] | space.available"></td>
                                     </tr>
                                 </table>
                             </td>
                         </tr>
                         <tr ng-show="info['server.meminfo']['swap_total'] != '0B'">
-                            <td>SWAP ：</td>
+                            <td>交换空间 ：</td>
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" style="width:300px">
                                     <tr>
