@@ -108,7 +108,7 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
 }]);
 inpanel.value('version', {
     'version': '1.1.1',
-    'build': '23',
+    'build': '24',
     'releasetime': releasetime,
     'changelog': 'http://inpanel.org/changelog.html'
 });

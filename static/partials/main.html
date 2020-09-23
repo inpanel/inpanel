@@ -22,6 +22,13 @@
             <li ng-class="'active' | iftrue:activeTabName=='service'"><a href="#service" ng-click="sec('service')" data-toggle="tab">服务状态</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统信息</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='hardware'"><a href="#hardware" ng-click="sec('hardware')" data-toggle="tab">硬件信息</a></li>
+            <li class="pull-right">
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-default" title="刷新数据" ng-click="refresh()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-refresh"></i></button>
+                    <button class="btn btn-default" title="开启自动刷新" ng-click="auto_refresh_open()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-play"></i></button>
+                    <button class="btn btn-default" title="关闭自动刷新" ng-click="auto_refresh_close()" ng-disabled="!auto_refresh"><i class="glyphicon glyphicon-stop"></i></button>
+                </div>
+            </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='server'" id="server">

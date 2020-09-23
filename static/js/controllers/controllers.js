@@ -116,6 +116,7 @@ var MainCtrl = [
 
         $scope.detectVer = true;
         $scope.hasNewver = false;
+        $scope.auto_refresh = false;
         Request.get('/setting/upver', function (data) {
             if (data.code == -1) {
                 $scope.upverMessage = data.msg;
@@ -170,8 +171,21 @@ var MainCtrl = [
                     }
                     deepUpdate($scope.info, data);
                 }
-                Timeout($scope.loadInfo, 1000, module);
+                if ($scope.auto_refresh) {
+                    Timeout($scope.loadInfo, 1000, module);
+                }
             });
+        };
+
+        $scope.refresh = function () {
+            $scope.loadInfo();
+        };
+        $scope.auto_refresh_open = function () {
+            $scope.auto_refresh = true;
+            $scope.loadInfo();
+        };
+        $scope.auto_refresh_close = function () {
+            $scope.auto_refresh = false;
         };
     }
 ];
