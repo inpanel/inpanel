@@ -16,7 +16,7 @@ __version__ = '1.1.1.24'
 name = 'InPanel'
 version = '1.1.1'
 build = '24'
-releasetime = '2020-05-13 10:20:00 GMT+0800'
+releasetime = '2020-10-06 08:08:00 GMT+0800'
 version_info = {
     'name': name,
     'build': build,
