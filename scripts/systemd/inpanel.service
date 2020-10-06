@@ -1,33 +1,28 @@
 [Unit]
-Description=InPanel
-Documentation=this script starts and stops the inpanel daemon
-After=network.target
-After=remote-fs.target
-After=nss-lookup.target
+Description = InPanel
 
 [Service]
-#LimitMEMLOCK=infinity
-#LimitNOFILE=65535
-Type=simple
-User=root
-Group=root
-Type=simple
-PIDFile=/run/inpanel.pid
-WorkingDirectory=/usr/local/inpanel
-ExecStartPre=
-ExecStart=/usr/bin/python /usr/local/inpanel/inpanel.py
-ExecReload=
-ExecStop=
+Type = simple
+User = root
+Group = root
+Type = simple
+PIDFile = /var/run/inpanel.pid
+# WorkingDirectory = /usr/local/inpanel
+# ExecStartPre =
+ExecStart = /usr/bin/python /usr/local/inpanel/inpanel.py
+# ExecReload =
+# ExecStop =
+StartLimitInterval = 30min
 
 # Some distributions may not support these hardening directives. If you cannot start the service due
 # to an unknown option, comment out the ones not supported by your version of systemd.
-ProtectSystem=full
-PrivateDevices=yes
-PrivateTmp=yes
-NoNewPrivileges=true
+# ProtectSystem = full
+# PrivateDevices = yes
+# PrivateTmp = yes
+# NoNewPrivileges = true
 
 [Install]
-WantedBy=multi-user.target
-Alias=rc-local.service
+WantedBy = multi-user.target
 
+# /lib/systemd/system/inpanel.service
 # systemctl start inpanel.service && systemctl enable inpanel.service
