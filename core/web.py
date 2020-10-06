@@ -9,18 +9,20 @@
 
 '''Module for Web Querying'''
 
-import base64
 import binascii
-import datetime
-import functools
 import hmac
-import json
-import logging
-import os
 import re
-import subprocess
 import time
-import uuid
+from base64 import b64decode, b64encode
+from datetime import datetime
+from functools import partial
+from json import dumps, loads
+from logging import info as loginfo
+from os import mkdir, stat, unlink
+from os.path import abspath, basename, dirname, exists, isdir, isfile
+from os.path import join as joinpath
+from subprocess import PIPE, STDOUT, Popen
+from uuid import uuid4
 
 import core
 import pyDes
@@ -32,10 +34,10 @@ import tornado.web
 from async_process import call_subprocess, callbackable
 from core import api as core_api
 from core import utils
-from modules import (aliyuncs, apache, certificate, cron, fdisk, files, ftp,
-                     lighttpd, mysql, named, nginx, php, process, proftpd,
+from modules import (aliyuncs, apache, cron, fdisk, files, ftp,
+                     lighttpd, mysql, named, nginx, php, proftpd,
                      pureftpd, remote, shell, ssh, user, vsftpd, yum)
-from modules.config import Config
+from modules.configuration import configurations
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
 from modules.service import Service
@@ -59,8 +61,8 @@ class Application(tornado.web.Application):
         settings['arch'] = uname['machine']
         if settings['arch'] == 'i686' and settings['dist_verint'] == 5: settings['arch'] = 'i386'
         #if settings['arch'] == 'unknown': settings['arch'] = uname['machine']
-        settings['data_path'] = os.path.abspath(settings['data_path'])
-        settings['package_path'] = os.path.join(settings['data_path'], 'packages')
+        settings['data_path'] = abspath(settings['data_path'])
+        settings['package_path'] = joinpath(settings['data_path'], 'packages')
 
         tornado.web.Application.__init__(self, handlers, default_host, transforms,
                  wsgi, **settings)
@@ -71,13 +73,13 @@ class RequestHandler(tornado.web.RequestHandler):
     def initialize(self):
         """Parse JSON data to argument list.
         """
-        self.inifile = os.path.join(self.settings['conf_path'])
-        self.config = Config(self.inifile)
+        self.inifile = joinpath(self.settings['conf_path'])
+        self.config = configurations(self.inifile)
 
         content_type = self.request.headers.get("Content-Type", "")
         if content_type.startswith("application/json"):
             try:
-                arguments = json.loads(tornado.escape.native_str(self.request.body))
+                arguments = loads(tornado.escape.native_str(self.request.body))
                 for name, value in arguments.items():
                     name = _u(name)
                     if isinstance(value, unicode):
@@ -145,7 +147,7 @@ class RequestHandler(tornado.web.RequestHandler):
             token = self.get_cookie("XSRF-TOKEN") #  or self.request.headers.get("X-XSRF-TOKEN"))
             # token = (self.get_cookie("XSRF-TOKEN") or self.request.headers.get("X-XSRF-TOKEN"))
             if not token:
-                token = binascii.b2a_hex(uuid.uuid4().bytes)
+                token = binascii.b2a_hex(uuid4().bytes)
                 expires_days = 30 if self.current_user else None
                 self.set_cookie("XSRF-TOKEN", token, expires_days=expires_days)
             self._xsrf_token = token
@@ -176,7 +178,7 @@ class FileDownloadHandler(StaticFileHandler):
     def get(self, path):
         self.authed()
         self.set_header('Content-Type', 'application/octet-stream')
-        self.set_header('Content-disposition', 'attachment; filename=%s' % os.path.basename(path))
+        self.set_header('Content-disposition', 'attachment; filename=%s' % basename(path))
         self.set_header('Content-Transfer-Encoding', 'binary')
         StaticFileHandler.get(self, path)
 
@@ -211,7 +213,7 @@ class FileUploadHandler(RequestHandler):
             self.write(u'正在上传...<br>')
             for item in self.request.files['ufile']:
                 filename = re.split('[\\\/]', item['filename'])[-1]
-                with open(os.path.join(path, filename), 'wb') as f:
+                with open(joinpath(path, filename), 'wb') as f:
                     f.write(item['body'])
                 self.write(u'%s 上传成功！<br>' % item['filename'])
 
@@ -272,7 +274,7 @@ class LoginHandler(RequestHandler):
                     'msg': u'登录已被锁定，请在 %s 后重试登录。<br>'\
                         u'如需立即解除锁定，请在服务器上执行以下命令：<br>'\
                         u'/usr/local/inpanel/config.py loginlock off' %
-                        datetime.datetime.fromtimestamp(loginlockexpire)
+                        datetime.fromtimestamp(loginlockexpire)
                             .strftime('%Y-%m-%d %H:%M:%S')})
                 return
             else:
@@ -340,15 +342,15 @@ class SitePackageHandler(RequestHandler):
     @tornado.web.asynchronous
     @tornado.gen.engine
     def getlist(self):
-        if not os.path.exists(self.settings['package_path']): os.mkdir(self.settings['package_path'])
+        if not exists(self.settings['package_path']): mkdir(self.settings['package_path'])
 
         packages = ''
-        packages_cachefile = os.path.join(self.settings['package_path'], '.meta')
+        packages_cachefile = joinpath(self.settings['package_path'], '.meta')
 
         # fetch from cache
-        if os.path.exists(packages_cachefile):
+        if exists(packages_cachefile):
             # check the file modify time
-            mtime = os.stat(packages_cachefile).st_mtime
+            mtime = stat(packages_cachefile).st_mtime
             if time.time() - mtime < 86400: # cache 24 hours
                 with open(packages_cachefile) as f: packages = f.read()
 
@@ -378,8 +380,8 @@ class SitePackageHandler(RequestHandler):
             return
 
         # fetch package list from cache
-        packages_cachefile = os.path.join(self.settings['package_path'], '.meta')
-        if not os.path.exists(packages_cachefile):
+        packages_cachefile = joinpath(self.settings['package_path'], '.meta')
+        if not exists(packages_cachefile):
             self.write({'code': -1, 'msg': u'获取安装包下载地址失败！'})
             return
         with open(packages_cachefile) as f: packages = f.read()
@@ -401,11 +403,11 @@ class SitePackageHandler(RequestHandler):
             return
 
         filename = '%s-%s' % (name, version)
-        workpath = os.path.join(self.settings['package_path'], filename)
-        if not os.path.exists(workpath): os.mkdir(workpath)
+        workpath = joinpath(self.settings['package_path'], filename)
+        if not exists(workpath): mkdir(workpath)
 
         filenameext = '%s%s' % (filename, package['ext'])
-        filepath = os.path.join(self.settings['package_path'], filenameext)
+        filepath = joinpath(self.settings['package_path'], filenameext)
 
         self.write({'code': 0, 'msg': '', 'data': {
             'url': '%s&name=%s&version=%s' % (core_api['download_package'], name, version),
@@ -581,67 +583,6 @@ class UtilsNetworkHandler(RequestHandler):
             else:
                 self.write({'code': -1, 'msg': u'DNS设置保存失败！'})
 
-
-class UtilsProcessHandler(RequestHandler):
-    '''Handler for load process list.'''
-    def get(self, sec, pid=None):
-        self.authed()
-        if sec == 'list':
-            res = process.get_list()
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程列表失败！'})
-
-        if sec == 'info':
-            res = process.get_info(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程信息失败！'})
-        if sec == 'status':
-            res = process.get_status(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程状态信息失败！'})
-        if sec == 'file':
-            res = process.get_file(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程文件使用情况失败！'})
-        if sec == 'io':
-            res = process.get_io(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程IO状态失败！'})
-        if sec == 'memory':
-            res = process.get_memory(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程内存使用情况失败！'})
-        if sec == 'network':
-            res = process.get_network(pid)
-            if res:
-                self.write({'code': 0, 'data': res})
-            else:
-                self.write({'code': -1, 'msg': u'获取进程网络状态失败！'})
-
-    def post(self, sec, pids):
-        self.authed()
-        if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': u'DEMO状态不允许操作进程！'})
-            return
-
-        if sec == 'kill':
-            if process.kill_pids(pids):
-                self.write({'code': 0, 'msg': u'进程终止成功！'})
-            else:
-                self.write({'code': -1, 'msg': u'进程终止失败！'})
-
 class UtilsTimeHandler(RequestHandler):
     """Handler for system datetime setting.
     """
@@ -669,58 +610,6 @@ class UtilsTimeHandler(RequestHandler):
                 self.write({'code': 0, 'msg': u'时区设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': u'时区设置保存失败！'})
-
-
-class UtilsSSLHandler(RequestHandler):
-    """Handler for SSL/TLS setting.
-    """
-    def get(self, sec, x=None):
-        self.authed()
-        if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 SSL ！'})
-            return
-        certs = certificate.Certificate()
-        if sec == 'keys':
-            keys_list = certs.get_keys_list()
-            if keys_list is None:
-                self.write({'code': -1, 'msg': u'获取私钥失败！'})
-            else:
-                self.write({'code': 0, 'msg': u'获取私钥成功！', 'list': keys_list})
-        elif sec == 'crts':
-            crts_list = certs.get_crts_list()
-            if crts_list is None:
-                self.write({'code': -1, 'msg': u'获取证书失败！'})
-            else:
-                self.write({'code': 0, 'msg': u'获取证书成功！', 'list': crts_list})
-        elif sec == 'csrs':
-            csrs_list = certs.get_csrs_list()
-            if csrs_list is None:
-                self.write({'code': -1, 'msg': u'获取证书签名请求失败！'})
-            else:
-                self.write({'code': 0, 'msg': u'获取证书签名请求成功！', 'list': csrs_list})
-        elif sec == 'host':
-            host_list = certs.get_host_list()
-            if host_list is None:
-                self.write({'code': -1, 'msg': u'获取站点失败！'})
-            else:
-                self.write({'code': 0, 'msg': u'获取站点成功！', 'list': host_list})
-        else:
-            self.write({'code': -1, 'msg': u'未定义的操作！'})
-
-    def post(self, sec, x=None):
-        self.authed()
-        if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 SSL ！'})
-            return
-        action = self.get_argument('action', '')
-        certs = certificate.Certificate()
-
-        if sec == 'keys':
-            if action == 'add_domain_keys':
-                # this is a test
-                # for domain in ['baokan.pub', 'dougroup.com', 'effect.pub', 'zhoubao.pub', 'zhoukan.pub']:
-                #     certs.create_domain_key(domain)
-                self.write({'code': 0, 'msg': u'创建测试私钥成功！(正在测试的功能)'})
 
 class SettingHandler(RequestHandler):
     """Settings for InPanel
@@ -834,14 +723,14 @@ class SettingHandler(RequestHandler):
             self.config.set('server', 'port', port)
 
             sslkey = self.get_argument('sslkey', '')
-            if sslkey == '' or os.path.exists(sslkey):
+            if sslkey == '' or exists(sslkey):
                 self.config.set('server', 'sslkey', sslkey)
             else:
                 self.write({'code': -1, 'msg': u'SSL私钥文件不存在，请仔细检查！'})
                 return
 
             sslcrt = self.get_argument('sslcrt', '')
-            if sslcrt == '' or os.path.exists(sslcrt):
+            if sslcrt == '' or exists(sslcrt):
                 self.config.set('server', 'sslcrt', sslcrt)
             else:
                 self.write({'code': -1, 'msg': u'SSL证书文件不存在，请仔细检查！'})
@@ -849,11 +738,11 @@ class SettingHandler(RequestHandler):
 
             forcehttps = self.get_argument('forcehttps', '')
             if forcehttps == 'on':
-                if not os.path.exists(sslkey):
+                if not exists(sslkey):
                     self.config.set('server', 'forcehttps', 'off')
                     self.write({'code': -1, 'msg': u'请填写SSL私钥文件！'})
                     return
-                elif not os.path.exists(sslcrt):
+                elif not exists(sslcrt):
                     self.config.set('server', 'forcehttps', 'off')
                     self.write({'code': -1, 'msg': u'请填写SSL证书文件！'})
                     return
@@ -877,7 +766,7 @@ class SettingHandler(RequestHandler):
 
             if accesskey != '':
                 try:
-                    if len(base64.b64decode(accesskey)) != 32:
+                    if len(b64decode(accesskey)) != 32:
                         raise Exception()
                 except:
                     self.write({'code': -1, 'msg': u'远程控制密钥格式不正确！'})
@@ -908,9 +797,7 @@ class OperationHandler(RequestHandler):
             self.write({'code': -1, 'msg': u'DEMO状态不允许重启服务器！'})
             return
 
-        p = subprocess.Popen('reboot',
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, close_fds=True)
+        p = Popen('reboot', stdout=PIPE, stderr=PIPE, close_fds=True)
         info = p.stdout.read()
         p.stderr.read()
         if p.wait() == 0:
@@ -1131,7 +1018,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'不可识别的文件编码！'})
                     return
                 data = {
-                    'filename': os.path.basename(path),
+                    'filename': basename(path),
                     'filepath': path,
                     'mimetype': files.mimetype(_u(path)),
                     'charset': charset,
@@ -1210,7 +1097,7 @@ class OperationHandler(RequestHandler):
         elif action == 'exist':
             path = self.get_argument('path', '')
             name = self.get_argument('name', '')
-            self.write({'code': 0, 'msg': '', 'data': os.path.exists(os.path.join(path, name))})
+            self.write({'code': 0, 'msg': '', 'data': exists(joinpath(path, name))})
 
         elif action == 'link':
             srcpath = self.get_argument('srcpath', '')
@@ -1321,7 +1208,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'站点不存在！'})
 
         elif action in ('addserver', 'updateserver'):
-            setting = json.loads(self.get_argument('setting', '')) or {}
+            setting = loads(self.get_argument('setting', '')) or {}
 
             ip = setting.get('ip', '')
             if ip not in ('', '*', '0.0.0.0') and not utils.is_valid_ip(ip):
@@ -1344,10 +1231,10 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'%s 不是有效的目录！' % documentroot})
                 return
             autocreate = setting.get('autocreate')
-            if not os.path.exists(documentroot):
+            if not exists(documentroot):
                 if autocreate:
                     try:
-                        os.mkdir(documentroot)
+                        mkdir(documentroot)
                     except:
                         self.write({'code': -1, 'msg': u'站点目录 %s 创建失败！' % documentroot})
                         return
@@ -1365,9 +1252,9 @@ class OperationHandler(RequestHandler):
             version = self.get_argument('version', '')  # apache version
             for diret in directory:
                 if 'path' in diret and diret['path']:
-                    if not os.path.exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
+                    if not exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
                         try:
-                            os.mkdir(diret['path'])
+                            mkdir(diret['path'])
                         except:
                             self.write({'code': -1, 'msg': u'路径 %s 创建失败！' % diret['path']})
                             return
@@ -1553,9 +1440,9 @@ class OperationHandler(RequestHandler):
             for cache in proxy_caches:
                 fields = []
                 if 'path' in cache and cache['path']:
-                    if not os.path.exists(cache['path']) and 'autocreate' in cache and cache['autocreate']:
+                    if not exists(cache['path']) and 'autocreate' in cache and cache['autocreate']:
                         try:
-                            os.mkdir(cache['path'])
+                            mkdir(cache['path'])
                         except:
                             self.write({'code': -1, 'msg': u'缓存目录 %s 创建失败！' % cache['path']})
                             return
@@ -1707,7 +1594,7 @@ class OperationHandler(RequestHandler):
                 if setting['ssl_crt'] or setting['ssl_key']:
                     ssl_crt = setting['ssl_crt']
                     ssl_key = setting['ssl_key']
-                    if not os.path.exists(ssl_crt) or not os.path.exists(ssl_key):
+                    if not exists(ssl_crt) or not exists(ssl_key):
                         self.write({'code': -1, 'msg': u'SSL证书或密钥不存在！'})
                         return
 
@@ -1756,10 +1643,10 @@ class OperationHandler(RequestHandler):
                         if not 'root' in locsetting:
                             self.write({'code': -1, 'msg': u'站点目录不能为空！' % locsetting['root']})
                             return
-                        if not os.path.exists(locsetting['root']):
+                        if not exists(locsetting['root']):
                             if 'autocreate' in locsetting and locsetting['autocreate']:
                                 try:
-                                    os.mkdir(locsetting['root'])
+                                    mkdir(locsetting['root'])
                                 except:
                                     self.write({'code': -1, 'msg': u'站点目录 %s 创建失败！' % locsetting['root']})
                                     return
@@ -2134,8 +2021,8 @@ class OperationHandler(RequestHandler):
                'enable_pwdauth': enable_pwdauth,
                'enable_pubkauth': enable_pubkauth,
                'enable_sftp': enable_sftp,
-               'pubkey': os.path.isfile(pubkey_path) and pubkey_path or '',
-               'prvkey': os.path.isfile(prvkey_path) and prvkey_path or '',
+               'pubkey': isfile(pubkey_path) and pubkey_path or '',
+               'prvkey': isfile(prvkey_path) and prvkey_path or '',
             }})
 
         elif action == 'savesettings':
@@ -2151,7 +2038,7 @@ class OperationHandler(RequestHandler):
             if enable_pubkauth:
                 if enable_pubkauth == 'on':
                     pubkey_path = self.get_argument('pubkey', '')
-                    if not os.path.isfile(pubkey_path):
+                    if not isfile(pubkey_path):
                         self.write({'code': -1, 'msg': u'公钥文件不存在！'})
                         return
                 ssh.cfg_set('PubkeyAuthentication', enable_pubkauth=='on' and 'yes' or 'no')
@@ -2357,7 +2244,7 @@ class BackendHandler(RequestHandler):
             if not name: name = service
             dummy, action = jobname.split('_')
             if service != '':
-                self._call(functools.partial(self.service,
+                self._call(partial(self.service,
                         _u(action),
                         _u(service),
                         _u(name)))
@@ -2365,11 +2252,11 @@ class BackendHandler(RequestHandler):
             newdatetime = self.get_argument('datetime', '')
             # check datetime format
             try:
-                datetime.datetime.strptime(newdatetime, '%Y-%m-%d %H:%M:%S')
+                datetime.strptime(newdatetime, '%Y-%m-%d %H:%M:%S')
             except:
                 self.write({'code': -1, 'msg': u'时间格式有错误！'})
                 return
-            self._call(functools.partial(self.datetime,
+            self._call(partial(self.datetime,
                         _u(newdatetime)))
         elif jobname in ('swapon', 'swapoff'):
             devname = self.get_argument('devname', '')
@@ -2377,7 +2264,7 @@ class BackendHandler(RequestHandler):
                 action = 'on'
             else:
                 action = 'off'
-            self._call(functools.partial(self.swapon,
+            self._call(partial(self.swapon,
                         _u(action),
                         _u(devname)))
         elif jobname in ('mount', 'umount'):
@@ -2388,7 +2275,7 @@ class BackendHandler(RequestHandler):
                 action = 'mount'
             else:
                 action = 'umount'
-            self._call(functools.partial(self.mount,
+            self._call(partial(self.mount,
                         _u(action),
                         _u(devname),
                         _u(mountpoint),
@@ -2396,14 +2283,14 @@ class BackendHandler(RequestHandler):
         elif jobname == 'format':
             devname = self.get_argument('devname', '')
             fstype = self.get_argument('fstype', '')
-            self._call(functools.partial(self.format,
+            self._call(partial(self.format,
                         _u(devname),
                         _u(fstype)))
         elif jobname == 'yum_repolist':
             self._call(self.yum_repolist)
         elif jobname == 'yum_installrepo':
             repo = self.get_argument('repo', '')
-            self._call(functools.partial(self.yum_installrepo,
+            self._call(partial(self.yum_installrepo,
                         _u(repo)))
         elif jobname == 'yum_info':
             pkg = self.get_argument('pkg', '')
@@ -2421,7 +2308,7 @@ class BackendHandler(RequestHandler):
                 if repo not in yum.yum_repolist + ('installed', '*'):
                     self.write({'code': -1, 'msg': u'未知的软件源 %s！' % repo})
                     return
-            self._call(functools.partial(self.yum_info,
+            self._call(partial(self.yum_info,
                         _u(pkg),
                         _u(repo),
                         _u(option)))
@@ -2452,7 +2339,7 @@ class BackendHandler(RequestHandler):
                 handler = self.yum_uninstall
             elif jobname == 'yum_update':
                 handler = self.yum_update
-            self._call(functools.partial(handler,
+            self._call(partial(handler,
                         _u(repo),
                         _u(pkg),
                         _u(version),
@@ -2463,7 +2350,7 @@ class BackendHandler(RequestHandler):
             if not pkg in yum.yum_pkg_relatives:
                 self.write({'code': -1, 'msg': u'软件包不存在！'})
                 return
-            self._call(functools.partial(self.yum_ext_info,
+            self._call(partial(self.yum_ext_info,
                         _u(pkg)))
         elif jobname in ('move', 'copy'):
             srcpath = self.get_argument('srcpath', '')
@@ -2479,15 +2366,15 @@ class BackendHandler(RequestHandler):
                         self.write({'code': -1, 'msg': u'DEMO状态不允许修改除 /var/www 以外的目录！'})
                         return
 
-            if not os.path.exists(srcpath):
-                if not os.path.exists(srcpath.strip('*')):
+            if not exists(srcpath):
+                if not exists(srcpath.strip('*')):
                     self.write({'code': -1, 'msg': u'源路径不存在！'})
                     return
             if jobname == 'copy':
                 handler = self.copy
             elif jobname == 'move':
                 handler = self.move
-            self._call(functools.partial(handler,
+            self._call(partial(handler,
                         _u(srcpath),
                         _u(despath)))
         elif jobname == 'remove':
@@ -2500,7 +2387,7 @@ class BackendHandler(RequestHandler):
                         self.write({'code': -1, 'msg': u'DEMO状态不允许在 /var/www 以外的目录下执行删除操作！'})
                         return
 
-            self._call(functools.partial(self.remove, paths))
+            self._call(partial(self.remove, paths))
         elif jobname == 'compress':
             zippath = self.get_argument('zippath', '')
             paths = self.get_argument('paths', '')
@@ -2515,7 +2402,7 @@ class BackendHandler(RequestHandler):
                         self.write({'code': -1, 'msg': u'DEMO状态不允许在 /var/www 以外的目录下创建压缩包！'})
                         return
 
-            self._call(functools.partial(self.compress,
+            self._call(partial(self.compress,
                         _u(zippath), paths))
         elif jobname == 'decompress':
             zippath = self.get_argument('zippath', '')
@@ -2527,12 +2414,12 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许在 /var/www 以外的目录下执行解压操作！'})
                     return
 
-            self._call(functools.partial(self.decompress,
+            self._call(partial(self.decompress,
                         _u(zippath),
                         _u(despath)))
         elif jobname == 'ntpdate':
             server = self.get_argument('server', '')
-            self._call(functools.partial(self.ntpdate, _u(server)))
+            self._call(partial(self.ntpdate, _u(server)))
         elif jobname == 'chown':
             paths = _u(self.get_argument('paths', ''))
             paths = paths.split(',')
@@ -2547,7 +2434,7 @@ class BackendHandler(RequestHandler):
             a_group = _u(self.get_argument('group', ''))
             recursively = self.get_argument('recursively', '')
             option = recursively == 'on' and '-R' or ''
-            self._call(functools.partial(self.chown, paths, a_user, a_group, option))
+            self._call(partial(self.chown, paths, a_user, a_group, option))
         elif jobname == 'chmod':
             paths = _u(self.get_argument('paths', ''))
             paths = paths.split(',')
@@ -2561,7 +2448,7 @@ class BackendHandler(RequestHandler):
             perms = _u(self.get_argument('perms', ''))
             recursively = self.get_argument('recursively', '')
             option = recursively == 'on' and '-R' or ''
-            self._call(functools.partial(self.chmod, paths, perms, option))
+            self._call(partial(self.chmod, paths, perms, option))
         elif jobname == 'wget':
             url = _u(self.get_argument('url', ''))
             path = _u(self.get_argument('path', ''))
@@ -2571,25 +2458,25 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许下载到 /var/www 以外的目录！'})
                     return
 
-            self._call(functools.partial(self.wget, url, path))
+            self._call(partial(self.wget, url, path))
         elif jobname == 'mysql_fupdatepwd':
             password = _u(self.get_argument('password', ''))
             passwordc = _u(self.get_argument('passwordc', ''))
             if password != passwordc:
                 self.write({'code': -1, 'msg': u'两次密码输入不一致！'})
                 return
-            self._call(functools.partial(self.mysql_fupdatepwd, password))
+            self._call(partial(self.mysql_fupdatepwd, password))
         elif jobname == 'mysql_databases':
             password = _u(self.get_argument('password', ''))
-            self._call(functools.partial(self.mysql_databases, password))
+            self._call(partial(self.mysql_databases, password))
         elif jobname == 'mysql_dbinfo':
             password = _u(self.get_argument('password', ''))
             dbname = _u(self.get_argument('dbname', ''))
-            self._call(functools.partial(self.mysql_dbinfo, password, dbname))
+            self._call(partial(self.mysql_dbinfo, password, dbname))
         elif jobname == 'mysql_users':
             password = _u(self.get_argument('password', ''))
             dbname = _u(self.get_argument('dbname', ''))
-            self._call(functools.partial(self.mysql_users, password, dbname))
+            self._call(partial(self.mysql_users, password, dbname))
         elif jobname == 'mysql_rename':
             password = _u(self.get_argument('password', ''))
             dbname = _u(self.get_argument('dbname', ''))
@@ -2597,12 +2484,12 @@ class BackendHandler(RequestHandler):
             if dbname == newname:
                 self.write({'code': -1, 'msg': u'数据库名无变化！'})
                 return
-            self._call(functools.partial(self.mysql_rename, password, dbname, newname))
+            self._call(partial(self.mysql_rename, password, dbname, newname))
         elif jobname == 'mysql_create':
             password = _u(self.get_argument('password', ''))
             dbname = _u(self.get_argument('dbname', ''))
             collation = _u(self.get_argument('collation', ''))
-            self._call(functools.partial(self.mysql_create, password, dbname, collation))
+            self._call(partial(self.mysql_create, password, dbname, collation))
         elif jobname == 'mysql_export':
             password = _u(self.get_argument('password', ''))
             dbname = _u(self.get_argument('dbname', ''))
@@ -2617,17 +2504,17 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'DEMO状态不允许导出到 /var/www 以外的目录！'})
                     return
 
-            self._call(functools.partial(self.mysql_export, password, dbname, path))
+            self._call(partial(self.mysql_export, password, dbname, path))
         elif jobname == 'mysql_drop':
             password = _u(self.get_argument('password', ''))
             dbname = _u(self.get_argument('dbname', ''))
-            self._call(functools.partial(self.mysql_drop, password, dbname))
+            self._call(partial(self.mysql_drop, password, dbname))
         elif jobname == 'mysql_createuser':
             password = _u(self.get_argument('password', ''))
             user = _u(self.get_argument('user', ''))
             host = _u(self.get_argument('host', ''))
             pwd = _u(self.get_argument('pwd', ''))
-            self._call(functools.partial(self.mysql_createuser, password, user, host, pwd))
+            self._call(partial(self.mysql_createuser, password, user, host, pwd))
         elif jobname == 'mysql_userprivs':
             password = _u(self.get_argument('password', ''))
             username = _u(self.get_argument('username', ''))
@@ -2635,7 +2522,7 @@ class BackendHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'用户不存在！'})
                 return
             user, host = username.split('@', 1)
-            self._call(functools.partial(self.mysql_userprivs, password, user, host))
+            self._call(partial(self.mysql_userprivs, password, user, host))
         elif jobname == 'mysql_updateuserprivs':
             password = _u(self.get_argument('password', ''))
             username = _u(self.get_argument('username', ''))
@@ -2657,7 +2544,7 @@ class BackendHandler(RequestHandler):
                     .replace('REPL CLIENT', 'REPLICATION CLIENT')
                     .replace('REPL SLAVE', 'REPLICATION SLAVE')
                 for priv, value in privs.items() if '_priv' in priv and value == 'Y']
-            self._call(functools.partial(self.mysql_updateuserprivs, password, user, host, privs, dbname))
+            self._call(partial(self.mysql_updateuserprivs, password, user, host, privs, dbname))
         elif jobname == 'mysql_setuserpassword':
             password = _u(self.get_argument('password', ''))
             username = _u(self.get_argument('username', ''))
@@ -2666,7 +2553,7 @@ class BackendHandler(RequestHandler):
                 return
             user, host = username.split('@', 1)
             pwd = _u(self.get_argument('pwd', ''))
-            self._call(functools.partial(self.mysql_setuserpassword, password, user, host, pwd))
+            self._call(partial(self.mysql_setuserpassword, password, user, host, pwd))
         elif jobname == 'mysql_dropuser':
             password = _u(self.get_argument('password', ''))
             username = _u(self.get_argument('username', ''))
@@ -2678,18 +2565,18 @@ class BackendHandler(RequestHandler):
             if user == 'root' and host != '%':
                 self.write({'code': -1, 'msg': u'该用户不允许删除！'})
                 return
-            self._call(functools.partial(self.mysql_dropuser, password, user, host))
+            self._call(partial(self.mysql_dropuser, password, user, host))
         elif jobname == 'ssh_genkey':
             path = _u(self.get_argument('path', ''))
             password = _u(self.get_argument('password', ''))
             if not path: path = '/root/.ssh/sshkey_inpanel'
-            self._call(functools.partial(self.ssh_genkey, path, password))
+            self._call(partial(self.ssh_genkey, path, password))
         elif jobname == 'ssh_chpasswd':
             path = _u(self.get_argument('path', ''))
             oldpassword = _u(self.get_argument('oldpassword', ''))
             newpassword = _u(self.get_argument('newpassword', ''))
             if not path: path = '/root/.ssh/sshkey_inpanel'
-            self._call(functools.partial(self.ssh_chpasswd, path, oldpassword, newpassword))
+            self._call(partial(self.ssh_chpasswd, path, oldpassword, newpassword))
         elif jobname in ('inpanel_install', 'inpanel_uninstall', 'inpanel_config'):
             if self.config.get('runtime', 'mode') == 'demo':
                 self.write({'code': -1, 'msg': u'DEMO状态不允许此类操作！'})
@@ -2711,15 +2598,15 @@ class BackendHandler(RequestHandler):
                 accessdata = accessdata.split('|')
                 accesskey = accessdata[0]
             if jobname == 'inpanel_install':
-                self._call(functools.partial(self.inpanel_install,
+                self._call(partial(self.inpanel_install,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(instance_name), _u(accessnet), _u(accessport), _u(accesskey)))
             elif jobname == 'inpanel_uninstall':
-                self._call(functools.partial(self.inpanel_uninstall,
+                self._call(partial(self.inpanel_uninstall,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(instance_name)))
             elif jobname == 'inpanel_config':
-                self._call(functools.partial(self.inpanel_config,
+                self._call(partial(self.inpanel_config,
                         _u(ssh_ip), _u(ssh_port), _u(ssh_user), _u(ssh_password),
                         _u(accesskey)))
         elif jobname == 'uploadtoftp':
@@ -2728,7 +2615,7 @@ class BackendHandler(RequestHandler):
             password = self.get_argument('password', '')
             source = self.get_argument('source', '')
             target = self.get_argument('target', '')
-            self._call(functools.partial(self.uploadtoftp, _u(address), _u(account), _u(password), _u(source), _u(target)))
+            self._call(partial(self.uploadtoftp, _u(address), _u(account), _u(password), _u(source), _u(target)))
         else:   # undefined job
             self.write({'code': -1, 'msg': u'未定义的操作！'})
             return
@@ -2744,7 +2631,7 @@ class BackendHandler(RequestHandler):
         distname = self.settings['dist_name']
 
         # don't do it in dev environment
-        if os.path.exists('%s/../.git' % root_path):
+        if exists('%s/../.git' % root_path):
             self._finish_job('update', 0, u'升级成功！')
             return
 
@@ -2756,7 +2643,7 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = u'%s/core/init.d/%s/inpanel' % (root_path, distname)
+        initscript = u'%s/scripts/init.d/%s/inpanel' % (root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
@@ -3055,9 +2942,9 @@ class BackendHandler(RequestHandler):
             for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
                 cmds.append('rpm -U %s' % rpm)
 
-            if os.path.exists('/etc/issue.inpanel'):
+            if exists('/etc/issue.inpanel'):
                 cmds.append('cp -f /etc/issue.inpanel /etc/issue')
-            if os.path.exists('/etc/redhat-release.inpanel'):
+            if exists('/etc/redhat-release.inpanel'):
                 cmds.append('cp -f /etc/redhat-release.inpanel /etc/redhat-release')
 
         elif repo in ('epel', 'CentALT'):
@@ -3101,7 +2988,7 @@ class BackendHandler(RequestHandler):
         # CentALT doesn't have any mirror, we have make a mirror for it
         if repo == 'CentALT':
             repofile = '/etc/yum.repos.d/centalt.repo'
-            if os.path.exists(repofile):
+            if exists(repofile):
                 lines = []
                 baseurl_found = False
                 with open(repofile) as f:
@@ -3442,12 +3329,12 @@ class BackendHandler(RequestHandler):
         
         # check if the despath exists
         # if exists, we first copy srcpath to despath, then remove the srcpath
-        despath_exists = os.path.exists(despath)
+        despath_exists = exists(despath)
 
         shell = False
         if despath_exists:
             # secure check
-            if not os.path.exists(srcpath):
+            if not exists(srcpath):
                 self._finish_job(jobname, -1, u'不可识别的源！')
                 return
             cmd = 'cp -rf %s/* %s' % (quote(srcpath), quote(despath))
@@ -3505,14 +3392,14 @@ class BackendHandler(RequestHandler):
 
         shell = False
 
-        basepath = os.path.dirname(zippath) + '/'
+        basepath = dirname(zippath) + '/'
         path = ' '.join([quote(item.replace(basepath, '')) for item in paths])
         if zippath.endswith('.tar.gz') or zippath.endswith('.tgz'):
             cmd = 'tar zcf %s -C %s %s' % (quote(zippath), quote(basepath), path)
         elif zippath.endswith('.tar.bz2'):
             cmd = 'tar jcf %s -C %s %s' % (quote(zippath), quote(basepath), path)
         elif zippath.endswith('.zip'):
-            if not os.path.exists('/usr/bin/zip'):
+            if not exists('/usr/bin/zip'):
                 self._update_job(jobname, 2, u'正在安装 zip...')
                 if self.settings['dist_name'] in ('centos', 'redhat'):
                     cmd = 'yum install -y zip unzip'
@@ -3554,7 +3441,7 @@ class BackendHandler(RequestHandler):
         elif zippath.endswith('.tar.bz2'):
             cmd = 'tar jxf %s -C %s' % (quote(zippath), quote(despath))
         elif zippath.endswith('.zip'):
-            if not os.path.exists('/usr/bin/unzip'):
+            if not exists('/usr/bin/unzip'):
                 self._update_job(jobname, 2, u'正在安装 unzip...')
                 if self.settings['dist_name'] in ('centos', 'redhat'):
                     cmd = 'yum install -y zip unzip'
@@ -3643,7 +3530,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, u'正在下载 %s...' % _d(url))
 
-        if os.path.isdir(path): # download to the directory
+        if isdir(path): # download to the directory
             cmd = 'wget -q "%s" --directory-prefix=%s' % (quote(url), quote(path))
         else:
             cmd = 'wget -q "%s" -O %s' % (quote(url), quote(path))
@@ -3686,10 +3573,7 @@ class BackendHandler(RequestHandler):
             # we run it manually
             manually = True
             cmd = 'mysqld_safe --skip-grant-tables --skip-networking'
-            p = subprocess.Popen(cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    close_fds=True, shell=True)
+            p = Popen(cmd, stdout=PIPE, stderr=STDOUT, close_fds=True, shell=True)
             if not p:
                 self._finish_job(jobname, -1, u'启用 MySQL 恢复模式时出错！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>')))
                 return
@@ -4125,7 +4009,7 @@ class BackendHandler(RequestHandler):
         # jobname = 'uploadtoftp_%s' % address
         if not self._start_job(jobname): return
 
-        if not os.path.isfile(source):
+        if not isfile(source):
             self._finish_job(jobname, -1, '传输失败！文件不存在')
             return
 
@@ -4152,8 +4036,8 @@ class BackupHandler(RequestHandler):
             self.write(u'DEMO状态不允许执行此操作！')
             return
 
-        path = os.path.join(self.settings['data_path'], 'config.ini')
-        if os.path.isfile(path):
+        path = joinpath(self.settings['data_path'], 'config.ini')
+        if isfile(path):
             self.set_header('Content-Type', 'application/octet-stream')
             self.set_header('Content-disposition', 'attachment; filename=inpanel_backup_%s.bak' % time.strftime('%Y%m%d'))
             self.set_header('Content-Transfer-Encoding', 'binary')
@@ -4185,7 +4069,7 @@ class RestoreHandler(RequestHandler):
             self.write(u'DEMO状态不允许执行此操作！')
             return
 
-        path = os.path.join(self.settings['data_path'], 'config.ini')
+        path = joinpath(self.settings['data_path'], 'config.ini')
 
         self.write(u'<body style="font-size:14px;overflow:hidden;margin:0;padding:0;">')
 
@@ -4198,13 +4082,13 @@ class RestoreHandler(RequestHandler):
             with open(testpath, 'wb') as f: f.write(file['body'])
 
             try:
-                t = Config(testpath)
+                t = configurations(testpath)
                 with open(path, 'wb') as f: f.write(file['body'])
                 self.write(u'还原成功！')
             except:
                 self.write(u'配置文件有误，还原失败！')
 
-            os.unlink(testpath)
+            unlink(testpath)
 
         self.write('</body>')
 
@@ -4225,7 +4109,7 @@ class AccountHandler(RequestHandler):
 
         accounts = self.config.get('ecs', 'accounts')
         try:
-            accounts = json.loads(accounts)
+            accounts = loads(accounts)
         except:
             accounts = []
 
@@ -4264,7 +4148,7 @@ class AccountHandler(RequestHandler):
 
             accounts = self.config.get('ecs', 'accounts')
             try:
-                accounts = json.loads(accounts)
+                accounts = loads(accounts)
             except:
                 accounts = []
 
@@ -4285,7 +4169,7 @@ class AccountHandler(RequestHandler):
                     self.write({'code': -1, 'msg': u'更新失败！该 Access Key ID 不存在！'})
                     return
 
-            self.config.set('ecs', 'accounts', json.dumps(accounts))
+            self.config.set('ecs', 'accounts', dumps(accounts))
             if action == 'add':
                 self.write({'code': 0, 'msg': u'新帐号添加成功！'})
             else:
@@ -4295,7 +4179,7 @@ class AccountHandler(RequestHandler):
             access_key_id = self.get_argument('access_key_id', '')
             accounts = self.config.get('ecs', 'accounts')
             try:
-                accounts = json.loads(accounts)
+                accounts = loads(accounts)
             except:
                 accounts = []
 
@@ -4309,7 +4193,7 @@ class AccountHandler(RequestHandler):
                 self.write({'code': -1, 'msg': u'删除失败！该 Access Key ID 不存在！'})
                 return
 
-            self.config.set('ecs', 'accounts', json.dumps(accounts))
+            self.config.set('ecs', 'accounts', dumps(accounts))
             self.write({'code': 0, 'msg': u'帐号删除成功！'})
 
 
@@ -4319,7 +4203,7 @@ class ECSHandler(RequestHandler):
     def _get_secret(self, access_key_id):
         accounts = self.config.get('ecs', 'accounts')
         try:
-            accounts = json.loads(accounts)
+            accounts = loads(accounts)
         except:
             accounts = []
 
@@ -4633,7 +4517,7 @@ class InPanelIndexHandler(RequestHandler):
     """Index page of InPanel.
     """
     def get(self, instance_name, ip, port):
-        with open(os.path.join(self.settings['inpanel_path'], 'index.html')) as f:
+        with open(joinpath(self.settings['inpanel_path'], 'index.html')) as f:
             html = f.read()
         html = html.replace('<link rel="stylesheet" href="', '<link rel="stylesheet" href="/inpanel/')
         html = html.replace('<script src="', '<script src="/inpanel/')
@@ -4648,7 +4532,7 @@ class InPanelHandler(RequestHandler):
     """
     def handle_response(self, response): 
         if response.error and not isinstance(response.error, tornado.httpclient.HTTPError): 
-            logging.info("response has error %s", response.error)
+            loginfo("response has error %s", response.error)
             self.set_status(500)
             self.write("Internal server error:\n" + str(response.error))
             self.finish()
@@ -4675,7 +4559,7 @@ class InPanelHandler(RequestHandler):
                     follow_redirects=False),
                 self.handle_response)
         except tornado.httpclient.HTTPError as x:
-            logging.info("tornado signalled HTTPError %s", x)
+            loginfo("tornado signalled HTTPError %s", x)
             if hasattr(x, 'response') and x.response:
                 self.handle_response(x.response)
         except:
@@ -4693,12 +4577,12 @@ class InPanelHandler(RequestHandler):
             data = data.split('|')
             accesskey = data[0]
 
-        accesskey = base64.b64decode(accesskey)
+        accesskey = b64decode(accesskey)
         key = accesskey[:24]
         iv = accesskey[24:]
         k = pyDes.triple_des(key, pyDes.CBC, iv, pad=None, padmode=pyDes.PAD_PKCS5)
         access_token = k.encrypt('timestamp:%d' % int(time.time()))
-        access_token = base64.b64encode(access_token)
+        access_token = b64encode(access_token)
         return access_token
 
     @tornado.web.asynchronous

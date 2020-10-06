@@ -5,30 +5,30 @@
 
 <div id="main" ng-show="loaded" style="display:none">
     <div class="module-header">
-        <h3>软件仓库（开发中）</h3>
+        <h3>软件仓库</h3>
     </div>
 
     <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='yum'"><a href="#yum" ng-click="tab_sec('yum')" data-toggle="tab">YUM</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='apt'"><a href="#apt" ng-click="tab_sec('apt')" data-toggle="tab">APT</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='pacman'"><a href="#pacman" ng-click="tab_sec('pacman')" data-toggle="tab">Pacman</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='dnf'"><a href="#dnf" ng-click="tab_sec('dnf')" data-toggle="tab">DNF</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='zypper'"><a href="#zypper" ng-click="tab_sec('zypper')" data-toggle="tab">Zypper</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='yum'" ng-show="supported.yum"><a href="#yum" ng-click="tab_sec('yum')" data-toggle="tab">YUM</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='apt'" ng-show="supported.apt"><a href="#apt" ng-click="tab_sec('apt')" data-toggle="tab">APT</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='pacman'" ng-show="supported.pacman"><a href="#pacman" ng-click="tab_sec('pacman')" data-toggle="tab">Pacman</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='dnf'" ng-show="supported.dnf"><a href="#dnf" ng-click="tab_sec('dnf')" data-toggle="tab">DNF</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='zypper'" ng-show="supported.zypper"><a href="#zypper" ng-click="tab_sec('zypper')" data-toggle="tab">Zypper</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='yum'" id="yum">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
-                    <div class="pull-left"><h5>YUM 源配置文件列表（CentOS）</h5></div>
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库源列表 for YUM</h5></div>
                     <div class="pull-right">
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-default" title="刷新配置列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
-                            <button class="btn btn-default" title="添加配置源" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_yum(true)" ng-disabled="loading.yum"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="yum_add_confirm()" ng-disabled="loading.yum"><i class="glyphicon glyphicon-plus"></i></button>
                         </div>
                     </div>
                 </div>
-                <table class="table table-hover table-bordered table-condensed" ng-hide="loading">
+                <div ng-show="loading.yum"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.yum">
                     <thead>
                         <tr>
                             <th style="width:50px;">序号</th>
@@ -37,48 +37,214 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>CentOS-Base.repo</td>
+                        <tr ng-repeat="repo in repos_yum">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
                             <td>
-                                <button class="btn btn-default btn-xs">编辑</button>
-                                <button class="btn btn-default btn-xs">删除</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>CentOS-Debuginfo.repo</td>
-                            <td>
-                                <button class="btn btn-default btn-xs">编辑</button>
-                                <button class="btn btn-default btn-xs">删除</button>
+                                <button class="btn btn-default btn-xs" ng-click="yum_mod_confirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="yum_del_confirm($index)">删除</button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='apt'" id="apt">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
-                    软件仓库列表 for Ubuntu and Debian
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库列表 for Ubuntu and Debian</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_apt(true)" ng-disabled="loading.apt"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_apt()" ng-disabled="loading.apt"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div ng-show="loading.apt"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.apt">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="repo in repos_apt">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='pacman'" id="pacman">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
-                    软件仓库列表 for Arch
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库列表 for Arch</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_pacman(true)" ng-disabled="loading.pacman"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_pacman()" ng-disabled="loading.pacman"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div ng-show="loading.pacman"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.pacman">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="repo in repos_pacman">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='dnf'" id="dnf">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
-                    软件仓库列表 for Fedora
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库列表 for Fedora</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_dnf(true)" ng-disabled="loading.dnf"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_dnf()" ng-disabled="loading.dnf"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div ng-show="loading.dnf"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.dnf">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="repo in repos_dnf">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='zypper'" id="zypper">
-                <div ng-show="loading"><div waiting></div></div>
-                <div ng-hide="loading">
-                    软件仓库列表 for openSUSE
+                <div class="clearfix">
+                    <div class="pull-left"><h5>软件仓库列表 for openSUSE</h5></div>
+                    <div class="pull-right">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-default" title="刷新配置列表" ng-click="load_zypper(true)" ng-disabled="loading.zypper"><i class="glyphicon glyphicon-refresh"></i></button>
+                            <button class="btn btn-default" title="添加配置源" ng-click="add_zypper()" ng-disabled="loading.zypper"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
                 </div>
+                <div ng-show="loading.zypper"><div waiting></div></div>
+                <table class="table table-hover table-bordered table-condensed" ng-hide="loading.zypper">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">序号</th>
+                            <th>名称</th>
+                            <th style="width:130px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="repo in repos_zypper">
+                            <td class="text-right">{{$index+1}}</td>
+                            <td>{{repo}}</td>
+                            <td>
+                                <button class="btn btn-default btn-xs" ng-click="usermodconfirm($index)">修改</button>
+                                <button class="btn btn-default btn-xs" ng-click="userdelconfirm($index)">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="yum-add-confirm" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">添加YUM</h3>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">配置文件：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="currepo.repo" placeholder=".repo配置文件">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">仓库标识ID：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="currepo.serverid" placeholder="仓库标识ID，ID需唯一">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">仓库名称：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="currepo.name" placeholder="仓库名称">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">仓库路径：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="currepo.baseurl" placeholder="仓库路径">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">密钥监测：</label>
+                        <div class="col-sm-9 checkbox">
+                            <label><input type="checkbox" ng-checked="currepo.gpgcheck"> 是否检查密钥？</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">状态：</label>
+                        <div class="col-sm-9 checkbox">
+                            <label><input type="checkbox" ng-model="currepo.enabled"> 是否启用？</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#yum-add-confirm').modal('hide')" ng-click="yum_add()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="yum-del-confirm" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">删除YUM源</h3>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除YUM源配置文件 {{delrepo}} 吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-danger" onclick="$('#yum-del-confirm').modal('hide')" ng-click="yum_del()">确认删除</button>
             </div>
         </div>
     </div>

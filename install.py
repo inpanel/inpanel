@@ -229,7 +229,7 @@ class Install(object):
         self._run('chmod +x %s/config.py %s/server.py' % (self.installpath, self.installpath))
 
         # install service
-        initscript = '%s/core/init.d/%s/inpanel' % (self.installpath, self.distname)
+        initscript = '%s/scripts/init.d/%s/inpanel' % (self.installpath, self.distname)
         self._run('cp %s %s' % (initscript, self.initd_script))
         self._run('chmod +x %s' % self.initd_script)
 

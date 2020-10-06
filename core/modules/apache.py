@@ -9,12 +9,12 @@
 '''Module for Apache Management.'''
 
 
-import glob
-import json
-import os
-import os.path
 import re
-import string
+from glob import glob
+from json import dumps
+from os import stat, remove, unlink
+from os.path import exists, join
+from string import punctuation
 
 from core.utils import is_valid_domain, is_valid_ipv4, is_valid_ipv6
 
@@ -194,7 +194,7 @@ def loadconfig(conf=None, getlineinfo=False):
     '''
     if not conf:
         conf = APACHECONF
-    if not os.path.exists(conf):
+    if not exists(conf):
         return False
     return _loadconfig(conf, getlineinfo)
 
@@ -336,18 +336,18 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
                     else:
                         configs[key] = [{'port': port, 'ip': ip}]
                 elif key == 'include':
-                    include_file = fields[1] if fields[1].startswith('/') else os.path.join(HTTPDCONF, fields[1])
-                    include_files = glob.glob(include_file)
+                    include_file = fields[1] if fields[1].startswith('/') else join(HTTPDCONF, fields[1])
+                    include_files = glob(include_file)
                     # order by domain name, excluding tld
                     getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
                     include_files = sorted(include_files, lambda x,y: cmp(getdm(x), getdm(y)))
                     for subconf in include_files:
-                        if os.path.exists(subconf):
+                        if exists(subconf):
                             # print(subconf, getlineinfo, configs, context_stack)
                             # print('configs', configs)
                             _loadconfig(subconf, getlineinfo, configs, context_stack)
                 else:
-                    configs[key] = fields[1].strip(string.punctuation)
+                    configs[key] = fields[1].strip(punctuation)
 
     # print('directorys', directorys)
     if 'virtualhost' not in configs:
@@ -465,7 +465,7 @@ def virtual_host_config(site, key, val, port=80):
 
     conf = SERVERCONF + site + '.conf'
     try:
-        os.stat(conf)
+        stat(conf)
     except OSError:
         print('site config file not exist')
         return False
@@ -490,8 +490,8 @@ def virtual_host_config(site, key, val, port=80):
     with open(conf, 'w') as f:
         f.write(new_conf)
         # delete old site config file
-        if key == 'VirtualHost' and os.stat(conf) and os.stat(SERVERCONF + site + '.conf.bak'):
-            os.remove(SERVERCONF + site + '.conf')
+        if key == 'VirtualHost' and stat(conf) and stat(SERVERCONF + site + '.conf.bak'):
+            remove(SERVERCONF + site + '.conf')
         return True
 
 
@@ -612,7 +612,7 @@ def _context_getupstreams(server_name, config=None, disabled=None, getlineinfo=T
 def _comment(filepath, start, end):
     """Commend some lines in the file.
     """
-    if not os.path.exists(filepath): return False
+    if not exists(filepath): return False
     data = []
     with open(filepath) as f:
         for i, line in enumerate(f):
@@ -625,7 +625,7 @@ def _comment(filepath, start, end):
 def _uncomment(filepath, start, end):
     """Uncommend some lines in the file.
     """
-    if not os.path.exists(filepath): return False
+    if not exists(filepath): return False
     data = []
     with open(filepath) as f:
         for i, line in enumerate(f):
@@ -641,7 +641,7 @@ def _delete(filepath, start, end, delete_emptyfile=True):
     If delete_emptyfile is set to True, then the empty file will 
     be deleted from file system.
     """
-    if not os.path.exists(filepath):
+    if not exists(filepath):
         return False
     data = []
     with open(filepath) as f:
@@ -653,7 +653,7 @@ def _delete(filepath, start, end, delete_emptyfile=True):
         f.write(''.join(data))
     if delete_emptyfile:
         if ''.join(data).strip() == '':
-            os.unlink(filepath)
+            unlink(filepath)
     return True
 
 def _getcontextrange(context, config):
@@ -899,7 +899,7 @@ def deleteserver(server_name, ip, port):
     '''Delete a server.'''
     print(SERVERCONF + server_name + '.conf')
     try:
-        os.unlink(SERVERCONF + server_name + '.conf')
+        unlink(SERVERCONF + server_name + '.conf')
         return True
     except:
         return False
@@ -952,8 +952,8 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
     servercfg.append('</VirtualHost>')
 
     #print '\n'.join(servercfg)
-    configfile = os.path.join(SERVERCONF, serveraname + '.conf')
-    configfile_exists = os.path.exists(configfile)
+    configfile = join(SERVERCONF, serveraname + '.conf')
+    configfile_exists = exists(configfile)
 
     # check if need to add a new line at the end of the file to
     # avoid first line go to the same former } line
@@ -1044,7 +1044,7 @@ if __name__ == '__main__':
     # print(s)
     # s = addserver('aaaaaaaa.aa', '1.1.1.1', 801, documentroot='/Users/douzhenjiang/Projects/inpanel/test')
     s = getserver('1.1.1.1', 80, 'aaaaaaaa.aa')
-    s = json.dumps(s)
+    s = dumps(s)
     print(s)
     # for i in s:
     #     print('port' in i)
@@ -1055,7 +1055,7 @@ if __name__ == '__main__':
 
     # print json.dumps(_context_getservers(disabled=None))
 
-    # path = os.path.join(SERVERCONF, clist[i])
+    # path = join(SERVERCONF, clist[i])
     # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
     # SERVERCONF = '/Users/douzhenjiang/Projects/inpanel/test'
     # print(servername_exists('1.1.1.1', 80, 'inpanel.org'))

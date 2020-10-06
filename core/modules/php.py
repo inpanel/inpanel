@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
+# Copyright (c) 2017, doudoudzj
 # Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
@@ -9,9 +9,9 @@
 
 '''Package for PHP operations.'''
 
-import shlex
-import subprocess
-import glob
+from shlex import split
+from subprocess import PIPE, Popen
+from glob import glob
 
 PHPCFG = '/etc/php.ini'
 PHPFPMCFG = '/etc/php-fpm.conf'
@@ -21,9 +21,7 @@ def phpinfo():
     """Add or remove service to autostart list.
     """
     cmd = 'php-cgi -i'
-    p = subprocess.Popen(shlex.split(cmd),
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, close_fds=True)
+    p = Popen(split(cmd), stdout=PIPE, stderr=PIPE, close_fds=True)
     info = p.stdout.read()
     p.stderr.read()
     p.wait()
@@ -70,7 +68,7 @@ def loadconfig(initype='php', inifile=None, detail=False):
             item = fs[0].strip()
             value = fs[1].strip()
             if item == 'include':
-                for incfile in sorted(glob.glob(value)):
+                for incfile in sorted(glob(value)):
                     settings.update(loadconfig(initype, incfile, detail))
             else:
                 if item in settings:

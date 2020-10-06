@@ -8,17 +8,15 @@
 
 '''Module for getting a signed TLS certificate by ACME protocol from Let's Encrypt.'''
 
-import base64
-import binascii
-import copy
-import hashlib
-import json
-import os
 import re
-import subprocess
-import sys
-import textwrap
-import time
+from base64 import urlsafe_b64encode
+from binascii import unhexlify
+from hashlib import sha256
+from json import dumps, loads
+from os import remove
+from os.path import exists, isfile, join
+from subprocess import PIPE, STDOUT, Popen
+from time import sleep
 
 try:
     from urllib.request import urlopen, Request  # Python 3
@@ -57,8 +55,7 @@ class ACME():
 
     def _cmd(self, cmd_list, stdin=None, cmd_input=None, err_msg="Command Line Error"):
         '''run external commands'''
-        proc = subprocess.Popen(cmd_list, stdin=stdin,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = Popen(cmd_list, stdin=stdin, stdout=PIPE, stderr=PIPE)
         out, err = proc.communicate(cmd_input)
         if proc.returncode != 0:
             raise IOError("{0}\n{1}".format(err_msg, err))
@@ -66,7 +63,7 @@ class ACME():
 
     def _b64(self, b):
         '''base64 encode for jose spec'''
-        return base64.urlsafe_b64encode(b).decode('utf8').replace('=', '')
+        return urlsafe_b64encode(b).decode('utf8').replace('=', '')
 
     def _request(self, url, data=None, err_msg='Error', depth=0):
         '''make request and automatically parse json response'''
@@ -83,7 +80,7 @@ class ACME():
             res_data = e.read().decode('utf8') if hasattr(e, 'read') else str(e)
             code, headers = getattr(e, 'code', None), {}
         try:
-            res_data = json.loads(res_data)  # try to parse json results
+            res_data = loads(res_data)  # try to parse json results
         except ValueError:
             pass  # ignore json parsing errors
         if depth < 100 and code == 400 and res_data['type'] == 'urn:ietf:params:acme:error:badNonce':
@@ -95,15 +92,15 @@ class ACME():
 
     def _s_request(self, url, payload, err_msg, depth=0):
         '''make signed requests'''
-        payload64 = self._b64(json.dumps(payload).encode('utf8'))
+        payload64 = self._b64(dumps(payload).encode('utf8'))
         new_nonce = self._request(self.ca_new_nonce)[2]['Replay-Nonce']
         protected = {'url': url, 'alg': self.alg, "nonce": new_nonce}
         protected.update({"jwk": self.jwk} if self.acct_headers is None else {"kid": self.acct_headers['Location']})
-        protected64 = self._b64(json.dumps(protected).encode('utf8'))
+        protected64 = self._b64(dumps(protected).encode('utf8'))
         protected_input = "{0}.{1}".format(protected64, payload64).encode('utf8')
         cmd = ['openssl', 'dgst', '-sha256', '-sign', self.account_key]
-        out = self._cmd(cmd, stdin=subprocess.PIPE, cmd_input=protected_input, err_msg='OpenSSL Error')
-        data = json.dumps({
+        out = self._cmd(cmd, stdin=PIPE, cmd_input=protected_input, err_msg='OpenSSL Error')
+        data = dumps({
             'protected': protected64,
             'payload': payload64,
             'signature': self._b64(out)
@@ -118,7 +115,7 @@ class ACME():
         while True:
             result, _, _ = self._request(url, err_msg=err_msg)
             if result['status'] in pending_statuses:
-                time.sleep(2)
+                sleep(2)
                 continue
             return result
 
@@ -143,7 +140,7 @@ class ACME():
         acc_key = account_key
         if acc_key is None:
             acc_key = self.account_key
-        if not os.path.exists(acc_key) or not os.path.isfile(acc_key):
+        if not exists(acc_key) or not isfile(acc_key):
             return None
         cmd = ['openssl', 'rsa', '-in', acc_key, '-noout', '-text']
         out = self._cmd(cmd, err_msg='openssl error')
@@ -152,13 +149,12 @@ class ACME():
         pub_exp = "{0:x}".format(int(pub_exp))
         pub_exp = "0{0}".format(pub_exp) if len(pub_exp) % 2 else pub_exp
         self.jwk = {
-            'e': self._b64(binascii.unhexlify(pub_exp.encode('utf-8'))),
+            'e': self._b64(unhexlify(pub_exp.encode('utf-8'))),
             'kty': 'RSA',
-            'n': self._b64(binascii.unhexlify(re.sub(r"(\s|:)", '', pub_hex).encode('utf-8'))),
+            'n': self._b64(unhexlify(re.sub(r"(\s|:)", '', pub_hex).encode('utf-8'))),
         }
-        acc_key_json = json.dumps(self.jwk, sort_keys=True, separators=(',', ':'))
-        self.thumbprint = self._b64(hashlib.sha256(
-            acc_key_json.encode('utf8')).digest())
+        acc_key_json = dumps(self.jwk, sort_keys=True, separators=(',', ':'))
+        self.thumbprint = self._b64(sha256(acc_key_json.encode('utf8')).digest())
         # print('thumbprint', self.thumbprint)
         print('Account key ready...')
 
@@ -223,7 +219,7 @@ class ACME():
             challenge = [c for c in authorization['challenges'] if c['type'] == "http-01"][0]
             token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
             key_auth = "{0}.{1}".format(token, self.thumbprint)
-            wellknown_path = os.path.join(self.acme_check_dir, token)
+            wellknown_path = join(self.acme_check_dir, token)
             with open(wellknown_path, "w") as f:
                 f.write(key_auth)
 
@@ -232,7 +228,7 @@ class ACME():
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 assert(disable_check or self._request(wellknown_url)[0] == key_auth)
             except (AssertionError, ValueError) as e:
-                os.remove(wellknown_path)
+                remove(wellknown_path)
                 raise ValueError("Wrote file to {0}, but couldn't download {1}: {2}".format(
                     wellknown_path, wellknown_url, e))
 

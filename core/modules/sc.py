@@ -10,14 +10,15 @@
 '''Package for reading and writing server configurations'''
 
 
-import os
-import shutil
-from config import Config
+from os import listdir
+from os.path import abspath, dirname, exists, isfile, join
+from shutil import copyfile
 
 from configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
                           readconfig, saveconfig, writeconfig)
+from configuration import configurations
 from server import ServerInfo
-from shell import run as shell_run
+from shell import run
 
 
 class ServerSet(object):
@@ -32,7 +33,7 @@ class ServerSet(object):
             # change network, hosts, hostname
             if saveconfig('/etc/sysconfig/network', {'HOSTNAME': hostname}) and\
                 saveconfig('/etc/hosts', {'127.0.0.1': hostname, '::1': hostname}) and\
-                shell_run(str('hostname %s' % hostname)) == 0:
+                run(str('hostname %s' % hostname)) == 0:
                 return True
             else:
                 return False
@@ -117,17 +118,17 @@ class ServerSet(object):
         if region == None:
             regions = ServerSet.timezone_regions()
             for region in regions:
-                regionpath = os.path.join(zonepath, region)
-                for zonefile in os.listdir(regionpath):
-                    if not os.path.isfile(os.path.join(regionpath, zonefile)):
+                regionpath = join(zonepath, region)
+                for zonefile in listdir(regionpath):
+                    if not isfile(join(regionpath, zonefile)):
                         continue
                     timezones.append('%s/%s' % (region, zonefile))
         else:
-            regionpath = os.path.join(zonepath, region)
-            if not os.path.exists(regionpath):
+            regionpath = join(zonepath, region)
+            if not exists(regionpath):
                 return []
-            for zonefile in os.listdir(regionpath):
-                if not os.path.isfile(os.path.join(regionpath, zonefile)):
+            for zonefile in listdir(regionpath):
+                if not isfile(join(regionpath, zonefile)):
                     continue
                 timezones.append(zonefile)
         return timezones
@@ -142,7 +143,7 @@ class ServerSet(object):
         tzpath = '/etc/localtime'
         zonepath = '/usr/share/zoneinfo'
 
-        config = Config(inifile)
+        config = configurations(inifile)
         if not config.has_section('time'):
             config.add_section('time')
 
@@ -169,20 +170,20 @@ class ServerSet(object):
                 tzdata = f.read()
             regions = ServerSet.timezone_regions()
             for region in regions:
-                regionpath = os.path.join(zonepath, region)
-                for zonefile in os.listdir(regionpath):
-                    if not os.path.isfile(os.path.join(regionpath, zonefile)):
+                regionpath = join(zonepath, region)
+                for zonefile in listdir(regionpath):
+                    if not isfile(join(regionpath, zonefile)):
                         continue
-                    with open(os.path.join(regionpath, zonefile)) as f:
+                    with open(join(regionpath, zonefile)) as f:
                         if f.read() == tzdata:  # got it!
                             return '%s/%s' % (region, zonefile)
         else:
             # check and set the timezone
-            timezonefile = os.path.join(zonepath, timezone)
-            if not os.path.exists(timezonefile):
+            timezonefile = join(zonepath, timezone)
+            if not exists(timezonefile):
                 return False
             try:
-                shutil.copyfile(timezonefile, tzpath)
+                copyfile(timezonefile, tzpath)
             except:
                 return False
 
@@ -203,8 +204,7 @@ class ServerSet(object):
         if dev.startswith('/dev/'):
             try:
                 devlink = os.readlink(dev)
-                dev = os.path.abspath(os.path.join(
-                    os.path.dirname(devlink), dev))
+                dev = abspath(join(dirname(devlink), dev))
             except:
                 pass
             dev = dev.replace('/dev/', '')
@@ -314,7 +314,7 @@ if __name__ == '__main__':
             break
     print('')
 
-    inifile = os.path.join(os.path.dirname(__file__), '../../data/config.ini')
+    inifile = join(dirname(__file__), '../../data/config.ini')
     timezone = ServerSet.timezone(inifile)
     print('* Timezone: %s' % timezone)
     print('')

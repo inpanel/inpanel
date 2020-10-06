@@ -16,7 +16,7 @@ __all__ = [
     'apache',
     'apt',
     'certificate',
-    'config',
+    'configuration',
     'configloader',
     'cron',
     'fdisk',

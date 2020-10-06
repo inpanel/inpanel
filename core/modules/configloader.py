@@ -9,13 +9,13 @@
 
 """Module for reading and writing config file."""
 
-import os
+from os.path import exists
 
 
 def raw_loadconfig(filepath, return_sort=False, delimiter='=', quoter=' "\'', overwrite=True):
     """Read config from file.
     """
-    if not os.path.exists(filepath):
+    if not exists(filepath):
         return None
     config = {}
     if return_sort:
@@ -43,7 +43,7 @@ def raw_loadconfig(filepath, return_sort=False, delimiter='=', quoter=' "\'', ov
 def raw_saveconfig(filepath, config, sortlist=[], delimiter='=', quoter='"'):
     """Write config to file.
     """
-    if not os.path.exists(filepath):
+    if not exists(filepath):
         return False
     lines = []
 

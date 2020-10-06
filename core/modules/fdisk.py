@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
+# Copyright (c) 2017, doudoudzj
 # Copyright (c) 2012 - 2016, VPSMate development team
 # All rights reserved.
 #
@@ -9,8 +9,7 @@
 
 '''Module for disk Management'''
 
-import os
-import shlex
+from shlex import split
 
 from lib import pexpect
 
@@ -30,7 +29,7 @@ def add(disk, size=''):
     fdisk.add('/dev/sdb', '5G') # create a partition with at most 5G space
     """
     try:
-        cmd = shlex.split('fdisk \'%s\'' % disk)
+        cmd = split('fdisk \'%s\'' % disk)
     except:
         return False
 
@@ -101,7 +100,7 @@ def delete(partition):
     disk = partition[:-1]
     partno = partition[-1:]
     try:
-        cmd = shlex.split('fdisk \'%s\'' % disk)
+        cmd = split('fdisk \'%s\'' % disk)
     except:
         return False
 
@@ -150,7 +149,7 @@ def scan(disk, size=''):
     fdisk.scan('/dev/sdb')
     """
     try:
-        cmd = shlex.split('fdisk \'%s\'' % disk)
+        cmd = split('fdisk \'%s\'' % disk)
     except:
         return False
 

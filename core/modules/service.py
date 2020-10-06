@@ -9,10 +9,12 @@
 
 '''Module for Service Management.'''
 
-import glob
-import os
-import shlex
-import subprocess
+
+from glob import glob
+from os import readlink
+from os.path import basename, exists
+from shlex import split
+from subprocess import PIPE, Popen
 
 
 class Service(object):
@@ -53,14 +55,14 @@ class Service(object):
     @classmethod
     def status(self, service):
         initscript = '/etc/init.d/%s' % service
-        if not os.path.exists(initscript):
+        if not exists(initscript):
             initscript = '/usr/lib/systemd/system/%s.service' % service
-            if not os.path.exists(initscript):
+            if not exists(initscript):
                 return None
 
         pidfile = '/var/run/%s.pid' % service
-        if not os.path.exists(pidfile):
-            p = glob.glob('/var/run/%s/*.pid' % service)
+        if not exists(pidfile):
+            p = glob('/var/run/%s/*.pid' % service)
             if len(p) > 0:
                 pidfile = p[0]
             else:
@@ -68,7 +70,7 @@ class Service(object):
                 if service in Service.pidnames:
                     for pidname in Service.pidnames[service]:
                         pidfile = '/var/run/%s.pid' % pidname
-                        if os.path.exists(pidfile):
+                        if exists(pidfile):
                             break
                         else:
                             pidfile = None
@@ -78,12 +80,12 @@ class Service(object):
             # not always corrent, some services dead but the lock still exists
             # some services don't have the pidfile
             if service in Service.subsys_locks:
-                if os.path.exists('/var/lock/subsys/%s' % service):
+                if exists('/var/lock/subsys/%s' % service):
                     return 'running'
 
             # try execute pidof to find the pidfile
-            cmd_ = shlex.split('pidof -c -o %%PPID -x %s' % service)
-            p = subprocess.Popen(cmd_, stdout=subprocess.PIPE, close_fds=True)
+            cmd_ = split('pidof -c -o %%PPID -x %s' % service)
+            p = Popen(cmd_, stdout=PIPE, close_fds=True)
             pid = p.stdout.read().strip()
             p.wait()
 
@@ -95,7 +97,7 @@ class Service(object):
                 pid = f.readline().strip()
             if not pid:
                 return 'stopped'
-            if not os.path.exists('/proc/%s' % pid):
+            if not exists('/proc/%s' % pid):
                 return 'stopped'
 
         return 'running'
@@ -108,8 +110,8 @@ class Service(object):
         cmdbin = 'chkconfig'
         status = 'on' if autostart else 'off'
         cmd = '%s %s %s' % (cmdbin, service, status)
-        cmd = shlex.split(cmd)
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, close_fds=True)
+        cmd = split(cmd)
+        p = Popen(cmd, stdout=PIPE, close_fds=True)
         p.stdout.read()
         return p.wait() == 0 and True or False
 
@@ -124,20 +126,19 @@ class Service(object):
                     startlevel = line.split(':')[1]
                     break
         if startlevel == -1:
-            p = subprocess.Popen(shlex.split('runlevel'),
-                                 stdout=subprocess.PIPE, close_fds=True)
+            p = Popen(split('runlevel'), stdout=PIPE, close_fds=True)
             startlevel = int(p.stdout.read().strip().replace('N ', ''))
             p.wait()
 
         rcpath = '/etc/rc.d/rc%s.d/' % startlevel
         enableServicePath = '/etc/systemd/system/multi-user.target.wants/'
         services = [
-            os.path.basename(os.readlink(filepath))
-            for filepath in glob.glob('%s/S*' % rcpath)
+            basename(readlink(filepath))
+            for filepath in glob('%s/S*' % rcpath)
         ]
         services += [
-            os.path.basename(filePath).replace('.service', '')
-            for filePath in glob.glob('%s*.service' % enableServicePath)
+            basename(filePath).replace('.service', '')
+            for filePath in glob('%s*.service' % enableServicePath)
         ]
         return services
 

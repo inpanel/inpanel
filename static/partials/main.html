@@ -22,6 +22,13 @@
             <li ng-class="'active' | iftrue:activeTabName=='service'"><a href="#service" ng-click="sec('service')" data-toggle="tab">服务状态</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统信息</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='hardware'"><a href="#hardware" ng-click="sec('hardware')" data-toggle="tab">硬件信息</a></li>
+            <li class="pull-right">
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-default" title="刷新数据" ng-click="refresh()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-refresh"></i></button>
+                    <button class="btn btn-default" title="开启自动刷新" ng-click="auto_refresh_open()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-play"></i></button>
+                    <button class="btn btn-default" title="关闭自动刷新" ng-click="auto_refresh_close()" ng-disabled="!auto_refresh"><i class="glyphicon glyphicon-stop"></i></button>
+                </div>
+            </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='server'" id="server">
@@ -93,22 +100,34 @@
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" style="width:300px">
                                     <tr>
-                                        <td style="width:80px">物理大小：</td>
+                                        <td style="width:100px">总大小：</td>
                                         <td class="text-right" style="width:80px">{{ info['server.meminfo']['mem_total'] }}</td>
                                         <td style="width:20px"></td>
                                         <td style="width:80px"></td>
                                     </tr>
                                     <tr>
-                                        <td>物理已用：</td>
+                                        <td>已用大小：</td>
                                         <td class="text-right">{{ info['server.meminfo']['mem_used'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_used_rate'] | space.used"></td>
                                     </tr>
                                     <tr>
-                                        <td>物理空闲：</td>
+                                        <td>空闲内存：</td>
                                         <td class="text-right">{{ info['server.meminfo']['mem_free'] }}</td>
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_free_rate'] | space.free"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>缓冲区大小：</td>
+                                        <td class="text-right">{{ info['server.meminfo']['mem_buffers'] }}</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>缓存大小：</td>
+                                        <td class="text-right">{{ info['server.meminfo']['mem_cached'] }}</td>
+                                        <td></td>
+                                        <td></td>
                                     </tr>
                                     <tr>
                                         <td>可用内存：</td>
@@ -116,23 +135,17 @@
                                         <td></td>
                                         <td ng-bind-html-unsafe="info['server.meminfo']['mem_available_rate'] | space.available"></td>
                                     </tr>
-                                    <tr>
-                                        <td>Buffers：</td>
-                                        <td class="text-right">{{ info['server.meminfo']['mem_buffers'] }}</td>
+                                    <tr ng-show="info['server.meminfo']['mem_available'] == '0B'">
+                                        <td>可用内存(计算)：</td>
+                                        <td class="text-right">{{ info['server.meminfo']['mem_available_computed'] }}</td>
                                         <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Cached：</td>
-                                        <td class="text-right">{{ info['server.meminfo']['mem_cached'] }}</td>
-                                        <td></td>
-                                        <td></td>
+                                        <td ng-bind-html-unsafe="info['server.meminfo']['mem_available_computed_rate'] | space.available"></td>
                                     </tr>
                                 </table>
                             </td>
                         </tr>
                         <tr ng-show="info['server.meminfo']['swap_total'] != '0B'">
-                            <td>SWAP ：</td>
+                            <td>交换空间 ：</td>
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" style="width:300px">
                                     <tr>

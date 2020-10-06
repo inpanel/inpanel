@@ -18,7 +18,7 @@ import re
 import shlex
 import socket
 import struct
-import subprocess
+from subprocess import Popen, PIPE
 import time
 from xml.dom.minidom import parseString
 
@@ -35,7 +35,7 @@ def strfdelta(tdelta, fmt):
 def div_percent(a, b):
     if b == 0:
         return '0%'
-    return '%.2f%%' % (round(float(a)/b, 4) * 100)
+    return '%.2f%%' % (round(float(a) / b, 4) * 100)
 
 
 class ServerInfo(object):
@@ -90,14 +90,14 @@ class ServerInfo(object):
             # in some machine like Linode VPS, idle time may bigger than up time
             if idle_seconds > up_seconds:
                 cpu_count = multiprocessing.cpu_count()
-                idle_seconds = idle_seconds/cpu_count
+                idle_seconds = idle_seconds / cpu_count
                 # in some VPS, this value may still bigger than up time
                 # may be the domain 0 machine has more cores
                 # we calclate approximately for it
                 if idle_seconds > up_seconds:
                     for n in range(2, 10):
-                        if idle_seconds/n < up_seconds:
-                            idle_seconds = idle_seconds/n
+                        if idle_seconds / n < up_seconds:
+                            idle_seconds = idle_seconds / n
                             break
             fmt = '{days} 天 {hours} 小时 {minutes} 分 {seconds} 秒'
             uptime_string = strfdelta(datetime.timedelta(seconds=up_seconds), fmt)
@@ -141,7 +141,7 @@ class ServerInfo(object):
                             stat.append(0)
                         stat = dict(zip(full_fname, stat))
                     else:
-                        stat = [statall-stat[3], stat[3]]
+                        stat = [statall - stat[3], stat[3]]
                         stat = dict(zip(fname, stat))
                     stat['all'] = statall
                     if name == 'cpu':
@@ -158,7 +158,16 @@ class ServerInfo(object):
     def meminfo(self):
         # OpenVZ may not have some varirables
         # so init them first
-        mem_total = mem_free = mem_available = mem_buffers = mem_cached = mem_slab = swap_total = swap_free = swap_swappiness = 0
+        mem_total = 0
+        mem_free = 0
+        mem_available = 0
+        mem_buffers = 0
+        mem_cached = 0
+        mem_slab = 0
+        swap_total = 0
+        swap_free = 0
+        swap_swappiness = 0
+        mem_available_computed = 0
 
         with open('/proc/meminfo', 'r') as f:
             for line in f:
@@ -185,13 +194,18 @@ class ServerInfo(object):
         with open('/proc/sys/vm/swappiness', 'r') as f:
             swap_swappiness = f.readline()
 
-        mem_used = mem_total - mem_free - mem_buffers - mem_cached - mem_slab
+        mem_used = mem_total - mem_free
         swap_used = swap_total - swap_free
+        if not mem_available:
+            # MemAvailable ≈ MemFree + Buffers + Cached
+            mem_available_computed = mem_free + mem_buffers + mem_cached
+
         return {
             'mem_total': b2h(mem_total),
             'mem_used': b2h(mem_used),
             'mem_free': b2h(mem_free),
             'mem_available': b2h(mem_available),
+            'mem_available_computed': b2h(mem_available_computed),
             'mem_buffers': b2h(mem_buffers),
             'mem_cached': b2h(mem_cached),
             'mem_slab': b2h(mem_slab),
@@ -202,6 +216,7 @@ class ServerInfo(object):
             'mem_used_rate': div_percent(mem_used, mem_total),
             'mem_free_rate': div_percent(mem_free, mem_total),
             'mem_available_rate': div_percent(mem_available, mem_total),
+            'mem_available_computed_rate': div_percent(mem_available_computed, mem_total),
             'swap_used_rate': div_percent(swap_used, swap_total),
             'swap_free_rate': div_percent(swap_free, swap_total),
         }
@@ -213,17 +228,16 @@ class ServerInfo(object):
             for line in f:
                 dev, path, fstype = line.split()[0:3]
                 # simfs: filesystem in OpenVZ
-                if fstype in ('ext2', 'ext3', 'ext4', 'xfs',
-                              'jfs', 'reiserfs', 'btrfs',
-                              'simfs'):
+                if fstype in ('ext2', 'ext3', 'ext4', 'xfs', 'jfs', 'reiserfs',
+                              'btrfs', 'simfs'):
                     if not os.path.isdir(path):
                         continue
                     mounts.append({'dev': dev, 'path': path, 'fstype': fstype})
         for mount in mounts:
             stat = os.statvfs(mount['path'])
-            total = stat.f_blocks*stat.f_bsize
-            free = stat.f_bfree*stat.f_bsize
-            used = (stat.f_blocks-stat.f_bfree)*stat.f_bsize
+            total = stat.f_blocks * stat.f_bsize
+            free = stat.f_bfree * stat.f_bsize
+            used = (stat.f_blocks - stat.f_bfree) * stat.f_bsize
             mount['total'] = b2h(total)
             mount['free'] = b2h(free)
             mount['used'] = b2h(used)
@@ -272,25 +286,31 @@ class ServerInfo(object):
                     ifnamepack = struct.pack('256s', ifname)
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     sfd = s.fileno()
-                    flags, = struct.unpack('H', fcntl.ioctl(
-                        sfd, 0x8913,  # SIOCGIFFLAGS
-                        ifnamepack
-                    )[16:18])
+                    flags, = struct.unpack(
+                        'H',
+                        fcntl.ioctl(
+                            sfd,
+                            0x8913,  # SIOCGIFFLAGS
+                            ifnamepack)[16:18])
                     netiface['status'] = ('down', 'up')[flags & 0x1]
-                    netiface['ip'] = socket.inet_ntoa(fcntl.ioctl(
-                        sfd, 0x8915,  # SIOCGIFADDR
-                        ifnamepack
-                    )[20:24])
-                    netiface['bcast'] = socket.inet_ntoa(fcntl.ioctl(
-                        sfd, 0x8919,  # SIOCGIFBRDADDR
-                        ifnamepack
-                    )[20:24])
-                    netiface['mask'] = socket.inet_ntoa(fcntl.ioctl(
-                        sfd, 0x891b,  # SIOCGIFNETMASK
-                        ifnamepack
-                    )[20:24])
+                    netiface['ip'] = socket.inet_ntoa(
+                        fcntl.ioctl(
+                            sfd,
+                            0x8915,  # SIOCGIFADDR
+                            ifnamepack)[20:24])
+                    netiface['bcast'] = socket.inet_ntoa(
+                        fcntl.ioctl(
+                            sfd,
+                            0x8919,  # SIOCGIFBRDADDR
+                            ifnamepack)[20:24])
+                    netiface['mask'] = socket.inet_ntoa(
+                        fcntl.ioctl(
+                            sfd,
+                            0x891b,  # SIOCGIFNETMASK
+                            ifnamepack)[20:24])
                     hwinfo = fcntl.ioctl(
-                        sfd, 0x8927,  # SIOCSIFHWADDR
+                        sfd,
+                        0x8927,  # SIOCSIFHWADDR
                         ifnamepack)
                     # REF: networking/interface.c, /usr/include/linux/if.h, /usr/include/linux/if_arp.h
                     encaps = {
@@ -303,7 +323,8 @@ class ServerInfo(object):
                     }
                     hwtype = hwinfo[16:18]
                     netiface['encap'] = encaps[hwtype]
-                    netiface['mac'] = ':'.join(['%02X' % ord(char) for char in hwinfo[18:24]])
+                    netiface['mac'] = ':'.join(
+                        ['%02X' % ord(char) for char in hwinfo[18:24]])
 
                     if not netiface['name'].startswith('venet'):
                         break
@@ -358,7 +379,7 @@ class ServerInfo(object):
 
     @classmethod
     def uname(self):
-        p = subprocess.Popen(shlex.split('uname -i'), stdout=subprocess.PIPE, close_fds=True)
+        p = Popen(shlex.split('uname -i'), stdout=PIPE, close_fds=True)
         hwplatform = p.stdout.read().strip()
         p.wait()
 
@@ -414,7 +435,7 @@ class ServerInfo(object):
         REF: http://linuxconfig.org/how-to-retrieve-and-change-partitions-universally-unique-identifier-uuid-on-linux
         """
         blks = {}
-        p = subprocess.Popen(shlex.split('/sbin/blkid'), stdout=subprocess.PIPE, close_fds=True)
+        p = Popen(shlex.split('/sbin/blkid'), stdout=PIPE, close_fds=True)
         p.stdout.read()
         p.wait()
 
@@ -498,13 +519,15 @@ class ServerInfo(object):
             # check if it appears in blkid list
             if not part['name'] in blks:
                 # don't check the part with child partition
-                if i+1 < len(parts) and parts[i+1]['name'].startswith(part['name']):
+                if i + 1 < len(parts) and parts[i + 1]['name'].startswith(
+                        part['name']):
                     continue
 
                 # if dev name doesn't match, check the major and minor of the dev
                 devfound = False
                 for devname, blkinfo in blks.items():
-                    if blkinfo['major'] == part['major'] and blkinfo['minor'] == part['minor']:
+                    if blkinfo['major'] == part['major'] and blkinfo[
+                            'minor'] == part['minor']:
                         devfound = True
                         break
                 if devfound:
@@ -518,18 +541,20 @@ class ServerInfo(object):
         lvmlvs = []
         lvmlvs_vname = {}
         if not has_busy_part and os.path.exists('/sbin/lvm'):
-            p = subprocess.Popen(shlex.split('/sbin/lvm lvdisplay'), stdout=subprocess.PIPE, close_fds=True)
+            p = Popen(shlex.split('/sbin/lvm lvdisplay'), stdout=PIPE, close_fds=True)
             lvs = p.stdout
             while True:
                 line = lvs.readline()
                 if not line:
                     break
                 if 'LV Name' in line or 'LV Path' in line:
-                    devlink = line.replace('LV Name', '').replace('LV Path', '').strip()
+                    devlink = line.replace('LV Name',
+                                           '').replace('LV Path', '').strip()
                     if not os.path.exists(devlink):
                         continue
                     dev = os.readlink(devlink)
-                    dev = os.path.abspath(os.path.join(os.path.dirname(devlink), dev))
+                    dev = os.path.abspath(
+                        os.path.join(os.path.dirname(devlink), dev))
                     dev = dev.replace('/dev/', '')
                     lvmlvs_vname[dev] = devlink.replace('/dev/', '')
                     lvmlvs.append(dev)
@@ -567,7 +592,7 @@ class ServerInfo(object):
                     parent_part_found = True
                     parent_part = disks['partitions'][i]
                     parent_part['partcount'] += 1
-                    parent_part['unpartition'] -= blocks*1024
+                    parent_part['unpartition'] -= blocks * 1024
                     break
             if not is_hw and not parent_part_found:
                 parent_part = disks['lvm']
@@ -581,7 +606,7 @@ class ServerInfo(object):
                 'major': major,
                 'minor': minor,
                 'name': name,
-                'size': b2h(blocks*1024),
+                'size': b2h(blocks * 1024),
                 'is_hw': is_hw,
                 'is_pv': is_pv,
                 'partcount': partcount,
@@ -609,9 +634,9 @@ class ServerInfo(object):
 
             if is_hw:
                 partition['partitions'] = []
-                partition['unpartition'] = blocks*1024
+                partition['unpartition'] = blocks * 1024
                 disks['count'] += 1
-                disks['totalsize'] += blocks*1024
+                disks['totalsize'] += blocks * 1024
 
             parent_part['partitions'].append(partition)
 
@@ -619,7 +644,7 @@ class ServerInfo(object):
         disks['lvscount'] = len(lvmlvs)
         for i, part in enumerate(disks['partitions']):
             unpartition = part['unpartition']
-            if unpartition <= 10*1024**2:   # ignore size < 10MB
+            if unpartition <= 10 * 1024**2:  # ignore size < 10MB
                 unpartition = '0'
             else:
                 unpartition = b2h(unpartition)
@@ -636,8 +661,10 @@ class ServerInfo(object):
             for line in f:
                 if 'VMware Virtual' in line:
                     return 'VMware'
-                if any(['QEMU Virtual CPU' in line,
-                        'Booting paravirtualized kernel on KVM' in line]):
+                if any([
+                        'QEMU Virtual CPU' in line,
+                        'Booting paravirtualized kernel on KVM' in line
+                ]):
                     return 'KVM'
                 if 'Booting paravirtualized kernel on Xen' in line:
                     return 'Xen PV'
@@ -653,14 +680,13 @@ class ServerInfo(object):
 
 
 class ServerTool(object):
-
     @classmethod
     def supportfs(self):
         """Return a list of file system that system support.
         """
         support_list = []
-        for fstype in ('ext2', 'ext3', 'ext4', 'xfs',
-                       'jfs', 'reiserfs', 'btrfs'):
+        for fstype in ('ext2', 'ext3', 'ext4', 'xfs', 'jfs', 'reiserfs',
+                       'btrfs'):
             if os.path.exists('/sbin/mkfs.%s' % fstype):
                 support_list.append(fstype)
         support_list.append('swap')
@@ -700,15 +726,15 @@ if __name__ == '__main__':
 
     meminfo = ServerInfo.meminfo()
     print('* Memory total: %s' % meminfo['mem_total'])
-    print('* Memory used: %s (%s)' %(meminfo['mem_used'], meminfo['mem_used_rate']))
-    print('* Memory free: %s (%s)' %(meminfo['mem_free'], meminfo['mem_free_rate']))
-    print('* Memory available: %s (%s)' %(meminfo['mem_available'], meminfo['mem_available_rate']))
+    print('* Memory used: %s (%s)' % (meminfo['mem_used'], meminfo['mem_used_rate']))
+    print('* Memory free: %s (%s)' % (meminfo['mem_free'], meminfo['mem_free_rate']))
+    print('* Memory available: %s (%s)' % (meminfo['mem_available'], meminfo['mem_available_rate']))
     print('* Memory buffers: %s' % meminfo['mem_buffers'])
     print('* Memory cached: %s' % meminfo['mem_cached'])
     print('* Memory slab: %s' % meminfo['mem_slab'])
     print('* Swap total: %s' % meminfo['swap_total'])
-    print('* Swap used: %s (%s)' %(meminfo['swap_used'], meminfo['swap_used_rate']))
-    print('* Swap free: %s (%s)' %(meminfo['swap_free'], meminfo['swap_free_rate']))
+    print('* Swap used: %s (%s)' % (meminfo['swap_used'], meminfo['swap_used_rate']))
+    print('* Swap free: %s (%s)' % (meminfo['swap_free'], meminfo['swap_free_rate']))
     print('* Swappiness: %s' % meminfo['swap_swappiness'])
     print
 
@@ -769,10 +795,12 @@ if __name__ == '__main__':
     print('* %d disks detected, total size: %s' % (count, totalsize))
     print('')
     for partition in partitions:
-        print('* Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor']))
+        print('* Partition name: %s (%d, %d)' %
+              (partition['name'], partition['major'], partition['minor']))
         if 'vname' in partition:
             print('  Volumn name: %s' % partition['vname'])
-        print('  Partition size: %s (%s free)' % (partition['size'], partition['unpartition']))
+        print('  Partition size: %s (%s free)' %
+              (partition['size'], partition['unpartition']))
         if 'uuid' in partition:
             print('  Partition UUID: %s' % partition['uuid'])
         if 'fstype' in partition:
@@ -786,7 +814,9 @@ if __name__ == '__main__':
             print('  Partition count: %d' % partition['partcount'])
         print
         for subpartition in partition['partitions']:
-            print('  - Subpartition name: %s (%d, %d)' % (subpartition['name'], subpartition['major'], subpartition['minor']))
+            print('  - Subpartition name: %s (%d, %d)' %
+                  (subpartition['name'], subpartition['major'],
+                   subpartition['minor']))
             if 'vname' in subpartition:
                 print('  - Volumn name: %s' % subpartition['vname'])
             print('  - Subpartition size: %s' % subpartition['size'])
@@ -806,7 +836,8 @@ if __name__ == '__main__':
 
     print('* LVM partitions:')
     for partition in diskinfo['lvm']['partitions']:
-        print('  - Partition name: %s (%d, %d)' % (partition['name'], partition['major'], partition['minor']))
+        print('  - Partition name: %s (%d, %d)' %
+              (partition['name'], partition['major'], partition['minor']))
         if 'vname' in partition:
             print('  - Volumn name: %s' % partition['vname'])
         print('  - Partition size: %s' % partition['size'])
