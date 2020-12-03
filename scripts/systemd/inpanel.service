@@ -9,17 +9,10 @@ Type = simple
 PIDFile = /var/run/inpanel.pid
 # WorkingDirectory = /usr/local/inpanel
 # ExecStartPre =
-ExecStart = /usr/bin/python /usr/local/inpanel/inpanel.py
+ExecStart = /usr/bin/python /usr/local/inpanel/server.py
 # ExecReload =
 # ExecStop =
 StartLimitInterval = 30min
-
-# Some distributions may not support these hardening directives. If you cannot start the service due
-# to an unknown option, comment out the ones not supported by your version of systemd.
-# ProtectSystem = full
-# PrivateDevices = yes
-# PrivateTmp = yes
-# NoNewPrivileges = true
 
 [Install]
 WantedBy = multi-user.target
