@@ -53,18 +53,15 @@ yum_reporpms = {
         },
         7: {
             'x86_64': [
-                'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-8.2003.0.el7.centos.x86_64.rpm',
-                'http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-8.2003.0.el7.centos.x86_64.rpm'
+                'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm',
+                'http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm'
             ]
         }
     },
     'updates': {
         7: {
             'x86_64': [
-                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.1.el7.centos.x86_64.rpm',
-                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.4.el7.centos.x86_64.rpm',
-                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.5.el7.centos.x86_64.rpm',
-                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-5.1804.el7.centos.2.x86_64.rpm',
+                'http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-9.2009.1.el7.centos.x86_64.rpm'
             ]
         }
     },
@@ -72,28 +69,18 @@ yum_reporpms = {
         5: {
             'x86_64': ['http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm'],
             'i386':   ['http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm'],
-            'i686':   ['http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm'],
+            'i686':   ['http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm']
         },
         6: {
-            'x86_64': [
-                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
-            ],
-            'i386':   [
-                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
-            ],
-            'i686':   [
-                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'
-            ],
+            'x86_64': ['https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'],
+            'i386':   ['https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm'],
+            'i686':   ['https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm']
         },
         7: {
-            'x86_64': [
-                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm'
-            ],
+            'x86_64': ['https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm']
         },
         8: {
-            'x86_64': [
-                'https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm'
-            ],
+            'x86_64': ['https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm']
         },
     },
     'CentALT': {
