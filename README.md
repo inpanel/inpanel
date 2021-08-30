@@ -5,7 +5,7 @@
 
 Official Website: [inpanel.org](https://inpanel.org "InPanel")
 
-Developer: [doudoudzj](https://github.com/doudoudzj "doudoudzj")
+Author: [Jackson Dou](https://github.com/doudoudzj "Jackson Dou")
 
 #### Installation
 
