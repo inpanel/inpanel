@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 from __future__ import absolute_import, division, with_statement
 
 from tornado.escape import utf8, _unicode, native_str

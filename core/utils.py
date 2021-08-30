@@ -21,9 +21,9 @@ import string
 def randstr(length=32):
     """Generate a fixed-length random string.
     """
-    table = range(0x30, 0x3a) + range(0x41, 0x5b) + range(0x61, 0x7b)
-    pop = [chr(i) for i in table]
-    return ''.join(random.sample(pop, length))
+    # table = range(0x30, 0x3a) + range(0x41, 0x5b) + range(0x61, 0x7b)
+    # pop = [chr(i) for i in table]
+    return ''.join(random.sample('abcdefghijklmnopqrstuvwxyz!@#$%^&*()', length))
 
 
 def make_cookie_secret():
