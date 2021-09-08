@@ -8,15 +8,12 @@
 
 '''The InPanel Core.'''
 
-
-import platform
-
 __version__ = '1.1.1.26'
 
 name = 'InPanel'
 version = '1.1.1'
 build = '26'
-releasetime = '2021-08-31 23:00:00 GMT+0800'
+releasetime = '2021-09-20 23:00:00 GMT+0800'
 version_info = {
     'name': name,
     'build': build,
@@ -28,45 +25,5 @@ api = {
     'site_packages': 'http://api.inpanel.org/?s=site_packages',
     'download_package': 'http://api.inpanel.org/?s=site_packages&a=download'
 }
-system = None
-distribution = None
-distname = None
-distversion = None
-distarch = None
 
-
-system = platform.system()
-if hasattr(platform, 'linux_distribution'):
-    dist = platform.linux_distribution()
-else:
-    dist = platform.dist()
-
-distribution = dist[0]
-distname = distribution.lower()
-distversion = dist[1]
-distversion = distversion[0:distversion.find('.', distversion.index('.') + 1)]
-distarch = 'x86_64' if platform.machine() == 'x86_64' else 'i386'
-
-__all__ = [
-    'api',
-    'build',
-    'distname',
-    'distribution',
-    'distversion',
-    'distarch',
-    'name',
-    'releasetime',
-    'version_info',
-    'version'
-]
-
-
-# distname = dist[0].lower()
-
-
-# print(distname, platform_version, arch)
-# print(platform.platform())
-# print('machine', platform.machine())
-# print('os', platform.system())
-# print('uname', platform.uname())
-# print('dist', dist)
+__all__ = ['api', 'build', 'name', 'releasetime', 'version_info', 'version']
