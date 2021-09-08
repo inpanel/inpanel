@@ -11,7 +11,7 @@ Author: [Jackson Dou](https://github.com/doudoudzj "Jackson Dou")
 
 ```shell
 # stable version
-curl -O https://raw.githubusercontent.com/inpanel/inpanel/master/install.py
+curl -O https://raw.githubusercontent.com/inpanel/inpanel/main/install.py
 python install.py
 
 # beta version
