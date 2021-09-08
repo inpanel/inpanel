@@ -170,12 +170,12 @@ class Install(object):
         else:
             print('[ %s ]' % FAILED)
         # Install Python
-        print('* Installing Python 2.6 ...'),
+        print('* Installing Python 2 ...'),
         if self.distname == 'centos':
-            self._run('yum -y install python26')
+            self._run('yum -y install python2')
 
         elif self.distname == 'redhat':
-            self._run('yum -y install python26')
+            self._run('yum -y install python2')
 
         elif self.distname == 'ubuntu':
             self._run('apt-get -y install python')

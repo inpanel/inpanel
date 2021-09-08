@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 """Support classes for automated testing.
 
 This module contains three parts:

@@ -657,21 +657,22 @@ class ServerInfo(object):
         REF: http://www.dmo.ca/blog/detecting-virtualization-on-linux/
         """
         # detect from dmesg first
-        with open('/var/log/dmesg') as f:
-            for line in f:
-                if 'VMware Virtual' in line:
-                    return 'VMware'
-                if any([
-                        'QEMU Virtual CPU' in line,
-                        'Booting paravirtualized kernel on KVM' in line
-                ]):
-                    return 'KVM'
-                if 'Booting paravirtualized kernel on Xen' in line:
-                    return 'Xen PV'
-                if 'Xen HVM' in line:
-                    return 'Xen HVM'
-                if 'Xen version' in line:
-                    return 'Xen'
+        if os.path.exists('/var/log/dmesg'):
+            with open('/var/log/dmesg') as f:
+                for line in f:
+                    if 'VMware Virtual' in line:
+                        return 'VMware'
+                    if any([
+                            'QEMU Virtual CPU' in line,
+                            'Booting paravirtualized kernel on KVM' in line
+                    ]):
+                        return 'KVM'
+                    if 'Booting paravirtualized kernel on Xen' in line:
+                        return 'Xen PV'
+                    if 'Xen HVM' in line:
+                        return 'Xen HVM'
+                    if 'Xen version' in line:
+                        return 'Xen'
         if os.path.exists('/proc/xen/'):
             return 'Xen'
         if os.path.exists('/proc/vz/'):
