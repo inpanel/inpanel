@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, doudoudzj
+# Copyright (c) 2017, Jackson Dou
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
