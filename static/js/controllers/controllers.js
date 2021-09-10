@@ -36,7 +36,7 @@ var LoginCtrl = [
                 return
             }
             $scope.loginText = '登录中...';
-            Request.post('/login', {
+            Request.post('/api/login', {
                 username: $scope.username,
                 password: rawpwd ? $scope.password : hex_md5($scope.password)
             }, function (data) {
@@ -82,7 +82,7 @@ var LogoutCtrl = [
         Timeout(function () {
             $scope.loaded = true;
             Request.get('/xsrf', function () {
-                Request.post('/logout', {}, function (data) {
+                Request.post('/api/logout', {}, function (data) {
                     Timeout(function () {
                         $location.path('/');
                     }, 3000, module);

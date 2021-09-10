@@ -49,8 +49,8 @@ def main():
     application = web.Application([
         (r'/xsrf', web.XsrfHandler),
         (r'/authstatus', web.AuthStatusHandler),
-        (r'/login', web.LoginHandler),
-        (r'/logout', web.LogoutHandler),
+        (r'/api/login', web.LoginHandler),
+        (r'/api/logout', web.LogoutHandler),
         (r'/query/(.+)', web.QueryHandler),
         (r'/utils/network/(.+?)(?:/(.+))?', web.UtilsNetworkHandler),
         (r'/utils/process/(.+?)(?:/(.+))?', WebRequestProcess),
@@ -67,9 +67,9 @@ def main():
          web.StaticFileHandler, {'path': settings['static_path']}),
         (r'/plugins/(.*)', web.StaticFileHandler, {'path': settings['plugins_path']}),
         (r'/($)', web.StaticFileHandler, {'path': settings['index_path']}),
-        (r'/download/(.+)', web.FileDownloadHandler, {'path': '/'}),
-        (r'/fileupload', web.FileUploadHandler),
-        (r'/version', web.VersionHandler),
+        (r'/api/download/(.+)', web.FileDownloadHandler, {'path': '/'}),
+        (r'/api/fileupload', web.FileUploadHandler),
+        (r'/api/version', web.VersionHandler),
         (r'/.*', web.ErrorHandler, {'status_code': 404})
     ], **settings)
 
