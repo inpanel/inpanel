@@ -21,7 +21,8 @@ import struct
 from subprocess import Popen, PIPE
 import time
 from xml.dom.minidom import parseString
-
+from core import distribution as dist_name
+from core import dist_versint
 from core.utils import b2h
 
 
@@ -366,15 +367,13 @@ class ServerInfo(object):
 
     @classmethod
     def distribution(self):
-        dist = platform.linux_distribution()
-        return ' '.join(dist)
+        return '%s %s' % (dist_name, dist_versint)
 
     @classmethod
     def dist(self):
-        dist = platform.linux_distribution(full_distribution_name=0)
         return {
-            'name': dist[0].lower(),
-            'version': dist[1],
+            'name': dist_name.lower(),
+            'version': dist_versint,
         }
 
     @classmethod
@@ -384,10 +383,13 @@ class ServerInfo(object):
         p.wait()
 
         uname = platform.uname()
+        kernel_release = uname[2] # '.el8.'
+
         return {
+            'dist': '',
             'kernel_name': uname[0],
             'node': uname[1],
-            'kernel_release': uname[2],
+            'kernel_release': kernel_release,
             'kernel_version': uname[3],
             'machine': uname[4],
             'processor': uname[5],
@@ -769,10 +771,6 @@ if __name__ == '__main__':
     print('* Name servers:')
     for nameserver in nameservers:
         print('  %s' % nameserver)
-    print('')
-
-    distribution = ServerInfo.distribution()
-    print('* Linux distribution: %s' % distribution)
     print('')
 
     uname = ServerInfo.uname()

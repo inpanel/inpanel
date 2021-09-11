@@ -404,7 +404,7 @@
                             <td>CPU核心：</td>
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" ng-class="'table-nopadding' | iftrue:info['server.cpuinfo']['core_count']==1">
-                                    <tr ng-show="info['server.cpuinfo']['core_count'] > 1">
+                                    <tr>
                                         <td colspan="2">共有 {{ info['server.cpuinfo']['core_count'] }} 个核心，型号如下：</td>
                                     </tr>
                                     <tr ng-repeat="core in info['server.cpuinfo']['cores']">
