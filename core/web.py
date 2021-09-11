@@ -417,11 +417,11 @@ class QueryHandler(RequestHandler):
     
     Query one or more items, seperated by comma.
     Examples:
-    /query/*
-    /query/server.*
-    /query/service.*
-    /query/server.datetime,server.diskinfo
-    /query/config.fstab(sda1)
+    /api/query/*
+    /api/query/server.*
+    /api/query/service.*
+    /api/query/server.datetime,server.diskinfo
+    /api/query/config.fstab(sda1)
     """
     def get(self, items):
         self.authed()

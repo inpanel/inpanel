@@ -249,7 +249,7 @@
             </div>
             <div class="modal-body">
                 <h5>请选择您要上传的文件：</h5>
-                <div ng-include src="'/xsrf'"></div>
+                <div ng-include src="'/api/xsrf'"></div>
                 <form id="uploadform" target="uploadframe" action="/api/fileupload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
                     <input type="hidden" name="_xsrf" value="" id="_xsrf">
                     <input type="hidden" name="path" value="{{curpath}}">

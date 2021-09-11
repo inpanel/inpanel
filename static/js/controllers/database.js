@@ -10,7 +10,7 @@ var DatabaseCtrl = [
         $scope.mysql_supported = false;
 
         $scope.load = function() {
-            Request.get('/query/service.mysqld', function(data) {
+            Request.get('/api/query/service.mysqld', function(data) {
                 if (data['service.mysqld'] && data['service.mysqld'].status) $scope.mysql_supported = true;
                 $scope.has_dbserver = $scope.mysql_supported;
                 if ($scope.has_dbserver) {
@@ -29,7 +29,7 @@ var DatabaseCtrl = [
 
         $scope.validate_password = function() {
             $scope.processing = true;
-            Request.post('/operation/mysql', {
+            Request.post('/api/operation/mysql', {
                 'action': 'checkpwd',
                 'password': $rootScope.$mysql.password
             }, function(data) {
@@ -47,8 +47,8 @@ var DatabaseCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_databases',
-                '/backend/mysql_databases', {
+                '/api/backend/mysql_databases',
+                '/api/backend/mysql_databases', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -67,8 +67,8 @@ var DatabaseCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_users',
-                '/backend/mysql_users', {
+                '/api/backend/mysql_users',
+                '/api/backend/mysql_users', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -99,7 +99,7 @@ var DatabaseMySQLNewDBCtrl = [
         $scope.collation = 'utf8_general_ci';
         $scope.validate_password = function() {
             $scope.processing = true;
-            Request.post('/operation/mysql', {
+            Request.post('/api/operation/mysql', {
                 'action': 'checkpwd',
                 'password': $rootScope.$mysql.password
             }, function(data) {
@@ -114,8 +114,8 @@ var DatabaseMySQLNewDBCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_create',
-                '/backend/mysql_create_' + $scope.dbname, {
+                '/api/backend/mysql_create',
+                '/api/backend/mysql_create_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'collation': $scope.collation
@@ -146,7 +146,7 @@ var DatabaseMySQLEditDBCtrl = [
 
         $scope.validate_password = function() {
             $scope.processing = true;
-            Request.post('/operation/mysql', {
+            Request.post('/api/operation/mysql', {
                 'action': 'checkpwd',
                 'password': $rootScope.$mysql.password
             }, function(data) {
@@ -164,8 +164,8 @@ var DatabaseMySQLEditDBCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_dbinfo',
-                '/backend/mysql_dbinfo_' + $scope.dbname, {
+                '/api/backend/mysql_dbinfo',
+                '/api/backend/mysql_dbinfo_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 }, {
@@ -187,8 +187,8 @@ var DatabaseMySQLEditDBCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_users',
-                '/backend/mysql_users_' + $scope.dbname, {
+                '/api/backend/mysql_users',
+                '/api/backend/mysql_users_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 }, {
@@ -205,7 +205,7 @@ var DatabaseMySQLEditDBCtrl = [
 
         $scope.setcollation = function() {
             $scope.processing = true;
-            Request.post('/operation/mysql', {
+            Request.post('/api/operation/mysql', {
                 'action': 'alter_database',
                 'password': $rootScope.$mysql.password,
                 'dbname': $scope.dbname,
@@ -219,8 +219,8 @@ var DatabaseMySQLEditDBCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_rename',
-                '/backend/mysql_rename_' + $scope.dbname, {
+                '/api/backend/mysql_rename',
+                '/api/backend/mysql_rename_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'newname': $scope.dbinfo.name
@@ -250,8 +250,8 @@ var DatabaseMySQLEditDBCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_export',
-                '/backend/mysql_export_' + $scope.dbname, {
+                '/api/backend/mysql_export',
+                '/api/backend/mysql_export_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'path': $scope.exportpath
@@ -266,8 +266,8 @@ var DatabaseMySQLEditDBCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_drop',
-                '/backend/mysql_drop_' + $scope.dbname, {
+                '/api/backend/mysql_drop',
+                '/api/backend/mysql_drop_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 },
@@ -298,7 +298,7 @@ var DatabaseMySQLNewUserCtrl = [
 
         $scope.validate_password = function() {
             $scope.processing = true;
-            Request.post('/operation/mysql', {
+            Request.post('/api/operation/mysql', {
                 'action': 'checkpwd',
                 'password': $rootScope.$mysql.password
             }, function(data) {
@@ -320,8 +320,8 @@ var DatabaseMySQLNewUserCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_createuser',
-                '/backend/mysql_createuser_' + username, {
+                '/api/backend/mysql_createuser',
+                '/api/backend/mysql_createuser_' + username, {
                     'password': $rootScope.$mysql.password,
                     'user': $scope.user,
                     'host': $scope.host,
@@ -379,7 +379,7 @@ var DatabaseMySQLEditUserCtrl = [
 
         $scope.validate_password = function() {
             $scope.processing = true;
-            Request.post('/operation/mysql', {
+            Request.post('/api/operation/mysql', {
                 'action': 'checkpwd',
                 'password': $rootScope.$mysql.password
             }, function(data) {
@@ -398,8 +398,8 @@ var DatabaseMySQLEditUserCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_userprivs',
-                '/backend/mysql_userprivs_' + $scope.username, {
+                '/api/backend/mysql_userprivs',
+                '/api/backend/mysql_userprivs_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username
                 }, {
@@ -486,8 +486,8 @@ var DatabaseMySQLEditUserCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_updateuserprivs',
-                '/backend/mysql_updateuserprivs_' + encodeURIComponent($scope.username + ($scope.curprivs.Db ? '_' + $scope.curprivs.Db : '')), {
+                '/api/backend/mysql_updateuserprivs',
+                '/api/backend/mysql_updateuserprivs_' + encodeURIComponent($scope.username + ($scope.curprivs.Db ? '_' + $scope.curprivs.Db : '')), {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username,
                     'privs': angular.toJson($scope.curprivs),
@@ -516,8 +516,8 @@ var DatabaseMySQLEditUserCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_databases',
-                '/backend/mysql_databases', {
+                '/api/backend/mysql_databases',
+                '/api/backend/mysql_databases', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -539,8 +539,8 @@ var DatabaseMySQLEditUserCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_setuserpassword',
-                '/backend/mysql_setuserpassword_' + $scope.username, {
+                '/api/backend/mysql_setuserpassword',
+                '/api/backend/mysql_setuserpassword_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username,
                     'pwd': $scope.emptypassword ? '' : $scope.newpassword
@@ -567,8 +567,8 @@ var DatabaseMySQLEditUserCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_dropuser',
-                '/backend/mysql_dropuser_' + $scope.username, {
+                '/api/backend/mysql_dropuser',
+                '/api/backend/mysql_dropuser_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username
                 },

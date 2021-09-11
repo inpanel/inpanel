@@ -75,8 +75,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_info',
-                        '/backend/yum_info_' + $scope.pkg, {
+                        '/api/backend/yum_info',
+                        '/api/backend/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -94,7 +94,7 @@ angular.module('inpanel.directives', []).
                 };
 
                 $scope.toggleAutostart = function () {
-                    Request.post('/operation/chkconfig', {
+                    Request.post('/api/operation/chkconfig', {
                         'name': $scope.name,
                         'service': $scope.service,
                         'autostart': !$scope.$parent.autostart
@@ -108,8 +108,8 @@ angular.module('inpanel.directives', []).
                         Backend.call(
                             $scope.$parent,
                             $rootScope.module,
-                            '/backend/service_' + action,
-                            '/backend/service_' + action + '_' + $scope.service, {
+                            '/api/backend/service_' + action,
+                            '/api/backend/service_' + action + '_' + $scope.service, {
                                 'name': $scope.name,
                                 'service': $scope.service
                             },
@@ -145,8 +145,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_repolist',
-                        '/backend/yum_repolist', {}, {
+                        '/api/backend/yum_repolist',
+                        '/api/backend/yum_repolist', {}, {
                             'wait': function (data) {
                                 $scope.installMsg = data.msg;
                             },
@@ -186,8 +186,8 @@ angular.module('inpanel.directives', []).
                         Backend.call(
                             $scope.$parent,
                             $rootScope.module,
-                            '/backend/yum_installrepo',
-                            '/backend/yum_installrepo_' + $scope.expected_repolist[i], {
+                            '/api/backend/yum_installrepo',
+                            '/api/backend/yum_installrepo_' + $scope.expected_repolist[i], {
                                 'repo': $scope.expected_repolist[i]
                             }, {
                                 'wait': function (data) {
@@ -219,8 +219,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_info',
-                        '/backend/yum_info_' + $scope.pkg, {
+                        '/api/backend/yum_info',
+                        '/api/backend/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg
                         }, {
                             'wait': function (data) {
@@ -249,8 +249,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_install',
-                        '/backend/yum_install_' + repo + '_' + name + '_' + version + '_' + release, {
+                        '/api/backend/yum_install',
+                        '/api/backend/yum_install_' + repo + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': name,
                             'version': version,
@@ -285,8 +285,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_uninstall',
-                        '/backend/yum_uninstall_' + name + '_' + version + '_' + release, {
+                        '/api/backend/yum_uninstall',
+                        '/api/backend/yum_uninstall_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': name,
                             'version': version,
@@ -335,8 +335,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_info',
-                        '/backend/yum_info_' + $scope.pkg, {
+                        '/api/backend/yum_info',
+                        '/api/backend/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -366,8 +366,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_info',
-                        '/backend/yum_info_' + name, {
+                        '/api/backend/yum_info',
+                        '/api/backend/yum_info_' + name, {
                             'pkg': name,
                             'option': 'update'
                         }, {
@@ -397,8 +397,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_update',
-                        '/backend/yum_update_' + repo + '_' + name + '_' + version + '_' + release, {
+                        '/api/backend/yum_update',
+                        '/api/backend/yum_update_' + repo + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': name,
                             'version': version,
@@ -447,8 +447,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_info',
-                        '/backend/yum_info_' + $scope.pkg, {
+                        '/api/backend/yum_info',
+                        '/api/backend/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -480,8 +480,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_ext_info',
-                        '/backend/yum_ext_info_' + $scope.pkginfo.name, {
+                        '/api/backend/yum_ext_info',
+                        '/api/backend/yum_ext_info_' + $scope.pkginfo.name, {
                             'pkg': $scope.pkginfo.name
                         }, {
                             'wait': function (data) {
@@ -510,8 +510,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_install',
-                        '/backend/yum_install_' + repo + '_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
+                        '/api/backend/yum_install',
+                        '/api/backend/yum_install_' + repo + '_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': $scope.pkginfo.name,
                             'ext': name,
@@ -546,8 +546,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_uninstall',
-                        '/backend/yum_uninstall_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
+                        '/api/backend/yum_uninstall',
+                        '/api/backend/yum_uninstall_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': $scope.pkginfo.name,
                             'ext': name,
@@ -597,8 +597,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_info',
-                        '/backend/yum_info_' + $scope.pkg, {
+                        '/api/backend/yum_info',
+                        '/api/backend/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -628,8 +628,8 @@ angular.module('inpanel.directives', []).
                     Backend.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/backend/yum_uninstall',
-                        '/backend/yum_uninstall_' + name + '_' + version + '_' + release, {
+                        '/api/backend/yum_uninstall',
+                        '/api/backend/yum_uninstall_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': name,
                             'version': version,
@@ -724,7 +724,7 @@ angular.module('inpanel.directives', []).
                     $scope.path = $scope.path.replace('//', '/');
 
                     var curpath = $scope.path;
-                    Request.post('/operation/file', {
+                    Request.post('/api/operation/file', {
                         'action': 'listdir',
                         'path': curpath,
                         'showhidden': false,
@@ -772,7 +772,7 @@ angular.module('inpanel.directives', []).
                 'pluginsName': '='
             },
             replace: true,
-            templateUrl: template_path + '/plugins/acme/static/index.html',
+            templateUrl: template_path + '/api/plugins/acme/static/index.html',
             link: function ($scope, $element, $attrs, ctrl) {
                 console.log($scope.pluginsName);
             },
