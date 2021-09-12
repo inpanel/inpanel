@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2019, doudoudzj
+# Copyright (c) 2017, Jackson Dou
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
@@ -21,7 +21,8 @@ import struct
 from subprocess import Popen, PIPE
 import time
 from xml.dom.minidom import parseString
-
+from core import distribution as dist_name
+from core import dist_versint
 from core.utils import b2h
 
 
@@ -366,15 +367,13 @@ class ServerInfo(object):
 
     @classmethod
     def distribution(self):
-        dist = platform.linux_distribution()
-        return ' '.join(dist)
+        return '%s %s' % (dist_name, dist_versint)
 
     @classmethod
     def dist(self):
-        dist = platform.linux_distribution(full_distribution_name=0)
         return {
-            'name': dist[0].lower(),
-            'version': dist[1],
+            'name': dist_name.lower(),
+            'version': dist_versint,
         }
 
     @classmethod
@@ -384,10 +383,13 @@ class ServerInfo(object):
         p.wait()
 
         uname = platform.uname()
+        kernel_release = uname[2] # '.el8.'
+
         return {
+            'dist': '',
             'kernel_name': uname[0],
             'node': uname[1],
-            'kernel_release': uname[2],
+            'kernel_release': kernel_release,
             'kernel_version': uname[3],
             'machine': uname[4],
             'processor': uname[5],
@@ -657,21 +659,22 @@ class ServerInfo(object):
         REF: http://www.dmo.ca/blog/detecting-virtualization-on-linux/
         """
         # detect from dmesg first
-        with open('/var/log/dmesg') as f:
-            for line in f:
-                if 'VMware Virtual' in line:
-                    return 'VMware'
-                if any([
-                        'QEMU Virtual CPU' in line,
-                        'Booting paravirtualized kernel on KVM' in line
-                ]):
-                    return 'KVM'
-                if 'Booting paravirtualized kernel on Xen' in line:
-                    return 'Xen PV'
-                if 'Xen HVM' in line:
-                    return 'Xen HVM'
-                if 'Xen version' in line:
-                    return 'Xen'
+        if os.path.exists('/var/log/dmesg'):
+            with open('/var/log/dmesg') as f:
+                for line in f:
+                    if 'VMware Virtual' in line:
+                        return 'VMware'
+                    if any([
+                            'QEMU Virtual CPU' in line,
+                            'Booting paravirtualized kernel on KVM' in line
+                    ]):
+                        return 'KVM'
+                    if 'Booting paravirtualized kernel on Xen' in line:
+                        return 'Xen PV'
+                    if 'Xen HVM' in line:
+                        return 'Xen HVM'
+                    if 'Xen version' in line:
+                        return 'Xen'
         if os.path.exists('/proc/xen/'):
             return 'Xen'
         if os.path.exists('/proc/vz/'):
@@ -768,10 +771,6 @@ if __name__ == '__main__':
     print('* Name servers:')
     for nameserver in nameservers:
         print('  %s' % nameserver)
-    print('')
-
-    distribution = ServerInfo.distribution()
-    print('* Linux distribution: %s' % distribution)
     print('')
 
     uname = ServerInfo.uname()

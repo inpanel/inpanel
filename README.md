@@ -5,13 +5,13 @@
 
 Official Website: [inpanel.org](https://inpanel.org "InPanel")
 
-Developer: [doudoudzj](https://github.com/doudoudzj "doudoudzj")
+Author: [Jackson Dou](https://github.com/doudoudzj "Jackson Dou")
 
 #### Installation
 
 ```shell
 # stable version
-curl -O https://raw.githubusercontent.com/inpanel/inpanel/master/install.py
+curl -O https://raw.githubusercontent.com/inpanel/inpanel/main/install.py
 python install.py
 
 # beta version

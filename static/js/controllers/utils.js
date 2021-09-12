@@ -8,7 +8,7 @@ var UtilsCtrl = ['$scope', 'Module', 'Request',
             $('#rebootconfirm').modal();
         };
         $scope.reboot = function() {
-            Request.post('/operation/reboot');
+            Request.post('/api/operation/reboot');
         };
     }
 ];
@@ -35,7 +35,7 @@ var UtilsUserCtrl = [
         };
         $scope.loadUsers = function() {
             $scope.loading.user = true;
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'listuser'
             }, function(data) {
                 $scope.loading.user = false;
@@ -46,7 +46,7 @@ var UtilsUserCtrl = [
         };
         $scope.loadGroups = function() {
             $scope.loading.group = true;
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'listgroup'
             }, function(data) {
                 $scope.loading.group = false;
@@ -71,7 +71,7 @@ var UtilsUserCtrl = [
         $scope.useradd = function() {
             var userdata = $scope.curuser;
             userdata['action'] = 'useradd';
-            Request.post('/operation/user', userdata, function(data) {
+            Request.post('/api/operation/user', userdata, function(data) {
                 if (data.code == 0) {
                     $scope.loadUsers();
                     $scope.loadGroups();
@@ -95,7 +95,7 @@ var UtilsUserCtrl = [
         $scope.usermod = function() {
             var userdata = $scope.curuser;
             userdata['action'] = 'usermod';
-            Request.post('/operation/user', userdata, function(data) {
+            Request.post('/api/operation/user', userdata, function(data) {
                 if (data.code == 0) {
                     $scope.loadUsers();
                     $scope.loadGroups();
@@ -110,7 +110,7 @@ var UtilsUserCtrl = [
             $('#userdelconfirm').modal();
         };
         $scope.userdel = function() {
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'userdel',
                 'pw_name': $scope.curuser['pw_name']
             }, function(data) {
@@ -125,7 +125,7 @@ var UtilsUserCtrl = [
             $('#groupaddconfirm').modal();
         };
         $scope.groupadd = function() {
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'groupadd',
                 'gr_name': $scope.curgrp_name
             }, function(data) {
@@ -139,7 +139,7 @@ var UtilsUserCtrl = [
             $('#groupmodconfirm').modal();
         };
         $scope.groupmod = function() {
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'groupmod',
                 'gr_name': $scope.curgrp_name,
                 'gr_newname': $scope.curgrp_newname
@@ -154,7 +154,7 @@ var UtilsUserCtrl = [
             $('#groupdelconfirm').modal();
         };
         $scope.groupdel = function() {
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'groupdel',
                 'gr_name': $scope.curgrp_name
             }, function(data) {
@@ -169,7 +169,7 @@ var UtilsUserCtrl = [
             $('#groupmemsaddconfirm').modal();
         };
         $scope.groupmemsadd = function() {
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'groupmems_add',
                 'gr_name': $scope.curgrp_name,
                 'mem': $scope.curgrp_mem
@@ -187,7 +187,7 @@ var UtilsUserCtrl = [
             $('#groupmemsdelconfirm').modal();
         };
         $scope.groupmemsdel = function() {
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'groupmems_del',
                 'gr_name': $scope.curgrp_name,
                 'mem': $scope.curgrp_mem
@@ -235,7 +235,7 @@ var UtilsProcessCtrl = [
         };
 
         var getProcess = function() {
-            Request.get('/utils/process/list', function (res) {
+            Request.get('/api/utils/process/list', function (res) {
                 if (res && res.code == 0) {
                     $scope.process.process = res.data;
                     $scope.process.total = res.data.length;
@@ -266,7 +266,7 @@ var UtilsProcessCtrl = [
         };
         $scope.processkill = function () {
             if ($scope.delete_process && $scope.delete_process['pid']) {
-                Request.post('/utils/process/kill/' + $scope.delete_process['pid'], null, function () {
+                Request.post('/api/utils/process/kill/' + $scope.delete_process['pid'], null, function () {
                     $scope.delete_process = '';
                     $scope.refresh();
                 });
@@ -283,37 +283,37 @@ var UtilsProcessCtrl = [
         $scope.load_detial = function (pid) {
             if (pid) {
                 $scope.current_process_loaded = {'info': false, 'status': false, 'file': false, 'io': false, 'memory': false, 'network': false}
-                Request.get('/utils/process/info/' + pid, function (res) {
+                Request.get('/api/utils/process/info/' + pid, function (res) {
                     $scope.current_process_loaded.info = true;
                     if (res && res.code == 0) {
                         $scope.current_process.info = res.data;
                     }
                 });
-                Request.get('/utils/process/status/' + pid, function (res) {
+                Request.get('/api/utils/process/status/' + pid, function (res) {
                     $scope.current_process_loaded.status = true;
                     if (res && res.code == 0) {
                         $scope.current_process.status = res.data;
                     }
                 });
-                Request.get('/utils/process/file/' + pid, function (res) {
+                Request.get('/api/utils/process/file/' + pid, function (res) {
                     $scope.current_process_loaded.file = true;
                     if (res && res.code == 0) {
                         $scope.current_process.file = res.data;
                     }
                 });
-                Request.get('/utils/process/io/' + pid, function (res) {
+                Request.get('/api/utils/process/io/' + pid, function (res) {
                     $scope.current_process_loaded.io = true;
                     if (res && res.code == 0) {
                         $scope.current_process.io = res.data;
                     }
                 });
-                Request.get('/utils/process/memory/' + pid, function (res) {
+                Request.get('/api/utils/process/memory/' + pid, function (res) {
                     $scope.current_process_loaded.memory = true;
                     if (res && res.code == 0) {
                         $scope.current_process.memory = res.data;
                     }
                 });
-                Request.get('/utils/process/network/' + pid, function (res) {
+                Request.get('/api/utils/process/network/' + pid, function (res) {
                     $scope.current_process_loaded.network = true;
                     if (res && res.code == 0) {
                         $scope.current_process.network = res.data;
@@ -353,19 +353,19 @@ var UtilsNetworkCtrl = [
         $scope.showRestartBtn = true;
 
         $scope.loadHostName = function () {
-            Request.get('/utils/network/hostname', function(data) {
+            Request.get('/api/utils/network/hostname', function(data) {
                 $scope.hostname = data.hostname;
             });
         };
         $scope.saveHostName = function () {
-            Request.post('/utils/network/hostname', {
+            Request.post('/api/utils/network/hostname', {
                 'hostname': $scope.hostname
             }, function (data) {
                 if (data.code == 0) $scope.loadHostName();
             });
         };
         $scope.loadIfNames = function() {
-            Request.get('/utils/network/ifnames', function(data) {
+            Request.get('/api/utils/network/ifnames', function(data) {
                 $scope.ifnames = data.ifnames;
                 $scope.ifname = $scope.ifnames[0];
                 // load the default iface's config
@@ -374,14 +374,14 @@ var UtilsNetworkCtrl = [
         };
         $scope.loadIfConfig = function(ifname) {
             $scope.ifname = ifname;
-            Request.get('/utils/network/ifconfig/' + ifname, function(data) {
+            Request.get('/api/utils/network/ifconfig/' + ifname, function(data) {
                 $scope.ip = data['ip'];
                 $scope.mask = data['mask'];
                 $scope.gw = data['gw'];
             });
         };
         $scope.saveIfConfig = function() {
-            Request.post('/utils/network/ifconfig/' + $scope.ifname, {
+            Request.post('/api/utils/network/ifconfig/' + $scope.ifname, {
                 'ip': $scope.ip,
                 'mask': $scope.mask,
                 'gw': $scope.gw
@@ -390,7 +390,7 @@ var UtilsNetworkCtrl = [
             });
         };
         $scope.loadNameservers = function() {
-            Request.get('/utils/network/nameservers', function(data) {
+            Request.get('/api/utils/network/nameservers', function(data) {
                 $scope.nameservers = data['nameservers'];
             });
         };
@@ -400,7 +400,7 @@ var UtilsNetworkCtrl = [
                 var ns = $(this).val();
                 if (ns) nameservers.push(ns);
             });
-            Request.post('/utils/network/nameservers', {
+            Request.post('/api/utils/network/nameservers', {
                 'nameservers': nameservers.join(',')
             }, function(data) {
                 if (data.code == 0) $scope.loadNameservers();
@@ -416,11 +416,11 @@ var UtilsNetworkCtrl = [
             $scope.restartMessage = '正在重启，请稍候...'
             $scope.showRestartBtn = false;
             Timeout(function() {
-                Request.post('/backend/service_restart', {
+                Request.post('/api/backend/service_restart', {
                     service: 'network'
                 }, function(data) {
                     var getRestartStatus = function() {
-                        Request.get('backend/service_restart_network', function(data) {
+                        Request.get('/api/backend/service_restart_network', function(data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             if (data.status == 'finish') {
                                 Message.setSuccess('');
@@ -450,18 +450,18 @@ var UtilsTimeCtrl = [
         $scope.ntpdStatus = null;
 
         $scope.loadDatetime = function() {
-            Request.get('/utils/time/datetime', function(data) {
+            Request.get('/api/utils/time/datetime', function(data) {
                 $scope.datetime = data;
                 $scope.newDatetime = data.str;
             });
         };
         $scope.saveDatetime = function() {
-            Request.post('/backend/datetime', {
+            Request.post('/api/backend/datetime', {
                 'datetime': $scope.newDatetime
             }, function(data) {
                 Request.setProcessing(true);
                 var getStatus = function() {
-                    Request.get('backend/datetime', function(data) {
+                    Request.get('/api/backend/datetime', function(data) {
                         if (data.status != 'finish') {
                             Request.setProcessing(true);
                             Timeout(getStatus, 500, module);
@@ -473,7 +473,7 @@ var UtilsTimeCtrl = [
         };
 
         $scope.loadTimezone = function() {
-            Request.get('/utils/time/timezone', function(data) {
+            Request.get('/api/utils/time/timezone', function(data) {
                 var timezone = data.timezone;
                 $scope.timezone = timezone ? timezone : '时区不可识别';
                 if (timezone) {
@@ -488,15 +488,15 @@ var UtilsTimeCtrl = [
         };
         $scope.loadTimezones = function(region, callback) {
             if (region) {
-                Request.get('/utils/time/timezone_list/' + region, function(data) {
+                Request.get('/api/utils/time/timezone_list/' + region, function(data) {
                     $scope.cities = data.cities;
                     if (callback) callback.call();
                 });
             } else {
-                Request.get('/utils/time/timezone_list', function(data) {
+                Request.get('/api/utils/time/timezone_list', function(data) {
                     $scope.regions = data.regions;
                     var getcities = function() {
-                        Request.get('/utils/time/timezone_list/' + $scope.timezone_region, function(data) {
+                        Request.get('/api/utils/time/timezone_list/' + $scope.timezone_region, function(data) {
                             $scope.cities = data.cities;
                         });
                     };
@@ -514,7 +514,7 @@ var UtilsTimeCtrl = [
         $scope.saveTimezone = function() {
             var region = $scope.timezone_region;
             var city = $scope.timezone_city;
-            Request.post('/utils/time/timezone', {
+            Request.post('/api/utils/time/timezone', {
                 'timezone': region + '/' + city
             }, function(data) {
                 if (data.code == 0) {
@@ -526,12 +526,12 @@ var UtilsTimeCtrl = [
 
         $scope.synctime = function() {
             var server = 'pool.ntp.org';
-            Request.post('/backend/ntpdate', {
+            Request.post('/api/backend/ntpdate', {
                 'server': server
             }, function(data) {
                 Request.setProcessing(true);
                 var getStatus = function() {
-                    Request.get('backend/ntpdate_' + server, function(data) {
+                    Request.get('/api/backend/ntpdate_' + server, function(data) {
                         if (data.status != 'finish') {
                             Request.setProcessing(true);
                             Timeout(getStatus, 500, module);
@@ -561,7 +561,7 @@ var UtilsTimeCtrl = [
         stopInit();
 
         $scope.loadSync = function() {
-            Request.get('/query/service.ntpd', function(data) {
+            Request.get('/api/query/service.ntpd', function(data) {
                 if (data['service.ntpd']) {
                     $scope.ntpdStatus = data['service.ntpd']['status'];
                 }
@@ -574,8 +574,8 @@ var UtilsTimeCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/yum_install',
-                '/backend/yum_install_base_ntp', {
+                '/api/backend/yum_install',
+                '/api/backend/yum_install_base_ntp', {
                     'repo': 'base',
                     'pkg': 'ntp'
                 }, {
@@ -600,8 +600,8 @@ var UtilsTimeCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/service_start',
-                '/backend/service_start_ntpd', {
+                '/api/backend/service_start',
+                '/api/backend/service_start_ntpd', {
                     name: 'NTP',
                     service: 'ntpd'
                 }, {
@@ -632,8 +632,8 @@ var UtilsTimeCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/service_stop',
-                '/backend/service_stop_ntpd', {
+                '/api/backend/service_stop',
+                '/api/backend/service_stop_ntpd', {
                     name: 'NTP',
                     service: 'ntpd'
                 }, {
@@ -697,7 +697,7 @@ var StorageCtrl = [
             console.log('加载网络磁盘', init);
         };
         $scope.get_diskinfo = function () {
-            Request.get('/query/server.diskinfo', function(data) {
+            Request.get('/api/query/server.diskinfo', function(data) {
                 if (!$scope.loaded) $scope.loaded = true;
                 $scope.diskinfo = data['server.diskinfo'];
                 $scope.waiting = false;
@@ -714,8 +714,8 @@ var StorageCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/swapon',
-                '/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/backend/swapon',
+                '/api/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.swapoffconfirm = function(devname) {
@@ -726,8 +726,8 @@ var StorageCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/swapoff',
-                '/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/backend/swapoff',
+                '/api/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.umountconfirm = function(devname) {
@@ -738,15 +738,15 @@ var StorageCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/umount',
-                '/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/backend/umount',
+                '/api/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.mountconfirm = function(devname, fstype) {
             $scope.devname = devname;
             $scope.mountpoint = '';
             $scope.fstype = fstype;
-            Request.get('/query/config.fstab(' + devname + ')', function(data) {
+            Request.get('/api/query/config.fstab(' + devname + ')', function(data) {
                 if (data['config.fstab'] && typeof(data['config.fstab']['mount']) != 'undefined') {
                     $scope.mountpoint = data['config.fstab']['mount'];
                 }
@@ -768,8 +768,8 @@ var StorageCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mount',
-                '/backend/mount_mount_' + $scope.devname, {
+                '/api/backend/mount',
+                '/api/backend/mount_mount_' + $scope.devname, {
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
                     'fstype': $scope.fstype
@@ -778,7 +778,7 @@ var StorageCtrl = [
         };
         $scope.formatconfirm = function(devname) {
             $scope.devname = devname;
-            Request.get('/query/tool.supportfs', function(data) {
+            Request.get('/api/query/tool.supportfs', function(data) {
                 $scope.supportfs = data['tool.supportfs'];
             });
             $('#formatconfirm').modal();
@@ -787,8 +787,8 @@ var StorageCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/format',
-                '/backend/format_' + $scope.devname, {
+                '/api/backend/format',
+                '/api/backend/format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
                 }, { 'success': $scope.get_diskinfo }
@@ -802,7 +802,7 @@ var StorageCtrl = [
         $scope.addpart = function() {
             $scope.waiting = true;
             Message.setInfo('正在 ' + $scope.devname + ' 上创建分区，请稍候...', true);
-            Request.post('/operation/fdisk', {
+            Request.post('/api/operation/fdisk', {
                 'action': 'add',
                 'devname': $scope.devname,
                 'size': $scope.size,
@@ -821,7 +821,7 @@ var StorageCtrl = [
         $scope.delpart = function() {
             $scope.waiting = true;
             Message.setInfo('正在删除分区 ' + $scope.devname + '，请稍候...', true);
-            Request.post('/operation/fdisk', {
+            Request.post('/api/operation/fdisk', {
                 'action': 'delete',
                 'devname': $scope.devname
             }, function(data) {
@@ -838,7 +838,7 @@ var StorageCtrl = [
         $scope.scanpart = function() {
             $scope.waiting = true;
             Message.setInfo('正在扫描 ' + $scope.devname + ' 的分区，请稍候...', true);
-            Request.post('/operation/fdisk', {
+            Request.post('/api/operation/fdisk', {
                 'action': 'scan',
                 'devname': $scope.devname
             }, function(data) {
@@ -861,7 +861,7 @@ var StorageAutoFMCtrl = [
         $scope.diskcount = 0;
 
         $scope.loadDiskinfo = function() {
-            Request.get('/query/server.diskinfo', function(data) {
+            Request.get('/api/query/server.diskinfo', function(data) {
                 if (!$scope.loaded) $scope.loaded = true;
                 $scope.diskinfo = data['server.diskinfo'];
                 $scope.waiting = false;
@@ -879,7 +879,7 @@ var StorageAutoFMCtrl = [
             $scope.mountpoint = '';
             $scope.fstype = '';
             // check mount points under /data/
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'listdir',
                 'path': '/data',
                 'showhidden': true,
@@ -903,7 +903,7 @@ var StorageAutoFMCtrl = [
                     }
                 } else {
                     // /data not exists, create it
-                    Request.post('/operation/file', {
+                    Request.post('/api/operation/file', {
                         'action': 'createfolder',
                         'path': '/',
                         'name': 'data'
@@ -911,7 +911,7 @@ var StorageAutoFMCtrl = [
                     $scope.mountpoint = '/data/0';
                 }
             }, false, true);
-            Request.get('/query/tool.supportfs', function(data) {
+            Request.get('/api/query/tool.supportfs', function(data) {
                 var fs = data['tool.supportfs'];
                 for (var i = 0; i < fs.length; i++) {
                     if (fs[i] == 'swap') fs.splice(i, 1);
@@ -936,7 +936,7 @@ var StorageAutoFMCtrl = [
         };
         $scope.autofm = function() {
             // check the mount point
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'listdir',
                 'path': $scope.mountpoint,
                 'showhidden': true,
@@ -964,7 +964,7 @@ var StorageAutoFMCtrl = [
                     var p = $scope.mountpoint.split('/');
                     var name = p.pop();
                     var path = p.join('/');
-                    Request.post('/operation/file', {
+                    Request.post('/api/operation/file', {
                         'action': 'createfolder',
                         'path': path,
                         'name': name
@@ -976,8 +976,8 @@ var StorageAutoFMCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mount',
-                '/backend/mount_mount_' + $scope.devname, {
+                '/api/backend/mount',
+                '/api/backend/mount_mount_' + $scope.devname, {
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
                     'fstype': $scope.fstype
@@ -988,8 +988,8 @@ var StorageAutoFMCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/format',
-                '/backend/format_' + $scope.devname, {
+                '/api/backend/format',
+                '/api/backend/format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
                 }, { 'success': $scope.mount }
@@ -1010,7 +1010,7 @@ var StorageMoveDataCtrl = [
         $scope.mountpoint = '/';
 
         $scope.loadMounts = function() {
-            Request.get('/query/server.mounts', function(data) {
+            Request.get('/api/query/server.mounts', function(data) {
                 if (!$scope.loaded) $scope.loaded = true;
                 $scope.mounts = data['server.mounts'];
                 $scope.waiting = false;
@@ -1053,7 +1053,7 @@ var StorageMoveDataCtrl = [
             }
             // check the srcpath
             Message.setInfo('正在检测，请稍候...', true);
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'getitem',
                 'path': srcpath
             }, function(data) {
@@ -1065,7 +1065,7 @@ var StorageMoveDataCtrl = [
                         return;
                     }
                     // check the despath
-                    Request.post('/operation/file', {
+                    Request.post('/api/operation/file', {
                         'action': 'getitem',
                         'path': despath
                     }, function(data) {
@@ -1077,14 +1077,14 @@ var StorageMoveDataCtrl = [
                             Backend.call(
                                 $scope,
                                 module,
-                                '/backend/move',
-                                '/backend/move_' + srcpath + '_' + despath, {
+                                '/api/backend/move',
+                                '/api/backend/move_' + srcpath + '_' + despath, {
                                     'srcpath': srcpath,
                                     'despath': despath
                                 }, {
                                     'success': function(data) {
                                         Message.setInfo('正在原始目录创建链接...');
-                                        Request.post('/operation/file', {
+                                        Request.post('/api/operation/file', {
                                             'action': 'link',
                                             'srcpath': despath,
                                             'despath': srcpath
@@ -1145,7 +1145,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
 
         $scope.load_keys = function (callback) {
             $scope.loading_keys = true;
-            Request.get('/utils/ssl/keys', function(res) {
+            Request.get('/api/utils/ssl/keys', function(res) {
                 $scope.loading_keys = false;
                 if (res.list) {
                     $scope.list_keys = res.list;
@@ -1157,7 +1157,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
         $scope.load_crts = function (callback) {
             $scope.loading_crts = true;
-            Request.get('/utils/ssl/crts', function(res) {
+            Request.get('/api/utils/ssl/crts', function(res) {
                 $scope.loading_crts = false;
                 if (res.list) {
                     $scope.list_crts = res.list;
@@ -1169,7 +1169,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
         $scope.load_csrs = function (callback) {
             $scope.loading_csrs = true;
-            Request.get('/utils/ssl/csrs', function(res) {
+            Request.get('/api/utils/ssl/csrs', function(res) {
                 $scope.loading_csrs = false;
                 if (res.list) {
                     $scope.list_csrs = res.list;
@@ -1181,7 +1181,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
         $scope.load_host = function (callback) {
             $scope.loading_host = true;
-            Request.get('/utils/ssl/host', function(res) {
+            Request.get('/api/utils/ssl/host', function(res) {
                 $scope.loading_host = false;
                 if (res.list) {
                     $scope.list_host = res.list;
@@ -1193,7 +1193,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
         $scope.add_domain_keys = function (callback) {
             $scope.loading_host = true;
-            Request.post('/utils/ssl/keys', {
+            Request.post('/api/utils/ssl/keys', {
                 'action': 'add_domain_keys'
             }, function(res) {
                 // $scope.loading_host = false;
@@ -1353,7 +1353,7 @@ var StorageRemoteCtrl = [
         };
 
         $scope.loadDavfs2 = function(callback) {
-            Request.get('/query/service.davfs2', function(data) {
+            Request.get('/api/query/service.davfs2', function(data) {
                 $scope.checking_davfs2 = false;
                 if (data['service.davfs2']) {
                     $scope.status_davfs2 = data['service.davfs2']['status'];
@@ -1372,8 +1372,8 @@ var StorageRemoteCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/yum_install',
-                '/backend/yum_install_epel_davfs2', {
+                '/api/backend/yum_install',
+                '/api/backend/yum_install_epel_davfs2', {
                     'repo': 'epel',
                     'pkg': 'davfs2'
                 }, {
@@ -1398,8 +1398,8 @@ var StorageRemoteCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/service_start',
-                '/backend/service_start_davfs2', {
+                '/api/backend/service_start',
+                '/api/backend/service_start_davfs2', {
                     name: 'Davfs2',
                     service: 'davfs2'
                 }, {
@@ -1470,7 +1470,7 @@ var UtilsRepositoryCtrl = [
             }
             $scope.loading.yum = true;
             $scope.repos_yum = [];
-            Request.get('/repos/yum/list', function (res) {
+            Request.get('/api/repos/yum/list', function (res) {
                 $scope.loading.yum = false;
                 if (res && res.code == 0) {
                     $scope.repos_yum = res.data;
@@ -1483,7 +1483,7 @@ var UtilsRepositoryCtrl = [
             }
             $scope.loading.apt = true;
             $scope.repos_apt = [];
-            Request.get('/repos/yum/list', function (res) {
+            Request.get('/api/repos/yum/list', function (res) {
                 $scope.loading.apt = false;
                 if (res && res.code == 0) {
                     $scope.repos_apt = res.data;
@@ -1496,7 +1496,7 @@ var UtilsRepositoryCtrl = [
             }
             $scope.loading.pacman = true;
             $scope.repos_pacman = [];
-            Request.get('/repos/yum/list', function (res) {
+            Request.get('/api/repos/yum/list', function (res) {
                 $scope.loading.pacman = false;
                 if (res && res.code == 0) {
                     $scope.repos_pacman = res.data;
@@ -1509,7 +1509,7 @@ var UtilsRepositoryCtrl = [
             }
             $scope.loading.dnf = true;
             $scope.repos_dnf = [];
-            Request.get('/repos/yum/list', function (res) {
+            Request.get('/api/repos/yum/list', function (res) {
                 $scope.loading.dnf = false;
                 if (res && res.code == 0) {
                     $scope.repos_dnf = res.data;
@@ -1522,7 +1522,7 @@ var UtilsRepositoryCtrl = [
             }
             $scope.loading.zypper = true;
             $scope.repos_zypper = [];
-            Request.get('/repos/yum/list', function (res) {
+            Request.get('/api/repos/yum/list', function (res) {
                 $scope.loading.zypper = false;
                 if (res && res.code == 0) {
                     $scope.repos_zypper = res.data;
@@ -1542,7 +1542,7 @@ var UtilsRepositoryCtrl = [
             $('#yum-add-confirm').modal();
         };
         $scope.yum_add = function() {
-            Request.post('/repos/yum/add', $scope.currepo, function(data) {
+            Request.post('/api/repos/yum/add', $scope.currepo, function(data) {
                 if (data.code == 0) {
                     $scope.load_yum(true);
                 }
@@ -1554,7 +1554,7 @@ var UtilsRepositoryCtrl = [
             $('#yum-del-confirm').modal();
         };
         $scope.yum_del = function() {
-            Request.post('/repos/yum/del', {
+            Request.post('/api/repos/yum/del', {
                 repo: $scope.delrepo
             }, function(data) {
                 if (data.code == 0) {
@@ -1584,7 +1584,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
         $scope.has_cron_service = false;
 
         $scope.load = function () {
-            Request.get('/query/service.crond', function(data) {
+            Request.get('/api/query/service.crond', function(data) {
                 if (data['service.crond'] && data['service.crond'].status) {
                     $scope.has_cron_service = true;
                 }
@@ -1662,7 +1662,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
             if (!$scope.has_cron_service || $scope.loading.normal) return; // Prevent duplicate requests
             $scope.loading.normal = true;
             $scope.first.normal = false;
-            Request.post('/operation/cron', {
+            Request.post('/api/operation/cron', {
                 'action': 'cron_list',
                 'user': $scope.cron_normal.user,
                 'level': 'normal'
@@ -1677,7 +1677,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
             if (!$scope.has_cron_service || $scope.loading.system) return; // Prevent duplicate requests
             $scope.loading.system = true;
             $scope.first.system = false;
-            Request.post('/operation/cron', {
+            Request.post('/api/operation/cron', {
                 'action': 'cron_list',
                 'user': $scope.cron_system.user,
                 'level': 'system',
@@ -1695,7 +1695,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
             Timeout(function() {
                 $scope.loading.environment = false;
             }, 500, module);
-            // Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
+            // Request.post('/api/operation/cron', {'action': 'cron_list'}, function (data) {
             //     $scope.loading.environment = false;
             //     if (data.code == 0) {}
             // }, false, true);
@@ -1707,7 +1707,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
             Timeout(function() {
                 $scope.loading.local = false;
             }, 500, module);
-            // Request.post('/operation/cron', {'action': 'cron_list'}, function (data) {
+            // Request.post('/api/operation/cron', {'action': 'cron_list'}, function (data) {
             //     $scope.loading.local = false;
             //     if (data.code == 0) {}
             // }, false, true);
@@ -1755,7 +1755,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
         };
 
         $scope.load_user = function () {
-            Request.post('/operation/user', {
+            Request.post('/api/operation/user', {
                 'action': 'listuser',
                 'fullinfo': false
             }, function (data) {
@@ -1778,7 +1778,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
         };
         $scope.add_cron_jobs = function () {
             $('#cron-add-confirm').modal('hide');
-            Request.post('/operation/cron', {
+            Request.post('/api/operation/cron', {
                 action: 'cron_add',
                 minute: $scope.cron_time.minute,
                 hour: $scope.cron_time.hour,
@@ -1836,7 +1836,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
         $scope.update_cron_jobs = function () {
             $('#cron-add-confirm').modal('hide');
             var currlist = $scope.task_level == 'system' && $scope.cron_system.user ? $scope.cron_system.user : '';
-            Request.post('/operation/cron', {
+            Request.post('/api/operation/cron', {
                 action: 'cron_mod',
                 minute: $scope.cron_time.minute,
                 hour: $scope.cron_time.hour,
@@ -1871,7 +1871,7 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
             $('#cron-delete-confirm').modal('hide');
             // current user's task on system level
             var currlist = $scope.task_level == 'system' && $scope.cron_system.user ? $scope.cron_system.user : '';
-            Request.post('/operation/cron', {
+            Request.post('/api/operation/cron', {
                 action: 'cron_del',
                 cronid: String($scope.task_id),
                 user: $scope.task_user,
@@ -1927,7 +1927,7 @@ var UtilsShellCtrl = ['$scope', '$routeParams', 'Module', 'Timeout', 'Request',
                 return;
             }
             $scope.base_cmds.push('# ' + $scope.base_input);
-            Request.post('/operation/shell', {
+            Request.post('/api/operation/shell', {
                 'action': 'exec_command',
                 'cmd': $scope.base_input,
                 'cwd': $scope.base_cwd
@@ -2017,8 +2017,8 @@ var UtilsMigrateCtrl = [
             var op_data = angular.copy($scope.remote);
             // Backend.call = function ($scope, module, url, statusUrl, data, callback, quiet) {
             Backend.call($scope, module,
-                '/backend/uploadtoftp',
-                '/backend/uploadtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
+                '/api/backend/uploadtoftp',
+                '/api/backend/uploadtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
                 op_data, {
                     'wait': function (data) {
                         Message.setInfo(data.msg || '正在处理');

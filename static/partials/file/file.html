@@ -115,7 +115,7 @@
                                 <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动同步（即将推出）"><i class="glyphicon glyphicon-repeat"></i></button>
                                 <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动备份（即将推出）"><i class="glyphicon glyphicon-share-alt"></i></button>
                             </div>
-                            <a class="btn btn-default btn-xs" href="/download/{{item.download}}" ng-show="item.isreg||(item.islnk&&item.link_isreg)" title="下载"><i class="glyphicon glyphicon-download-alt"></i></button>
+                            <a class="btn btn-default btn-xs" href="/api/download/{{item.download}}" ng-show="item.isreg||(item.islnk&&item.link_isreg)" title="下载"><i class="glyphicon glyphicon-download-alt"></i></button>
                         </td>
                     </tr>
                 </tbody>
@@ -249,8 +249,8 @@
             </div>
             <div class="modal-body">
                 <h5>请选择您要上传的文件：</h5>
-                <div ng-include src="'/xsrf'"></div>
-                <form id="uploadform" target="uploadframe" action="/fileupload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
+                <div ng-include src="'/api/xsrf'"></div>
+                <form id="uploadform" target="uploadframe" action="/api/fileupload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
                     <input type="hidden" name="_xsrf" value="" id="_xsrf">
                     <input type="hidden" name="path" value="{{curpath}}">
                     <div class="input-group">

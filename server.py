@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, doudoudzj
+# Copyright (c) 2017, Jackson Dou
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
@@ -47,29 +47,29 @@ def main():
     }
 
     application = web.Application([
-        (r'/xsrf', web.XsrfHandler),
-        (r'/authstatus', web.AuthStatusHandler),
-        (r'/login', web.LoginHandler),
-        (r'/logout', web.LogoutHandler),
-        (r'/query/(.+)', web.QueryHandler),
-        (r'/utils/network/(.+?)(?:/(.+))?', web.UtilsNetworkHandler),
-        (r'/utils/process/(.+?)(?:/(.+))?', WebRequestProcess),
-        (r'/utils/time/(.+?)(?:/(.+))?', web.UtilsTimeHandler),
-        (r'/utils/ssl/(.+?)(?:/(.+))?', WebRequestSSLTLS),
-        (r'/repos/yum/(.+?)(?:/(.+))?', WebRequestRepoYUM),
-        (r'/setting/(.+)', web.SettingHandler),
-        (r'/operation/(.+)', web.OperationHandler),
+        (r'/api/xsrf', web.XsrfHandler),
+        (r'/api/authstatus', web.AuthStatusHandler),
+        (r'/api/login', web.LoginHandler),
+        (r'/api/logout', web.LogoutHandler),
+        (r'/api/query/(.+)', web.QueryHandler),
+        (r'/api/utils/network/(.+?)(?:/(.+))?', web.UtilsNetworkHandler),
+        (r'/api/utils/process/(.+?)(?:/(.+))?', WebRequestProcess),
+        (r'/api/utils/time/(.+?)(?:/(.+))?', web.UtilsTimeHandler),
+        (r'/api/utils/ssl/(.+?)(?:/(.+))?', WebRequestSSLTLS),
+        (r'/api/repos/yum/(.+?)(?:/(.+))?', WebRequestRepoYUM),
+        (r'/api/setting/(.+)', web.SettingHandler),
+        (r'/api/operation/(.+)', web.OperationHandler),
         (r'/page/(.+)/(.+)', web.PageHandler),
-        (r'/backend/(.+)', web.BackendHandler),
-        (r'/sitepackage/(.+)', web.SitePackageHandler),
-        (r'/client/(.+)', web.ClientHandler),
+        (r'/api/backend/(.+)', web.BackendHandler),
+        (r'/api/sitepackage/(.+)', web.SitePackageHandler),
+        (r'/api/client/(.+)', web.ClientHandler),
         (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)',
          web.StaticFileHandler, {'path': settings['static_path']}),
-        (r'/plugins/(.*)', web.StaticFileHandler, {'path': settings['plugins_path']}),
+        (r'/api/plugins/(.*)', web.StaticFileHandler, {'path': settings['plugins_path']}),
         (r'/($)', web.StaticFileHandler, {'path': settings['index_path']}),
-        (r'/download/(.+)', web.FileDownloadHandler, {'path': '/'}),
-        (r'/fileupload', web.FileUploadHandler),
-        (r'/version', web.VersionHandler),
+        (r'/api/download/(.+)', web.FileDownloadHandler, {'path': '/'}),
+        (r'/api/fileupload', web.FileUploadHandler),
+        (r'/api/version', web.VersionHandler),
         (r'/.*', web.ErrorHandler, {'status_code': 404})
     ], **settings)
 

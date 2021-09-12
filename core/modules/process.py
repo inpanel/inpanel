@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017 - 2020, doudoudzj
+# Copyright (c) 2017 - 2020, Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.

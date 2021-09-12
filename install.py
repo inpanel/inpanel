@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, doudoudzj
+# Copyright (c) 2017, Jackson Dou
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
@@ -170,12 +170,12 @@ class Install(object):
         else:
             print('[ %s ]' % FAILED)
         # Install Python
-        print('* Installing Python 2.6 ...'),
+        print('* Installing Python 2 ...'),
         if self.distname == 'centos':
-            self._run('yum -y install python26')
+            self._run('yum -y install python2')
 
         elif self.distname == 'redhat':
-            self._run('yum -y install python26')
+            self._run('yum -y install python2')
 
         elif self.distname == 'ubuntu':
             self._run('apt-get -y install python')

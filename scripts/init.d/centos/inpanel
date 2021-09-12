@@ -57,15 +57,15 @@ restart() {
 }
 
 uninstall() {
-    echo -n $"Deleting InPanel: "
+    echo $"Deleting InPanel... "
     stop
     rm -f /etc/init.d/inpanel
-    echo -n $"InPanel Daemon Deleted "
-    mkdir /root/inpanel_backup_data
-    cp /usr/local/inpanel/data /root/inpanel_backup_data
-    echo -n $"Backup InPanel Data to /root/inpanel_backup_data"
+    test ! -d /root/inpanel_backup_data && mkdir /root/inpanel_backup_data
+    mv /usr/local/inpanel/data /root/inpanel_backup_data
+    echo $"Backup InPanel Config to /root/inpanel_backup_data"
     rm -rf /usr/local/inpanel
-    echo -n $"InPanel Removed !"
+    echo $"InPanel Removed !"
+    rm -f /usr/local/bin/inpanel
 }
 
 rh_status() {
@@ -96,7 +96,10 @@ case "$1" in
         rh_status_q || exit 7
         restart
         ;;
+    uninstall)
+        $1
+        ;;
     *)
-        echo $"Usage: $0 {start|stop|status|restart}"
+        echo $"Usage: $0 {start|stop|status|restart|uninstall}"
         exit 2
 esac

@@ -87,7 +87,7 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
     $rootScope.virt = '?';
     $rootScope.checkVirt = function (callback) {
         if ($rootScope.virt != '?') return;
-        Request.get('/query/server.virt', function (data) {
+        Request.get('/api/query/server.virt', function (data) {
             $rootScope.virt = data['server.virt'];
             if (callback) callback.call();
         });

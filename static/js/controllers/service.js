@@ -11,7 +11,7 @@ var ServiceCtrl = [
         $scope.waiting = true;
 
         $scope.loadInfo = function () {
-            Request.get('/query/server.virt,service.**', function (res) {
+            Request.get('/api/query/server.virt,service.**', function (res) {
                 if (!$scope.loaded) $scope.loaded = true;
                 if ($scope.info == null) {
                     $scope.info = res;
@@ -24,7 +24,7 @@ var ServiceCtrl = [
         };
         $scope.toggleAutostart = function (name, service) {
             var autostart = $scope.info['service.' + service]['autostart'];
-            Request.post('/operation/chkconfig', {
+            Request.post('/api/operation/chkconfig', {
                 'name': name,
                 'service': service,
                 'autostart': !autostart
@@ -38,8 +38,8 @@ var ServiceCtrl = [
                 Backend.call(
                     $scope,
                     module,
-                    '/backend/service_' + action,
-                    '/backend/service_' + action + '_' + service, {
+                    '/api/backend/service_' + action,
+                    '/api/backend/service_' + action + '_' + service, {
                         'name': name,
                         'service': service
                     },
@@ -70,7 +70,7 @@ var ServiceNginxCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.nginx', function (res) {
+            Request.get('/api/query/service.nginx', function (res) {
                 var info = res['service.nginx'];
                 if (info) {
                     $scope.installed = true;
@@ -86,7 +86,7 @@ var ServiceNginxCtrl = [
                 $scope.waiting = false;
                 $scope.checking = false;
             });
-            Request.get('/client/ip', function (res) {
+            Request.get('/api/client/ip', function (res) {
                 $scope.ip = res;
             });
         };
@@ -105,7 +105,7 @@ var ServiceNginxCtrl = [
 
         $scope.getsettings = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/nginx', {
+            Request.post('/api/operation/nginx', {
                 'action': 'gethttpsettings',
                 'items': 'limit_rate,limit_conn,limit_conn_zone,client_max_body_size,keepalive_timeout,allow[],deny[],gzip'
             }, function (res) {
@@ -125,7 +125,7 @@ var ServiceNginxCtrl = [
             var data = angular.copy($scope.setting);
             data.action = 'sethttpsettings';
             data.version = $scope.pkginfo.version;
-            Request.post('/operation/nginx', data, function (res) {
+            Request.post('/api/operation/nginx', data, function (res) {
                 if (res.code == 0) {
                     $scope.getsettings();
                 }
@@ -153,7 +153,7 @@ var ServiceNginxCtrl = [
 
         $scope.getcachesettings = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/nginx', {
+            Request.post('/api/operation/nginx', {
                 'action': 'gethttpsettings',
                 'items': 'proxy_cache_path[]'
             }, function (res) {
@@ -198,7 +198,7 @@ var ServiceNginxCtrl = [
                 'action': 'setproxycachesettings',
                 'proxy_caches': angular.toJson($scope.proxy_caches)
             };
-            Request.post('/operation/nginx', data, function (res) {
+            Request.post('/api/operation/nginx', data, function (res) {
                 if (res.code == 0) {
                     $scope.getcachesettings();
                 }
@@ -223,7 +223,7 @@ var ServiceApacheCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.httpd', function (res) {
+            Request.get('/api/query/service.httpd', function (res) {
                 var info = res['service.httpd'];
                 if (info) {
                     $scope.installed = true;
@@ -260,7 +260,7 @@ var ServiceApacheCtrl = [
 
         $scope.getSettings = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/apache', {
+            Request.post('/api/operation/apache', {
                 'action': 'get_settings',
                 'items': 'limit_rate,limit_conn,limit_conn_zone,client_max_body_size,keepalive_timeout,allow[],deny[],gzip'
             }, function (res) {
@@ -281,7 +281,7 @@ var ServiceApacheCtrl = [
             // var data = angular.copy($scope.settings);
             // data.action = 'sethttpsettings';
             // data.version = $scope.pkginfo.version;
-            // Request.post('/operation/apache', data, function (res) {
+            // Request.post('/api/operation/apache', data, function (res) {
             //     if (res.code == 0) {
             //         $scope.getSettings();
             //     }
@@ -306,7 +306,7 @@ var ServiceTomcatCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.tomcat', function (res) {
+            Request.get('/api/query/service.tomcat', function (res) {
                 var info = res['service.tomcat'];
                 if (info) {
                     $scope.installed = true;
@@ -337,7 +337,7 @@ var ServiceTomcatCtrl = [
 
         $scope.getsettings = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/apache', {
+            Request.post('/api/operation/apache', {
                 'action': 'gethttpsettings',
                 'items': 'limit_rate,limit_conn,limit_conn_zone,client_max_body_size,keepalive_timeout,allow[],deny[],gzip'
             }, function (res) {
@@ -351,7 +351,7 @@ var ServiceTomcatCtrl = [
             var data = angular.copy($scope.setting);
             data.action = 'sethttpsettings';
             data.version = $scope.pkginfo.version;
-            Request.post('/operation/nginx', data, function (res) {
+            Request.post('/api/operation/nginx', data, function (res) {
                 if (res.code == 0) {
                     $scope.getsettings();
                 }
@@ -376,7 +376,7 @@ var ServiceVsftpdCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.vsftpd', function (res) {
+            Request.get('/api/query/service.vsftpd', function (res) {
                 var info = res['service.vsftpd'];
                 if (info) {
                     $scope.installed = true;
@@ -396,7 +396,7 @@ var ServiceVsftpdCtrl = [
         };
 
         $scope.getsettings = function () {
-            Request.post('/operation/vsftpd', {
+            Request.post('/api/operation/vsftpd', {
                 'action': 'getsettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -407,7 +407,7 @@ var ServiceVsftpdCtrl = [
 
         $scope.savesettings = function () {
             $scope.processing = true;
-            Request.post('/operation/vsftpd', {
+            Request.post('/api/operation/vsftpd', {
                 'action': 'savesettings',
                 'anonymous_enable': $scope.baseconfigs.anonymous_enable,
                 'local_enable': $scope.baseconfigs.local_enable,
@@ -461,7 +461,7 @@ var ServiceMySQLCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.mysqld', function (res) {
+            Request.get('/api/query/service.mysqld', function (res) {
                 var info = res['service.mysqld'];
                 if (info) {
                     $scope.installed = true;
@@ -483,7 +483,7 @@ var ServiceMySQLCtrl = [
                 return;
             }
             $scope.processing = true;
-            Request.post('/operation/mysql', {
+            Request.post('/api/operation/mysql', {
                 'action': 'updatepwd',
                 'newpassword': $scope.root_passwd,
                 'newpasswordc': $scope.root_passwdc,
@@ -508,8 +508,8 @@ var ServiceMySQLCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_fupdatepwd',
-                '/backend/mysql_fupdatepwd', {
+                '/api/backend/mysql_fupdatepwd',
+                '/api/backend/mysql_fupdatepwd', {
                     'password': $scope.root_passwd,
                     'passwordc': $scope.root_passwdc
                 },
@@ -547,7 +547,7 @@ var ServiceMariaDBCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.mariadb', function (res) {
+            Request.get('/api/query/service.mariadb', function (res) {
                 var info = res['service.mariadb'];
                 if (info) {
                     $scope.installed = true;
@@ -569,7 +569,7 @@ var ServiceMariaDBCtrl = [
                 return;
             }
             $scope.processing = true;
-            Request.post('/operation/mariadb', {
+            Request.post('/api/operation/mariadb', {
                 'action': 'updatepwd',
                 'newpassword': $scope.root_passwd,
                 'newpasswordc': $scope.root_passwdc,
@@ -594,8 +594,8 @@ var ServiceMariaDBCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/mysql_fupdatepwd',
-                '/backend/mysql_fupdatepwd', {
+                '/api/backend/mysql_fupdatepwd',
+                '/api/backend/mysql_fupdatepwd', {
                     'password': $scope.root_passwd,
                     'passwordc': $scope.root_passwdc
                 },
@@ -632,7 +632,7 @@ var ServiceRedisCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.redis', function (res) {
+            Request.get('/api/query/service.redis', function (res) {
                 var info = res['service.redis'];
                 if (info) {
                     $scope.installed = true;
@@ -666,7 +666,7 @@ var ServiceMemcacheCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.memcached', function (res) {
+            Request.get('/api/query/service.memcached', function (res) {
                 var info = res['service.memcached'];
                 if (info) {
                     $scope.installed = true;
@@ -700,7 +700,7 @@ var ServiceMongoDBCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.mongod', function (res) {
+            Request.get('/api/query/service.mongod', function (res) {
                 var info = res['service.mongod'];
                 if (info) {
                     $scope.installed = true;
@@ -734,7 +734,7 @@ var ServicePHPCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.php-fpm', function (res) {
+            Request.get('/api/query/service.php-fpm', function (res) {
                 var info = res['service.php-fpm'];
                 if (info) {
                     $scope.installed = true;
@@ -787,7 +787,7 @@ var ServicePHPCtrl = [
 
         $scope.getphpsettings = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/php', {
+            Request.post('/api/operation/php', {
                 'action': 'getphpsettings'
             }, function (res) {
                 if (res.code == 0) {
@@ -807,7 +807,7 @@ var ServicePHPCtrl = [
 
         $scope.getfpmsettings = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/php', {
+            Request.post('/api/operation/php', {
                 'action': 'getfpmsettings'
             }, function (res) {
                 if (res.code == 0) {
@@ -829,12 +829,12 @@ var ServicePHPCtrl = [
         $scope.updatephpsettings = function () {
             var data = angular.copy($scope.setting.php);
             data.action = 'updatephpsettings';
-            Request.post('/operation/php', data, $scope.getphpsettings);
+            Request.post('/api/operation/php', data, $scope.getphpsettings);
         };
         $scope.updatefpmsettings = function () {
             var data = angular.copy($scope.setting.fpm);
             data.action = 'updatefpmsettings';
-            Request.post('/operation/php', data, $scope.getfpmsettings);
+            Request.post('/api/operation/php', data, $scope.getfpmsettings);
         };
     }
 ];
@@ -855,7 +855,7 @@ var ServiceSendmailCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.sendmail', function (res) {
+            Request.get('/api/query/service.sendmail', function (res) {
                 var info = res['service.sendmail'];
                 if (info) {
                     $scope.installed = true;
@@ -889,7 +889,7 @@ var ServiceSSHCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.sshd', function (res) {
+            Request.get('/api/query/service.sshd', function (res) {
                 var info = res['service.sshd'];
                 if (info) {
                     $scope.installed = true;
@@ -909,7 +909,7 @@ var ServiceSSHCtrl = [
         $scope.setting = {};
         $scope.getsettings = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/ssh', {
+            Request.post('/api/operation/ssh', {
                 'action': 'getsettings'
             }, function (res) {
                 if (res.code == 0) {
@@ -924,7 +924,7 @@ var ServiceSSHCtrl = [
             data.port = $scope.setting.port;
             data.enable_pwdauth = $scope.setting.enable_pwdauth;
             data.enable_sftp = $scope.setting.enable_sftp;
-            Request.post('/operation/ssh', data, function (res) {
+            Request.post('/api/operation/ssh', data, function (res) {
                 if (res.code == 0) {
                     $scope.getsettings();
                 }
@@ -936,7 +936,7 @@ var ServiceSSHCtrl = [
             data.pubkey = $scope.setting.pubkey;
             data.enable_pubkauth = $scope.setting.enable_pubkauth;
             data.enable_pwdauth = !$scope.setting.disable_pwdauth;
-            Request.post('/operation/ssh', data, function (res) {
+            Request.post('/api/operation/ssh', data, function (res) {
                 if (res.code == 0) {
                     $scope.getsettings();
                 }
@@ -956,8 +956,8 @@ var ServiceSSHCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/ssh_genkey',
-                '/backend/ssh_genkey', {}, {
+                '/api/backend/ssh_genkey',
+                '/api/backend/ssh_genkey', {}, {
                     'success': function () {
                         $scope.getsettings();
                     }
@@ -975,8 +975,8 @@ var ServiceSSHCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/ssh_chpasswd',
-                '/backend/ssh_chpasswd', {
+                '/api/backend/ssh_chpasswd',
+                '/api/backend/ssh_chpasswd', {
                     'path': $scope.setting.prvkey,
                     'oldpassword': $scope.oldpassword,
                     'newpassword': $scope.newpassword
@@ -1006,7 +1006,7 @@ var ServiceIPTablesCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.iptables', function (res) {
+            Request.get('/api/query/service.iptables', function (res) {
                 var info = res['service.iptables'];
                 if (info) {
                     $scope.installed = true;
@@ -1041,7 +1041,7 @@ var ServiceCronCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.crond', function (res) {
+            Request.get('/api/query/service.crond', function (res) {
                 var info = res['service.crond'];
                 if (info) {
                     $scope.installed = true;
@@ -1062,7 +1062,7 @@ var ServiceCronCtrl = [
         $scope.settings = {};
         $scope.getSettings = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/cron', {
+            Request.post('/api/operation/cron', {
                 'action': 'get_settings'
             }, function (res) {
                 if (res.code == 0) {
@@ -1073,7 +1073,7 @@ var ServiceCronCtrl = [
         };
         $scope.updateSetting = function () {
             if (!$scope.installed) return;
-            Request.post('/operation/cron', {
+            Request.post('/api/operation/cron', {
                 'action': 'save_settings',
                 'mailto': $scope.settings.mailto
             }, function (res) {
@@ -1109,7 +1109,7 @@ var ServiceNTPCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.ntpd', function (res) {
+            Request.get('/api/query/service.ntpd', function (res) {
                 var info = res['service.ntpd'];
                 if (info) {
                     $scope.installed = true;
@@ -1144,7 +1144,7 @@ var ServiceNamedCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.named', function (res) {
+            Request.get('/api/query/service.named', function (res) {
                 var info = res['service.named'];
                 if (info) {
                     $scope.installed = true;
@@ -1169,7 +1169,7 @@ var ServiceNamedCtrl = [
             Module.setSection('settings');
         };
         $scope.getsettings = function () {
-            Request.post('/operation/named', {
+            Request.post('/api/operation/named', {
                 'action': 'getsettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -1180,7 +1180,7 @@ var ServiceNamedCtrl = [
 
         $scope.savesettings = function () {
             $scope.processing = true;
-            Request.post('/operation/named', {
+            Request.post('/api/operation/named', {
                 'action': 'savesettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -1209,7 +1209,7 @@ var ServiceLighttpdCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.lighttpd', function (res) {
+            Request.get('/api/query/service.lighttpd', function (res) {
                 var info = res['service.lighttpd'];
                 if (info) {
                     $scope.installed = true;
@@ -1236,7 +1236,7 @@ var ServiceLighttpdCtrl = [
             Module.setSection('settings');
         };
         $scope.getsettings = function () {
-            Request.post('/operation/lighttpd', {
+            Request.post('/api/operation/lighttpd', {
                 'action': 'getsettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -1246,7 +1246,7 @@ var ServiceLighttpdCtrl = [
         };
         $scope.savesettings = function () {
             $scope.processing = true;
-            Request.post('/operation/lighttpd', {
+            Request.post('/api/operation/lighttpd', {
                 'action': 'savesettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -1275,7 +1275,7 @@ var ServiceProFTPDCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.proftpd', function (res) {
+            Request.get('/api/query/service.proftpd', function (res) {
                 var info = res['service.proftpd'];
                 if (info) {
                     $scope.installed = true;
@@ -1302,7 +1302,7 @@ var ServiceProFTPDCtrl = [
             Module.setSection('settings');
         };
         $scope.getsettings = function () {
-            Request.post('/operation/proftpd', {
+            Request.post('/api/operation/proftpd', {
                 'action': 'getsettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -1313,7 +1313,7 @@ var ServiceProFTPDCtrl = [
 
         $scope.savesettings = function () {
             $scope.processing = true;
-            Request.post('/operation/proftpd', {
+            Request.post('/api/operation/proftpd', {
                 'action': 'savesettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -1342,7 +1342,7 @@ var ServicePureFTPdCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.pure-ftpd', function (res) {
+            Request.get('/api/query/service.pure-ftpd', function (res) {
                 var info = res['service.pure-ftpd'];
                 if (info) {
                     $scope.installed = true;
@@ -1370,7 +1370,7 @@ var ServicePureFTPdCtrl = [
             Module.setSection('settings');
         };
         $scope.getsettings = function () {
-            Request.post('/operation/pureftpd', {
+            Request.post('/api/operation/pureftpd', {
                 'action': 'getsettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -1380,7 +1380,7 @@ var ServicePureFTPdCtrl = [
         };
         $scope.savesettings = function () {
             $scope.processing = true;
-            Request.post('/operation/pureftpd', {
+            Request.post('/api/operation/pureftpd', {
                 'action': 'savesettings'
             }, function (data) {
                 if (data.code == 0) {
@@ -1408,7 +1408,7 @@ var ServiceSambaCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/query/service.smb', function (res) {
+            Request.get('/api/query/service.smb', function (res) {
                 var info = res['service.smb'];
                 if (info) {
                     $scope.installed = true;

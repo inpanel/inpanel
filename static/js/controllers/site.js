@@ -29,7 +29,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         };
 
         $scope.load_status = function (callback) {
-            Request.get('/query/service.nginx,service.httpd', function (res) {
+            Request.get('/api/query/service.nginx,service.httpd', function (res) {
                 if (res['service.nginx'] && res['service.nginx'].status) {
                     $scope.nginx_status = res['service.nginx'].status;
                     $scope.nginx_supported = true;
@@ -65,7 +65,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Backend.call($scope, module, '/backend/service_' + status, '/backend/service_' + status + '_nginx', {
+            Backend.call($scope, module, '/api/backend/service_' + status, '/api/backend/service_' + status + '_nginx', {
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
@@ -89,7 +89,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 return;
             }
             $scope.nginxloading = true;
-            Request.post('/operation/nginx', {
+            Request.post('/api/operation/nginx', {
                 'action': 'getservers'
             }, function (res) {
                 if (res.code == 0) {
@@ -102,7 +102,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Backend.call($scope, module, '/backend/service_' + status, '/backend/service_' + status + '_httpd', {
+            Backend.call($scope, module, '/api/backend/service_' + status, '/api/backend/service_' + status + '_httpd', {
                 'name': 'Apache',
                 'service': 'httpd'
             }, {
@@ -124,7 +124,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 return;
             }
             $scope.apacheloading = true;
-            Request.post('/operation/apache', {
+            Request.post('/api/operation/apache', {
                 'action': 'getservers'
             }, function (res) {
                 if (res.code == 0) {
@@ -144,7 +144,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                 return;
             }
             $scope.packageloading = true;
-            Request.get('/sitepackage/getlist', function (res) {
+            Request.get('/api/sitepackage/getlist', function (res) {
                 $scope.packageloading = false;
                 if (res.code == 0) {
                     $scope.site_packages = res.data;
@@ -177,7 +177,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         $scope.package_install = function () {
             // check whether the installpath is exists and whether it is empty
             Message.setInfo('正在检测安装目录...', true);
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'listdir',
                 'path': $scope.installpath,
                 'showhidden': true,
@@ -201,13 +201,13 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
 
         function package_get_downloadurl() {
             Message.setInfo('正在请求安装文件...');
-            Request.get('/sitepackage/getdownloadtask?name=' + $scope.curpkg.code + '&version=' + $scope.pkgver, function (res) {
+            Request.get('/api/sitepackage/getdownloadtask?name=' + $scope.curpkg.code + '&version=' + $scope.pkgver, function (res) {
                 if (res.code == 0) {
                     $scope.downloadurl = res.data.url;
                     $scope.downloadpath = res.data.path;
                     $scope.extractpath = res.data.temp;
 
-                    Backend.call($scope, module, '/backend/wget', '/backend/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
+                    Backend.call($scope, module, '/api/backend/wget', '/api/backend/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
                         'url': $scope.downloadurl,
                         'path': $scope.downloadpath
                     }, {
@@ -215,7 +215,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                             // decompress it
                             var zippath = $scope.downloadpath;
                             var despath = $scope.extractpath;
-                            Backend.call($scope, module, '/backend/decompress', '/backend/decompress_' + zippath + '_' + despath, {
+                            Backend.call($scope, module, '/api/backend/decompress', '/api/backend/decompress_' + zippath + '_' + despath, {
                                 'zippath': zippath,
                                 'despath': despath
                             }, {
@@ -224,19 +224,19 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                                     var corepath = $scope.curver.core_path;
                                     var srcpath = $scope.extractpath + '/' + corepath + '/*';
                                     var despath = $scope.installpath;
-                                    Backend.call( $scope, module, '/backend/copy', '/backend/copy_' + srcpath + '_' + despath, {
+                                    Backend.call( $scope, module, '/api/backend/copy', '/api/backend/copy_' + srcpath + '_' + despath, {
                                         'srcpath': srcpath,
                                         'despath': despath
                                     }, {
                                         'success': function () {
                                             // install ok, remove the temp folder
                                             Message.setInfo('正在清理安装临时文件...');
-                                            Backend.call( $scope, module, '/backend/remove', '/backend/remove_' + $scope.extractpath, {
+                                            Backend.call( $scope, module, '/api/backend/remove', '/api/backend/remove_' + $scope.extractpath, {
                                                 'paths': $scope.extractpath
                                             }, function () {
                                                 // set user.group to apache.apache
                                                 Message.setInfo('正在设置目录权限...');
-                                                Backend.call( $scope, module, '/backend/chown', '/backend/chown_' + $scope.installpath, {
+                                                Backend.call( $scope, module, '/api/backend/chown', '/api/backend/chown_' + $scope.installpath, {
                                                     'paths': $scope.installpath,
                                                     'user': 'apache',
                                                     'group': 'apache',
@@ -267,7 +267,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             if (!type || !status || ['nginx', 'apache'].indexOf(type) < 0 || ['enable', 'disable'].indexOf(status) < 0) {
                 return;
             }
-            Request.post('/operation/' + type, {
+            Request.post('/api/operation/' + type, {
                 'action': status + 'server',
                 'ip': ip,
                 'port': port,
@@ -290,7 +290,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
         $scope.delete_server = function () {
             if ($scope.current_server && $scope.current_server.type && ['nginx', 'apache'].indexOf($scope.current_server.type) > -1) {
                 var type = $scope.current_server.type;
-                Request.post('/operation/' + type, {
+                Request.post('/api/operation/' + type, {
                     'action': 'deleteserver',
                     'ip': $scope.current_server.ip,
                     'port': $scope.current_server.port,
@@ -468,7 +468,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
 
         $scope.load_nginx_version = function () {
             // nginx version check
-            Backend.call($scope, module, '/backend/yum_info', '/backend/yum_info_nginx', {
+            Backend.call($scope, module, '/api/backend/yum_info', '/api/backend/yum_info_nginx', {
                 'pkg': 'nginx',
                 'repo': 'installed'
             }, {
@@ -483,7 +483,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         };
         $scope.load_proxy_caches = function () {
             // load proxy cache list
-            Request.post('/operation/nginx', {
+            Request.post('/api/operation/nginx', {
                 'action': 'gethttpsettings',
                 'items': 'proxy_cache_path[]'
             }, function (res) {
@@ -502,7 +502,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
         };
         $scope.getserver = function (quiet) {
             // get server info (in edit mode)
-            Request.post('/operation/nginx', {
+            Request.post('/api/operation/nginx', {
                 'action': 'getserver',
                 'ip': server_ip,
                 'port': server_port,
@@ -802,7 +802,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             }
         };
         $scope.addserver = function (active) {
-            Request.post('/operation/nginx', {
+            Request.post('/api/operation/nginx', {
                 'action': 'addserver',
                 'version': $scope.nginx_version,
                 'setting': angular.toJson($scope.setting)
@@ -819,7 +819,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             });
         };
         $scope.updateserver = function (active) {
-            Request.post('/operation/nginx', {
+            Request.post('/api/operation/nginx', {
                 'action': 'updateserver',
                 'ip': server_ip,
                 'port': server_port,
@@ -854,7 +854,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Backend.call($scope, module, '/backend/service_' + status, '/backend/service_' + status + '_nginx', {
+            Backend.call($scope, module, '/api/backend/service_' + status, '/api/backend/service_' + status + '_nginx', {
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
@@ -916,7 +916,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             } else {
                 $scope.getserver();
             }
-            Backend.call($scope, module, '/backend/yum_info', '/backend/yum_info_apache', {
+            Backend.call($scope, module, '/api/backend/yum_info', '/api/backend/yum_info_apache', {
                 'pkg': 'apache',
                 'repo': 'installed'
             }, {
@@ -950,7 +950,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
 
         // get server info (in edit mode)
         $scope.getserver = function (quiet) {
-            Request.post('/operation/apache', {
+            Request.post('/api/operation/apache', {
                 'action': 'getserver',
                 'ip': server_ip,
                 'port': server_port,
@@ -1179,7 +1179,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             }
         };
         $scope.addserver = function (active, setting) {
-            Request.post('/operation/apache', {
+            Request.post('/api/operation/apache', {
                 'action': 'addserver',
                 'version': $scope.apache_version,
                 'setting': setting
@@ -1195,7 +1195,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             });
         };
         $scope.updateserver = function (active, setting) {
-            Request.post('/operation/apache', {
+            Request.post('/api/operation/apache', {
                 'action': 'updateserver',
                 'ip': server_ip,
                 'port': server_port,
@@ -1228,7 +1228,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Backend.call($scope, module, '/backend/service_' + status, '/backend/service_' + status + '_httpd', {
+            Backend.call($scope, module, '/api/backend/service_' + status, '/api/backend/service_' + status + '_httpd', {
                 'name': 'Apache',
                 'service': 'httpd'
             }, {

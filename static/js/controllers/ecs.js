@@ -462,8 +462,8 @@ var ECSSettingCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/inpanel_install',
-                '/backend/inpanel_install_' + $scope.ssh_ip, {
+                '/api/backend/inpanel_install',
+                '/api/backend/inpanel_install_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -497,8 +497,8 @@ var ECSSettingCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/inpanel_uninstall',
-                '/backend/inpanel_uninstall_' + $scope.ssh_ip, {
+                '/api/backend/inpanel_uninstall',
+                '/api/backend/inpanel_uninstall_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -531,8 +531,8 @@ var ECSSettingCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/inpanel_config',
-                '/backend/inpanel_config_' + $scope.ssh_ip, {
+                '/api/backend/inpanel_config',
+                '/api/backend/inpanel_config_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,

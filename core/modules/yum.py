@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, doudoudzj
+# Copyright (c) 2017, Jackson Dou
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
@@ -52,6 +52,12 @@ yum_reporpms = {
             ]
         },
         7: {
+            'x86_64': [
+                'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm',
+                'http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm'
+            ]
+        },
+        8: {
             'x86_64': [
                 'http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm',
                 'http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm'
@@ -122,7 +128,7 @@ yum_reporpms = {
             'i686':   ['https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm']
         },
         7: {
-            'x86_64': ['https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-15.ius.centos7.noarch.rpm']
+            'x86_64': ['https://repo.ius.io/ius-release-el7.rpm']
         }
     }
 }

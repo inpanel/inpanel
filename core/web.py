@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, doudoudzj
+# Copyright (c) 2017, Jackson Dou
 # Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
@@ -24,7 +24,6 @@ from os.path import join as joinpath
 from subprocess import PIPE, STDOUT, Popen
 from uuid import uuid4
 
-import core
 import pyDes
 import tornado
 import tornado.gen
@@ -32,17 +31,20 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 from async_process import call_subprocess, callbackable
+from tornado.escape import to_unicode as _d
+from tornado.escape import utf8 as _u
+
+import core
 from core import api as core_api
-from core import utils
-from modules import (aliyuncs, apache, cron, fdisk, files, ftp,
-                     lighttpd, mysql, named, nginx, php, proftpd,
-                     pureftpd, remote, shell, ssh, user, vsftpd, yum)
+from core import dist_versint, distribution, machine, utils
+from modules import (aliyuncs, apache, cron, fdisk, files, ftp, lighttpd,
+                     mysql, named, nginx, php, proftpd, pureftpd, remote,
+                     shell, ssh, user, vsftpd, yum)
 from modules.configuration import configurations
+from modules.repo_yum import get_repo_epel, get_repo_release
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
 from modules.service import Service
-from tornado.escape import to_unicode as _d
-from tornado.escape import utf8 as _u
 
 try:
     from shlex import quote  # For Python 3
@@ -53,14 +55,10 @@ except ImportError:
 class Application(tornado.web.Application):
     def __init__(self, handlers=None, default_host="", transforms=None,
                  wsgi=False, **settings):
-        dist = ServerInfo.dist()
-        settings['dist_name'] = dist['name'].lower()
-        settings['dist_version'] = dist['version']
-        settings['dist_verint'] = int(dist['version'][0:dist['version'].find('.')])
-        uname = ServerInfo.uname()
-        settings['arch'] = uname['machine']
-        if settings['arch'] == 'i686' and settings['dist_verint'] == 5: settings['arch'] = 'i386'
-        #if settings['arch'] == 'unknown': settings['arch'] = uname['machine']
+        settings['arch'] = machine
+        settings['dist_name'] = distribution.lower()
+        if machine == 'i686' and dist_versint == 5:
+            settings['arch'] = 'i386'
         settings['data_path'] = abspath(settings['data_path'])
         settings['package_path'] = joinpath(settings['data_path'], 'packages')
 
@@ -421,11 +419,11 @@ class QueryHandler(RequestHandler):
     
     Query one or more items, seperated by comma.
     Examples:
-    /query/*
-    /query/server.*
-    /query/service.*
-    /query/server.datetime,server.diskinfo
-    /query/config.fstab(sda1)
+    /api/query/*
+    /api/query/server.*
+    /api/query/service.*
+    /api/query/server.datetime,server.diskinfo
+    /api/query/config.fstab(sda1)
     """
     def get(self, items):
         self.authed()
@@ -2628,7 +2626,6 @@ class BackendHandler(RequestHandler):
 
         root_path = self.settings['root_path']
         data_path = self.settings['data_path']
-        distname = self.settings['dist_name']
 
         # don't do it in dev environment
         if exists('%s/../.git' % root_path):
@@ -2643,7 +2640,7 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = u'%s/scripts/init.d/%s/inpanel' % (root_path, distname)
+        initscript = u'%s/scripts/init.d/%s/inpanel' % (root_path, self.settings['dist_name'])
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
@@ -2714,7 +2711,7 @@ class BackendHandler(RequestHandler):
         # REF: http://www.mombu.com/gnu_linux/red-hat/t-why-does-sendmail-hang-during-rh-9-start-up-1068528.html
         if action == 'start' and service in ('sendmail', )\
             and self.settings['dist_name'] in ('redhat', 'centos')\
-            and self.settings['dist_verint'] == 5:
+            and dist_versint == 5:
             # check if current hostname line in /etc/hosts have a char '.'
             hostname = ServerInfo.hostname()
             hostname_found = False
@@ -2733,7 +2730,7 @@ class BackendHandler(RequestHandler):
                     lines.append(line)
             if not dot_found:
                 with open('/etc/hosts', 'w') as f: f.writelines(lines)
-        if self.settings['dist_verint'] < 7:
+        if dist_versint < 7:
             cmd = '/etc/init.d/%s %s' % (service, action)
         else:
             cmd = '/bin/systemctl %s %s.service' % (action, service)
@@ -2927,36 +2924,15 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, u'正在安装软件源 %s...' % _d(repo))
 
         arch = self.settings['arch']
-        dist_verint = self.settings['dist_verint']
 
         cmds = []
         if repo == 'base':
-            if dist_verint == 5:
-                if self.settings['dist_name'] == 'redhat':
-                    # backup system version info
-                    cmds.append('cp -f /etc/redhat-release /etc/redhat-release.inpanel')
-                    cmds.append('cp -f /etc/issue /etc/issue.inpanel')
-                    #cmds.append('rpm -e redhat-release-notes-5Server --nodeps')
-                    cmds.append('rpm -e redhat-release-5Server --nodeps')
-
-            for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
-                cmds.append('rpm -U %s' % rpm)
-
-            if exists('/etc/issue.inpanel'):
-                cmds.append('cp -f /etc/issue.inpanel /etc/issue')
-            if exists('/etc/redhat-release.inpanel'):
-                cmds.append('cp -f /etc/redhat-release.inpanel /etc/redhat-release')
+            for cmd in get_repo_release(dist_versint, self.settings['dist_name'], self.settings['arch']):
+                cmds.append(cmd)
 
         elif repo in ('epel', 'CentALT'):
-            # elif repo in ('epel', 'CentALT', 'ius'):
-            # CentALT and ius depends on epel
-            for rpm in yum.yum_reporpms['epel'][dist_verint][arch]:
-                cmds.append('rpm -U %s' % rpm)
-
-            # if dist_verint < 7:
-            #     if repo in ('CentALT', 'ius'):
-            #         for rpm in yum.yum_reporpms[repo][dist_verint][arch]:
-            #             cmds.append('rpm -U %s' % rpm)
+            for cmd in get_repo_epel(dist_versint, self.settings['dist_name'], self.settings['arch']):
+                cmds.append(cmd)
 
         elif repo == 'ius':
             # REF: https://ius.io/GettingStarted/#install-via-automation
@@ -2999,7 +2975,7 @@ class BackendHandler(RequestHandler):
                             lines.append(line)
                             # # add a mirrorlist line
                             # metalink = 'https://inpanel.org/mirrorlist?'\
-                            #     'repo=centalt-%s&arch=$basearch' % self.settings['dist_verint']
+                            #     'repo=centalt-%s&arch=$basearch' % dist_versint
                             # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)
                 if baseurl_found:
@@ -3040,6 +3016,8 @@ class BackendHandler(RequestHandler):
 
         data = []
         matched = False
+        # change to en_US for fields
+        yield tornado.gen.Task(call_subprocess, self, 'LANG="en_US.UTF-8"')
         for cmd in cmds:
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
@@ -3274,6 +3252,8 @@ class BackendHandler(RequestHandler):
 
         data = []
         matched = False
+        # change to en_US for fields
+        yield tornado.gen.Task(call_subprocess, self, 'LANG="en_US.UTF-8"')
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             matched = True

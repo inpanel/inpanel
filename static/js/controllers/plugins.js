@@ -22,7 +22,7 @@ var PluginsHome = [
                     transclude: true,
                     scope: {},
                     replace: true,
-                    templateUrl: template_path + '/plugins/acme/static/index.html',
+                    templateUrl: template_path + '/api/plugins/acme/static/index.html',
                     controller: ['$scope', '$rootScope', function ($scope, $rootScope) {
                         $rootScope.navbar_loaded = true;
                     }]
@@ -39,7 +39,7 @@ var PluginsHome = [
             //             transclude: true,
             //             scope: {},
             //             replace: true,
-            //             templateUrl: template_path + '/plugins/' + i + '/index.html',
+            //             templateUrl: template_path + '/api/plugins/' + i + '/index.html',
             //             controller: ['$scope', '$rootScope', function ($scope, $rootScope) {
             //                 $rootScope.navbar_loaded = true;
             //             }]
@@ -58,8 +58,8 @@ var PluginsHome = [
             //         return r;
             //     };
             //     $routeProvider.
-            //     when('/plugins/acme', {redirectTo: '/plugins/acme/index'}).
-            //     when('/plugins/acme/index', PluginsRouters);
+            //     when('/api/plugins/acme', {redirectTo: '/api/plugins/acme/index'}).
+            //     when('/api/plugins/acme/index', PluginsRouters);
             // }]);
         };
     }
@@ -80,7 +80,7 @@ var PluginsRouters = function () {
         }
     ];
     var p = {
-        templateUrl: template_path + '/plugins/' + t + '.html?_v=' + _v,
+        templateUrl: template_path + '/api/plugins/' + t + '.html?_v=' + _v,
         controller: c,
         reloadOnSearch: false,
         resolve: Auth
