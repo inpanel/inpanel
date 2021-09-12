@@ -393,7 +393,7 @@ var SettingCtrl = [
             $scope.showUpdateBtn = false;
             Request.post('/api/backend/update', {}, function (data) {
                 var getUpdateStatus = function () {
-                    Request.get('backend/update', function (data) {
+                    Request.get('/api/backend/update', function (data) {
                         Message.setInfo('')
                         if (data.msg) $scope.upverMessage = data.msg;
                         if (data.code == -1) {
@@ -406,7 +406,7 @@ var SettingCtrl = [
                                     service: 'inpanel'
                                 }, function (data) {
                                     var getRestartStatus = function () {
-                                        Request.get('backend/service_restart_inpanel', function (data) {
+                                        Request.get('/api/backend/service_restart_inpanel', function (data) {
                                             Message.setInfo('')
                                             if (data.msg) $scope.upverMessage = data.msg;
                                             Timeout(getRestartStatus, 500, module);
@@ -439,7 +439,7 @@ var SettingCtrl = [
                     service: 'inpanel'
                 }, function (data) {
                     var getRestartStatus = function () {
-                        Request.get('backend/service_restart_inpanel', function (data) {
+                        Request.get('/api/backend/service_restart_inpanel', function (data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             Timeout(getRestartStatus, 500, module);
                         }, function (data, status) { // error occur because server is terminate

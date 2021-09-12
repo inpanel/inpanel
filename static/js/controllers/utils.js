@@ -420,7 +420,7 @@ var UtilsNetworkCtrl = [
                     service: 'network'
                 }, function(data) {
                     var getRestartStatus = function() {
-                        Request.get('backend/service_restart_network', function(data) {
+                        Request.get('/api/backend/service_restart_network', function(data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             if (data.status == 'finish') {
                                 Message.setSuccess('');
@@ -461,7 +461,7 @@ var UtilsTimeCtrl = [
             }, function(data) {
                 Request.setProcessing(true);
                 var getStatus = function() {
-                    Request.get('backend/datetime', function(data) {
+                    Request.get('/api/backend/datetime', function(data) {
                         if (data.status != 'finish') {
                             Request.setProcessing(true);
                             Timeout(getStatus, 500, module);
@@ -531,7 +531,7 @@ var UtilsTimeCtrl = [
             }, function(data) {
                 Request.setProcessing(true);
                 var getStatus = function() {
-                    Request.get('backend/ntpdate_' + server, function(data) {
+                    Request.get('/api/backend/ntpdate_' + server, function(data) {
                         if (data.status != 'finish') {
                             Request.setProcessing(true);
                             Timeout(getStatus, 500, module);

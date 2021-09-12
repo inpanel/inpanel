@@ -24,7 +24,6 @@ from os.path import join as joinpath
 from subprocess import PIPE, STDOUT, Popen
 from uuid import uuid4
 
-import core
 import pyDes
 import tornado
 import tornado.gen
@@ -32,17 +31,20 @@ import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 from async_process import call_subprocess, callbackable
+from tornado.escape import to_unicode as _d
+from tornado.escape import utf8 as _u
+
+import core
 from core import api as core_api
-from core import utils, distribution, dist_versint, machine
-from modules import (aliyuncs, apache, cron, fdisk, files, ftp,
-                     lighttpd, mysql, named, nginx, php, proftpd,
-                     pureftpd, remote, shell, ssh, user, vsftpd, yum)
+from core import dist_versint, distribution, machine, utils
+from modules import (aliyuncs, apache, cron, fdisk, files, ftp, lighttpd,
+                     mysql, named, nginx, php, proftpd, pureftpd, remote,
+                     shell, ssh, user, vsftpd, yum)
 from modules.configuration import configurations
+from modules.repo_yum import get_repo_epel, get_repo_release
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
 from modules.service import Service
-from tornado.escape import to_unicode as _d
-from tornado.escape import utf8 as _u
 
 try:
     from shlex import quote  # For Python 3
@@ -2925,32 +2927,12 @@ class BackendHandler(RequestHandler):
 
         cmds = []
         if repo == 'base':
-            if dist_versint == 5:
-                if self.settings['dist_name'] == 'redhat':
-                    # backup system version info
-                    cmds.append('cp -f /etc/redhat-release /etc/redhat-release.inpanel')
-                    cmds.append('cp -f /etc/issue /etc/issue.inpanel')
-                    #cmds.append('rpm -e redhat-release-notes-5Server --nodeps')
-                    cmds.append('rpm -e redhat-release-5Server --nodeps')
-
-            for rpm in yum.yum_reporpms[repo][dist_versint][arch]:
-                cmds.append('rpm -U %s' % rpm)
-
-            if exists('/etc/issue.inpanel'):
-                cmds.append('cp -f /etc/issue.inpanel /etc/issue')
-            if exists('/etc/redhat-release.inpanel'):
-                cmds.append('cp -f /etc/redhat-release.inpanel /etc/redhat-release')
+            for cmd in get_repo_release(dist_versint, self.settings['dist_name'], self.settings['arch']):
+                cmds.append(cmd)
 
         elif repo in ('epel', 'CentALT'):
-            # elif repo in ('epel', 'CentALT', 'ius'):
-            # CentALT and ius depends on epel
-            for rpm in yum.yum_reporpms['epel'][dist_versint][arch]:
-                cmds.append('rpm -U %s' % rpm)
-
-            # if dist_versint < 7:
-            #     if repo in ('CentALT', 'ius'):
-            #         for rpm in yum.yum_reporpms[repo][dist_versint][arch]:
-            #             cmds.append('rpm -U %s' % rpm)
+            for cmd in get_repo_epel(dist_versint, self.settings['dist_name'], self.settings['arch']):
+                cmds.append(cmd)
 
         elif repo == 'ius':
             # REF: https://ius.io/GettingStarted/#install-via-automation
@@ -3034,6 +3016,8 @@ class BackendHandler(RequestHandler):
 
         data = []
         matched = False
+        # change to en_US for fields
+        yield tornado.gen.Task(call_subprocess, self, 'LANG="en_US.UTF-8"')
         for cmd in cmds:
             result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
             if result == 0:
@@ -3268,6 +3252,8 @@ class BackendHandler(RequestHandler):
 
         data = []
         matched = False
+        # change to en_US for fields
+        yield tornado.gen.Task(call_subprocess, self, 'LANG="en_US.UTF-8"')
         result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
         if result == 0:
             matched = True
