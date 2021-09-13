@@ -39,9 +39,8 @@ from core import api as core_api
 from core import dist_versint, distribution, machine, utils
 from modules import (aliyuncs, apache, cron, fdisk, files, ftp, lighttpd,
                      mysql, named, nginx, php, proftpd, pureftpd, remote,
-                     shell, ssh, user, vsftpd, yum)
+                     repo_yum, shell, ssh, user, vsftpd, yum)
 from modules.configuration import configurations
-from modules.repo_yum import get_repo_epel, get_repo_release
 from modules.sc import ServerSet
 from modules.server import ServerInfo, ServerTool
 from modules.service import Service
@@ -2927,11 +2926,11 @@ class BackendHandler(RequestHandler):
 
         cmds = []
         if repo == 'base':
-            for cmd in get_repo_release(dist_versint, self.settings['dist_name'], self.settings['arch']):
+            for cmd in repo_yum.get_repo_release(dist_versint, self.settings['dist_name'], self.settings['arch']):
                 cmds.append(cmd)
 
         elif repo in ('epel', 'CentALT'):
-            for cmd in get_repo_epel(dist_versint, self.settings['dist_name'], self.settings['arch']):
+            for cmd in repo_yum.get_repo_epel(dist_versint, self.settings['dist_name'], self.settings['arch']):
                 cmds.append(cmd)
 
         elif repo == 'ius':
@@ -4581,3 +4580,99 @@ class InPanelHandler(RequestHandler):
         self.request.uri = '/'+uri
         self.request.headers['X-ACCESS-TOKEN'] = self.gen_token(instance_name)
         self.forward(port, ip)
+
+
+class RepoYumHander(RequestHandler):
+    """Handler for YUM Request.
+    """
+    def get(self, sec, repo=None):
+        self.authed()
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 YUM ！'})
+            return
+        if sec == 'list':
+            items = repo_yum.get_list()
+            if items is None:
+                self.write({'code': -1, 'msg': u'获取配置失败！'})
+            else:
+                self.write({'code': 0, 'msg': '', 'data': items})
+        elif sec == 'item':
+            if repo is None:
+                repo = self.get_argument('repo', None)
+            if repo == None:
+                self.write({'code': -1, 'msg': u'配置文件不能为空！'})
+                return
+            data = repo_yum.get_item(repo)
+            if data is None:
+                self.write({'code': -1, 'msg': u'配置文件不存在！'})
+            else:
+                self.write({'code': 0, 'msg': '', 'data': data})
+        else:
+            self.write({'code': -1, 'msg': u'未定义的操作！'})
+
+    def post(self, sec, repo=None):
+        self.authed()
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': u'DEMO 状态不允许设置 YUM ！'})
+            return
+
+        if sec in ('edit', 'add'):
+            if repo is None:
+                repo = self.get_argument('repo', None)
+            if repo is None:
+                self.write({'code': -1, 'msg': u'配置文件不能为空！'})
+                return
+            serverid = self.get_argument('serverid', '')
+            if serverid == '':
+                self.write({'code': -1, 'msg': u'仓库标识ID不能为空！'})
+                return
+            name = self.get_argument('name', '')
+            if name == '':
+                self.write({'code': -1, 'msg': u'仓库名称不能为空！'})
+                return
+            baseurl = self.get_argument('baseurl', '')
+            if baseurl == '':
+                self.write({'code': -1, 'msg': u'仓库路径不能为空！'})
+                return
+            enabled = self.get_argument('enabled', True)
+            gpgcheck = self.get_argument('gpgcheck', False)
+            data = {
+                serverid: {
+                    'name': name,
+                    'enabled': 0 if not enabled else 1,
+                    'baseurl': baseurl,
+                    'gpgcheck': 0 if not gpgcheck else 1,
+                    'gpgkey': ''
+                }
+            }
+            if sec == 'edit':
+                if not repo_yum.item_exists(repo):
+                    self.write({'code': -1, 'msg': u'配置文件不存在！'})
+                    return
+                if repo_yum.set_item(repo, data) is True:
+                    self.write({'code': 0, 'msg': u'配置修改成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'配置修改失败！'})
+            else:
+                if repo_yum.item_exists(repo):
+                    self.write({'code': -1, 'msg': u'配置文件已存在！'})
+                    return
+                if repo_yum.add_item(repo, data) is True:
+                    self.write({'code': 0, 'msg': u'配置添加成功！'})
+                else:
+                    self.write({'code': -1, 'msg': u'配置修改失败！'})
+        elif sec == 'del':
+            if repo is None:
+                repo = self.get_argument('repo', None)
+            if repo is None:
+                self.write({'code': -1, 'msg': u'配置文件不能为空！'})
+                return
+            if not repo_yum.item_exists(repo):
+                self.write({'code': -1, 'msg': u'配置文件不存在！'})
+                return
+            if repo_yum.del_item(repo) is True:
+                self.write({'code': 0, 'msg': u'配置文件已移入回收站！'})
+            else:
+                self.write({'code': -1, 'msg': u'删除失败！'})
+        else:
+            self.write({'code': -1, 'msg': u'未定义的操作！'})
