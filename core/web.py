@@ -2640,6 +2640,7 @@ class BackendHandler(RequestHandler):
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
         initscript = u'%s/scripts/init.d/%s/inpanel' % (root_path, self.settings['dist_name'])
+        binscript = '%s/scripts/bin/inpanel' % root_path
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
@@ -2661,13 +2662,16 @@ class BackendHandler(RequestHandler):
                 'cmd': u'find %s/inpanel -mindepth 1 -maxdepth 1 -exec cp -r {} %s \;' % (data_path, root_path),
             }, {
                 'desc': u'正在删除旧的服务脚本...',
-                'cmd': u'rm -f /etc/init.d/inpanel',
+                'cmd': u'rm -f /etc/init.d/inpanel /usr/local/bin/inpanel',
             }, {
                 'desc': u'正在安装新的服务脚本...',
-                'cmd': u'cp %s /etc/init.d/inpanel' % initscript
+                'cmd': 'ln -s %s /etc/init.d/inpanel' % initscript
+            }, {
+                'desc': u'正在安装新的命令脚本...',
+                'cmd': 'ln -s %s /usr/local/bin/inpanel' % binscript
             }, {
                 'desc': u'正在更改脚本权限...',
-                'cmd': u'chmod +x /etc/init.d/inpanel %s/config.py %s/server.py' % (root_path, root_path),
+                'cmd': u'chmod +x /usr/local/bin/inpanel /etc/init.d/inpanel %s/config.py %s/server.py' % (root_path, root_path),
             }, {
                 'desc': u'正在删除安装临时文件...',
                 'cmd': u'rm -rf %s/inpanel %s/inpanel.tar.gz' % (data_path, data_path)
