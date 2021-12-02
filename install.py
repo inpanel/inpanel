@@ -61,7 +61,7 @@ class Install(object):
         self.username = 'admin'
         self.password = 'admin'
         self.repository = 'https://github.com/inpanel/inpanel.git'
-        self.branch = 'master'
+        self.branch = 'main'
         self.distname = self.dist[0].lower()
         self.sys_version = self.dist[1]
         self.sys_version = self.sys_version[0:self.sys_version.find('.', self.sys_version.index('.') + 1)]
