@@ -17,8 +17,9 @@ sys.path.insert(0, join(root_path, 'lib'))
 
 import tornado.httpserver
 import tornado.ioloop
+
 from core import web
-from core.modules.repo_yum import WebRequestRepoYUM
+# from core.modules.repo_yum import WebRequestRepoYUM
 from core.modules.certificate import WebRequestSSLTLS
 from core.modules.configuration import configurations
 from core.modules.process import WebRequestProcess
@@ -56,7 +57,7 @@ def main():
         (r'/api/utils/process/(.+?)(?:/(.+))?', WebRequestProcess),
         (r'/api/utils/time/(.+?)(?:/(.+))?', web.UtilsTimeHandler),
         (r'/api/utils/ssl/(.+?)(?:/(.+))?', WebRequestSSLTLS),
-        (r'/api/repos/yum/(.+?)(?:/(.+))?', WebRequestRepoYUM),
+        (r'/api/repos/yum/(.+?)(?:/(.+))?', web.RepoYumHander),
         (r'/api/setting/(.+)', web.SettingHandler),
         (r'/api/operation/(.+)', web.OperationHandler),
         (r'/page/(.+)/(.+)', web.PageHandler),
