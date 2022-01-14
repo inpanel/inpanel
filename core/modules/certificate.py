@@ -22,7 +22,7 @@ class Certificate():
 
     def __init__(self):
         # self.path_current = os.path.dirname(os.path.abspath(__file__))
-        self.path_home = '/usr/local/inpanel/data/certificate/'
+        self.path_home = '/etc/inpanel/certs/'
         self.path_acc = join(self.path_home, 'client.key')
         self.path_crt = join(self.path_home, 'crt')
         self.path_key = join(self.path_home, 'key')
@@ -30,6 +30,8 @@ class Certificate():
         self.key_size = '4096'
         self.acme = None
 
+        if not exists(self.path_home):
+            os.makedirs(self.path_home)
         if not exists(self.path_crt):
             os.makedirs(self.path_crt)
         if not exists(self.path_key):

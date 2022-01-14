@@ -27,8 +27,8 @@ def configurations(inifile=None, configs=None):
             'forcehttps': 'off',  # force use https
             'lastcheckupdate': 0,
             'updateinfo': '',
-            'sslkey': '/usr/local/inpanel/core/certificate/inpanel.key',
-            'sslcrt': '/usr/local/inpanel/core/certificate/inpanel.crt'
+            'sslkey': '/etc/inpanel/certificate/inpanel.key',
+            'sslcrt': '/etc/inpanel/certificate/inpanel.crt'
         },
         'auth': {
             'username': 'admin',
