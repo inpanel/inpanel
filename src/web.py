@@ -742,7 +742,7 @@ class SettingHandler(RequestHandler):
 
             ip = self.get_argument('ip', '*')
             if ip != '*' and ip != '':
-                if not utils.is_valid_ip(_u(ip)):
+                if not utils.is_valid_ip(ip):
                     self.write({'code': -1, 'msg': '%s 不是有效的IP地址！' % ip})
                     return
                 netifaces = ServerInfo.netifaces()
@@ -874,7 +874,7 @@ class OperationHandler(RequestHandler):
                     unit = 'M'
                 size = '%d%s' % (round(size), unit)
 
-            if fdisk.add('/dev/%s' % _u(devname), _u(size)):
+            if fdisk.add('/dev/%s' % devname, size):
                 self.write({'code': 0, 'msg': '在 %s 设备上创建分区成功！' % devname})
             else:
                 self.write({'code': -1, 'msg': '在 %s 设备上创建分区失败！' % devname})
@@ -884,10 +884,10 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': 'DEMO状态不允许删除分区！'})
                 return
 
-            if fdisk.delete('/dev/%s' % _u(devname)):
+            if fdisk.delete('/dev/%s' % devname):
                 # remove config from /etc/fstab
-                ServerSet.fstab(_u(devname), {
-                    'devname': _u(devname),
+                ServerSet.fstab(devname, {
+                    'devname': devname,
                     'mount': None,
                 })
                 self.write({'code': 0, 'msg': '分区 %s 删除成功！' % devname})
@@ -895,7 +895,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '分区 %s 删除失败！' % devname})
 
         elif action == 'scan':
-            if fdisk.scan('/dev/%s' % _u(devname)):
+            if fdisk.scan('/dev/%s' % devname):
                 self.write({'code': 0, 'msg': '扫描设备 %s 的分区成功！' % devname})
             else:
                 self.write({'code': -1, 'msg': '扫描设备 %s 的分区失败！' % devname})
@@ -910,7 +910,7 @@ class OperationHandler(RequestHandler):
         if not name: name = service
 
         autostart_str = {'on': '启用', 'off': '禁用'}
-        if Service.autostart_set(_u(service), autostart == 'on' and True or False):
+        if Service.autostart_set(service, autostart == 'on' and True or False):
             self.write({'code': 0, 'msg': '成功%s %s 自动启动！' % (autostart_str[autostart], name)})
         else:
             self.write({'code': -1, 'msg': '%s %s 自动启动失败！' % (autostart_str[autostart], name)})

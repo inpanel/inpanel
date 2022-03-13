@@ -119,8 +119,8 @@ var MainCtrl = [
         $scope.auto_refresh = false;
 
         $scope.load = function () {
-            $scope.checkUpVersion();
             $scope.loadInfo('**');
+            $scope.checkUpVersion();
         };
 
         $scope.checkUpVersion = function () {
@@ -304,10 +304,10 @@ var SettingCtrl = [
         $scope.password = '';
         $scope.passwordc = '';
 
-        $scope.checkUpVersion = function () {
+        $scope.load = function () {
             Request.get('/api/version', function (res) {
                 $scope.version = res.data;
-                $scope.checkNewVersion();
+                $scope.checkUpVersion();
             });
         }
 
@@ -386,7 +386,7 @@ var SettingCtrl = [
                 if (res.code == 0) $scope.loadAccessKey();
             });
         };
-        $scope.checkNewVersion = function () {
+        $scope.checkUpVersion = function () {
             $scope.upverMessage = '正在检测新版本...';
             Request.get('/api/setting/upver?force=1', function (data) {
                 if (data.code == -1) {

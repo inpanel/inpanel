@@ -30,7 +30,7 @@ version_info = {
 
 # 程序接口地址
 app_api = {
-    'latest': 'http://api.inpanel.org/?s=latest',
+    'latest': 'https://api.inpanel.org/?s=latest',
     'site_packages': 'http://api.inpanel.org/?s=site_packages',
     'download_package': 'http://api.inpanel.org/?s=site_packages&a=download'
 }

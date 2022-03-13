@@ -414,7 +414,7 @@ class ServerInfo(object):
         return {
             'dist': server_info['dist_name'],
             'kernel_name': server_info['kernel_name'],
-            'node': server_info['hostname'],
+            'hostname': server_info['hostname'],
             'kernel_release': server_info['kernel_release'],
             'kernel_version': server_info['kernel_version'],
             'machine': server_info['machine'],
