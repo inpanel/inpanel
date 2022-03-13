@@ -15,7 +15,7 @@
         </p>
     </div>
 
-    <div class="tabbable" ng-init="loadInfo('**')">
+    <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='server'"><a href="#server" ng-click="sec('server')" data-toggle="tab">状态概览</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='network'"><a href="#network" ng-click="sec('network')" data-toggle="tab">网络信息</a></li>

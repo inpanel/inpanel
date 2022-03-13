@@ -118,12 +118,18 @@ var MainCtrl = [
         $scope.hasNewver = false;
         $scope.auto_refresh = false;
 
+        $scope.load = function () {
+            $scope.checkUpVersion();
+            $scope.loadInfo('**');
+        };
+
         $scope.checkUpVersion = function () {
             Request.get('/api/version', function (res) {
                 $scope.version = res.data;
                 $scope.checkNewVersion();
             });
         }
+
         $scope.checkNewVersion = function () {
             Request.get('/api/setting/upver', function (data) {
                 if (data.code == -1) {
@@ -145,8 +151,8 @@ var MainCtrl = [
             $location.path('/setting');
             $scope.sec('upversion');
         }
+
         $scope.loadInfo = function (items) {
-            $scope.checkUpVersion();
             if (!items) items = '*';
             Request.get('/api/query/' + items, function (data) {
                 if ($scope.info == null) {
