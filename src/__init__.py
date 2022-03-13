@@ -23,8 +23,9 @@ releasetime = '2021-09-20 23:00:00 GMT+0800'
 version_info = {
     'name': app_name,
     'build': build,
-    'version': version,
-    'releasetime': releasetime
+    'changelog': 'https://inpanel.org/changelog.html',
+    'releasetime': releasetime,
+    'version': version
 }
 
 # 程序接口地址

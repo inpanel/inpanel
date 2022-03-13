@@ -33,7 +33,6 @@ def write_pid():
     pidfp.write(str(getpid()))
     pidfp.close()
 
-
 def main():
     # settings of tornado application
     settings = {
@@ -43,6 +42,7 @@ def main():
         # 'conf_path': join(root_path, 'data', 'config.ini'),
         'conf_path': config_path,
         'index_path': join(root_path, 'static', 'index.html'),
+        'template_path': join(root_path, 'templates'),
         'static_path': join(root_path, 'static'),
         'plugins_path': join(root_path, 'plugins'),
         'xsrf_cookies': True,
@@ -70,10 +70,11 @@ def main():
         (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)',
          web.StaticFileHandler, {'path': settings['static_path']}),
         (r'/api/plugins/(.*)', web.StaticFileHandler, {'path': settings['plugins_path']}),
-        (r'/($)', web.StaticFileHandler, {'path': settings['index_path']}),
         (r'/api/download/(.+)', web.FileDownloadHandler, {'path': '/'}),
         (r'/api/fileupload', web.FileUploadHandler),
         (r'/api/version', web.VersionHandler),
+        (r'/', web.IndexHandler),
+        (r'/($)', web.StaticFileHandler, {'path': settings['index_path']}),
         (r'/.*', web.ErrorHandler, {'status_code': 404})
     ]
 

@@ -105,37 +105,48 @@ var deepUpdate = function (orgObj, newObj) {
 };
 
 var MainCtrl = [
-    '$scope', '$routeParams', '$location', 'Module', 'Timeout', 'Request', 'version',
-    function ($scope, $routeParams, $location, Module, Timeout, Request, version) {
+    '$scope', '$routeParams', '$location', 'Module', 'Timeout', 'Request',
+    function ($scope, $routeParams, $location, Module, Timeout, Request) {
         var module = 'main';
         Module.init(module, '首页');
         Module.initSection('server');
-        $scope.version = version;
+        $scope.version = {};
         $scope.info = null;
         $scope.loaded = false;
 
         $scope.detectVer = true;
         $scope.hasNewver = false;
         $scope.auto_refresh = false;
-        Request.get('/api/setting/upver', function (data) {
-            if (data.code == -1) {
-                $scope.upverMessage = data.msg;
-            } else if (data.code == 0) {
-                var v = data.data;
-                if (parseFloat(v.version) > parseFloat(version.version) ||
-                    (parseFloat(v.version) == parseFloat(version.version) &&
-                        parseInt(v.build) > parseInt(version.build))) {
-                    $scope.detectVer = false;
-                    $scope.hasNewver = true;
+
+        $scope.checkUpVersion = function () {
+            Request.get('/api/version', function (res) {
+                $scope.version = res.data;
+                $scope.checkNewVersion();
+            });
+        }
+        $scope.checkNewVersion = function () {
+            Request.get('/api/setting/upver', function (data) {
+                if (data.code == -1) {
+                    $scope.upverMessage = data.msg;
+                } else if (data.code == 0) {
+                    var v = data.data;
+                    if (
+                        parseFloat(v.version) > parseFloat($scope.version.version) ||
+                        (parseFloat(v.version) == parseFloat($scope.version.version) && parseInt(v.build) > parseInt($scope.version.build))
+                    ) {
+                        $scope.detectVer = false;
+                        $scope.hasNewver = true;
+                    }
                 }
-            }
-        });
+            });
+        };
 
         $scope.checkUpdate = function () {
             $location.path('/setting');
             $scope.sec('upversion');
         }
         $scope.loadInfo = function (items) {
+            $scope.checkUpVersion();
             if (!items) items = '*';
             Request.get('/api/query/' + items, function (data) {
                 if ($scope.info == null) {
@@ -272,12 +283,12 @@ var LogCtrl = [
 ];
 
 var SettingCtrl = [
-    '$scope', '$routeParams', 'Module', 'Timeout', 'Message', 'Request', 'version',
-    function ($scope, $routeParams, Module, Timeout, Message, Request, version) {
+    '$scope', '$routeParams', 'Module', 'Timeout', 'Message', 'Request',
+    function ($scope, $routeParams, Module, Timeout, Message, Request) {
         var module = 'setting';
         Module.init(module, '系统设置');
         Module.initSection('authinfo');
-        $scope.version = version;
+        $scope.version = {};
         $scope.newVersion = '';
         $scope.newReleasetime = '';
         $scope.newBuild = '';
@@ -286,6 +297,13 @@ var SettingCtrl = [
         $scope.loaded = true;
         $scope.password = '';
         $scope.passwordc = '';
+
+        $scope.checkUpVersion = function () {
+            Request.get('/api/version', function (res) {
+                $scope.version = res.data;
+                $scope.checkNewVersion();
+            });
+        }
 
         $scope.loadAuthInfo = function () {
             Request.get('/api/setting/auth', function (res) {
@@ -362,15 +380,17 @@ var SettingCtrl = [
                 if (res.code == 0) $scope.loadAccessKey();
             });
         };
-        $scope.checkUpVersion = function () {
+        $scope.checkNewVersion = function () {
             $scope.upverMessage = '正在检测新版本...';
             Request.get('/api/setting/upver?force=1', function (data) {
                 if (data.code == -1) {
                     $scope.upverMessage = data.msg;
                 } else if (data.code == 0) {
                     var v = data.data;
-                    if (parseFloat(v.version.split('.').join('')) > parseFloat(version.version.split('.').join('')) ||
-                        (v.version == version.version && parseInt(v.build) > parseInt(version.build))) {
+                    if (
+                        parseFloat(v.version.split('.').join('')) > parseFloat($scope.version.version.split('.').join('')) ||
+                        (v.version == $scope.version.version && parseInt(v.build) > parseInt($scope.version.build))
+                    ) {
                         $scope.upverMessage = '<table class="table table-hover table-bordered">' +
                             '<thead><tr><th colspan="2">有可用的新版本</th></tr></thead>' +
                             '<tbody><tr><td style="width: 200px;">版本信息：</td><td>v' + v.version + ' b' + v.build + '</td></tr>' +
@@ -413,7 +433,6 @@ var SettingCtrl = [
                                         }, function (data, status) { // error occur because server is terminate
                                             if (status == 403 || status == 0) {
                                                 $scope.upverMessage = '升级成功！请刷新页面重新登录。';
-                                                $scope.forceUpdateStatic();
                                                 return false;
                                             }
                                             return true;
@@ -494,30 +513,6 @@ var SettingCtrl = [
             };
 
             $scope.accesskey = b64encode(randstring);
-        };
-
-        $scope.forceUpdateStatic = function () {
-            // 前端静态资源重新加载
-            $scope.version['version'] = $scope.newVersion;
-            $scope.version['build'] = $scope.newBuild;
-            $scope.version['releasetime'] = $scope.newReleasetime;
-            releasetime = $scope.newReleasetime;
-            _v = new Date($scope.newReleasetime.replace(/-/g, '/')).getTime() / 1000;
-            [
-                'core',
-                'services',
-                'controllers/controllers',
-                'controllers/service',
-                'controllers/file',
-                'controllers/site',
-                'controllers/database',
-                'controllers/ecs',
-                'controllers/utils',
-                'directives',
-                'filters'
-            ].forEach(function (item) {
-                $.getScript('/js/' + item + '.js');
-            });
         };
     }
 ];

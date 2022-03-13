@@ -138,13 +138,14 @@ class RequestHandler(tornado.web.RequestHandler):
             elif access_token != self.config.get('auth', 'accesskey'):
                 raise tornado.web.HTTPError(403, 'Access Token Error')
         else:
+            cur_authed = self.get_secure_cookie('authed', None, 30.0/1440)
+            if not cur_authed:
+                raise tornado.web.HTTPError(403, "Please Login First")
             # get the cookie within 30 mins
-            if self.get_secure_cookie('authed', None, 30.0/1440).decode('utf-8') == 'yes':
+            if cur_authed.decode('utf-8') == 'yes':
                 # regenerate the cookie timestamp per 5 mins
                 if self.get_secure_cookie('authed', None, 5.0/1440) == None:
                     self.set_secure_cookie('authed', 'yes', None)
-            else:
-                raise tornado.web.HTTPError(403, "Please Login First")
 
     def getlastactive(self):
         # get last active from cookie
@@ -167,6 +168,17 @@ class RequestHandler(tornado.web.RequestHandler):
         return self._xsrf_token
 
 
+class IndexHandler(tornado.web.RequestHandler):
+    def set_default_headers(self):
+        self.set_header('Server', app_name)
+
+    def get(self):
+        data = {
+            'htmlTitle': app_name,
+            'releasetime': version_info['releasetime']
+        }
+        self.render("index.html", **data)
+
 class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
         self.set_header('Server', app_name)
@@ -188,12 +200,23 @@ class RedirectHandler(tornado.web.RedirectHandler):
 
 
 class FileDownloadHandler(StaticFileHandler):
+
     def get(self, path):
         self.authed()
         self.set_header('Content-Type', 'application/octet-stream')
-        self.set_header('Content-disposition', 'attachment; filename=%s' % basename(path))
+        self.set_header('Content-Disposition', 'attachment; filename=%s' % basename(path))
         self.set_header('Content-Transfer-Encoding', 'binary')
-        StaticFileHandler.get(self, path)
+        print('FileDownloadHandler', self.root, path)
+        return StaticFileHandler.get(self, path)
+        # buf_size = 4096
+        # with open(joinpath(self.root, path), 'rb') as f:
+        #     while True:
+        #         data = f.read(buf_size)
+        #         if not data:
+        #             break
+        #         self.write(data)
+        # self.finish()
+
 
     def authed(self):
         # check for the access token
@@ -204,13 +227,14 @@ class FileDownloadHandler(StaticFileHandler):
                 # print('access_token matched')
                 # return
         else:
+            cur_authed = self.get_secure_cookie('authed', None, 30.0/1440)
+            if not cur_authed:
+                raise tornado.web.HTTPError(403, "Please login first")
             # get the cookie within 30 mins
-            if self.get_secure_cookie('authed', None, 30.0/1440).decode('utf-8') == 'yes':
+            if cur_authed.decode('utf-8') == 'yes':
                 # regenerate the cookie timestamp per 5 mins
                 if self.get_secure_cookie('authed', None, 5.0/1440) == None:
                     self.set_secure_cookie('authed', 'yes', None)
-            else:
-                raise tornado.web.HTTPError(403, "Please login first")
 
 
 class FileUploadHandler(RequestHandler):
@@ -236,7 +260,7 @@ class FileUploadHandler(RequestHandler):
 class VersionHandler(RequestHandler):
     def get(self):
         self.authed()
-        self.write(version_info)
+        self.write({'code': 0, 'msg': '', 'data': version_info})
 
 
 class XsrfHandler(RequestHandler):
@@ -1000,7 +1024,7 @@ class OperationHandler(RequestHandler):
             showhidden = self.get_argument('showhidden', 'off')
             remember = self.get_argument('remember', 'on')
             onlydir = self.get_argument('onlydir', 'off')
-            items = files.listdir(_u(path), showhidden=='on', onlydir=='on')
+            items = files.listdir(path, showhidden=='on', onlydir=='on')
             if items == False:
                 self.write({'code': -1, 'msg': '目录 %s 不存在！' % path})
             else:
@@ -1009,7 +1033,7 @@ class OperationHandler(RequestHandler):
 
         elif action == 'getitem':
             path = self.get_argument('path', '')
-            item = files.getitem(_u(path))
+            item = files.getitem(path)
             if item == False:
                 self.write({'code': -1, 'msg': '%s 不存在！' % path})
             else:
@@ -1018,16 +1042,17 @@ class OperationHandler(RequestHandler):
         elif action == 'fread':
             path = self.get_argument('path', '')
             remember = self.get_argument('remember', 'on')
-            size = files.fsize(_u(path))
+            size = files.fsize(path)
             if size == None:
                 self.write({'code': -1, 'msg': '文件 %s 不存在！' % path})
             elif size > 1024*1024: # support 1MB of file at max
                 self.write({'code': -1, 'msg': '读取 %s 失败！不允许在线编辑超过1MB的文件！' % path})
-            elif not files.istext(_u(path)):
+            elif not files.istext(path):
                 self.write({'code': -1, 'msg': '读取 %s 失败！无法识别文件类型！' % path})
             else:
                 if remember == 'on': self.config.set('file', 'lastfile', path)
                 with open(path) as f: content = f.read()
+                print('content', content)
                 charset, content = files.decode(content)
                 if not charset:
                     self.write({'code': -1, 'msg': '不可识别的文件编码！'})
@@ -1035,7 +1060,7 @@ class OperationHandler(RequestHandler):
                 data = {
                     'filename': basename(path),
                     'filepath': path,
-                    'mimetype': files.mimetype(_u(path)),
+                    'mimetype': files.mimetype(path),
                     'charset': charset,
                     'content': content,
                 }
@@ -4049,13 +4074,14 @@ class BackupHandler(RequestHandler):
             if access_token != self.config.get('auth', 'accesskey'):
                 raise tornado.web.HTTPError(403, 'Access Token Error')
         else:
+            cur_authed = self.get_secure_cookie('authed', None, 30.0/1440)
+            if not cur_authed:
+                raise tornado.web.HTTPError(403, "Please Login First")
             # check the cookie within 30 mins
-            if self.get_secure_cookie('authed', None, 30.0/1440).decode('utf-8') == 'yes':
+            if cur_authed.decode('utf-8') == 'yes':
                 # regenerate the cookie timestamp per 5 mins
                 if self.get_secure_cookie('authed', None, 5.0/1440) == None:
                     self.set_secure_cookie('authed', 'yes', None)
-            else:
-                raise tornado.web.HTTPError(403, "Please Login First")
 
 
 class RestoreHandler(RequestHandler):

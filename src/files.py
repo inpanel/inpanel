@@ -7,29 +7,25 @@
 #
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
-
 '''Module for file Management'''
 
 import re
 import shelve
+import stat
 from grp import getgrgid, getgrnam
 from mimetypes import guess_type
 from os import chmod as oschmod
 from os import chown as oschown
 from os import listdir as oslistdir
-from os import lstat as oslstat
-from os import mkdir, readlink
+from os import lstat, mkdir, readlink
 from os import rename as osrename
-from os import stat as osstat
 from os import symlink, walk
 from os.path import abspath, basename, dirname, exists, isdir, islink, join
 from pwd import getpwnam, getpwuid
-from stat import *
 from subprocess import PIPE, Popen
 from time import time
 from uuid import uuid4
 
-# import mimetypes
 
 from server import ServerInfo
 from utils import b2h, ftime
@@ -42,13 +38,13 @@ def listdir(path, showdotfiles=False, onlydir=None):
     if not exists(path) or not isdir(path):
         return False
     items = sorted(oslistdir(path))
-    if not showdotfiles:
-        items = [item for item in items if not item.startswith('.')]
+    # if not showdotfiles:
+    #     items = [item for item in items if not item.startswith('.')]
     for i, item in enumerate(items):
         items[i] = getitem(join(path, item))
     # let folders list before files
     rt = []
-    for i in xrange(len(items)-1, -1, -1):
+    for i in range(len(items) - 1, -1, -1):
         if items[i]['isdir'] or items[i]['islnk'] and not items[i]['link_broken'] and items[i]['link_isdir']:
             rt.insert(0, items.pop(i))
     # check if only list directories
@@ -71,34 +67,38 @@ def getitem(path):
         return False
     name = basename(path)
     basepath = dirname(path)
-    stat = oslstat(path)
-    mode = stat.st_mode
+    l_stat = lstat(path)
+    mode = l_stat.st_mode
     try:
-        uname = getpwuid(stat.st_uid).pw_name
+        uname = getpwuid(l_stat.st_uid).pw_name
     except:
         uname = ''
     try:
-        gname = getgrgid(stat.st_gid).gr_name
+        gname = getgrgid(l_stat.st_gid).gr_name
     except:
         gname = ''
     item = {
         'name': name,
-        'isdir': S_ISDIR(mode),
-        # 'ischr': S_ISCHR(mode),
-        # 'isblk': S_ISBLK(mode),
-        'isreg': S_ISREG(mode),
-        # 'isfifo': S_ISFIFO(mode),
-        'islnk': S_ISLNK(mode),
-        # 'issock': S_ISSOCK(mode),
-        'perms': oct(stat.st_mode & '0777'),
-        'uid': stat.st_uid,
-        'gid': stat.st_gid,
+        'isdir': stat.S_ISDIR(mode),
+        'ischr': stat.S_ISCHR(mode),
+        'isblk': stat.S_ISBLK(mode),
+        'isreg': stat.S_ISREG(mode),
+        'isfifo': stat.S_ISFIFO(mode),
+        'islnk': stat.S_ISLNK(mode),
+        'issock': stat.S_ISSOCK(mode),
+        'perms': oct(l_stat.st_mode)[-3:], # '0100777' 最后三位
+        'mode': mode,
+        'filemode': stat.filemode(mode),
+        'uid': l_stat.st_uid,
+        'gid': l_stat.st_gid,
         'uname': uname,
         'gname': gname,
-        'size': b2h(stat.st_size),
-        'atime': ftime(stat.st_atime),
-        'mtime': ftime(stat.st_mtime),
-        'ctime': ftime(stat.st_ctime),
+        'inode': l_stat.st_ino,
+        'dev': l_stat.st_dev,
+        'size': b2h(l_stat.st_size),
+        'atime': ftime(l_stat.st_atime),
+        'mtime': ftime(l_stat.st_mtime),
+        'ctime': ftime(l_stat.st_ctime),
     }
     if item['islnk']:
         linkfile = readlink(path)
@@ -106,9 +106,9 @@ def getitem(path):
         if not linkfile.startswith('/'):
             linkfile = abspath(join(basepath, linkfile))
         try:
-            stat = osstat(linkfile)
-            item['link_isdir'] = S_ISDIR(stat.st_mode)
-            item['link_isreg'] = S_ISREG(stat.st_mode)
+            md = stat(linkfile)['st_mode']
+            item['link_isdir'] = stat.S_ISDIR(md)
+            item['link_isreg'] = stat.S_ISREG(md)
             item['link_broken'] = False
         except:
             item['link_broken'] = True
@@ -151,9 +151,13 @@ def dadd(path, name):
 
 
 def istext(path):
-    if not exists('/usr/file') and not exists('/usr/bin/file'):
-        return True
-    return (re.search(r':(.* text|.* empty)', Popen(["file", '-L', path], stdout=PIPE).stdout.read()) is not None)
+    mime = guess_type(path)[0]
+    if mime is not None:
+        return mime.startswith('text/') or mime.endswith('/xml') or mime.endswith('json') or mime in ('application/javascript', 'application/vnd.apple.mpegurl')
+    # if not exists('/usr/file') and not exists('/usr/bin/file'):
+    #     return True
+    # return (re.search(r':(.* text|.* empty)', Popen(["file", '-L', path], stdout=PIPE).stdout.read()) is not None)
+    return False
 
 
 def mimetype(filepath):
@@ -175,14 +179,14 @@ def mimetype(filepath):
     # if mime == 'text/plain':
     tmime = guess_type(filepath)[0]
     if tmime:
-        mime = tmime
-    return mime
+        return tmime
+    # return mime
 
 
 def fsize(filepath):
     if not exists(filepath):
         return None
-    return oslstat(filepath).st_size
+    return lstat(filepath).st_size
 
 
 def fadd(path, name):
@@ -218,11 +222,14 @@ def fsave(path, content, bakup=True):
 def decode(content):
     """Detect charset of content and decode it.
     """
+    # print('decode-decode')
     for charset in charsets:
         try:
             content = content.decode(charset)
+            # print(charset)
             return (charset, content)
         except:
+            # print('error')
             pass
     return (None, content)
 
@@ -314,10 +321,10 @@ def tlist():
             }
             filepath = join(mount, '.deleted_files', uuid)
             if exists(filepath):
-                stat = osstat(filepath)
-                item['isdir'] = S_ISDIR(stat.st_mode)
-                item['isreg'] = S_ISREG(stat.st_mode)
-                item['islnk'] = S_ISLNK(stat.st_mode)
+                md = stat(filepath)['st_mode']
+                item['isdir'] = stat.S_ISDIR(md)
+                item['isreg'] = stat.S_ISREG(md)
+                item['islnk'] = stat.S_ISLNK(md)
             items.append(item)
         db.close()
     items.sort(lambda x, y: cmp(y['time'], x['time']))
@@ -363,8 +370,7 @@ def tdelete(mount, uuid):
     # the real file or directory should be deleted external
     # _inittrash()
     try:
-        db = shelve.open(join(
-            mount, '.deleted_files', '.fileinfo'), 'c')
+        db = shelve.open(join(mount, '.deleted_files', '.fileinfo'), 'c')
         del db[uuid]
         db.close()
         return True
@@ -421,22 +427,28 @@ def chmod(path, perms, recursively=False):
     return True
 
 
-
 if __name__ == '__main__':
-    print('* List directory of /root:')
-    for item in listdir('/root'):
-        print('  name: %s' % item['name'])
-        print('  isdir: %s' % str(item['isdir']))
-        print('  isreg: %s' % str(item['isreg']))
-        print('  islnk: %s' % str(item['islnk']))
-        print('  perms: %s' % str(item['perms']))
-        print('  uname: %s' % item['uname'])
-        print('  gname: %s' % item['gname'])
-        print('  size: %s' % item['size'])
-        print('  atime: %s' % item['atime'])
-        print('  mtime: %s' % item['mtime'])
-        print('  ctime: %s' % item['ctime'])
-        print('  istext: %s' % str(istext(join('/root', item['name']))))
-        print('  mimetype: %s' % mimetype(join('/root', item['name'])))
-        print
-    print
+    print('* List directory of /Users:')
+    path = '/Users'
+    items = listdir(path)
+    if items is not False:
+        for item in items:
+            print('  name: %s' % item['name'])
+            print('  isdir: %s' % str(item['isdir']))
+            # print('  isreg: %s' % str(item['isreg']))
+            # print('  islnk: %s' % str(item['islnk']))
+            # print('  perms: %s' % str(item['perms']))
+            # print('  uname: %s' % item['uname'])
+            # print('  gname: %s' % item['gname'])
+            # print('  size: %s' % item['size'])
+            # print('  atime: %s' % item['atime'])
+            # print('  mtime: %s' % item['mtime'])
+            # print('  ctime: %s' % item['ctime'])
+            f = join(path, item['name'])
+            # print(f)
+            # # if mime == 'text/plain':
+            # t = guess_type(f)[0]
+            # print(t)
+            # print(t.startswith('text'))
+            print('  istext: %s' % str(istext(f)))
+            # print('  mimetype: %s' % mimetype(f))
