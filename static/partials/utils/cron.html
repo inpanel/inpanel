@@ -47,7 +47,7 @@
                                 <th style="width: 50px;">小时</th>
                                 <th style="width: 50px;">天</th>
                                 <th style="width: 50px;">月份</th>
-                                <th style="width: 65px;">工作日</th>
+                                <th style="width: 65px;">星期</th>
                                 <th style="width: 65px;">用户</th>
                                 <th>命令</th>
                                 <th style="width: 100px;">操作</th>
@@ -102,7 +102,7 @@
                                 <th style="width: 50px;">小时</th>
                                 <th style="width: 50px;">天</th>
                                 <th style="width: 50px;">月份</th>
-                                <th style="width: 65px;">工作日</th>
+                                <th style="width: 65px;">星期</th>
                                 <th style="width: 65px;">用户</th>
                                 <th>命令</th>
                                 <th style="width: 100px;">操作</th>
@@ -329,7 +329,7 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="day">天</label>
+                                <label for="day">日</label>
                                 <input type="text" ng-model="cron_time.day" class="form-control" size="4" id="day" ng-change="input_single_option('day')" placeholder="天">
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
@@ -405,8 +405,8 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-                                <label for="weekday">工作日</label>
-                                <input type="text" ng-model="cron_time.weekday" class="form-control" size="4" id="weekday" ng-change="input_single_option('weekday')" placeholder="工作日">
+                                <label for="weekday">星期</label>
+                                <input type="text" ng-model="cron_time.weekday" class="form-control" size="4" id="weekday" ng-change="input_single_option('weekday')" placeholder="星期">
                             </div>
                             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
                                 <label for="weekday_options">快速选择</label>
@@ -417,7 +417,7 @@
                                     <option value="0,6">每个周末(6,0)</option>
                                     <option value="1,3,5">每星期一、星期三和星期五(1,3,5)</option>
                                     <option value="2,4">每星期二和星期四(2,4)</option>
-                                    <option value="--" disabled>--工作日--</option>
+                                    <option value="--" disabled>--星期--</option>
                                     <option value="0">星期日(0)</option>
                                     <option value="1">星期一(1)</option>
                                     <option value="2">星期二(2)</option>
