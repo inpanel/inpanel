@@ -1,4 +1,4 @@
-var releasetime = '2020-12-03 23:00:00 GMT+0800';
+var releasetime = '2022-01-14 00:57:00 GMT+0800';
 var _v = new Date(releasetime).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
 var inpanel = angular.module('inpanel', ['inpanel.services', 'inpanel.directives', 'inpanel.filters']);
@@ -108,7 +108,7 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
 }]);
 inpanel.value('version', {
     'version': '1.1.1',
-    'build': '25',
+    'build': '26',
     'releasetime': releasetime,
     'changelog': 'http://inpanel.org/changelog.html'
 });

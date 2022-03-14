@@ -5,7 +5,7 @@
 # chkconfig:   - 85 15
 # description: InPanel is a web-based linux VPS management tools
 # processname: inpanel
-# pidfile:     /var/run/inpanel.pid
+# pidfile:     /usr/local/var/run/inpanel.pid
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -16,8 +16,8 @@
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
-exec="/usr/local/inpanel/server.py"
-pidfile="/var/run/inpanel.pid"
+exec="/usr/local/inpanel/inpanel"
+pidfile="/usr/local/var/run/inpanel.pid"
 
 lockfile=/var/lock/subsys/inpanel
 
