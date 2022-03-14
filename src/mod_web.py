@@ -55,7 +55,7 @@ import user
 import utils
 import vsftpd
 import yum
-from __init__ import (app_api, app_name, dist_name, dist_versint, machine,
+from base import (app_api, app_name, dist_name, dist_versint, machine,
                       version_info)
 from configuration import configurations
 from lib import pyDes

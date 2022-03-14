@@ -18,7 +18,7 @@ from os.path import dirname, join,abspath
 
 from configuration import configurations
 from utils import is_valid_ip, randstr
-from __init__ import config_path
+from base import config_path
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

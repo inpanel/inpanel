@@ -12,7 +12,7 @@ from os.path import basename, exists, isfile, join, splitext
 from shutil import copy
 from subprocess import PIPE, Popen
 
-from web import RequestHandler
+from mod_web import RequestHandler
 
 from acme import ACME
 from files import listfile

@@ -8,14 +8,12 @@
 
 '''Module for Configurations Management.'''
 
-from os.path import exists
+from configparser import ConfigParser
+from os.path import exists, expanduser, isdir, dirname
+from os import makedirs
 
+from base import config_path
 from lib.filelock import FileLock
-
-try:
-    from ConfigParser import ConfigParser  # python 2.x
-except:
-    from configparser import ConfigParser
 
 
 def configurations(inifile=None, configs=None):
@@ -25,14 +23,14 @@ def configurations(inifile=None, configs=None):
             'ip': '*',
             'port': '8888',
             'forcehttps': 'off',  # force use https
-            'lastcheckupdate': 0,
+            'lastcheckupdate': '0',
             'updateinfo': '',
-            'sslkey': '/etc/inpanel/certificate/inpanel.key',
-            'sslcrt': '/etc/inpanel/certificate/inpanel.crt'
+            'sslkey': '/usr/local/etc/inpanel/certificate/inpanel.key',
+            'sslcrt': '/usr/local/etc/inpanel/certificate/inpanel.crt'
         },
         'auth': {
             'username': 'admin',
-            'password': '',  # empty password never validated
+            'password': 'a17351f4e092ba7d87a7a90c170a5cf6:1bdf574a782e8f006676ee1225743a6b',  # empty password never validated
             'passwordcheck': 'on',
             'accesskey': '',  # empty access key never validated
             'accesskeyenable': 'off',
@@ -40,11 +38,11 @@ def configurations(inifile=None, configs=None):
         'runtime': {
             'mode': '',  # format: demo | dev | prod
             'loginlock': 'off',
-            'loginfails': 0,
-            'loginlockexpire': 0,
+            'loginfails': '0',
+            'loginlockexpire': '0',
         },
         'file': {
-            'lastdir': '/root',
+            'lastdir': expanduser('~'), # user Home path
             'lastfile': '',
         },
         'time': {
@@ -58,12 +56,16 @@ def configurations(inifile=None, configs=None):
         }
     } if configs is None else configs
 
-    return Config('data/config.ini' if inifile is None else inifile, default_configs)
+    return Config(config_path if inifile is None else inifile, default_configs)
 
 class Config(object):
     def __init__(self, inifile=None, configs=None):
         if inifile is None:
             return None
+
+        if not isdir(dirname(inifile)):
+            makedirs(dirname(inifile))
+
         self.inifile = inifile
         self.cfg = ConfigParser()
 
@@ -80,7 +82,7 @@ class Config(object):
                     needupdate = True
                 for opt, val in secdata.items():
                     if not self.cfg.has_option(sec, opt):
-                        self.cfg.set(sec, opt, val)
+                        self.cfg.set(sec, opt, str(val))
                         needupdate = True
 
             # update ini file

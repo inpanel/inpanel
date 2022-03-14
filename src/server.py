@@ -20,8 +20,7 @@ import time
 from subprocess import PIPE, Popen
 from xml.dom.minidom import parseString
 
-from __init__ import (dist_name, dist_versint, hostname, kernel_name,
-                      server_info)
+from base import (dist_name, dist_versint, hostname, kernel_name, server_info)
 from utils import b2h
 
 

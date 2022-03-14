@@ -16,7 +16,9 @@ from os.path import basename, exists
 from shlex import split
 from subprocess import PIPE, Popen
 
-from __init__ import kernel_name
+from base import kernel_name
+
+
 class Service(object):
 
     '''supported service operate script'''

@@ -5,21 +5,14 @@
 #
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
-
 '''Module for process Management.'''
 
-from os import listdir
-from os.path import exists
-from platform import system
+from os import listdir, makedirs
+from os.path import dirname, exists, isdir
+from subprocess import getstatusoutput
 
-from web import RequestHandler
-
-try:
-    from commands import getstatusoutput
-except:
-    from subprocess import getstatusoutput
-
-os_type = system()
+from base import kernel_name
+from mod_web import RequestHandler
 
 
 class WebRequestProcess(RequestHandler):
@@ -31,68 +24,68 @@ class WebRequestProcess(RequestHandler):
             if res:
                 self.write({'code': 0, 'data': res})
             else:
-                self.write({'code': -1, 'msg': u'获取进程列表失败！'})
+                self.write({'code': -1, 'msg': '获取进程列表失败！'})
 
         if sec == 'info':
             res = get_info(pid)
             if res:
                 self.write({'code': 0, 'data': res})
             else:
-                self.write({'code': -1, 'msg': u'获取进程信息失败！'})
+                self.write({'code': -1, 'msg': '获取进程信息失败！'})
         if sec == 'status':
             res = get_status(pid)
             if res:
                 self.write({'code': 0, 'data': res})
             else:
-                self.write({'code': -1, 'msg': u'获取进程状态信息失败！'})
+                self.write({'code': -1, 'msg': '获取进程状态信息失败！'})
         if sec == 'file':
             res = get_file(pid)
             if res:
                 self.write({'code': 0, 'data': res})
             else:
-                self.write({'code': -1, 'msg': u'获取进程文件使用情况失败！'})
+                self.write({'code': -1, 'msg': '获取进程文件使用情况失败！'})
         if sec == 'io':
             res = get_io(pid)
             if res:
                 self.write({'code': 0, 'data': res})
             else:
-                self.write({'code': -1, 'msg': u'获取进程IO状态失败！'})
+                self.write({'code': -1, 'msg': '获取进程IO状态失败！'})
         if sec == 'memory':
             res = get_memory(pid)
             if res:
                 self.write({'code': 0, 'data': res})
             else:
-                self.write({'code': -1, 'msg': u'获取进程内存使用情况失败！'})
+                self.write({'code': -1, 'msg': '获取进程内存使用情况失败！'})
         if sec == 'network':
             res = get_network(pid)
             if res:
                 self.write({'code': 0, 'data': res})
             else:
-                self.write({'code': -1, 'msg': u'获取进程网络状态失败！'})
+                self.write({'code': -1, 'msg': '获取进程网络状态失败！'})
 
     def post(self, sec, pids):
         self.authed()
         if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': u'DEMO状态不允许操作进程！'})
+            self.write({'code': -1, 'msg': 'DEMO状态不允许操作进程！'})
             return
 
         if sec == 'kill':
             if kill_pids(pids):
-                self.write({'code': 0, 'msg': u'进程终止成功！'})
+                self.write({'code': 0, 'msg': '进程终止成功！'})
             else:
-                self.write({'code': -1, 'msg': u'进程终止失败！'})
+                self.write({'code': -1, 'msg': '进程终止失败！'})
 
 
 def get_list():
     '''get process list'''
     res = []
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         for pid in listdir('/proc'):
             if pid.isdigit():
                 res.append(get_base(pid))
-    elif os_type == 'Darwin':
+    elif kernel_name == 'Darwin':
         pass
-    elif os_type == 'Windows':
+    elif kernel_name == 'Windows':
         pass
     return res
 
@@ -102,7 +95,7 @@ def get_name(pid):
     if not pid:
         return None
     name = None
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/comm' % pid
         if exists(p):
             with open(p, 'r') as f:
@@ -114,9 +107,9 @@ def get_name(pid):
                 with open(p, 'r') as f:
                     line = f.readline()
                     name = line.split()[1]
-    elif os_type == 'Darwin':
+    elif kernel_name == 'Darwin':
         pass
-    elif os_type == 'Windows':
+    elif kernel_name == 'Windows':
         pass
     return name
 
@@ -139,8 +132,8 @@ def kill_pids(pids):
         return None
     if isinstance(pids, list):
         pids = ' '.join(pids)  # to string
-    if os_type in ('Linux', 'Darwin'):
-        cmd = u'/bin/kill -9 %s' % pids
+    if kernel_name in ('Linux', 'Darwin'):
+        cmd = '/bin/kill -9 %s' % pids
         status, result = getstatusoutput(cmd)
         return status == 0
     else:
@@ -152,8 +145,8 @@ def get_pids(name):
     if not name:
         return None
     res = []
-    if os_type in ('Linux', 'Darwin'):
-        cmd = u"/bin/ps auxww | grep %s | grep -v grep | awk '{print $2}'" % name
+    if kernel_name in ('Linux', 'Darwin'):
+        cmd = "/bin/ps auxww | grep %s | grep -v grep | awk '{print $2}'" % name
         status, result = getstatusoutput(cmd)
         if status == 0 and result:
             res = ' '.join(result.split()).split(' ')  # list
@@ -164,7 +157,7 @@ def get_cmdline(pid):
     '''parse cmdline'''
     if not pid:
         return None
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/cmdline' % pid
         if not exists(p):
             return None
@@ -188,7 +181,7 @@ def get_base(pid):
         'vmsize': '',
         'vmrss': ''
     }
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/status' % pid
         if not exists(p):
             return None
@@ -216,7 +209,7 @@ def get_base(pid):
                 elif out.startswith('VmRSS'):
                     res['vmrss'] = label[1]
                 elif out.startswith('Threads'):
-                    break # No need to read the following content
+                    break  # No need to read the following content
                 line = f.readline()
     return res
 
@@ -228,12 +221,20 @@ def get_file(pid):
     return {'name': 'test', 'pid': pid}
 
 
+def save_pidfile(pidfile, pid):
+    '''create/save pid file'''
+    if not isdir(dirname(pidfile)):
+        makedirs(dirname(pidfile))
+    with open(pidfile, 'w+') as f:
+        f.write(str(pid))
+
+
 def get_environ(pid):
     '''parse environ'''
     if not pid:
         return None
     res = ''
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/environ' % pid
         if not exists(p):
             return None
@@ -248,7 +249,7 @@ def get_status(pid):
     if not pid:
         return None
     res = {}
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/status' % pid
         if not exists(p):
             return None
@@ -257,12 +258,16 @@ def get_status(pid):
             while line:
                 out = line.strip()
                 tmp = out.split()
-                if out.startswith('Uid') or out.startswith('Gid') or out.startswith('Vm'):
+                if out.startswith('Uid') or out.startswith(
+                        'Gid') or out.startswith('Vm'):
                     res[tmp[0].split(':')[0].lower()] = tmp[1:]
                 elif out.startswith('State'):
-                    res[tmp[0].split(':')[0].lower()] = [tmp[1], tmp[2][1:-1].lower()]
+                    res[tmp[0].split(':')[0].lower()] = [
+                        tmp[1], tmp[2][1:-1].lower()
+                    ]
                 else:
-                    res[tmp[0].split(':')[0].lower()] = tmp[1] if len(tmp) > 1 else ''
+                    res[tmp[0].split(':')
+                        [0].lower()] = tmp[1] if len(tmp) > 1 else ''
                 line = f.readline()
     return res
 
@@ -272,7 +277,7 @@ def get_io(pid):
     if not pid:
         return None
     res = {}
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/io' % pid
         if not exists(p):
             return None
@@ -290,7 +295,7 @@ def get_memory(pid):
     if not pid:
         return None
     res = ''
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/statm' % pid
         if not exists(p):
             return None
@@ -306,7 +311,7 @@ def get_info(pid):
     if not pid:
         return None
     res = {}
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/stat' % pid
         if not exists(p):
             return None
@@ -324,7 +329,7 @@ def get_network(pid):
     if not pid:
         return None
     res = {}
-    if os_type == 'Linux':
+    if kernel_name == 'Linux':
         p = '/proc/%s/stat' % pid
         if not exists(p):
             return None

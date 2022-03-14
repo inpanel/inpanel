@@ -21,9 +21,9 @@
 
 NAME="inpanel"
 DESC="InPanel Daemon"
-PIDFILE="/var/run/inpanel.pid"
+PIDFILE="/usr/local/var/run/inpanel.pid"
 LOCKFILE="/var/lock/subsys/$NAME"
-DAEMON="/usr/bin/python2 /usr/local/inpanel/server.py"
+DAEMON="/usr/local/inpanel/inpanel"
 RUNAS="root"
 STARTTIME=1
 DIETIME=10 # Time to wait for the server to die, in seconds
