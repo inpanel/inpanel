@@ -33,6 +33,7 @@ app_api = {
 
 # 配置文件
 config_path = '/usr/local/etc/inpanel/config.ini'
+# logfile = '/usr/local/var/log/inpanel/main.log'
 execfile = '/usr/local/inpanel/inpanel'
 pidfile = '/usr/local/var/run/inpanel.pid'
 

@@ -25,33 +25,32 @@
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='list'" id="list">
                 <div ng-show="init_process"><div waiting></div></div>
                 <div ng-show="!init_process">
-                    <table class="table table-hover table-bordered table-condensed">
+                    <table class="table table-bordered table-condensed table-responsive table-wrap">
                         <thead>
                             <tr>
                                 <th style="width:50px;">#</th>
-                                <th style="width:50px;">状态</th>
-                                <th style="width:50px;">PID</th>
+                                <th style="width:80px;">状态</th>
+                                <th style="width:50px;">进程ID</th>
+                                <th class="hidden-xs" style="width:50px;">父进程</th>
                                 <th>名称</th>
-                                <th>父进程</th>
-                                <th>文件句柄</th>
-                                <th>物理内存</th>
-                                <th>虚拟内存</th>
-                                <th style="width:130px">操作</th>
+                                <th class="hidden-xs">内存</th>
+                                <th class="hidden-xs">虚拟内存</th>
+                                <th style="width:90px;">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="info in process.process">
                                 <td>{{$index+1}}</td>
-                                <td ng-bind-html-unsafe="info.state | process.status"></td>
+                                <!-- <td ng-bind-html-unsafe="info.status | process.status"></td> -->
+                                <td>{{info.status}}</td>
                                 <td>{{info.pid}}</td>
+                                <td class="hidden-xs">{{info.ppid}}</td>
                                 <td>{{info.name}}</td>
-                                <td>{{info.ppid}}</td>
-                                <td>{{info.fdsize}}</td>
-                                <td>{{info.vmrss * 1024 | bytes2human}}</td>
-                                <td>{{info.vmsize * 1024 | bytes2human}}</td>
+                                <td class="hidden-xs">{{info.rss | bytes2human}}</td>
+                                <td class="hidden-xs">{{info.vms | bytes2human}}</td>
                                 <td>
-                                    <button class="btn btn-default btn-xs" ng-click="process_detail(info)">查看</button>
-                                    <button class="btn btn-default btn-xs" ng-click="processkillconfirm(info)">终止</button>
+                                    <button class="btn btn-default btn-xs" ng-show="info.pid > 0" ng-click="process_detail(info)">查看</button>
+                                    <button class="btn btn-default btn-xs" ng-show="info.pid > 0" ng-click="processkillconfirm(info)">终止</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -63,12 +62,11 @@
             </div>
         </div>
     </div>
-
 </div>
 
 
 <div id="processkillconfirm" class="modal fade">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -95,11 +93,8 @@
             <div class="modal-body">
                 <div class="tabbable">
                     <ul class="nav nav-tabs" role="tablist">
-                        <li role="presentation" class="active"><a href="#info" aria-controls="info" role="tab" data-toggle="tab">信息</a></li>
-                        <li role="presentation"><a href="#status" aria-controls="status" role="tab" data-toggle="tab">状态</a></li>
-                        <li role="presentation"><a href="#file" aria-controls="file" role="tab" data-toggle="tab">文件</a></li>
-                        <li role="presentation"><a href="#io" aria-controls="io" role="tab" data-toggle="tab">IO</a></li>
-                        <li role="presentation"><a href="#memory" aria-controls="memory" role="tab" data-toggle="tab">内存</a></li>
+                        <li role="presentation" class="active"><a href="#info" aria-controls="info" role="tab" data-toggle="tab">进程详情</a></li>
+                        <li role="presentation"><a href="#file" aria-controls="file" role="tab" data-toggle="tab">打开的文件</a></li>
                         <li role="presentation"><a href="#network" aria-controls="network" role="tab" data-toggle="tab">网络</a></li>
                         <button class="btn btn-default pull-right" title="刷新" ng-click="load_detial(current_process.pid)"><i class="glyphicon glyphicon-refresh"></i></button>
                     </ul>
@@ -108,34 +103,53 @@
                             <div ng-show="!current_process_loaded.info">
                                 <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
-                            <div ng-show="current_process_loaded.info && current_process.info">
-                                {{current_process.info}}
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="status" role="tabpanel">
-                            <div ng-show="!current_process_loaded.status">
-                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
-                            </div>
-                            <table class="table table-bordered table-condensed" ng-show="current_process_loaded.status && current_process.status">
+                            <table class="table table-bordered table-condensed table-responsive table-wrap" ng-show="current_process_loaded.info && current_process.info">
                                 <tbody>
-                                    <tr><td>Name</td><td>{{current_process.status.name}}</td></tr>
-                                    <tr><td>Tgid</td><td>{{current_process.status.tgid}}</td></tr>
-                                    <tr><td>Pid</td><td>{{current_process.status.pid}}</td></tr>
-                                    <tr><td>状态</td><td ng-bind-html-unsafe="current_process.status.state | process.status"></td></tr>
-                                    <tr><td>PPid</td><td>{{current_process.status.ppid}}</td></tr>
-                                    <tr><td>FDSize</td><td>{{current_process.status.fdsize}}</td></tr>
-                                    <tr><td>Groups</td><td>{{current_process.status.groups}}</td></tr>
-                                    <tr><td>VmPeak</td><td>{{current_process.status.vmpeak[0]}} {{current_process.status.vmpeak[1]}}</td></tr>
-                                    <tr><td>VmSize</td><td>{{current_process.status.vmsize[0]}} {{current_process.status.vmsize[1]}}</td></tr>
-                                    <tr><td>VmLck</td><td>{{current_process.status.vmlock[0]}} {{current_process.status.vmlock[1]}}</td></tr>
-                                    <tr><td>VmHWM</td><td>{{current_process.status.vmhwm[0]}} {{current_process.status.vmhwm[1]}}</td></tr>
-                                    <tr><td>VmRSS</td><td>{{current_process.status.vmrss[0]}} {{current_process.status.vmrss[1]}}</td></tr>
-                                    <tr><td>VmData</td><td>{{current_process.status.vmdata[0]}} {{current_process.status.vmdata[1]}}</td></tr>
-                                    <tr><td>VmStk</td><td>{{current_process.status.vmstk[0]}} {{current_process.status.vmstk[1]}}</td></tr>
-                                    <tr><td>VmExe</td><td>{{current_process.status.vmexe[0]}} {{current_process.status.vmexe[1]}}</td></tr>
-                                    <tr><td>VmLib</td><td>{{current_process.status.vmlib[0]}} {{current_process.status.vmlib[1]}}</td></tr>
-                                    <tr><td>VmPTE</td><td>{{current_process.status.vmpte[0]}} {{current_process.status.vmpte[1]}}</td></tr>
-                                    <tr><td>VmSwap</td><td>{{current_process.status.vmswap[0]}} {{current_process.status.vmswap[1]}}</td></tr>
+                                    <tr><td style="width: 80px;">进程名</td><td>{{current_process.info.name}}</td></tr>
+                                    <tr><td>进程ID</td><td>{{current_process.info.pid}}</td></tr>
+                                    <tr><td>创建时间</td><td>{{current_process.info.create_time | datetime}}</td></tr>
+                                    <tr><td>用户</td><td>{{current_process.info.username}}（ID：{{current_process.info.uids[0]}}）</td></tr>
+                                    <tr><td>gid</td><td>{{current_process.info.gids[0]}}</td></tr>
+                                    <tr><td>状态</td><td>{{current_process.info.status}}</td></tr>
+                                    <tr><td>父进程ID</td><td>{{current_process.info.ppid}}</td></tr>
+                                    <tr><td>工作目录</td><td><div>{{current_process.info.cwd}}</div></td></tr>
+                                    <tr>
+                                        <td>进程路径</td>
+                                        <td><div>{{current_process.info.exe}}</div></td>
+                                    </tr>
+                                    <tr>
+                                        <td>CPU时间</td>
+                                        <td>系统：{{current_process.info.cpu_times[0]}}，用户：{{current_process.info.cpu_times[0]}}</td>
+                                    </tr>
+                                    <tr><td>CPU利用率</td><td>{{current_process.info.cpu_percent}}</td></tr>
+                                    <tr>
+                                        <td>内存利用率</td>
+                                        <td>{{current_process.info.memory_percent}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>实际内存</td>
+                                        <td>{{current_process.info.memory_info[0] | bytes2human}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>虚拟内存</td>
+                                        <td>{{current_process.info.memory_info[1] | bytes2human}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>共享内存</td>
+                                        <td>{{current_process.info.memory_info[2] | bytes2human}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>专用内存</td>
+                                        <td>{{current_process.info.memory_info[3] | bytes2human}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>启动命令</td>
+                                        <td><div>{{current_process.info.cmdline[0]}}</div></td>
+                                    </tr>
+                                    <tr>
+                                        <td>终端</td>
+                                        <td>{{current_process.info.terminal || '无'}}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -143,77 +157,17 @@
                             <div ng-show="!current_process_loaded.file">
                                 <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
-                            <div ng-show="current_process_loaded.file && current_process.file">
-                                {{current_process.file}}
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="io" role="tabpanel">
-                            <div ng-show="!current_process_loaded.io">
-                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
-                            </div>
-                            <table class="table table-bordered table-condensed" ng-show="current_process_loaded.io && current_process.io">
-                                <thead>
-                                    <tr>
-                                        <th class="text-center">已读取</th>
-                                        <th class="text-center">已写入</th>
-                                        <th class="text-center">总读取</th>
-                                        <th class="text-center">总写入</th>
-                                        <th class="text-center">取消写入</th>
-                                        <th class="text-center">读取次数</th>
-                                        <th class="text-center">写入次数</th>
-                                    </tr>
-                                </thead>
+                            <table class="table table-bordered table-condensed table-responsive table-wrap" ng-show="current_process_loaded.file && current_process.file">
                                 <tbody>
                                     <tr>
-                                        <td class="text-center" title="实际从磁盘中读取的字节总数">{{current_process.io.read_bytes | bytes2human}}</td>
-                                        <td class="text-center" title="实际写入到磁盘中的字节总数">{{current_process.io.write_bytes | bytes2human}}</td>
-                                        <td class="text-center" title="读出的总字节数">{{current_process.io.rchar | bytes2human}}</td>
-                                        <td class="text-center" title="写入的总字节数">{{current_process.io.wchar | bytes2human}}</td>
-                                        <td class="text-center" title="取消写入的总字节数">{{current_process.io.cancelled_write_bytes | bytes2human}}</td>
-                                        <td class="text-center" title="读取磁盘的调用次数">{{current_process.io.syscr}}</td>
-                                        <td class="text-center" title="写入磁盘的调用次数">{{current_process.io.syscw}}</td>
+                                        <th style="width:30px;">#</th>
+                                        <th>路径</th>
+                                        <th style="width:80px;">描述符编号</th>
                                     </tr>
-                                </tbody>
-                            </table>
-                            <div class="alert alert-info">
-                                <p>说明：</p>
-                                <ul>
-                                    <li>已读取：实际从磁盘中读取的字节总数</li>
-                                    <li>已写入：实际写入到磁盘中的字节总数</li>
-                                    <li>总读取：读出的总字节数，read()或者pread()中的长度参数总和(pagecache中统计而来，不代表实际磁盘的读入)</li>
-                                    <li>总写入：写入的总字节数，write()或者pwrite()中的长度参数总和</li>
-                                    <li>取消写入：取消写入的总字节数，由于截断pagecache导致应该发生而没有发生的写入字节数</li>
-                                    <li>读取次数：读取磁盘的调用次数，read()或者pread()总的调用次数</li>
-                                    <li>写入次数：写入磁盘的调用次数，write()或者pwrite()总的调用次数</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="memory" role="tabpanel">
-                            <div ng-show="!current_process_loaded.memory">
-                                <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
-                            </div>
-                            <div>正在调试</div>
-                            <table class="table table-bordered table-condensed" ng-show="current_process_loaded.memory && current_process.memory">
-                                <thead>
-                                    <tr>
-                                        <th class="text-center">虚拟空间</th>
-                                        <th class="text-center">物理内存</th>
-                                        <th class="text-center">共享</th>
-                                        <th class="text-center">可执行内存</th>
-                                        <th class="text-center">虚拟库</th>
-                                        <th class="text-center">数据栈</th>
-                                        <th class="text-center">脏页数量</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="text-center" title="任务虚拟地址空间大小">{{(current_process.memory[0] * 4096) | bytes2human}}</td>
-                                        <td class="text-center" title="正在使用的物理内存大小">{{(current_process.memory[1] * 4096) | bytes2human}}</td>
-                                        <td class="text-center" title="共享页数">{{(current_process.memory[2]*4096) | bytes2human}}</td>
-                                        <td class="text-center" title="程序所拥有的可执行虚拟内存大小">{{(current_process.memory[3]*4096) | bytes2human}}</td>
-                                        <td class="text-center" title="被映像倒任务的虚拟内存空间的库的大小">{{(current_process.memory[4]*4096) | bytes2human}}</td>
-                                        <td class="text-center" title="程序数据段和用户态的栈的大小">{{(current_process.memory[5]*4096) | bytes2human}}</td>
-                                        <td class="text-center" title="脏页数量">{{current_process.memory[6]}}</td>
+                                    <tr ng-repeat="info in current_process.file">
+                                        <td>{{$index+1}}</td>
+                                        <td><div>{{info[0]}}</div></td>
+                                        <td>{{info[1]}}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -222,13 +176,28 @@
                             <div ng-show="!current_process_loaded.network">
                                 <div waiting ng-init="waitingText='正在加载中，请稍候...'"></div>
                             </div>
-                            <div ng-show="current_process_loaded.network && current_process.network">
-                                {{current_process.network}}
-                            </div>
+                            <table class="table table-bordered table-condensed table-responsive table-wrap" ng-show="current_process_loaded.network && current_process.network">
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px;">#</th>
+                                        <th>本地IP</th>
+                                        <th>远程IP</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="info in current_process.network">
+                                        <td>{{$index+1}}</td>
+                                        <td>[{{info.local.ip}}]:{{info.local.port}}</td>
+                                        <td ng-show="info.remote">[{{info.remote.ip}}]:{{info.remote.port}}</td>
+                                        <td ng-show="!info.remote">无</td>
+                                        <td>{{info.status}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="modal-footer">
                 <!-- <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button> -->

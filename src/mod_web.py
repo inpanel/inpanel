@@ -174,7 +174,7 @@ class IndexHandler(tornado.web.RequestHandler):
 
     def get(self):
         data = {
-            'htmlTitle': app_name,
+            'htmlTitle': '{{ htmlTitle }}', # js template code
             'releasetime': version_info['releasetime']
         }
         self.render("index.html", **data)

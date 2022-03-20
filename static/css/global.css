@@ -75,6 +75,11 @@ body {
     border: 0;
 }
 
+.table-wrap {
+    word-break: break-all;
+    word-wrap: break-all;
+}
+
 .form-horizontal-small .control-label {
     width: 116px;
 }

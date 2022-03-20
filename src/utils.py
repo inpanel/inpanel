@@ -27,7 +27,7 @@ def randstr(length=32):
 
 
 def make_cookie_secret():
-    return base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+    return base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes).decode('utf-8')
 
 
 def is_valid_ip(ip):

@@ -30,7 +30,7 @@ def configurations(inifile=None, configs=None):
         },
         'auth': {
             'username': 'admin',
-            'password': 'a17351f4e092ba7d87a7a90c170a5cf6:1bdf574a782e8f006676ee1225743a6b',  # empty password never validated
+            'password': 'a17351f4e092ba7d87a7a90c170a5cf6:1bdf574a782e8f006676ee1225743a6b',  # admin
             'passwordcheck': 'on',
             'accesskey': '',  # empty access key never validated
             'accesskeyenable': 'off',

@@ -19,25 +19,25 @@ from base import config_path, pidfile
 # from repo_yum import WebRequestRepoYUM
 from certificate import WebRequestSSLTLS
 from configuration import configurations
-from process import WebRequestProcess, save_pidfile
+from mod_process import WebRequestProcess, save_pidfile
 from utils import make_cookie_secret
 
 print('InPanel: starting')
-print('InPanel: config file is %s' % config_path)
+print('InPanel: config file: %s' % config_path)
 
 root_path = dirname(__file__)
 root_path = abspath(dirname(dirname(__file__)))
-print('root_path2', root_path)
 
 if hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
     # runtime_tmpdir
     root_path = sys._MEIPASS
 
-print('InPanel: runtime root path is %s' % root_path)
+print('InPanel: runtime path: %s' % root_path)
 
 # settings of tornado application
 settings = {
-    'debug': False,
+    'debug': True,
+    'autoreload': True,
     'root_path': root_path,
     'data_path': join(root_path, 'data'),
     # 'conf_path': join(root_path, 'data', 'config.ini'),
@@ -48,7 +48,7 @@ settings = {
     'plugins_path': join(root_path, 'plugins'),
     'xsrf_cookies': True,
     'cookie_secret': make_cookie_secret(),
-    'gzip': True
+    'gzip': True # or use 'compress_response': True
 }
 
 router = [
@@ -91,15 +91,17 @@ sslcrt = cfg.get('server', 'sslcrt')
 ssl = {'certfile': sslcrt, 'keyfile': sslkey} if force_https else None
 
 def main():
+    # from tornado import options
+    # options.parse_command_line()
+    # options.logging = None
 
     server = httpserver.HTTPServer(application, ssl_options=ssl)
     server.listen(port=server_port, address=server_ip)
 
     save_pidfile(pidfile, getpid())
-    print('InPanel: service running on http%s://%s:%s' % ('s' if force_https else '', server_ip, server_port))
+    print('InPanel: running on http%s://%s:%s' % ('s' if force_https else '', server_ip, server_port))
     ioloop.IOLoop.current().start()
 
 
 if __name__ == '__main__':
     main()
-    # server.stop()

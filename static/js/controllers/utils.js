@@ -289,30 +289,30 @@ var UtilsProcessCtrl = [
                         $scope.current_process.info = res.data;
                     }
                 });
-                Request.get('/api/utils/process/status/' + pid, function (res) {
-                    $scope.current_process_loaded.status = true;
-                    if (res && res.code == 0) {
-                        $scope.current_process.status = res.data;
-                    }
-                });
+                // Request.get('/api/utils/process/status/' + pid, function (res) {
+                //     $scope.current_process_loaded.status = true;
+                //     if (res && res.code == 0) {
+                //         $scope.current_process.status = res.data;
+                //     }
+                // });
                 Request.get('/api/utils/process/file/' + pid, function (res) {
                     $scope.current_process_loaded.file = true;
                     if (res && res.code == 0) {
                         $scope.current_process.file = res.data;
                     }
                 });
-                Request.get('/api/utils/process/io/' + pid, function (res) {
-                    $scope.current_process_loaded.io = true;
-                    if (res && res.code == 0) {
-                        $scope.current_process.io = res.data;
-                    }
-                });
-                Request.get('/api/utils/process/memory/' + pid, function (res) {
-                    $scope.current_process_loaded.memory = true;
-                    if (res && res.code == 0) {
-                        $scope.current_process.memory = res.data;
-                    }
-                });
+                // Request.get('/api/utils/process/io/' + pid, function (res) {
+                //     $scope.current_process_loaded.io = true;
+                //     if (res && res.code == 0) {
+                //         $scope.current_process.io = res.data;
+                //     }
+                // });
+                // Request.get('/api/utils/process/memory/' + pid, function (res) {
+                //     $scope.current_process_loaded.memory = true;
+                //     if (res && res.code == 0) {
+                //         $scope.current_process.memory = res.data;
+                //     }
+                // });
                 Request.get('/api/utils/process/network/' + pid, function (res) {
                     $scope.current_process_loaded.network = true;
                     if (res && res.code == 0) {
