@@ -39,7 +39,7 @@ pidfile = '/usr/local/var/run/inpanel.pid'
 
 kernel_name, hostname, kernel_release, kernel_version, machine, processor = uname()
 
-# 发行名称，如：MacOS
+# 发行名称，如：macOS
 dist_name = 'Unknown'
 
 # 发行版本号，如：11.5.2
@@ -52,7 +52,7 @@ dist_platform = platform()
 
 # 根据内核名称判断
 if kernel_name == 'Darwin':
-    dist_name = 'MacOS'
+    dist_name = 'macOS'
     dist_version, _, _ = mac_ver()
     dist_versint = dist_version.split('.')[0]
 elif kernel_name == 'Windows':

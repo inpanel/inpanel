@@ -1,6 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-# from src import build, version
+# from internal import build, version
 import os.path
 
 block_cipher = None
@@ -10,12 +10,12 @@ block_cipher = None
 
 datas=[
     (os.path.join('.', 'data'), 'data'),
-    (os.path.join('.', 'static'), 'static'),
+    (os.path.join('.', 'public'), 'public'),
     (os.path.join('.', 'templates'), 'templates')
 ]
 
-a = Analysis(['src/app.py'],
-             pathex=['src'],
+a = Analysis(['internal/app.py'],
+             pathex=['internal'],
              binaries=[],
              datas=datas,
              hiddenimports=['tornado', 'libmagic', 'pexpect', 'psutil'],

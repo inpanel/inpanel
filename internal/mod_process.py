@@ -10,9 +10,13 @@
 from os import makedirs
 from os.path import dirname, exists, isdir
 from subprocess import getstatusoutput
+
 import psutil
+
 from base import kernel_name
 from mod_web import RequestHandler
+
+# from utils import b2h
 
 
 class WebRequestProcess(RequestHandler):
@@ -136,8 +140,8 @@ def get_base(pid=None):
         'status': p.status(),  # 进程状态
         'pid': pid,
         'ppid': p.ppid(),
-        'rss': memory[0],  # rss 是常驻集大小，它是进程使用的实际物理内存
-        'vms': memory[1]  # vms 是虚拟内存大小，它是进程正在使用的虚拟内存
+        'rss': str(memory[0]),  # rss 是常驻集大小，它是进程使用的实际物理内存
+        'vms': str(memory[1])  # vms 是虚拟内存大小，它是进程正在使用的虚拟内存
     }
 
 
@@ -196,6 +200,7 @@ def get_info(pid=None):
     if pid is None:
         return {}
     p = psutil.Process(int(pid))
+
     return {
         'pid': pid,
         'name': p.name(),  # 进程名
@@ -204,13 +209,13 @@ def get_info(pid=None):
         'exe': p.exe(),  # 进程exe路径
         'cwd': p.cwd(),  # 进程的工作目录绝对路径
         'status': p.status(),  # 进程状态
-        'create_time': int(p.create_time() * 1000),  # 进程创建时间
+        'create_time': p.create_time(),  # 进程创建时间秒
         'uids': p.uids(),  # 进程uid信息
         'gids': p.gids(),  # 进程gids信息
         'username': p.username(),  # 进程用户名
         'cpu_percent': p.cpu_percent(),  # CPU利用率
         'cpu_times': p.cpu_times(),  # 进程的cpu时间信息,包括user,system两个cpu信息
-        'memory_info': p.memory_info(),  # 进程内存rss,vms信息
+        'memory_info': p.memory_info(),  # 进程内存rss,vms信息 [utils.b2h(i) for i in p.memory_info()]
         'memory_percent': p.memory_percent(),
         'terminal': p.terminal(),  # 进程终端
         'num_threads': p.num_threads(),  # 进程开启的线程数

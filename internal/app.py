@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017, Jackson Dou
-# Copyright (c) 2012, VPSMate development team
 # All rights reserved.
 #
 # InPanel is distributed under the terms of The New BSD License.
@@ -42,9 +41,9 @@ settings = {
     'data_path': join(root_path, 'data'),
     # 'conf_path': join(root_path, 'data', 'config.ini'),
     'conf_path': config_path,
-    'index_path': join(root_path, 'static', 'index.html'),
+    'index_path': join(root_path, 'public', 'index.html'),
     'template_path': join(root_path, 'templates'),
-    'static_path': join(root_path, 'static'),
+    'static_path': join(root_path, 'public'),
     'plugins_path': join(root_path, 'plugins'),
     'xsrf_cookies': True,
     'cookie_secret': make_cookie_secret(),

@@ -34,7 +34,7 @@
                                 <th class="hidden-xs" style="width:50px;">父进程</th>
                                 <th>名称</th>
                                 <th class="hidden-xs">内存</th>
-                                <th class="hidden-xs">虚拟内存</th>
+                                <th class="hidden-xs" style="width:65px;">虚拟内存</th>
                                 <th style="width:90px;">操作</th>
                             </tr>
                         </thead>
@@ -107,10 +107,13 @@
                                 <tbody>
                                     <tr><td style="width: 80px;">进程名</td><td>{{current_process.info.name}}</td></tr>
                                     <tr><td>进程ID</td><td>{{current_process.info.pid}}</td></tr>
-                                    <tr><td>创建时间</td><td>{{current_process.info.create_time | datetime}}</td></tr>
+                                    <tr><td>状态</td><td>{{current_process.info.status}}</td></tr>
+                                    <tr>
+                                        <td>创建时间</td>
+                                        <td>{{current_process.info.create_time * 1000 | datetime}}</td>
+                                    </tr>
                                     <tr><td>用户</td><td>{{current_process.info.username}}（ID：{{current_process.info.uids[0]}}）</td></tr>
                                     <tr><td>gid</td><td>{{current_process.info.gids[0]}}</td></tr>
-                                    <tr><td>状态</td><td>{{current_process.info.status}}</td></tr>
                                     <tr><td>父进程ID</td><td>{{current_process.info.ppid}}</td></tr>
                                     <tr><td>工作目录</td><td><div>{{current_process.info.cwd}}</div></td></tr>
                                     <tr>
@@ -144,7 +147,7 @@
                                     </tr>
                                     <tr>
                                         <td>启动命令</td>
-                                        <td><div>{{current_process.info.cmdline[0]}}</div></td>
+                                        <td><div>{{current_process.info.cmdline.join(' ')}}</div></td>
                                     </tr>
                                     <tr>
                                         <td>终端</td>

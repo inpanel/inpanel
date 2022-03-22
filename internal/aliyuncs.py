@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017, Jackson Dou
-# Copyright (c) 2012, ECSMate development team
 # All rights reserved.
 #
 # ECSMate is distributed under the terms of the (new) BSD License.
