@@ -1,6 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-# from internal import build, version
+# from core import build, version
 import os.path
 
 block_cipher = None
@@ -14,8 +14,8 @@ datas=[
     (os.path.join('.', 'templates'), 'templates')
 ]
 
-a = Analysis(['internal/app.py'],
-             pathex=['internal'],
+a = Analysis(['core/app.py'],
+             pathex=['core'],
              binaries=[],
              datas=datas,
              hiddenimports=['tornado', 'libmagic', 'pexpect', 'psutil'],
@@ -33,7 +33,7 @@ exe = EXE(pyz,
              a.scripts,
              a.binaries,
              a.zipfiles,
-             a.datas,  
+             a.datas,
              [],
              name='inpanel',
              debug=False,
