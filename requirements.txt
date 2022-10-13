@@ -1,0 +1,6 @@
+# pip install -r requirements.txt
+libmagic==1.0
+pexpect==4.8.0
+pyinstaller==4.10
+tornado==6.1
+psutil==5.9.2

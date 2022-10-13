@@ -1,3 +1,7 @@
 # to build execfile
+# yum install -y python3-devel
 
-pyinstaller -w -y --noconfirm inpanel.spec
+rm -fr dist/inpanel
+rm -fr build/
+
+pyinstaller -y --noconfirm inpanel.spec
