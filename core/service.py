@@ -87,7 +87,7 @@ class Service(object):
             # try execute pidof to find the pidfile
             cmd_ = split('pidof -c -o %%PPID -x %s' % service)
             p = Popen(cmd_, stdout=PIPE, close_fds=True)
-            pid = p.stdout.read().strip()
+            pid = p.stdout.read().decode().strip()
             p.wait()
 
             if not pid:
@@ -129,7 +129,7 @@ class Service(object):
                         break
             if startlevel == -1:
                 p = Popen(split('runlevel'), stdout=PIPE, close_fds=True)
-                startlevel = int(p.stdout.read().strip().replace('N ', ''))
+                startlevel = int(p.stdout.read().decode().strip().replace('N ', ''))
                 p.wait()
 
             rcpath = '/etc/rc.d/rc%s.d/' % startlevel

@@ -8,7 +8,7 @@
 
 '''Module for Configurations Management.'''
 
-from configparser import ConfigParser
+from configparser import RawConfigParser
 from os.path import exists, expanduser, isdir, dirname
 from os import makedirs
 
@@ -67,7 +67,7 @@ class Config(object):
             makedirs(dirname(inifile))
 
         self.inifile = inifile
-        self.cfg = ConfigParser()
+        self.cfg = RawConfigParser()
 
         with FileLock(self.inifile):
             if exists(self.inifile):

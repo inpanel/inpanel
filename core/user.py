@@ -31,7 +31,8 @@ def listuser(fullinfo=True):
         for i, user in enumerate(users):
             users[i] = dict((name, getattr(user, name))
                             for name in dir(user)
-                            if not name.startswith('__'))
+                            if not name.startswith('__')
+                            and name not in ('count', 'index'))
             try:
                 gname = grp.getgrgid(user.pw_gid).gr_name
             except:
@@ -78,7 +79,9 @@ def useradd(username, options):
         cmd.append('-M')
     cmd.append(username)
     p = subprocess.Popen(cmd,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         close_fds=True)
     p.stdout.read()
     p.stderr.read()
     if p.wait() != 0:
@@ -116,7 +119,9 @@ def usermod(username, options):
     cmd.append(username)
     if len(cmd) > 2:
         p = subprocess.Popen(cmd,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             close_fds=True)
         p.stdout.read()
         msg = p.stderr.read()
         if p.wait() != 0:
@@ -133,7 +138,9 @@ def usermod(username, options):
 
 def userdel(username):
     p = subprocess.Popen(['userdel', username],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         close_fds=True)
     p.stdout.read()
     p.stderr.read()
     return p.wait() == 0
@@ -145,7 +152,8 @@ def listgroup(fullinfo=True):
         for i, group in enumerate(groups):
             groups[i] = dict((name, getattr(group, name))
                              for name in dir(group)
-                             if not name.startswith('__'))
+                             if not name.startswith('__')
+                             and name not in ('count', 'index'))
     else:
         groups = [gr.gr_name for gr in grp.getgrall()]
     return groups
@@ -153,7 +161,9 @@ def listgroup(fullinfo=True):
 
 def groupadd(groupname):
     p = subprocess.Popen(['groupadd', groupname],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         close_fds=True)
     p.stdout.read()
     p.stderr.read()
     return p.wait() == 0
@@ -161,7 +171,9 @@ def groupadd(groupname):
 
 def groupmod(groupname, newgroupname):
     p = subprocess.Popen(['groupmod', '-n', newgroupname, groupname],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         close_fds=True)
     p.stdout.read()
     p.stderr.read()
     return p.wait() == 0
@@ -169,7 +181,9 @@ def groupmod(groupname, newgroupname):
 
 def groupdel(groupname):
     p = subprocess.Popen(['groupdel', groupname],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         close_fds=True)
     p.stdout.read()
     p.stderr.read()
     return p.wait() == 0
@@ -182,7 +196,9 @@ def groupmems(groupname, option, mem):
     elif option == 'del':
         cmd.extend(['-d', mem])
     p = subprocess.Popen(cmd,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         close_fds=True)
     p.stdout.read()
     p.stderr.read()
     return p.wait() == 0

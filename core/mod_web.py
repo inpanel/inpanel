@@ -300,7 +300,9 @@ class LoginHandler(RequestHandler):
         password = self.get_argument('password', '')
 
         loginlock = self.config.get('runtime', 'loginlock')
-        if self.config.get('runtime', 'mode') == 'demo': loginlock = 'off'
+
+        if self.config.get('runtime', 'mode') == 'demo':
+            loginlock = 'off'
 
         # check if login is locked
         if loginlock == 'on':
@@ -939,11 +941,11 @@ class OperationHandler(RequestHandler):
             pw_passwdc = self.get_argument('pw_passwdc', '')
             lock = self.get_argument('lock', '')
             lock = (lock == 'on') and True or False
-            
+
             if pw_passwd != pw_passwdc:
                 self.write({'code': -1, 'msg': '两次输入的密码不一致！'})
                 return
-            
+
             options = {
                 'pw_gecos': _u(pw_gecos),
                 'pw_gname': _u(pw_gname),
