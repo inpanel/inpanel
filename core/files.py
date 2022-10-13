@@ -249,7 +249,7 @@ def delete(path):
     mounts = _getmounts()
     mount = ''
     for m in mounts:
-        if path.startswith(m):
+        if path.startswith(m.encode()):
             mount = m
             break
     if not mount:

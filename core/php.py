@@ -21,7 +21,7 @@ def phpinfo():
     """
     cmd = 'php-cgi -i'
     p = Popen(split(cmd), stdout=PIPE, stderr=PIPE, close_fds=True)
-    info = p.stdout.read()
+    info = p.stdout.read().decode('utf8')
     p.stderr.read()
     p.wait()
 
