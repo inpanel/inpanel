@@ -230,13 +230,12 @@ def decode(filepath):
     """Detect charset of content and decode it.
     """
     with open(filepath, 'rb') as file:
+        content = file.read()
         for charset in charsets:
             try:
-                content = file.read().decode(charset)
-                return (charset, content)
+                return (charset, content.decode(charset))
             except:
-                # print('error')
-                return (None, content)
+                continue
     return (None, content)
 
 
