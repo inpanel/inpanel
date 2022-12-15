@@ -11,17 +11,14 @@
 
 import re
 from glob import glob
-from json import dumps
+from io import StringIO
+from json import loads
 from os import stat, remove, unlink
 from os.path import exists, join
 from string import punctuation
 
-from utils import is_valid_domain, is_valid_ipv4, is_valid_ipv6
 
-try:
-    from io import StringIO
-except:
-    from cStringIO import StringIO
+from utils import is_valid_domain, is_valid_ipv4, is_valid_ipv6, is_valid_ip
 
 
 DEBUG = False
@@ -188,6 +185,114 @@ GZIP = '''<IfModule mod_deflate.c>
     SetEnvIfNoCase Request_URI .(?:pdf|doc)$ no-gzip dont-vary
 </IfModule>'''
 
+def web_response(self):
+    '''for web server'''
+    action = self.get_argument('action', '')
+    if action == 'getservers':
+        sites = getservers()
+        self.write({'code': 0, 'msg': '', 'data': sites})
+
+    elif action in ('enableserver', 'disableserver', 'deleteserver'):
+        ip = self.get_argument('ip', '')
+        port = self.get_argument('port', '')
+        name = self.get_argument('server_name', '')
+        handler = getattr(locals(), action)
+        opstr = {
+            'enableserver': '启用',
+            'disableserver': '停用',
+            'deleteserver': '删除',
+        }
+        if handler(name, ip, port):
+            self.write({'code': 0, 'msg': '站点 %s:%s %s成功！' % (name, port, opstr[action])})
+        else:
+            self.write({'code': -1, 'msg': '站点 %s:%s %s失败！' % (name, port, opstr[action])})
+
+    elif action == 'get_settings':
+        # items = self.get_argument('items', '')
+        # items = items.split(',')
+        config = loadconfig()
+        self.write({'code': 0, 'msg': '', 'data': config})
+
+    elif action == 'getserver':
+        ip = self.get_argument('ip', '')
+        port = self.get_argument('port', '')
+        name = self.get_argument('name', '')
+        serverinfo = getserver(ip, port, name)
+        if serverinfo:
+            self.write({'code': 0, 'msg': '站点信息读取成功！', 'data': serverinfo})
+        else:
+            self.write({'code': -1, 'msg': '站点不存在！'})
+
+    elif action in ('addserver', 'updateserver'):
+        setting = loads(self.get_argument('setting', '')) or {}
+
+        ip = setting.get('ip', '')
+        if ip not in ('', '*', '0.0.0.0') and not is_valid_ip(ip):
+            self.write({'code': -1, 'msg': '%s 不是有效的IP地址！' % ip})
+            return
+
+        port = int(setting.get('port', 0))
+        if port <= 0 or port > 65535:
+            self.write({'code': -1, 'msg': '%s 不是有效的端口号!' % setting.get('port')})
+            return
+
+        servername = setting.get('servername')
+        # print('servername', servername)
+        if not is_valid_domain(servername):
+            self.write({'code': -1, 'msg': '%s 不是有效的域名！' % servername})
+            return
+
+        documentroot = setting.get('documentroot', '')
+        if not documentroot:
+            self.write({'code': -1, 'msg': '%s 不是有效的目录！' % documentroot})
+            return
+        autocreate = setting.get('autocreate')
+        if not exists(documentroot):
+            if autocreate:
+                try:
+                    mkdir(documentroot)
+                except:
+                    self.write({'code': -1, 'msg': '站点目录 %s 创建失败！' % documentroot})
+                    return
+            else:
+                self.write({'code': -1, 'msg': '站点目录 %s 不存在！' % documentroot})
+                return
+
+        directoryindex = setting.get('directoryindex')
+        serveralias = setting.get('serveralias')
+        serveradmin = setting.get('serveradmin')
+        errorlog = setting.get('errorlog')
+        customlog = setting.get('customlog')
+        directory = setting.get('directory')
+
+        version = self.get_argument('version', '')  # apache version
+        for diret in directory:
+            if 'path' in diret and diret['path']:
+                if not exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
+                    try:
+                        mkdir(diret['path'])
+                    except:
+                        self.write({'code': -1, 'msg': '路径 %s 创建失败！' % diret['path']})
+                        return
+            else:
+                self.write({'code': -1, 'msg': '请选择路径！'})
+                return
+        if action == 'addserver':
+            if not addserver(servername, ip, port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
+                errorlog=errorlog, customlog=customlog, version=version):
+                self.write({'code': -1, 'msg': '新站点添加失败！请检查站点域名是否重复。', 'data': setting})
+            else:
+                self.write({'code': 0, 'msg': '新站点添加成功！', 'data': setting})
+        else:
+            c_ip = _u(self.get_argument('ip', ''))
+            c_port = _u(self.get_argument('port', ''))
+            c_name = _u(self.get_argument('name', ''))
+            if not updateserver(c_name, c_ip, c_port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
+                errorlog=errorlog, customlog=customlog, version=version):
+                self.write({'code': -1, 'msg': '站点设置更新失败！请检查配置信息（如域名是否重复？）', 'data': setting})
+            else:
+                self.write({'code': 0, 'msg': '站点设置更新成功！', 'data': setting})
+
 
 def loadconfig(conf=None, getlineinfo=False):
     '''Load Apache config and return a dict.
@@ -213,7 +318,7 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
     RE_VH_CLOSE = re.compile(r'</VirtualHost>')
     RE_DT_START = re.compile(r'<Directory(\s+)(\S+)>')
     RE_DT_CLOSE = re.compile(r'</Directory>')
-    with open(conf, 'r') as f:
+    with open(conf, 'r', encoding='utf-8') as f:
         id_v = 0
         enable = False
         vhost = []
@@ -355,7 +460,7 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
 
     if len(result) > 0:
         # print('result', result)
-        for i in result:
+        for i in result.items():
             if directorys[i]:
                 server = {'directory': directorys[i]}
             else:
@@ -470,9 +575,9 @@ def virtual_host_config(site, key, val, port=80):
         print('site config file not exist')
         return False
 
-    old_conf = open(conf).read()
+    old_conf = open(conf, encoding='utf-8').read()
 
-    with open(conf + '.bak', 'w') as f:
+    with open(conf + '.bak', 'w', encoding='utf-8') as f:
         # backup
         f.write(old_conf)
 
@@ -487,7 +592,7 @@ def virtual_host_config(site, key, val, port=80):
                       old_conf)
 
     # save new config file
-    with open(conf, 'w') as f:
+    with open(conf, 'w', encoding='utf-8') as f:
         f.write(new_conf)
         # delete old site config file
         if key == 'VirtualHost' and stat(conf) and stat(SERVERCONF + site + '.conf.bak'):
@@ -506,7 +611,7 @@ def replace_docroot(vhost, new_docroot):
     vhost_start = re.compile(r'<VirtualHost\s+(.*?)>')
     vhost_end = re.compile(r'</VirtualHost>')
     docroot_re = re.compile(r'(DocumentRoot\s+)(\S+)')
-    file = open(HTTPDCONF + vhost + '.conf').read()
+    file = open(HTTPDCONF + vhost + '.conf', encoding='utf-8').read()
     conf_file = StringIO(file)
     in_vhost = False
     curr_vhost = None
@@ -612,27 +717,33 @@ def _context_getupstreams(server_name, config=None, disabled=None, getlineinfo=T
 def _comment(filepath, start, end):
     """Commend some lines in the file.
     """
-    if not exists(filepath): return False
+    if not exists(filepath):
+        return False
     data = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for i, line in enumerate(f):
-            if i>=start and i<=end:
-                if not line.startswith(COMMENTFLAG): data.append(COMMENTFLAG)
+            if i >= start and i <= end:
+                if not line.startswith(COMMENTFLAG):
+                    data.append(COMMENTFLAG)
             data.append(line)
-    with open(filepath, 'w') as f: f.write(''.join(data))
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(''.join(data))
     return True
 
 def _uncomment(filepath, start, end):
     """Uncommend some lines in the file.
     """
-    if not exists(filepath): return False
+    if not exists(filepath):
+        return False
     data = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for i, line in enumerate(f):
-            if i>=start and i<=end:
-                while line.startswith(COMMENTFLAG): line = line[3:]
+            if i >= start and i <= end:
+                while line.startswith(COMMENTFLAG):
+                    line = line[3:]
             data.append(line)
-    with open(filepath, 'w') as f: f.write(''.join(data))
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(''.join(data))
     return True
 
 def _delete(filepath, start, end, delete_emptyfile=True):
@@ -644,12 +755,12 @@ def _delete(filepath, start, end, delete_emptyfile=True):
     if not exists(filepath):
         return False
     data = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for i, line in enumerate(f):
-            if i>=start and i<=end:
+            if i >= start and i <= end:
                 continue
             data.append(line)
-    with open(filepath, 'w') as f:
+    with open(filepath, 'w', encoding='utf-8') as f:
         f.write(''.join(data))
     if delete_emptyfile:
         if ''.join(data).strip() == '':
@@ -761,13 +872,14 @@ def _replace(positions, lines):
     files = {}
     for pos in positions:
         filepath, line_start, line_count = pos
-        if not filepath in files: files[filepath] = []
+        if not filepath in files:
+            files[filepath] = []
         for i in range(line_count):
             files[filepath].append(line_start+i)
     # replace line by line
     for filepath, line_nums in files.items():
         flines = []
-        with open(filepath) as f:
+        with open(filepath, encoding='utf-8') as f:
             for i, fline in enumerate(f):
                 if i in line_nums:
                     if len(lines) > 0:
@@ -778,7 +890,8 @@ def _replace(positions, lines):
                         # this aim to keep the indent of the line
                         space = ''
                         for c in fline:
-                            if c not in (' ', '\t'): break
+                            if c not in (' ', '\t'):
+                                break
                             space += c
                         flines.append(''.join([space, line, '\n']))
                     else:
@@ -791,21 +904,23 @@ def _replace(positions, lines):
                         space = ''
                         if len(flines)>0: # last line exists
                             for c in flines[-1]:
-                                if c not in (' ', '\t'): break
+                                if c not in (' ', '\t'):
+                                    break
                                 space += c
                         for line in lines:
                             flines.append(''.join([space, line, '\n']))
                         lines = []
                     flines.append(fline)
         # write back to file
-        with open(filepath, 'w') as f: f.write(''.join(flines))
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(''.join(flines))
 
 
 def _insert(filepath, line_start, lines):
     """Insert the lines to the specified position.
     """
     flines = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for i, fline in enumerate(f):
             if i == line_start:
                 # detect the indent of the last not empty line
@@ -816,7 +931,8 @@ def _insert(filepath, line_start, lines):
                     while flines[line_i].strip() == '' and -line_i <= flines_len:
                         line_i -= 1
                     for c in flines[line_i]:
-                            if c not in (' ', '\t'): break
+                            if c not in (' ', '\t'):
+                                break
                             space += c
                     if flines[line_i].strip().endswith('{'):
                         space += '    '
@@ -824,7 +940,8 @@ def _insert(filepath, line_start, lines):
                     flines.append(''.join([space, line, '\n']))
             flines.append(fline)
     # write back to file
-    with open(filepath, 'w') as f: f.write(''.join(flines))
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(''.join(flines))
 
 
 def http_get(directive, config=None):
@@ -958,11 +1075,11 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
     # check if need to add a new line at the end of the file to
     # avoid first line go to the same former } line
     if configfile_exists:
-        with open(configfile) as f:
+        with open(configfile, encoding='utf-8') as f:
             f.seek(-1, 2)
             if f.read(1) != '\n':
                 servercfg.insert(0, '')
-    with open(configfile, configfile_exists and 'a' or 'w') as f:
+    with open(configfile, configfile_exists and 'a' or 'w', encoding='utf-8') as f:
         f.write('\n'.join(servercfg))
     return True
 
@@ -1022,9 +1139,10 @@ if __name__ == '__main__':
     HTTPDCONF = '/Users/douzhenjiang/Projects/inpanel/test'
     APACHECONF = '/Users/douzhenjiang/Projects/inpanel/test/httpd.conf'
     SERVERCONF = '/Users/douzhenjiang/Projects/inpanel/test/conf.d/'
+    print(locals())
     # tmp = loadconfig()
     # print('config', tmp)
-    # print(json.dumps(tmp))
+    # print(dumps(tmp))
     # virtual_host_config('aaa.com', 'DocumentRoot', '/v/asfs34535')
     # virtual_host_config('aaa.com', 'ServerAdmin', '4567896543')
     # virtual_host_config('aaa.com', 'VirtualHost', 'bbb.com', 567)
@@ -1034,7 +1152,7 @@ if __name__ == '__main__':
 
     # aaa = '/Users/douzhenjiang/Projects/inpanel/test/aaa.com.conf'
     # tmp1 = loadconfig()
-    # print(json.dumps(tmp1))
+    # print(dumps(tmp1))
     # s= tmp1['virtualhost']
     # # s = scontext['virtualhost']
     # s= [i for i in s if i['port']=='870' and i['ip']=='1.1.1.1' and i['servername']=='inpanel.org']
@@ -1043,9 +1161,9 @@ if __name__ == '__main__':
     # s = servername_exists('1.1.1.1', 80, 'aaaaaaaa.aa')
     # print(s)
     # s = addserver('aaaaaaaa.aa', '1.1.1.1', 801, documentroot='/Users/douzhenjiang/Projects/inpanel/test')
-    s = getserver('1.1.1.1', 80, 'aaaaaaaa.aa')
-    s = dumps(s)
-    print(s)
+    # s = getserver('1.1.1.1', 80, 'aaaaaaaa.aa')
+    # s = dumps(s)
+    # print(s)
     # for i in s:
     #     print('port' in i)
     #     # if i.port=='80':
@@ -1053,7 +1171,7 @@ if __name__ == '__main__':
     #     #     break
     # print([i for i in s if i['port']=='870' and i['ip']=='1.1.1.1' and i['servername']=='inpanel.org'])
 
-    # print json.dumps(_context_getservers(disabled=None))
+    # print dumps(_context_getservers(disabled=None))
 
     # path = join(SERVERCONF, clist[i])
     # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
@@ -1070,3 +1188,4 @@ if __name__ == '__main__':
     #           customlog='abc/aaa_error.log',
     #           version=None)
     # print(enableserver('*', 80, 'zhoukan.pub'))
+

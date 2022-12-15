@@ -34,29 +34,29 @@ from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
 import aliyuncs
-import apache
-import cron
+import mod_apache
+import mod_cron
+import mod_lighttpd
+import mod_mysql
+import mod_named
+import mod_nginx
+import php
+import mod_proftpd
+import mod_pureftpd
+import mod_vsftpd
+import mod_yum
 import fdisk
 import files
 import ftp
-import lighttpd
-import mysql
-import named
-import nginx
-import php
-import proftpd
-import pureftpd
 import remote
-import repo_yum
 import shell
 import ssh
 import user
 import utils
-import vsftpd
 import yum
 from base import (app_api, app_name, dist_name, dist_versint, machine,
                       version_info)
-from configuration import configurations
+from configuration import configurations, tmplogconfig
 from lib import pyDes
 from lib.async_process import call_subprocess, callbackable
 from sc import ServerSet
@@ -77,6 +77,7 @@ class Application(tornado.web.Application):
             settings['arch'] = 'i386'
         settings['data_path'] = abspath(settings['data_path'])
         settings['package_path'] = joinpath(settings['data_path'], 'packages')
+        config = configurations()
 
         tornado.web.Application.__init__(self, handlers, default_host, transforms, **settings)
 
@@ -85,8 +86,8 @@ class RequestHandler(tornado.web.RequestHandler):
     def initialize(self):
         """Parse JSON data to argument list.
         """
-        self.inifile = joinpath(self.settings['conf_path'])
-        self.config = configurations(self.inifile)
+        self.config = configurations()
+        self.tmplog = tmplogconfig()
 
         content_type = self.request.headers.get("Content-Type", "")
         if content_type.startswith("application/json"):
@@ -208,7 +209,7 @@ class FileDownloadHandler(StaticFileHandler):
         print('FileDownloadHandler', self.root, path)
         return StaticFileHandler.get(self, path)
         # buf_size = 4096
-        # with open(joinpath(self.root, path), 'rb') as f:
+        # with open(joinpath(self.root, path), 'rb', encoding='utf-8') as f:
         #     while True:
         #         data = f.read(buf_size)
         #         if not data:
@@ -249,7 +250,7 @@ class FileUploadHandler(RequestHandler):
             self.write('正在上传...<br>')
             for item in self.request.files['ufile']:
                 filename = re.split('[\\\/]', item['filename'])[-1]
-                with open(joinpath(path, filename), 'wb') as f:
+                with open(joinpath(path, filename), 'wb', encoding='utf-8') as f:
                     f.write(item['body'])
                 self.write('%s 上传成功！<br>' % item['filename'])
 
@@ -383,7 +384,8 @@ class SitePackageHandler(RequestHandler):
 
     @tornado.gen.coroutine
     def getlist(self):
-        if not exists(self.settings['package_path']): mkdir(self.settings['package_path'])
+        if not exists(self.settings['package_path']):
+            mkdir(self.settings['package_path'])
 
         packages = ''
         packages_cachefile = joinpath(self.settings['package_path'], '.meta')
@@ -392,8 +394,9 @@ class SitePackageHandler(RequestHandler):
         if exists(packages_cachefile):
             # check the file modify time
             mtime = stat(packages_cachefile).st_mtime
-            if time.time() - mtime < 86400: # cache 24 hours
-                with open(packages_cachefile) as f: packages = f.read()
+            if time.time() - mtime < 86400:  # cache 24 hours
+                with open(packages_cachefile, encoding='utf-8') as f:
+                    packages = f.read()
 
         # fetch from api
         if not packages:
@@ -405,7 +408,8 @@ class SitePackageHandler(RequestHandler):
                 return
             else:
                 packages = response.body
-                with open(packages_cachefile, 'w') as f: f.write(packages)
+                with open(packages_cachefile, 'w', encoding='utf-8') as f:
+                    f.write(packages)
         
         packages = tornado.escape.json_decode(packages)
         self.write({'code': 0, 'msg':'', 'data': packages})
@@ -425,7 +429,8 @@ class SitePackageHandler(RequestHandler):
         if not exists(packages_cachefile):
             self.write({'code': -1, 'msg': '获取安装包下载地址失败！'})
             return
-        with open(packages_cachefile) as f: packages = f.read()
+        with open(packages_cachefile, encoding='utf-8') as f:
+            packages = f.read()
         packages = tornado.escape.json_decode(packages)
 
         # check if name and version is available
@@ -631,7 +636,7 @@ class UtilsTimeHandler(RequestHandler):
         if sec == 'datetime':
             self.write(ServerInfo.datetime(asstruct=True))
         elif sec == 'timezone':
-            self.write({'timezone': ServerSet.timezone(self.inifile)})
+            self.write({'timezone': ServerSet.timezone(self.config)})
         elif sec == 'timezone_list':
             if region == None:
                 self.write({'regions': sorted(ServerSet.timezone_regions())})
@@ -646,7 +651,7 @@ class UtilsTimeHandler(RequestHandler):
 
         if sec == 'timezone':
             timezone = self.get_argument('timezone', '')
-            if ServerSet.timezone(self.inifile, _u(timezone)):
+            if ServerSet.timezone(self.config, timezone):
                 self.write({'code': 0, 'msg': '时区设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': '时区设置保存失败！'})
@@ -1016,8 +1021,8 @@ class OperationHandler(RequestHandler):
         action = self.get_argument('action', '')
 
         if action == 'last':
-            lastdir = self.config.get('file', 'lastdir')
-            lastfile = self.config.get('file', 'lastfile')
+            lastdir = self.tmplog.get('file', 'lastdir')
+            lastfile = self.tmplog.get('file', 'lastfile')
             self.write({'code': 0, 'msg': '', 'data': {'lastdir': lastdir, 'lastfile': lastfile}})
 
         elif action == 'listdir':
@@ -1029,7 +1034,7 @@ class OperationHandler(RequestHandler):
             if items == False:
                 self.write({'code': -1, 'msg': '目录 %s 不存在！' % path})
             else:
-                if remember == 'on': self.config.set('file', 'lastdir', path)
+                if remember == 'on': self.tmplog.set('file', 'lastdir', path)
                 self.write({'code': 0, 'msg': '成功获取文件列表！', 'data': items})
 
         elif action == 'getitem':
@@ -1046,17 +1051,15 @@ class OperationHandler(RequestHandler):
             size = files.fsize(path)
             if size == None:
                 self.write({'code': -1, 'msg': '文件 %s 不存在！' % path})
-            elif size > 1024*1024: # support 1MB of file at max
-                self.write({'code': -1, 'msg': '读取 %s 失败！不允许在线编辑超过1MB的文件！' % path})
-            elif not files.istext(path):
-                self.write({'code': -1, 'msg': '读取 %s 失败！无法识别文件类型！' % path})
+            elif size > 1024*1024*2: # support 1MB of file at max
+                self.write({'code': -1, 'msg': '读取 %s 失败！不允许在线编辑超过2MB的文件！' % path})
+            # elif not files.istext(path):
+            #     self.write({'code': -1, 'msg': '读取 %s 失败！无法识别文件类型！' % path})
             else:
-                if remember == 'on': self.config.set('file', 'lastfile', path)
-                with open(path) as f: content = f.read()
-                print('content', content)
-                charset, content = files.decode(content)
+                if remember == 'on': self.tmplog.set('file', 'lastfile', path)
+                charset, content = files.decode(path)
                 if not charset:
-                    self.write({'code': -1, 'msg': '不可识别的文件编码！'})
+                    self.write({'code': -1, 'msg': '不可识别的文件编码！---'})
                     return
                 data = {
                     'filename': basename(path),
@@ -1068,7 +1071,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': '成功读取文件内容！', 'data': data})
 
         elif action == 'fclose':
-            self.config.set('file', 'lastfile', '')
+            self.tmplog.set('file', 'lastfile', '')
             self.write({'code': 0, 'msg': ''})
 
         elif action == 'fwrite':
@@ -1212,124 +1215,20 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '删除失败！'})
 
     def apache(self):
-        action = self.get_argument('action', '')
-        if action == 'getservers':
-            sites = apache.getservers()
-            self.write({'code': 0, 'msg': '', 'data': sites})
-
-        elif action in ('enableserver', 'disableserver', 'deleteserver'):
-            ip = self.get_argument('ip', '')
-            port = self.get_argument('port', '')
-            name = self.get_argument('server_name', '')
-            handler = getattr(apache, action)
-            opstr = {
-                'enableserver': '启用',
-                'disableserver': '停用',
-                'deleteserver': '删除',
-            }
-            if handler(name, ip, port):
-                self.write({'code': 0, 'msg': '站点 %s:%s %s成功！' % (name, port, opstr[action])})
-            else:
-                self.write({'code': -1, 'msg': '站点 %s:%s %s失败！' % (name, port, opstr[action])})
-
-        elif action == 'get_settings':
-            # items = self.get_argument('items', '')
-            # items = items.split(',')
-            config = apache.loadconfig()
-            self.write({'code': 0, 'msg': '', 'data': config})
-
-        elif action == 'getserver':
-            ip = self.get_argument('ip', '')
-            port = self.get_argument('port', '')
-            name = self.get_argument('name', '')
-            serverinfo = apache.getserver(_u(ip), _u(port), _u(name))
-            if serverinfo:
-                self.write({'code': 0, 'msg': '站点信息读取成功！', 'data': serverinfo})
-            else:
-                self.write({'code': -1, 'msg': '站点不存在！'})
-
-        elif action in ('addserver', 'updateserver'):
-            setting = loads(self.get_argument('setting', '')) or {}
-
-            ip = setting.get('ip', '')
-            if ip not in ('', '*', '0.0.0.0') and not utils.is_valid_ip(ip):
-                self.write({'code': -1, 'msg': '%s 不是有效的IP地址！' % ip})
-                return
-
-            port = int(setting.get('port', 0))
-            if port <= 0 or port > 65535:
-                self.write({'code': -1, 'msg': '%s 不是有效的端口号!' % setting.get('port')})
-                return
-
-            servername = setting.get('servername')
-            # print('servername', servername)
-            if not utils.is_valid_domain(servername):
-                self.write({'code': -1, 'msg': '%s 不是有效的域名！' % servername})
-                return
-
-            documentroot = setting.get('documentroot', '')
-            if not documentroot:
-                self.write({'code': -1, 'msg': '%s 不是有效的目录！' % documentroot})
-                return
-            autocreate = setting.get('autocreate')
-            if not exists(documentroot):
-                if autocreate:
-                    try:
-                        mkdir(documentroot)
-                    except:
-                        self.write({'code': -1, 'msg': '站点目录 %s 创建失败！' % documentroot})
-                        return
-                else:
-                    self.write({'code': -1, 'msg': '站点目录 %s 不存在！' % documentroot})
-                    return
-
-            directoryindex = setting.get('directoryindex')
-            serveralias = setting.get('serveralias')
-            serveradmin = setting.get('serveradmin')
-            errorlog = setting.get('errorlog')
-            customlog = setting.get('customlog')
-            directory = setting.get('directory')
-
-            version = self.get_argument('version', '')  # apache version
-            for diret in directory:
-                if 'path' in diret and diret['path']:
-                    if not exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
-                        try:
-                            mkdir(diret['path'])
-                        except:
-                            self.write({'code': -1, 'msg': '路径 %s 创建失败！' % diret['path']})
-                            return
-                else:
-                    self.write({'code': -1, 'msg': '请选择路径！'})
-                    return
-            if action == 'addserver':
-                if not apache.addserver(servername, ip, port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
-                    errorlog=errorlog, customlog=customlog, version=version):
-                    self.write({'code': -1, 'msg': '新站点添加失败！请检查站点域名是否重复。', 'data': setting})
-                else:
-                    self.write({'code': 0, 'msg': '新站点添加成功！', 'data': setting})
-            else:
-                c_ip = _u(self.get_argument('ip', ''))
-                c_port = _u(self.get_argument('port', ''))
-                c_name = _u(self.get_argument('name', ''))
-                if not apache.updateserver(c_name, c_ip, c_port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
-                    errorlog=errorlog, customlog=customlog, version=version):
-                    self.write({'code': -1, 'msg': '站点设置更新失败！请检查配置信息（如域名是否重复？）', 'data': setting})
-                else:
-                    self.write({'code': 0, 'msg': '站点设置更新成功！', 'data': setting})
+        mod_apache.web_response(self)
 
     def nginx(self):
         action = self.get_argument('action', '')
 
         if action == 'getservers':
-            sites = nginx.getservers()
+            sites = mod_nginx.getservers()
             self.write({'code': 0, 'msg': '', 'data': sites})
 
         elif action in ('enableserver', 'disableserver', 'deleteserver'):
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
             name = self.get_argument('server_name', '')
-            handler = getattr(nginx, action)
+            handler = getattr(mod_nginx, action)
             opstr = {
                 'enableserver': '启用',
                 'disableserver': '停用',
@@ -1348,15 +1247,15 @@ class OperationHandler(RequestHandler):
                 items.append('limit_zone') # version < 1.1.8
 
             data = {}
-            config = nginx.loadconfig()
+            config = mod_nginx.loadconfig()
             for item in items:
                 if item.endswith('[]'):
                     item = item[:-2]
                     returnlist = True
-                    values = nginx.http_get(_u(item), config)
+                    values = mod_nginx.http_get(_u(item), config)
                 else:
                     returnlist = False
-                    values = [nginx.http_getfirst(_u(item), config)]
+                    values = [mod_nginx.http_getfirst(_u(item), config)]
                 
                 if values:
                     if item == 'gzip':
@@ -1470,7 +1369,7 @@ class OperationHandler(RequestHandler):
                 elif isinstance(value, list):
                     for i,v in enumerate(value):
                         value[i] = _u(v)
-                nginx.http_set(directive, value)
+                mod_nginx.http_set(directive, value)
 
             self.write({'code': 0, 'msg': '设置保存成功！'})
 
@@ -1530,14 +1429,14 @@ class OperationHandler(RequestHandler):
 
                 values.append(' '.join(fields))
 
-            nginx.http_set('proxy_cache_path', values)            
+            mod_nginx.http_set('proxy_cache_path', values)            
             self.write({'code': 0, 'msg': '设置保存成功！'})
 
         elif action == 'getserver':
             ip = self.get_argument('ip', '')
             port = self.get_argument('port', '')
             server_name = self.get_argument('server_name', '')
-            serverinfo = nginx.getserver(_u(ip), _u(port), _u(server_name))
+            serverinfo = mod_nginx.getserver(_u(ip), _u(port), _u(server_name))
             if serverinfo:
                 self.write({'code': 0, 'msg': '站点信息读取成功！', 'data': serverinfo})
             else:
@@ -1896,7 +1795,7 @@ class OperationHandler(RequestHandler):
             #print(rewrite_rules)
 
             if action == 'addserver':
-                if not nginx.addserver(server_names, listens,
+                if not mod_nginx.addserver(server_names, listens,
                     charset=charset, index=index, locations=locations,
                     limit_rate=limit_rate, limit_conn=limit_conn,
                     ssl_crt=ssl_crt, ssl_key=ssl_key,
@@ -1905,7 +1804,7 @@ class OperationHandler(RequestHandler):
                 else:
                     self.write({'code': 0, 'msg': '新站点添加成功！'})
             else:
-                if not nginx.updateserver(old_server_ip, old_server_port, old_server_name,
+                if not mod_nginx.updateserver(old_server_ip, old_server_port, old_server_name,
                     server_names, listens,
                     charset=charset, index=index, locations=locations,
                     limit_rate=limit_rate, limit_conn=limit_conn,
@@ -1927,13 +1826,13 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '两次密码输入不一致！'})
                 return
 
-            if mysql.updatepwd(_u(newpassword), _u(password)):
+            if mod_mysql.updatepwd(_u(newpassword), _u(password)):
                 self.write({'code': 0, 'msg': '密码设置成功！'})
             else:
                 self.write({'code': -1, 'msg': '密码设置失败！'})
 
         elif action == 'checkpwd':
-            if mysql.checkpwd(_u(password)):
+            if mod_mysql.checkpwd(_u(password)):
                 self.write({'code': 0, 'msg': '密码验证成功！'})
             else:
                 self.write({'code': -1, 'msg': '密码验证失败！（密码不正确，或 MySQL 服务未启动）'})
@@ -1941,7 +1840,7 @@ class OperationHandler(RequestHandler):
         elif action == 'alter_database':
             dbname = self.get_argument('dbname', '')
             collation = self.get_argument('collation', '')
-            rt = mysql.alter_database(_u(password), _u(dbname), collation=_u(collation))
+            rt = mod_mysql.alter_database(_u(password), _u(dbname), collation=_u(collation))
             if rt:
                 self.write({'code': 0, 'msg': '数据库编码保存成功！'})
             else:
@@ -2094,10 +1993,10 @@ class OperationHandler(RequestHandler):
         action = self.get_argument('action', '')
 
         if action == 'get_settings':
-            self.write({'code': 0, 'msg': '获取 Cron 服务配置信息成功！', 'data': cron.load_config()})
+            self.write({'code': 0, 'msg': '获取 Cron 服务配置信息成功！', 'data': mod_cron.load_config()})
         if action == 'save_settings':
             mailto = self.get_argument('mailto', '')
-            rt = cron.update_config({'mailto': _u(mailto)})
+            rt = mod_cron.update_config({'mailto': _u(mailto)})
             if rt:
                 self.write({'code': 0, 'msg': '设置保存成功！'})
             else:
@@ -2106,7 +2005,7 @@ class OperationHandler(RequestHandler):
         user = self.get_argument('user', '')
         level = self.get_argument('level', 'normal')
         if action == 'cron_list':
-            self.write({'code': 0, 'msg': '获取定时任务成功！','data': cron.cron_list(user=user, level=level)})
+            self.write({'code': 0, 'msg': '获取定时任务成功！','data': mod_cron.cron_list(user=user, level=level)})
         elif action in ('cron_add', 'cron_mod'):
             command = self.get_argument('command', '')
             if command == '':
@@ -2123,43 +2022,39 @@ class OperationHandler(RequestHandler):
             weekday = self.get_argument('weekday', '')
             weekday = self.get_argument('weekday', '')
             if action == 'cron_add':
-                if cron.cron_add(user, minute, hour, day, month, weekday, command, level):
+                if mod_cron.cron_add(user, minute, hour, day, month, weekday, command, level):
                     self.write({'code': 0, 'msg': '定时任务添加成功！'})
                 else:
                     self.write({'code': -1, 'msg': '定时任务添加失败！'})
             elif action == 'cron_mod':
                 cronid = self.get_argument('cronid', '')
                 currlist = self.get_argument('currlist', '')
-                if cron.cron_mod(user, cronid, minute, hour, day, month, weekday, command, level, currlist):
+                if mod_cron.cron_mod(user, cronid, minute, hour, day, month, weekday, command, level, currlist):
                     self.write({'code': 0, 'msg': '定时任务修改成功！'})
                 else:
                     self.write({'code': -1, 'msg': '定时任务修改失败！'})
         elif action == 'cron_del':
             cronid = self.get_argument('cronid', '')
             currlist = self.get_argument('currlist', '')
-            if cron.cron_del(user, cronid, level, currlist):
+            if mod_cron.cron_del(user, cronid, level, currlist):
                 self.write({'code': 0, 'msg': '定时任务删除成功！'})
             else:
                 self.write({'code': -1, 'msg': '定时任务删除失败！'})
 
     def vsftpd(self):
-        action = self.get_argument('action', '')
-        if action == 'getsettings':
-            self.write({'code': 0, 'msg': 'vsftpd 配置信息获取成功！', 'data': vsftpd.get_config()})
-        elif action == 'savesettings':
-            self.write({'code': 0, 'msg': 'vsftpd 服务配置保存成功！', 'data': vsftpd.set_config()})
+        mod_vsftpd.web_response(self)
 
     def named(self):
-        named.web_response(self)
+        mod_named.web_response(self)
 
     def lighttpd(self):
-        lighttpd.web_response(self)
+        mod_lighttpd.web_response(self)
 
     def proftpd(self):
-        proftpd.web_response(self)
+        mod_proftpd.web_response(self)
 
     def pureftpd(self):
-        pureftpd.web_response(self)
+        mod_pureftpd.web_response(self)
 
     def shell(self):
         action = self.get_argument('action', '')
@@ -2764,7 +2659,7 @@ class BackendHandler(RequestHandler):
             hostname_found = False
             dot_found = False
             lines = []
-            with open('/etc/hosts') as f:
+            with open('/etc/hosts', encoding='utf-8') as f:
                 for line in f:
                     if not line.startswith('#') and not hostname_found:
                         fields = line.strip().split()
@@ -2776,7 +2671,8 @@ class BackendHandler(RequestHandler):
                                 line = '%s %s.localdomain\n' % (line.strip(), hostname)
                     lines.append(line)
             if not dot_found:
-                with open('/etc/hosts', 'w') as f: f.writelines(lines)
+                with open('/etc/hosts', 'w', encoding='utf-8') as f:
+                    f.writelines(lines)
         if dist_versint < 7:
             cmd = '/etc/init.d/%s %s' % (service, action)
         else:
@@ -2974,11 +2870,11 @@ class BackendHandler(RequestHandler):
 
         cmds = []
         if repo == 'base':
-            for cmd in repo_yum.get_repo_release(dist_versint, self.settings['dist_name'], self.settings['arch']):
+            for cmd in mod_yum.get_repo_release(dist_versint, self.settings['dist_name'], self.settings['arch']):
                 cmds.append(cmd)
 
         elif repo in ('epel', 'CentALT'):
-            for cmd in repo_yum.get_repo_epel(dist_versint, self.settings['dist_name'], self.settings['arch']):
+            for cmd in mod_yum.get_repo_epel(dist_versint, self.settings['dist_name'], self.settings['arch']):
                 cmds.append(cmd)
 
         elif repo == 'ius':
@@ -2988,12 +2884,12 @@ class BackendHandler(RequestHandler):
 
         elif repo == '10gen':
             # REF: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/
-            with open('/etc/yum.repos.d/10gen.repo', 'w') as f:
+            with open('/etc/yum.repos.d/10gen.repo', 'w', encoding='utf-8') as f:
                 f.write(yum.yum_repostr['10gen'][self.settings['arch']])
 
         elif repo == 'mariadb':
             # MariaDB Repositories REF: http://downloads.mariadb.org/mariadb/repositories
-            with open('/etc/yum.repos.d/mariadb.repo', 'w') as f:
+            with open('/etc/yum.repos.d/mariadb.repo', 'w', encoding='utf-8') as f:
                 f.write(yum.yum_repostr['mariadb'][self.settings['arch']])
 
         elif repo == 'atomic':
@@ -3014,7 +2910,7 @@ class BackendHandler(RequestHandler):
             if exists(repofile):
                 lines = []
                 baseurl_found = False
-                with open(repofile) as f:
+                with open(repofile, encoding='utf-8') as f:
                     for line in f:
                         if line.startswith('baseurl='):
                             baseurl_found = True
@@ -3026,7 +2922,8 @@ class BackendHandler(RequestHandler):
                             # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)
                 if baseurl_found:
-                    with open(repofile, 'w') as f: f.writelines(lines)
+                    with open(repofile, 'w', encoding='utf-8') as f:
+                        f.writelines(lines)
 
         if not error:
             code = 0
@@ -3610,12 +3507,12 @@ class BackendHandler(RequestHandler):
 
         error = False
         self._update_job(jobname, 2, '正在强制重置 root 密码...')
-        if not mysql.fupdatepwd(password):
+        if not mod_mysql.fupdatepwd(password):
             error = True
 
         if manually:
             # 'service mysqld restart' cannot stop the manually start-up mysqld_safe process
-            result = yield tornado.gen.Task(callbackable(mysql.shutdown), password)
+            result = yield tornado.gen.Task(callbackable(mod_mysql.shutdown), password)
             if result:
                 self._update_job(jobname, 0, '成功停止 MySQL 服务！')
             else:
@@ -3680,7 +3577,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在获取数据库列表...')
         dbs = []
-        dbs = yield tornado.gen.Task(callbackable(mysql.show_databases), password)
+        dbs = yield tornado.gen.Task(callbackable(mod_mysql.show_databases), password)
         if dbs:
             code = 0
             msg = '获取数据库列表成功！'
@@ -3706,7 +3603,7 @@ class BackendHandler(RequestHandler):
             self._update_job(jobname, 2, '正在获取数据库 %s 的用户列表...' % _d(dbname))
 
         users = []
-        users = yield tornado.gen.Task(callbackable(mysql.show_users), password, dbname)
+        users = yield tornado.gen.Task(callbackable(mod_mysql.show_users), password, dbname)
         if users:
             code = 0
             msg = '获取用户列表成功！'
@@ -3725,7 +3622,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在获取数据库 %s 的信息...' % _d(dbname))
         dbinfo = False
-        dbinfo = yield tornado.gen.Task(callbackable(mysql.show_database), password, dbname)
+        dbinfo = yield tornado.gen.Task(callbackable(mod_mysql.show_database), password, dbname)
         if dbinfo:
             code = 0
             msg = '获取数据库 %s 的信息成功！' % _d(dbname)
@@ -3743,7 +3640,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在重命名 %s...' % _d(dbname))
-        result = yield tornado.gen.Task(callbackable(mysql.rename_database), password, dbname, newname)
+        result = yield tornado.gen.Task(callbackable(mod_mysql.rename_database), password, dbname, newname)
         if result == True:
             code = 0
             msg = '%s 重命名成功！' % _d(dbname)
@@ -3761,7 +3658,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在创建 %s...' % _d(dbname))
-        result = yield tornado.gen.Task(callbackable(mysql.create_database), password, dbname, collation=collation)
+        result = yield tornado.gen.Task(callbackable(mod_mysql.create_database), password, dbname, collation=collation)
         if result == True:
             code = 0
             msg = '%s 创建成功！' % _d(dbname)
@@ -3779,7 +3676,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在导出 %s...' % _d(dbname))
-        result = yield tornado.gen.Task(callbackable(mysql.export_database), password, dbname, path)
+        result = yield tornado.gen.Task(callbackable(mod_mysql.export_database), password, dbname, path)
         if result == True:
             code = 0
             msg = '%s 导出成功！' % _d(dbname)
@@ -3797,7 +3694,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在删除 %s...' % _d(dbname))
-        result = yield tornado.gen.Task(callbackable(mysql.drop_database), password, dbname)
+        result = yield tornado.gen.Task(callbackable(mod_mysql.drop_database), password, dbname)
         if result == True:
             code = 0
             msg = '%s 删除成功！' % _d(dbname)
@@ -3816,7 +3713,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在添加用户 %s...' % _d(username))
-        result = yield tornado.gen.Task(callbackable(mysql.create_user), password, user, host, pwd)
+        result = yield tornado.gen.Task(callbackable(mod_mysql.create_user), password, user, host, pwd)
         if result == True:
             code = 0
             msg = '用户 %s 添加成功！' % _d(username)
@@ -3837,7 +3734,7 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, '正在获取用户 %s 的权限...' % _d(username))
         
         privs = {'global':{}, 'bydb':{}}
-        globalprivs = yield tornado.gen.Task(callbackable(mysql.show_user_globalprivs), password, user, host)
+        globalprivs = yield tornado.gen.Task(callbackable(mod_mysql.show_user_globalprivs), password, user, host)
         if globalprivs != False:
             code = 0
             msg = '获取用户 %s 的全局权限成功！' % _d(username)
@@ -3848,7 +3745,7 @@ class BackendHandler(RequestHandler):
             privs = False
         
         if privs:
-            dbprivs = yield tornado.gen.Task(callbackable(mysql.show_user_dbprivs), password, user, host)
+            dbprivs = yield tornado.gen.Task(callbackable(mod_mysql.show_user_dbprivs), password, user, host)
             if dbprivs != False:
                 code = 0
                 msg = '获取用户 %s 的数据库权限成功！' % _d(username)
@@ -3876,7 +3773,7 @@ class BackendHandler(RequestHandler):
         else:
             self._update_job(jobname, 2, '正在更新用户 %s 的权限...' % _d(username))
             
-        rt = yield tornado.gen.Task(callbackable(mysql.update_user_privs), password, user, host, privs, dbname)
+        rt = yield tornado.gen.Task(callbackable(mod_mysql.update_user_privs), password, user, host, privs, dbname)
         if rt != False:
             code = 0
             msg = '用户 %s 的权限更新成功！' % _d(username)
@@ -3896,7 +3793,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在更新用户 %s 的密码...' % _d(username))
             
-        rt = yield tornado.gen.Task(callbackable(mysql.set_user_password), password, user, host, pwd)
+        rt = yield tornado.gen.Task(callbackable(mod_mysql.set_user_password), password, user, host, pwd)
         if rt != False:
             code = 0
             msg = '用户 %s 的密码更新成功！' % _d(username)
@@ -3916,7 +3813,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在删除用户 %s...' % _d(username))
             
-        rt = yield tornado.gen.Task(callbackable(mysql.drop_user), password, user, host)
+        rt = yield tornado.gen.Task(callbackable(mod_mysql.drop_user), password, user, host)
         if rt != False:
             code = 0
             msg = '用户 %s 删除成功！' % _d(username)
@@ -4064,7 +3961,8 @@ class BackupHandler(RequestHandler):
             self.set_header('Content-Type', 'application/octet-stream')
             self.set_header('Content-disposition', 'attachment; filename=inpanel_backup_%s.bak' % time.strftime('%Y%m%d'))
             self.set_header('Content-Transfer-Encoding', 'binary')
-            with open(path) as f: self.write(f.read())
+            with open(path, encoding='utf-8') as f:
+                self.write(f.read())
         else:
             self.write('配置文件不存在！')
 
@@ -4103,11 +4001,13 @@ class RestoreHandler(RequestHandler):
             self.write('正在上传...')
             file = self.request.files['ufile'][0]
             testpath = path+'.test'
-            with open(testpath, 'wb') as f: f.write(file['body'])
+            with open(testpath, 'wb', encoding='utf-8') as f:
+                f.write(file['body'])
 
             try:
                 t = configurations(testpath)
-                with open(path, 'wb') as f: f.write(file['body'])
+                with open(path, 'wb', encoding='utf-8') as f:
+                    f.write(file['body'])
                 self.write('还原成功！')
             except:
                 self.write('配置文件有误，还原失败！')
@@ -4539,7 +4439,8 @@ class InPanelIndexHandler(RequestHandler):
     """Index page of InPanel.
     """
     def get(self, instance_name, ip, port):
-        with open(joinpath(self.settings['inpanel_path'], 'index.html')) as f:
+        path = joinpath(self.settings['inpanel_path'], 'index.html')
+        with open(path, encoding='utf-8') as f:
             html = f.read()
         html = html.replace('<link rel="stylesheet" href="', '<link rel="stylesheet" href="/inpanel/')
         html = html.replace('<script src="', '<script src="/inpanel/')
@@ -4632,7 +4533,7 @@ class RepoYumHander(RequestHandler):
             self.write({'code': -1, 'msg': 'DEMO 状态不允许设置 YUM ！'})
             return
         if sec == 'list':
-            items = repo_yum.get_list()
+            items = mod_yum.get_list()
             if items is None:
                 self.write({'code': -1, 'msg': '获取配置失败！'})
             else:
@@ -4643,7 +4544,7 @@ class RepoYumHander(RequestHandler):
             if repo == None:
                 self.write({'code': -1, 'msg': '配置文件不能为空！'})
                 return
-            data = repo_yum.get_item(repo)
+            data = mod_yum.get_item(repo)
             if data is None:
                 self.write({'code': -1, 'msg': '配置文件不存在！'})
             else:
@@ -4687,18 +4588,18 @@ class RepoYumHander(RequestHandler):
                 }
             }
             if sec == 'edit':
-                if not repo_yum.item_exists(repo):
+                if not mod_yum.item_exists(repo):
                     self.write({'code': -1, 'msg': '配置文件不存在！'})
                     return
-                if repo_yum.set_item(repo, data) is True:
+                if mod_yum.set_item(repo, data) is True:
                     self.write({'code': 0, 'msg': '配置修改成功！'})
                 else:
                     self.write({'code': -1, 'msg': '配置修改失败！'})
             else:
-                if repo_yum.item_exists(repo):
+                if mod_yum.item_exists(repo):
                     self.write({'code': -1, 'msg': '配置文件已存在！'})
                     return
-                if repo_yum.add_item(repo, data) is True:
+                if mod_yum.add_item(repo, data) is True:
                     self.write({'code': 0, 'msg': '配置添加成功！'})
                 else:
                     self.write({'code': -1, 'msg': '配置修改失败！'})
@@ -4708,10 +4609,10 @@ class RepoYumHander(RequestHandler):
             if repo is None:
                 self.write({'code': -1, 'msg': '配置文件不能为空！'})
                 return
-            if not repo_yum.item_exists(repo):
+            if not mod_yum.item_exists(repo):
                 self.write({'code': -1, 'msg': '配置文件不存在！'})
                 return
-            if repo_yum.del_item(repo) is True:
+            if mod_yum.del_item(repo) is True:
                 self.write({'code': 0, 'msg': '配置文件已移入回收站！'})
             else:
                 self.write({'code': -1, 'msg': '删除失败！'})

@@ -7,8 +7,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Package for mysql operations.
-"""
+"""Module for mysql operations."""
 
 import os
 import re

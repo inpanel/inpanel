@@ -12,7 +12,7 @@ from configparser import RawConfigParser
 from os.path import exists, expanduser, isdir, dirname
 from os import makedirs
 
-from base import config_path
+from base import config_path, tmplog_path
 from lib.filelock import FileLock
 
 
@@ -41,10 +41,6 @@ def configurations(inifile=None, configs=None):
             'loginfails': '0',
             'loginlockexpire': '0',
         },
-        'file': {
-            'lastdir': expanduser('~'), # user Home path
-            'lastfile': '',
-        },
         'time': {
             'timezone': ''  # format: timezone = Asia/Shanghai
         },
@@ -57,6 +53,14 @@ def configurations(inifile=None, configs=None):
     } if configs is None else configs
 
     return Config(config_path if inifile is None else inifile, default_configs)
+
+def tmplogconfig():
+    return configurations(tmplog_path, {
+        'file': {
+            'lastdir': expanduser('~'), # user Home path
+            'lastfile': '',
+        }
+    })
 
 class Config(object):
     def __init__(self, inifile=None, configs=None):
@@ -95,7 +99,7 @@ class Config(object):
             flock.acquire()
 
         try:
-            inifp = open(self.inifile, 'w')
+            inifp = open(self.inifile, 'w', encoding='utf-8')
             self.cfg.write(inifp)
             inifp.close()
             if lock:

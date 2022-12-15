@@ -30,7 +30,7 @@ def load_config():
         return {}
 
     config = {}
-    with open(crontab, 'r') as f:
+    with open(crontab, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
     while len(lines) > 0:
@@ -62,7 +62,7 @@ def save_config(filepath, config):
     except OSError:
         return False
 
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
     output = []
@@ -80,7 +80,7 @@ def save_config(filepath, config):
             else:
                 output.append('%s' % (line))
 
-    with open(filepath, 'w') as f:
+    with open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(output)
         return True
 
@@ -106,7 +106,7 @@ def cron_list(level='normal', user=None):
         return None
 
     crons = []
-    with open(spool) as f:
+    with open(spool, encoding='utf-8') as f:
         i = 0
         for line in f:
             line = line.strip()
@@ -153,7 +153,7 @@ def cron_add(user, minute, hour, day, month, weekday, command, level):
         spool = join(cronspool, user)
         line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
 
-    with open(spool, 'a+') as f:
+    with open(spool, 'a+', encoding='utf-8') as f:
         f.write(line)
         return True
 
@@ -172,7 +172,7 @@ def cron_mod(user, id, minute, hour, day, month, weekday, command, level, currli
         spool = join(cronspool, user)
         cron_line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
 
-    with open(spool, 'r') as f:
+    with open(spool, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
     i, j = 0, 0
@@ -195,7 +195,7 @@ def cron_mod(user, id, minute, hour, day, month, weekday, command, level, currli
                 lines[j-1] = cron_line
                 break
 
-    with open(spool, 'w+') as f:
+    with open(spool, 'w+', encoding='utf-8') as f:
         f.writelines(lines)
         return True
 
@@ -207,7 +207,7 @@ def cron_del(user, id, level, currlist=''):
         return False
     spool = crontab if level == 'system' else join(cronspool, user)
 
-    with open(spool, 'r') as f:
+    with open(spool, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
     i, j = 0, 0
@@ -229,7 +229,7 @@ def cron_del(user, id, level, currlist=''):
                 del lines[j-1]
                 break
 
-    with open(spool, 'w+') as f:
+    with open(spool, 'w+', encoding='utf-8') as f:
         f.writelines(lines)
         return True
 

@@ -489,7 +489,7 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
 
     line_buffer = []
 
-    with open(conf) as f:
+    with open(conf, encoding='utf-8') as f:
         for line_i, line in enumerate(f):
             line = line.strip()
             if DEBUG:
@@ -670,25 +670,30 @@ def _comment(filepath, start, end):
     """
     if not os.path.exists(filepath): return False
     data = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for i, line in enumerate(f):
-            if i>=start and i<=end:
-                if not line.startswith(COMMENTFLAG): data.append(COMMENTFLAG)
+            if i >= start and i <= end:
+                if not line.startswith(COMMENTFLAG):
+                    data.append(COMMENTFLAG)
             data.append(line)
-    with open(filepath, 'w') as f: f.write(''.join(data))
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(''.join(data))
     return True
 
 def _uncomment(filepath, start, end):
     """Uncommend some lines in the file.
     """
-    if not os.path.exists(filepath): return False
+    if not os.path.exists(filepath):
+        return False
     data = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for i, line in enumerate(f):
-            if i>=start and i<=end:
-                while line.startswith(COMMENTFLAG): line = line[3:]
+            if i >= start and i <= end:
+                while line.startswith(COMMENTFLAG):
+                    line = line[3:]
             data.append(line)
-    with open(filepath, 'w') as f: f.write(''.join(data))
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(''.join(data))
     return True
 
 def _delete(filepath, start, end, delete_emptyfile=True):
@@ -699,13 +704,16 @@ def _delete(filepath, start, end, delete_emptyfile=True):
     """
     if not os.path.exists(filepath): return False
     data = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for i, line in enumerate(f):
-            if i>=start and i<=end: continue
+            if i >= start and i <= end:
+                continue
             data.append(line)
-    with open(filepath, 'w') as f: f.write(''.join(data))
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(''.join(data))
     if delete_emptyfile:
-        if ''.join(data).strip() == '': os.unlink(filepath)
+        if ''.join(data).strip() == '':
+            os.unlink(filepath)
     return True
 
 def _getcontextrange(context, config):
@@ -879,13 +887,14 @@ def _replace(positions, lines):
     files = {}
     for pos in positions:
         filepath, line_start, line_count = pos
-        if not filepath in files: files[filepath] = []
+        if not filepath in files:
+            files[filepath] = []
         for i in range(line_count):
             files[filepath].append(line_start+i)
     # replace line by line
     for filepath, line_nums in files.items():
         flines = []
-        with open(filepath) as f:
+        with open(filepath, encoding='utf-8') as f:
             for i, fline in enumerate(f):
                 if i in line_nums:
                     if len(lines) > 0:
@@ -896,7 +905,8 @@ def _replace(positions, lines):
                         # this aim to keep the indent of the line
                         space = ''
                         for c in fline:
-                            if c not in (' ', '\t'): break
+                            if c not in (' ', '\t'):
+                                break
                             space += c
                         flines.append(''.join([space, line, '\n']))
                     else:
@@ -909,20 +919,22 @@ def _replace(positions, lines):
                         space = ''
                         if len(flines)>0: # last line exists
                             for c in flines[-1]:
-                                if c not in (' ', '\t'): break
+                                if c not in (' ', '\t'):
+                                    break
                                 space += c
                         for line in lines:
                             flines.append(''.join([space, line, '\n']))
                         lines = []
                     flines.append(fline)
         # write back to file
-        with open(filepath, 'w') as f: f.write(''.join(flines))
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(''.join(flines))
 
 def _insert(filepath, line_start, lines):
     """Insert the lines to the specified position.
     """
     flines = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for i, fline in enumerate(f):
             if i == line_start:
                 # detect the indent of the last not empty line
@@ -933,15 +945,17 @@ def _insert(filepath, line_start, lines):
                     while flines[line_i].strip() == '' and -line_i <= flines_len:
                         line_i -= 1
                     for c in flines[line_i]:
-                            if c not in (' ', '\t'): break
-                            space += c
+                        if c not in (' ', '\t'):
+                            break
+                        space += c
                     if flines[line_i].strip().endswith('{'):
                         space += '    '
                 for line in lines:
                     flines.append(''.join([space, line, '\n']))
             flines.append(fline)
     # write back to file
-    with open(filepath, 'w') as f: f.write(''.join(flines))
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(''.join(flines))
 
 def _detect_engines(context):
     """Detect engines in context.
@@ -1572,11 +1586,12 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
     # check if need to add a new line at the end of the file to
     # avoid first line go to the same former } line
     if configfile_exists:
-        with open(configfile) as f:
+        with open(configfile, encoding='utf-8') as f:
             f.seek(-1, 2)
             if f.read(1) != '\n':
                 servercfg.insert(0, '')
-    with open(configfile, configfile_exists and 'a' or 'w') as f: f.write('\n'.join(servercfg))
+    with open(configfile, configfile_exists and 'a' or 'w', encoding='utf-8') as f:
+        f.write('\n'.join(servercfg))
     return True
 
 def updateserver(old_ip, old_port, old_server_name,
@@ -1592,7 +1607,8 @@ def updateserver(old_ip, old_port, old_server_name,
     # to check if the ip:port/server_name change and conflict status
     config = loadconfig(NGINXCONF, True)
     oldscontext = _context_getserver(old_ip, old_port, old_server_name, config)
-    if not oldscontext: return False
+    if not oldscontext:
+        return False
     for server_name in server_names:
         for listen in listens:
             ip = 'ip' in listen and listen['ip'] or ''
@@ -1609,8 +1625,10 @@ def updateserver(old_ip, old_port, old_server_name,
             config = loadconfig(NGINXCONF, True)
 
     # disable the old server and relative upstreams
-    if not _context_commentserver(old_ip, old_port, old_server_name, config=config): return False
-    if not _context_commentupstreams(old_server_name, config=config): return False
+    if not _context_commentserver(old_ip, old_port, old_server_name, config=config):
+        return False
+    if not _context_commentupstreams(old_server_name, config=config):
+        return False
 
     # add the new server
     if not addserver(server_names, listens, charset=charset, index=index, locations=locations,

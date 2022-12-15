@@ -124,7 +124,7 @@ def get_cmdline(pid):
         p = '/proc/%s/cmdline' % pid
         if not exists(p):
             return None
-        with open(p, 'r') as f:
+        with open(p, 'r', encoding='utf-8') as f:
             line = f.readline()
             return line.strip()
 
@@ -157,7 +157,7 @@ def save_pidfile(pidfile, pid):
     '''create/save pid file'''
     if not isdir(dirname(pidfile)):
         makedirs(dirname(pidfile))
-    with open(pidfile, 'w+') as f:
+    with open(pidfile, 'w+', encoding='utf-8') as f:
         f.write(str(pid))
 
 
@@ -178,7 +178,7 @@ def get_io(pid):
         p = '/proc/%s/io' % pid
         if not exists(p):
             return None
-        with open(p, 'r') as f:
+        with open(p, 'r', encoding='utf-8') as f:
             line = f.readline()
             while line:
                 out = line.strip()

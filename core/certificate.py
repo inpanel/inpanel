@@ -148,7 +148,7 @@ class Certificate():
             opssl_conf = '/etc/pki/tls/openssl.cnf'
             conf_tmp = join(self.path_home, basename(opssl_conf))
             copy(opssl_conf, conf_tmp)
-            with open(conf_tmp, 'a') as f:
+            with open(conf_tmp, 'a', encoding='utf-8') as f:
                 f.writelines(['\n[SAN]', '\n%s' % san])
             # config = '<(cat %s <(printf "[SAN]\\n%s"))' % (opssl_conf, san)
             cmd.extend(['-reqexts', 'SAN', '-config', conf_tmp])
@@ -158,7 +158,7 @@ class Certificate():
         if out is None:
             return {'code': -1, 'msg': 'csr_create_error'}
         else:
-            with open(c, 'w') as f:
+            with open(c, 'w', encoding='utf-8') as f:
                 f.write(out)
             return {'code': 0, 'msg': 'csr_create_success', 'data': out}
 
@@ -203,7 +203,7 @@ class Certificate():
         self.acme = ACME(acc, csr, ckdir)
         signed_crt = self.acme.get_certificate()
         if signed_crt is not None:
-            with open(crt, 'w') as f:
+            with open(crt, 'w', encoding='utf-8') as f:
                 f.write(signed_crt)
 
     def revoke_domain_cert(self, domain=''):

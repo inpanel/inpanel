@@ -85,7 +85,7 @@ class ServerInfo(object):
                 'idle': 0,
                 'idle_rate': 0,
             }
-        with open('/proc/uptime', 'r') as f:
+        with open('/proc/uptime', 'r', encoding='utf-8') as f:
             uptime, idletime = f.readline().split()
             up_seconds = int(float(uptime))
             idle_seconds = int(float(idletime))
@@ -118,7 +118,7 @@ class ServerInfo(object):
             '15min': 0
         }
         if kernel_name == 'Linux':
-            with open('/proc/loadavg', 'r') as f:
+            with open('/proc/loadavg', 'r', encoding='utf-8') as f:
                 load_1min, load_5min, load_15min = f.readline().split()[0:3]
                 loadavg['1min']  = load_1min
                 loadavg['5min']  = load_5min
@@ -141,7 +141,7 @@ class ServerInfo(object):
             full_fname = ('user', 'nice', 'system', 'idle', 'iowait', 'irq',
                         'softirq', 'steal', 'guest', 'guest_nice')
             cpustat['cpus'] = []
-            with open('/proc/stat', 'r') as f:
+            with open('/proc/stat', 'r', encoding='utf-8') as f:
                 for line in f:
                     if line.startswith('cpu'):
                         fields = line.strip().split()
@@ -187,7 +187,7 @@ class ServerInfo(object):
         mem_available_computed = 0
 
         if kernel_name == 'Linux':
-            with open('/proc/meminfo', 'r') as f:
+            with open('/proc/meminfo', 'r', encoding='utf-8') as f:
                 for line in f:
                     if ':' not in line:
                         continue
@@ -209,7 +209,7 @@ class ServerInfo(object):
                         swap_total = value
                     elif item == 'SwapFree':
                         swap_free = value
-            with open('/proc/sys/vm/swappiness', 'r') as f:
+            with open('/proc/sys/vm/swappiness', 'r', encoding='utf-8') as f:
                 swap_swappiness = f.readline()
         elif kernel_name == 'Darwin': pass
         elif kernel_name == 'Windows': pass
@@ -245,7 +245,7 @@ class ServerInfo(object):
     def mounts(self, detectdev=False):
         mounts = []
         if kernel_name == 'Linux':
-            with open('/proc/mounts', 'r') as f:
+            with open('/proc/mounts', 'r', encoding='utf-8') as f:
                 for line in f:
                     dev, path, fstype = line.split()[0:3]
                     # simfs: filesystem in OpenVZ
@@ -266,8 +266,10 @@ class ServerInfo(object):
                 if detectdev:
                     dev = os.stat(mount['path']).st_dev
                     mount['major'], mount['minor'] = os.major(dev), os.minor(dev)
-        elif kernel_name == 'Darwin': pass
-        elif kernel_name == 'Windows': pass
+        elif kernel_name == 'Darwin':
+            pass
+        elif kernel_name == 'Windows':
+            pass
 
         return mounts
 
@@ -275,7 +277,7 @@ class ServerInfo(object):
     def netifaces(self):
         netifaces = []
         if kernel_name == 'Linux':
-            with open('/proc/net/dev', 'r') as f:
+            with open('/proc/net/dev', 'r', encoding='utf-8') as f:
                 for line in f:
                     if not ':' in line:
                         continue
@@ -292,7 +294,7 @@ class ServerInfo(object):
                         'rx_bytes': rx,
                         'tx_bytes': tx,
                     })
-            with open('/proc/net/route') as f:
+            with open('/proc/net/route', encoding='utf-8') as f:
                 for line in f:
                     fields = line.strip().split()
                     if fields[1] != '00000000' or not int(fields[3], 16) & 2:
@@ -303,8 +305,10 @@ class ServerInfo(object):
                             netiface['gw'] = gw
                             break
 
-        elif kernel_name == 'Darwin': pass
-        elif kernel_name == 'Windows': pass
+        elif kernel_name == 'Darwin':
+            pass
+        elif kernel_name == 'Windows':
+            pass
 
         # REF: http://linux.about.com/library/cmd/blcmdl7_netdevice.htm
         for i, netiface in enumerate(netifaces):
@@ -386,13 +390,14 @@ class ServerInfo(object):
     def nameservers(self):
         nameservers = []
         if kernel_name in ('Linux', 'Darwin'):
-            with open('/etc/resolv.conf', 'r') as f:
+            with open('/etc/resolv.conf', 'r', encoding='utf-8') as f:
                 for line in f:
                     if not 'nameserver' in line:
                         continue
                     ns, = line.strip().split()[1:2]
                     nameservers.append(ns)
-        elif kernel_name == 'Windows': pass
+        elif kernel_name == 'Windows':
+            pass
 
         return nameservers
 
@@ -426,7 +431,7 @@ class ServerInfo(object):
         bitss = []
         cpuids = []
         if kernel_name == 'Linux':
-            with open('/proc/cpuinfo', 'r') as f:
+            with open('/proc/cpuinfo', 'r', encoding='utf-8') as f:
                 for line in f:
                     if 'model name' in line or 'physical id' in line or 'flags' in line:
                         item, value = line.strip().split(':')
@@ -441,8 +446,10 @@ class ServerInfo(object):
                                 bitss.append('64bit')
                             else:
                                 bitss.append('32bit')
-        elif kernel_name == 'Darwin': pass
-        elif kernel_name == 'Windows': pass
+        elif kernel_name == 'Darwin':
+            pass
+        elif kernel_name == 'Windows':
+            pass
 
         cores = [{'model': x, 'bits': y} for x, y in zip(models, bitss)]
         cpu_count = len(set(cpuids))
@@ -474,7 +481,7 @@ class ServerInfo(object):
             if not os.path.exists('/etc/blkid/blkid.tab'):
                 return None
 
-            with open('/etc/blkid/blkid.tab') as f:
+            with open('/etc/blkid/blkid.tab', encoding='utf-8') as f:
                 for line in f:
                     dom = parseString(line).documentElement
                     _fstype = dom.getAttribute('TYPE')
@@ -493,8 +500,10 @@ class ServerInfo(object):
                         blks[_devname] = partinfo
             if uuid or devname:
                 return None
-        elif kernel_name == 'Darwin': pass
-        elif kernel_name == 'Windows': pass
+        elif kernel_name == 'Darwin':
+            pass
+        elif kernel_name == 'Windows':
+            pass
 
         return blks
 
@@ -530,7 +539,7 @@ class ServerInfo(object):
             blks[devname]['minor'] = minor
 
         parts = []
-        with open('/proc/partitions', 'r') as f:
+        with open('/proc/partitions', 'r', encoding='utf-8') as f:
             for line in f:
                 fields = line.split()
                 if len(fields) == 0:
@@ -595,7 +604,7 @@ class ServerInfo(object):
 
         # scan for the 'on' status swap partition
         swapptns = []
-        with open('/proc/swaps', 'r') as f:
+        with open('/proc/swaps', 'r', encoding='utf-8') as f:
             for line in f:
                 if not line.startswith('/dev/'):
                     continue
@@ -692,7 +701,7 @@ class ServerInfo(object):
         if kernel_name == 'Linux':
             # detect from dmesg first
             if os.path.exists('/var/log/dmesg'):
-                with open('/var/log/dmesg') as f:
+                with open('/var/log/dmesg', encoding='utf-8') as f:
                     for line in f:
                         if 'VMware Virtual' in line:
                             return 'VMware'

@@ -10,7 +10,7 @@
 '''Package for user management.'''
 
 import grp
-import os
+# import os
 import pwd
 import shlex
 import subprocess
@@ -18,31 +18,38 @@ import subprocess
 import pexpect
 # from lib import pexpect
 
+from base import kernel_name
 
 def listuser(fullinfo=True):
-    if fullinfo:
+    if not fullinfo:
+        return [pw.pw_name for pw in pwd.getpwall()]
+
+    locks = {}
+    if kernel_name == 'Linux':
         # get lock status from /etc/shadow
-        locks = {}
-        with open('/etc/shadow') as f:
+        with open('/etc/shadow', encoding='utf-8') as f:
             for line in f:
                 fields = line.split(':', 2)
                 locks[fields[0]] = fields[1].startswith('!')
-        users = pwd.getpwall()
-        for i, user in enumerate(users):
-            users[i] = dict((name, getattr(user, name))
-                            for name in dir(user)
-                            if not name.startswith('__')
-                            and name not in ('count', 'index'))
-            try:
-                gname = grp.getgrgid(user.pw_gid).gr_name
-            except:
-                gname = ''
-            users[i]['pw_gname'] = gname
-            users[i]['lock'] = locks[user.pw_name]
-    else:
-        users = [pw.pw_name for pw in pwd.getpwall()]
-    return users
 
+    users = pwd.getpwall()
+    for i, user in enumerate(users):
+        users[i] = dict((name, getattr(user, name))
+                        for name in dir(user)
+                        if not name.startswith('__')
+                        and name not in ('count', 'index'))
+
+        try:
+            gname = grp.getgrgid(user.pw_gid).gr_name
+        except:
+            gname = ''
+
+        users[i]['pw_gname'] = gname
+        if user.pw_name in locks:
+            users[i]['lock'] = locks[user.pw_name]
+        else:
+            users[i]['lock'] = False
+    return users
 
 def passwd(username, password):
     try:

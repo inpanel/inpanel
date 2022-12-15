@@ -94,7 +94,7 @@ class Service(object):
                 return 'stopped'
 
         if pidfile:
-            with open(pidfile) as f:
+            with open(pidfile, encoding='utf-8') as f:
                 pid = f.readline().strip()
             if not pid:
                 return 'stopped'
@@ -122,7 +122,7 @@ class Service(object):
         """
         if kernel_name == 'Linux':
             startlevel = -1
-            with open('/etc/inittab') as f:
+            with open('/etc/inittab', encoding='utf-8') as f:
                 for line in f:
                     if line.startswith('id:'):
                         startlevel = line.split(':')[1]

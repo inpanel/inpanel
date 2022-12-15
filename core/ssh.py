@@ -25,7 +25,7 @@ def loadconfig(cfgfile=None, detail=False):
         cfgfile = SSHCFG
 
     settings = {}
-    with open(cfgfile) as f:
+    with open(cfgfile, encoding='utf-8') as f:
         for line_i, line in enumerate(f):
             line = line.strip()
             if not line or line.startswith('# '):
@@ -99,7 +99,7 @@ def cfg_set(item, value, commented=False, config=None):
 
         # replace item in line
         lines = []
-        with open(v['file']) as f:
+        with open(v['file'], encoding='utf-8') as f:
             for line_i, line in enumerate(f):
                 if line_i == v['line']:
                     if not v['commented']:
@@ -123,11 +123,11 @@ def cfg_set(item, value, commented=False, config=None):
                             lines.append('%s %s\n' % (item, value))
                 else:
                     lines.append(line)
-        with open(v['file'], 'w') as f:
+        with open(v['file'], 'w', encoding='utf-8') as f:
             f.write(''.join(lines))
     else:
         # append to the end of file
-        with open(inifile, 'a') as f:
+        with open(inifile, 'a', encoding='utf-8') as f:
             f.write('\n%s%s = %s\n' % (commented and '#' or '', item, value))
 
     return True

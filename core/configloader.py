@@ -19,7 +19,7 @@ def raw_loadconfig(filepath, return_sort=False, delimiter='=', quoter=' "\'', ov
     config = {}
     if return_sort:
         sortlist = []
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for line in f:
             pair = line.strip().split(delimiter)
             if len(pair) != 2:
@@ -64,7 +64,7 @@ def raw_saveconfig(filepath, config, sortlist=[], delimiter='=', quoter='"'):
             line = '%s%s%s%s%s\n' % (k, delimiter, quoter, v, quoter)
             lines.append(line)
 
-    with open(filepath, 'w') as f:
+    with open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(lines)
     return True
 
@@ -74,9 +74,9 @@ def loadconfig(filepath, keymap=None, delimiter='=', quoter=' "\''):
     """
     raw_config = raw_loadconfig(filepath)
     # print(raw_config)
-    if raw_config == None:
+    if raw_config is None:
         return None
-    if keymap == None:
+    if keymap is None:
         # return raw_config
         config = dict((k, v) for k, v in raw_config.items())
     else:
@@ -88,10 +88,10 @@ def saveconfig(filepath, config, keymap=None, delimiter='=', read_quoter=' "\'',
     """Save config to file."""
     # current config
     raw_config, sortlist = raw_loadconfig(filepath, return_sort=True, delimiter=delimiter, quoter=read_quoter)
-    if raw_config == None:
+    if raw_config is None:
         return False
     for k, v in config.items():
-        if keymap == None:
+        if keymap is None:
             # Unspecified range of key-value pairs
             # Modify the specified field
             raw_config[k] = v
@@ -107,10 +107,10 @@ def saveconfig(filepath, config, keymap=None, delimiter='=', read_quoter=' "\'',
 def readconfig(filepath, readfunc, **params):
     """Read config from file.
     """
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for line in f:
             rt = readfunc(line.strip(), **params)
-            if rt != None:
+            if rt is not None:
                 return rt
 
 
@@ -119,13 +119,13 @@ def writeconfig(filepath, readfunc, writefunc, **params):
     """
     lines = []
     linemeet = False
-    with open(filepath) as f:
+    with open(filepath, encoding='utf-8') as f:
         for line in f:
             rt = readfunc(line.strip(), **params)
-            if rt != None:
+            if rt is not None:
                 linemeet = True
                 line = writefunc(line, **params)
-                if line != None:
+                if line is not None:
                     lines.append(line+'\n')
             else:
                 lines.append(line)
@@ -133,9 +133,9 @@ def writeconfig(filepath, readfunc, writefunc, **params):
     # generate a new line if no line meet
     if not linemeet:
         line = writefunc(None, **params)
-        if line != None:
+        if line is not None:
             lines.append(line+'\n')
 
-    with open(filepath, 'w') as f:
+    with open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(lines)
     return True

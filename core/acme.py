@@ -220,7 +220,7 @@ class ACME():
             token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
             key_auth = "{0}.{1}".format(token, self.thumbprint)
             wellknown_path = join(self.acme_check_dir, token)
-            with open(wellknown_path, "w") as f:
+            with open(wellknown_path, 'w', encoding='utf-8') as f:
                 f.write(key_auth)
 
             # check that the wellknown_file is in specified place

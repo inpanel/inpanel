@@ -25,7 +25,7 @@ class ServerSet(object):
     @classmethod
     def hostname(self, hostname=None):
         '''change hostname'''
-        if hostname == None:
+        if hostname is None:
             return False
         else:
             hostname = hostname.replace(' ', '').replace('\n', '')
@@ -55,7 +55,7 @@ class ServerSet(object):
                 'NETMASK': 'mask',
                 'GATEWAY': 'gw',
             }
-            if config == None:
+            if config is None:
                 return loadconfig(cfile, cmap)
             else:
                 cmap_reverse = dict((v, k) for k, v in cmap.items())
@@ -84,7 +84,7 @@ class ServerSet(object):
         or pass a dict type to config to write config.
         """
         nspath = '/etc/resolv.conf'
-        if nameservers == None:
+        if nameservers is None:
             nameservers = raw_loadconfig(
                 nspath, delimiter=' ', overwrite=False)
             if nameservers:
@@ -114,7 +114,7 @@ class ServerSet(object):
         """
         zonepath = '/usr/share/zoneinfo'
         timezones = []
-        if region == None:
+        if region is None:
             regions = ServerSet.timezone_regions()
             for region in regions:
                 regionpath = join(zonepath, region)
@@ -133,7 +133,7 @@ class ServerSet(object):
         return timezones
 
     @classmethod
-    def timezone(self, inifile, timezone=None):
+    def timezone(self, config, timezone=None):
         """Get or set system timezone.
 
         Pass None to parameter config (as default) to get timezone,
@@ -142,11 +142,10 @@ class ServerSet(object):
         tzpath = '/etc/localtime'
         zonepath = '/usr/share/zoneinfo'
 
-        config = configurations(inifile)
         if not config.has_section('time'):
             config.add_section('time')
 
-        if timezone == None:
+        if timezone is None:
             # firstly read from config file
             timezone = ''
             if config.has_option('time', 'timezone'):
@@ -165,7 +164,7 @@ class ServerSet(object):
                 pass
 
             # or else find the file match /etc/localtime
-            with open(tzpath) as f:
+            with open(tzpath, encoding='utf-8') as f:
                 tzdata = f.read()
             regions = ServerSet.timezone_regions()
             for region in regions:
@@ -173,7 +172,7 @@ class ServerSet(object):
                 for zonefile in listdir(regionpath):
                     if not isfile(join(regionpath, zonefile)):
                         continue
-                    with open(join(regionpath, zonefile)) as f:
+                    with open(join(regionpath, zonefile), encoding='utf-8') as f:
                         if f.read() == tzdata:  # got it!
                             return '%s/%s' % (region, zonefile)
         else:
@@ -219,9 +218,9 @@ class ServerSet(object):
     @classmethod
     def _write_fstab(self, line, **params):
         config = params['config']
-        if not 'mount' in config or config['mount'] == None:
+        if not 'mount' in config or config['mount'] is None:
             return None   # remove line
-        if line == None:  # new line
+        if line is None:  # new line
             return '/dev/%s %s                %s    defaults        1 2' %\
                 (params['devname'], config['mount'], config['fstype'])
         else:  # update existing line
@@ -246,7 +245,7 @@ class ServerSet(object):
         >>> fstab(config)
         """
         cfgfile = '/etc/fstab'
-        if config == None:
+        if config is None:
             # read config
             return readconfig(cfgfile, ServerSet._read_fstab, devname=devname)
         else:
@@ -313,7 +312,7 @@ if __name__ == '__main__':
             break
     print('')
 
-    inifile = join(dirname(__file__), '../../data/config.ini')
+    inifile = configurations()
     timezone = ServerSet.timezone(inifile)
     print('* Timezone: %s' % timezone)
     print('')

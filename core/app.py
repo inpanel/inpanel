@@ -15,7 +15,7 @@ from tornado import httpserver, ioloop
 
 import mod_web
 from base import config_path, pidfile
-# from repo_yum import WebRequestRepoYUM
+# from mod_yum import WebRequestRepoYUM
 from certificate import WebRequestSSLTLS
 from configuration import configurations
 from mod_process import WebRequestProcess, save_pidfile
@@ -39,8 +39,6 @@ settings = {
     'autoreload': True,
     'root_path': root_path,
     'data_path': join(root_path, 'data'),
-    # 'conf_path': join(root_path, 'data', 'config.ini'),
-    'conf_path': config_path,
     'index_path': join(root_path, 'public', 'index.html'),
     'template_path': join(root_path, 'templates'),
     'static_path': join(root_path, 'public'),
@@ -80,7 +78,7 @@ router = [
 application = mod_web.Application(router, **settings)
 
 # read configuration from config.ini
-cfg = configurations(settings['conf_path'])
+cfg = configurations(config_path)
 server_ip = cfg.get('server', 'ip')
 server_port = cfg.get('server', 'port')
 force_https = cfg.getboolean('server', 'forcehttps')
