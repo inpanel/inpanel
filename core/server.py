@@ -16,10 +16,11 @@ import shlex
 import socket
 import struct
 import time
+import glob
 from subprocess import PIPE, Popen
 from xml.dom.minidom import parseString
 
-from base import (dist_name, dist_versint, hostname, kernel_name, server_info)
+from base import (os_name, os_title, os_versint, hostname, kernel_name, server_info)
 from utils import b2h
 
 
@@ -243,7 +244,7 @@ class ServerInfo(object):
 
     @classmethod
     def mounts(self, detectdev=False):
-        mounts = []
+        _mounts = []
         if kernel_name == 'Linux':
             with open('/proc/mounts', 'r', encoding='utf-8') as f:
                 for line in f:
@@ -253,8 +254,8 @@ class ServerInfo(object):
                                 'btrfs', 'simfs'):
                         if not os.path.isdir(path):
                             continue
-                        mounts.append({'dev': dev, 'path': path, 'fstype': fstype})
-            for mount in mounts:
+                        _mounts.append({'dev': dev, 'path': path, 'fstype': fstype})
+            for mount in _mounts:
                 stat = os.statvfs(mount['path'])
                 total = stat.f_blocks * stat.f_bsize
                 free = stat.f_bfree * stat.f_bsize
@@ -267,11 +268,16 @@ class ServerInfo(object):
                     dev = os.stat(mount['path']).st_dev
                     mount['major'], mount['minor'] = os.major(dev), os.minor(dev)
         elif kernel_name == 'Darwin':
+            for mnt in glob.glob('/dev/disk?s*'):
+                # t = os.stat(mnt)
+                # if t.st_rdev == s.st_dev:
+                # print(mnt)
+                _mounts.append({'dev': mnt, 'path': '/', 'fstype': 'APFS'})
             pass
         elif kernel_name == 'Windows':
             pass
 
-        return mounts
+        return _mounts
 
     @classmethod
     def netifaces(self):
@@ -403,26 +409,26 @@ class ServerInfo(object):
 
     @classmethod
     def distribution(self):
-        return '%s %s' % (dist_name, dist_versint)
+        return os_title
 
     @classmethod
     def dist(self):
         return {
-            'name': dist_name.lower(),
-            'version': dist_versint,
+            'name': os_name.lower(),
+            'version': os_versint,
         }
 
     @classmethod
     def uname(self):
         return {
-            'dist': server_info['dist_name'],
+            'dist': server_info['os_name'],
             'kernel_name': server_info['kernel_name'],
             'hostname': server_info['hostname'],
             'kernel_release': server_info['kernel_release'],
             'kernel_version': server_info['kernel_version'],
             'machine': server_info['machine'],
             'processor': server_info['processor'],
-            'platform': server_info['dist_platform']
+            'platform': server_info['os_platform']
         }
 
     @classmethod

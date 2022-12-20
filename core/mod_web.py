@@ -54,12 +54,12 @@ import ssh
 import user
 import utils
 import yum
-from base import (app_api, app_name, dist_name, dist_versint, machine,
-                      version_info)
-from configuration import configurations, tmplogconfig
+from base import (app_api, app_name, os_name, os_versint, machine,
+                  version_info)
+from configuration import main_config, runlogs_config
 from lib import pyDes
 from lib.async_process import call_subprocess, callbackable
-from sc import ServerSet
+from sc import ServerSet, get_hostname, set_hostname, get_nameservers, set_nameservers
 from server import ServerInfo, ServerTool
 from service import Service
 
@@ -72,12 +72,12 @@ except ImportError:
 class Application(tornado.web.Application):
     def __init__(self, handlers=None, default_host="", transforms=None, **settings):
         settings['arch'] = machine
-        settings['dist_name'] = dist_name.lower()
-        if machine == 'i686' and dist_versint == 5:
+        settings['os_name'] = os_name.lower()
+        if machine == 'i686' and os_versint == 5:
             settings['arch'] = 'i386'
         settings['data_path'] = abspath(settings['data_path'])
         settings['package_path'] = joinpath(settings['data_path'], 'packages')
-        config = configurations()
+        config = main_config()
 
         tornado.web.Application.__init__(self, handlers, default_host, transforms, **settings)
 
@@ -86,8 +86,8 @@ class RequestHandler(tornado.web.RequestHandler):
     def initialize(self):
         """Parse JSON data to argument list.
         """
-        self.config = configurations()
-        self.tmplog = tmplogconfig()
+        self.config = main_config()
+        self.runlogs = runlogs_config()
 
         content_type = self.request.headers.get("Content-Type", "")
         if content_type.startswith("application/json"):
@@ -410,7 +410,7 @@ class SitePackageHandler(RequestHandler):
                 packages = response.body
                 with open(packages_cachefile, 'w', encoding='utf-8') as f:
                     f.write(packages)
-        
+
         packages = tornado.escape.json_decode(packages)
         self.write({'code': 0, 'msg':'', 'data': packages})
 
@@ -563,7 +563,7 @@ class UtilsNetworkHandler(RequestHandler):
     def get(self, sec, ifname):
         self.authed()
         if sec == 'hostname':
-            self.write({'hostname': ServerInfo.hostname()})
+            self.write({'hostname': get_hostname()})
         elif sec == 'ifnames':
             ifconfigs = ServerSet.ifconfigs()
             # filter lo
@@ -573,7 +573,7 @@ class UtilsNetworkHandler(RequestHandler):
             ifconfig = ServerSet.ifconfig(_u(ifname))
             if ifconfig != None: self.write(ifconfig)
         elif sec == 'nameservers':
-            self.write({'nameservers': ServerSet.nameservers()})
+            self.write({'nameservers': get_nameservers()})
 
     def post(self, sec, ifname):
         self.authed()
@@ -584,7 +584,7 @@ class UtilsNetworkHandler(RequestHandler):
         if sec == 'hostname':
             hostname = self.get_argument('hostname', '')
             if hostname != '':
-                if ServerSet.hostname(hostname):
+                if set_hostname(hostname):
                     self.write({'code': 0, 'msg': '主机名保存成功！'})
                 else:
                     self.write({'code': -1, 'msg': '主机名保存失败！'})
@@ -612,7 +612,7 @@ class UtilsNetworkHandler(RequestHandler):
                 self.write({'code': -1, 'msg': 'IP设置保存失败！'})
 
         elif sec == 'nameservers':
-            nameservers = _u(self.get_argument('nameservers', ''))
+            nameservers = self.get_argument('nameservers', '')
             nameservers = nameservers.split(',')
 
             for i, nameserver in enumerate(nameservers):
@@ -623,7 +623,7 @@ class UtilsNetworkHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '%s 不是有效的IP地址！' % nameserver})
                     return
 
-            if ServerSet.nameservers(nameservers):
+            if set_nameservers(nameservers):
                 self.write({'code': 0, 'msg': 'DNS设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': 'DNS设置保存失败！'})
@@ -739,7 +739,7 @@ class SettingHandler(RequestHandler):
                 pwd = hmac.new(key.encode('utf-8'), password.encode('utf-8'), md5).hexdigest()
                 self.config.set('auth', 'password', '%s:%s' % (pwd, key))
 
-            self.write({'code': 0, 'msg': '登录设置更新成功！'})
+            self.write({'code': 0, 'msg': '账号设置更新成功！'})
 
         elif section == 'server':
             if self.config.get('runtime', 'mode') == 'demo':
@@ -1021,8 +1021,8 @@ class OperationHandler(RequestHandler):
         action = self.get_argument('action', '')
 
         if action == 'last':
-            lastdir = self.tmplog.get('file', 'lastdir')
-            lastfile = self.tmplog.get('file', 'lastfile')
+            lastdir = self.runlogs.get('file', 'lastdir')
+            lastfile = self.runlogs.get('file', 'lastfile')
             self.write({'code': 0, 'msg': '', 'data': {'lastdir': lastdir, 'lastfile': lastfile}})
 
         elif action == 'listdir':
@@ -1034,7 +1034,8 @@ class OperationHandler(RequestHandler):
             if items == False:
                 self.write({'code': -1, 'msg': '目录 %s 不存在！' % path})
             else:
-                if remember == 'on': self.tmplog.set('file', 'lastdir', path)
+                if remember == 'on':
+                    self.runlogs.set('file', 'lastdir', path)
                 self.write({'code': 0, 'msg': '成功获取文件列表！', 'data': items})
 
         elif action == 'getitem':
@@ -1056,7 +1057,8 @@ class OperationHandler(RequestHandler):
             # elif not files.istext(path):
             #     self.write({'code': -1, 'msg': '读取 %s 失败！无法识别文件类型！' % path})
             else:
-                if remember == 'on': self.tmplog.set('file', 'lastfile', path)
+                if remember == 'on':
+                    self.runlogs.set('file', 'lastfile', path)
                 charset, content = files.decode(path)
                 if not charset:
                     self.write({'code': -1, 'msg': '不可识别的文件编码！---'})
@@ -1071,7 +1073,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': 0, 'msg': '成功读取文件内容！', 'data': data})
 
         elif action == 'fclose':
-            self.tmplog.set('file', 'lastfile', '')
+            self.runlogs.set('file', 'lastfile', '')
             self.write({'code': 0, 'msg': ''})
 
         elif action == 'fwrite':
@@ -1091,7 +1093,7 @@ class OperationHandler(RequestHandler):
             if not content:
                 self.write({'code': -1, 'msg': '文件编码转换出错，保存失败！'})
                 return
-            if files.fsave(_u(path), content):
+            if files.fsave(path, content):
                 self.write({'code': 0, 'msg': '文件保存成功！'})
             else:
                 self.write({'code': -1, 'msg': '文件保存失败！'})
@@ -1256,7 +1258,7 @@ class OperationHandler(RequestHandler):
                 else:
                     returnlist = False
                     values = [mod_nginx.http_getfirst(_u(item), config)]
-                
+
                 if values:
                     if item == 'gzip':
                         # eg. gzip off
@@ -1429,7 +1431,7 @@ class OperationHandler(RequestHandler):
 
                 values.append(' '.join(fields))
 
-            mod_nginx.http_set('proxy_cache_path', values)            
+            mod_nginx.http_set('proxy_cache_path', values)
             self.write({'code': 0, 'msg': '设置保存成功！'})
 
         elif action == 'getserver':
@@ -1643,9 +1645,9 @@ class OperationHandler(RequestHandler):
                             return
                         location['redirect_url'] = locsetting['url']
                         if 'type' in locsetting and locsetting['type'] in ('301', '302'):
-                            location['redirect_type'] = locsetting['type'] 
+                            location['redirect_type'] = locsetting['type']
                         if 'option' in locsetting and locsetting['option'] in ('keep', 'ignore'):
-                            location['redirect_option'] = locsetting['option'] 
+                            location['redirect_option'] = locsetting['option']
                     elif loc['engine'] == 'proxy':
                         if not 'backends' in locsetting or not locsetting['backends']:
                             self.write({'code': -1, 'msg': '反向代理后端不能为空！'})
@@ -1714,7 +1716,7 @@ class OperationHandler(RequestHandler):
                                         if backend['fail_timeout']: proxy_backend['fail_timeout'] = backend['fail_timeout']
                                         if backend['max_fails']: proxy_backend['max_fails'] = backend['max_fails']
                             location['proxy_backends'].append(proxy_backend)
-                        
+
                         if 'proxy_cache_enable' in locsetting and locsetting['proxy_cache_enable']:
                             if not 'proxy_cache' in locsetting or locsetting['proxy_cache'] == '':
                                 self.write({'code': -1, 'msg': '请选择缓存区域！'})
@@ -1762,7 +1764,7 @@ class OperationHandler(RequestHandler):
                                 cus = locsetting['proxy_cache_use_stale']
                                 for k,v in cus.items():
                                     if not k in ('error', 'timeout', 'invalid_header', 'updating',
-                                        'http_500', 'http_502', 'http_503', 'http_504', 'http_404') or not v: continue
+                                        'http_500', 'http_502', 'http_503', 'http_504', 'http_404') or not v:                                        continue
                                     t.append(k)
                                 if len(t)>0: location['proxy_cache_use_stale'] = t
                             if 'proxy_cache_lock' in locsetting and locsetting['proxy_cache_lock']:
@@ -1942,7 +1944,7 @@ class OperationHandler(RequestHandler):
             php.ini_set('pm.max_requests', pm_max_requests, initype='php-fpm')
             php.ini_set('request_terminate_timeout', request_terminate_timeout, initype='php-fpm')
             php.ini_set('request_slowlog_timeout', request_slowlog_timeout, initype='php-fpm')
-            
+
             self.write({'code': 0, 'msg': 'PHP FastCGI 设置保存成功！'})
 
     def ssh(self):
@@ -2154,7 +2156,7 @@ class BackendHandler(RequestHandler):
         # centos/redhat only job
         if jobname in ('yum_repolist', 'yum_installrepo', 'yum_info',
                        'yum_install', 'yum_uninstall', 'yum_ext_info'):
-            if self.settings['dist_name'] not in ('centos', 'redhat'):
+            if self.settings['os_name'] not in ('centos', 'redhat'):
                 self.write({'code': -1, 'msg': '不支持的系统类型！'})
                 return
 
@@ -2578,7 +2580,7 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = '%s/scripts/init.d/%s/inpanel' % (root_path, self.settings['dist_name'])
+        initscript = '%s/scripts/init.d/%s/inpanel' % (root_path, self.settings['os_name'])
         binscript = '%s/scripts/bin/inpanel' % root_path
         steps = [
             {
@@ -2652,8 +2654,8 @@ class BackendHandler(RequestHandler):
         # patch before start sendmail in redhat/centos 5.x
         # REF: http://www.mombu.com/gnu_linux/red-hat/t-why-does-sendmail-hang-during-rh-9-start-up-1068528.html
         if action == 'start' and service in ('sendmail', )\
-            and self.settings['dist_name'] in ('redhat', 'centos')\
-            and dist_versint == 5:
+            and self.settings['os_name'] in ('redhat', 'centos')\
+            and os_versint == 5:
             # check if current hostname line in /etc/hosts have a char '.'
             hostname = ServerInfo.hostname()
             hostname_found = False
@@ -2673,7 +2675,7 @@ class BackendHandler(RequestHandler):
             if not dot_found:
                 with open('/etc/hosts', 'w', encoding='utf-8') as f:
                     f.writelines(lines)
-        if dist_versint < 7:
+        if os_versint < 7:
             cmd = '/etc/init.d/%s %s' % (service, action)
         else:
             cmd = '/bin/systemctl %s %s.service' % (action, service)
@@ -2870,11 +2872,11 @@ class BackendHandler(RequestHandler):
 
         cmds = []
         if repo == 'base':
-            for cmd in mod_yum.get_repo_release(dist_versint, self.settings['dist_name'], self.settings['arch']):
+            for cmd in mod_yum.get_repo_release(os_versint, self.settings['os_name'], self.settings['arch']):
                 cmds.append(cmd)
 
         elif repo in ('epel', 'CentALT'):
-            for cmd in mod_yum.get_repo_epel(dist_versint, self.settings['dist_name'], self.settings['arch']):
+            for cmd in mod_yum.get_repo_epel(os_versint, self.settings['os_name'], self.settings['arch']):
                 cmds.append(cmd)
 
         elif repo == 'ius':
@@ -2918,7 +2920,7 @@ class BackendHandler(RequestHandler):
                             lines.append(line)
                             # # add a mirrorlist line
                             # metalink = 'https://inpanel.org/mirrorlist?'\
-                            #     'repo=centalt-%s&arch=$basearch' % dist_versint
+                            #     'repo=centalt-%s&arch=$basearch' % os_versint
                             # line = 'mirrorlist=%s\n' % metalink
                         lines.append(line)
                 if baseurl_found:
@@ -3016,7 +3018,7 @@ class BackendHandler(RequestHandler):
             arch = 'noarch'
 
         if ext: # install extension
-            if version: 
+            if version:
                 if release:
                     pkgs = ['%s-%s-%s.%s' % (ext, version, release, arch)]
                 else:
@@ -3188,7 +3190,7 @@ class BackendHandler(RequestHandler):
         if not self._lock_job('yum'):
             self._finish_job(jobname, -1, '已有一个YUM进程在运行，获取扩展信息失败。')
             return
- 
+
         self._update_job(jobname, 2, '正在收集扩展信息...')
 
         exts = [k for k, v in yum.yum_pkg_relatives[pkg].items() if 'isext' in v and v['isext']]
@@ -3221,14 +3223,14 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg, data)
         self._unlock_job('yum')
-        
+
     @tornado.gen.coroutine
     def copy(self, srcpath, despath):
         """Copy a directory or file to a new path.
         """
         jobname = 'copy_%s_%s' % (srcpath, despath)
         if not self._start_job(jobname): return
- 
+
         self._update_job(jobname, 2, '正在复制 %s 到 %s...' % (_d(srcpath), _d(despath)))
 
         cmd = 'cp -rf %s %s' % (quote(srcpath), quote(despath))
@@ -3241,16 +3243,16 @@ class BackendHandler(RequestHandler):
             msg = '复制 %s 到 %s 失败！<p style="margin:10px">%s</p>' % (_d(srcpath), _d(despath), _d(output.strip().replace('\n', '<br>')))
 
         self._finish_job(jobname, code, msg)
-        
+
     @tornado.gen.coroutine
     def move(self, srcpath, despath):
         """Move a directory or file recursively to a new path.
         """
         jobname = 'move_%s_%s' % (srcpath, despath)
         if not self._start_job(jobname): return
- 
+
         self._update_job(jobname, 2, '正在移动 %s 到 %s...' % (_d(srcpath), _d(despath)))
-        
+
         # check if the despath exists
         # if exists, we first copy srcpath to despath, then remove the srcpath
         despath_exists = exists(despath)
@@ -3292,7 +3294,7 @@ class BackendHandler(RequestHandler):
         """
         jobname = 'remove_%s' % ','.join(paths)
         if not self._start_job(jobname): return
- 
+
         for path in paths:
             self._update_job(jobname, 2, '正在删除 %s...' % _d(path))
             cmd = 'rm -rf %s' % (quote(path))
@@ -3325,7 +3327,7 @@ class BackendHandler(RequestHandler):
         elif zippath.endswith('.zip'):
             if not exists('/usr/bin/zip'):
                 self._update_job(jobname, 2, '正在安装 zip...')
-                if self.settings['dist_name'] in ('centos', 'redhat'):
+                if self.settings['os_name'] in ('centos', 'redhat'):
                     cmd = 'yum install -y zip unzip'
                     result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
                     if result == 0:
@@ -3367,7 +3369,7 @@ class BackendHandler(RequestHandler):
         elif zippath.endswith('.zip'):
             if not exists('/usr/bin/unzip'):
                 self._update_job(jobname, 2, '正在安装 unzip...')
-                if self.settings['dist_name'] in ('centos', 'redhat'):
+                if self.settings['os_name'] in ('centos', 'redhat'):
                     cmd = 'yum install -y zip unzip'
                     result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
                     if result == 0:
@@ -3586,7 +3588,7 @@ class BackendHandler(RequestHandler):
             msg = '获取数据库列表失败！'
 
         self._finish_job(jobname, code, msg, dbs)
-    
+
     @tornado.gen.coroutine
     def mysql_users(self, password, dbname=None):
         """Show MySQL user list.
@@ -3612,7 +3614,7 @@ class BackendHandler(RequestHandler):
             msg = '获取用户列表失败！'
 
         self._finish_job(jobname, code, msg, users)
-    
+
     @tornado.gen.coroutine
     def mysql_dbinfo(self, password, dbname):
         """Get MySQL database info.
@@ -3631,7 +3633,7 @@ class BackendHandler(RequestHandler):
             msg = '获取数据库 %s 的信息失败！' % _d(dbname)
 
         self._finish_job(jobname, code, msg, dbinfo)
-    
+
     @tornado.gen.coroutine
     def mysql_rename(self, password, dbname, newname):
         """MySQL database rename.
@@ -3649,7 +3651,7 @@ class BackendHandler(RequestHandler):
             msg = '%s 重命名失败！' % _d(dbname)
 
         self._finish_job(jobname, code, msg)
-    
+
     @tornado.gen.coroutine
     def mysql_create(self, password, dbname, collation):
         """Create MySQL database.
@@ -3667,7 +3669,7 @@ class BackendHandler(RequestHandler):
             msg = '%s 创建失败！' % _d(dbname)
 
         self._finish_job(jobname, code, msg)
-    
+
     @tornado.gen.coroutine
     def mysql_export(self, password, dbname, path):
         """MySQL database export.
@@ -3703,7 +3705,7 @@ class BackendHandler(RequestHandler):
             msg = '%s 删除失败！' % _d(dbname)
 
         self._finish_job(jobname, code, msg)
-    
+
     @tornado.gen.coroutine
     def mysql_createuser(self, password, user, host, pwd=None):
         """Create MySQL user.
@@ -3732,7 +3734,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在获取用户 %s 的权限...' % _d(username))
-        
+
         privs = {'global':{}, 'bydb':{}}
         globalprivs = yield tornado.gen.Task(callbackable(mod_mysql.show_user_globalprivs), password, user, host)
         if globalprivs != False:
@@ -3743,7 +3745,7 @@ class BackendHandler(RequestHandler):
             code = -1
             msg = '获取用户 %s 的全局权限失败！' % _d(username)
             privs = False
-        
+
         if privs:
             dbprivs = yield tornado.gen.Task(callbackable(mod_mysql.show_user_dbprivs), password, user, host)
             if dbprivs != False:
@@ -3772,7 +3774,7 @@ class BackendHandler(RequestHandler):
             self._update_job(jobname, 2, '正在更新用户 %s 在数据库 %s 中的权限...' % (_d(username), _d(dbname)))
         else:
             self._update_job(jobname, 2, '正在更新用户 %s 的权限...' % _d(username))
-            
+
         rt = yield tornado.gen.Task(callbackable(mod_mysql.update_user_privs), password, user, host, privs, dbname)
         if rt != False:
             code = 0
@@ -3792,7 +3794,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在更新用户 %s 的密码...' % _d(username))
-            
+
         rt = yield tornado.gen.Task(callbackable(mod_mysql.set_user_password), password, user, host, pwd)
         if rt != False:
             code = 0
@@ -3812,7 +3814,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在删除用户 %s...' % _d(username))
-            
+
         rt = yield tornado.gen.Task(callbackable(mod_mysql.drop_user), password, user, host)
         if rt != False:
             code = 0
@@ -3831,7 +3833,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在生成密钥对...')
-            
+
         rt = yield tornado.gen.Task(callbackable(ssh.genkey), path, password)
         if rt != False:
             code = 0
@@ -3850,7 +3852,7 @@ class BackendHandler(RequestHandler):
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, '正在修改私钥密码...')
-            
+
         rt = yield tornado.gen.Task(callbackable(ssh.chpasswd), path, oldpassword, newpassword)
         if rt != False:
             code = 0
@@ -4005,7 +4007,7 @@ class RestoreHandler(RequestHandler):
                 f.write(file['body'])
 
             try:
-                t = configurations(testpath)
+                # t = main_config(testpath)
                 with open(path, 'wb', encoding='utf-8') as f:
                     f.write(file['body'])
                 self.write('还原成功！')
@@ -4453,8 +4455,8 @@ class InPanelHandler(RequestHandler):
 
     REF: https://groups.google.com/forum/?fromgroups=#!topic/python-tornado/TB_6oKBmdlA
     """
-    def handle_response(self, response): 
-        if response.error and not isinstance(response.error, tornado.httpclient.HTTPError): 
+    def handle_response(self, response):
+        if response.error and not isinstance(response.error, tornado.httpclient.HTTPError):
             loginfo("response has error %s", response.error)
             self.set_status(500)
             self.write("Internal server error:\n" + str(response.error))
@@ -4469,7 +4471,7 @@ class InPanelHandler(RequestHandler):
                 self.write(response.body)
             self.finish()
 
-    def forward(self, port=None, host=None): 
+    def forward(self, port=None, host=None):
         try:
             tornado.httpclient.AsyncHTTPClient().fetch(
                 tornado.httpclient.HTTPRequest(
@@ -4489,7 +4491,7 @@ class InPanelHandler(RequestHandler):
             self.set_status(500)
             self.write("Internal server error\n")
             self.finish()
-    
+
     def gen_token(self, instance_name):
         if not self.config.has_option('inpanel', instance_name):
             self.set_status(403)

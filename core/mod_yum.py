@@ -89,23 +89,23 @@ def del_item(repo):
     return delete(repo_file)
 
 
-def get_repo_release(dist_versint, dist_name, arch):
+def get_repo_release(os_versint, os_name, arch):
     '''install release'''
     cmds = []
-    if dist_versint == 5:
-        if dist_name == 'redhat':
+    if os_versint == 5:
+        if os_name == 'redhat':
             # backup system version info
             cmds.append('cp -f /etc/redhat-release /etc/redhat-release.inpanel')
             cmds.append('cp -f /etc/issue /etc/issue.inpanel')
             cmds.append('rpm -e redhat-release-5Server --nodeps')
-    elif dist_versint == 7:
-        if dist_name == 'centos':
+    elif os_versint == 7:
+        if os_name == 'centos':
             cmds.append('yum install -y centos-release')
-    elif dist_versint == 8:
-        if dist_name == 'centos':
+    elif os_versint == 8:
+        if os_name == 'centos':
             cmds.append('yum install -y centos-release')
     else:
-        for rpm in yum_reporpms['base'][dist_versint][arch]:
+        for rpm in yum_reporpms['base'][os_versint][arch]:
             cmds.append('rpm -U %s' % rpm)
 
         if exists('/etc/issue.inpanel'):
@@ -115,19 +115,19 @@ def get_repo_release(dist_versint, dist_name, arch):
     return cmds
 
 
-def get_repo_epel(dist_versint, dist_name, arch):
+def get_repo_epel(os_versint, os_name, arch):
     '''install epel'''
     # CentALT and ius depends on epel
     cmds = []
 
-    if dist_versint == 7:
-        if dist_name == 'centos':
+    if os_versint == 7:
+        if os_name == 'centos':
             cmds.append('yum install -y epel-release')
-    if dist_versint == 8:
-        if dist_name == 'centos':
+    if os_versint == 8:
+        if os_name == 'centos':
             cmds.append('yum install -y epel-release')
     else:
-        for rpm in yum_reporpms['epel'][dist_versint][arch]:
+        for rpm in yum_reporpms['epel'][os_versint][arch]:
             cmds.append('rpm -U %s' % rpm)
 
     return cmds

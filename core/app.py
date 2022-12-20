@@ -17,20 +17,25 @@ import mod_web
 from base import config_path, pidfile
 # from mod_yum import WebRequestRepoYUM
 from certificate import WebRequestSSLTLS
-from configuration import configurations
+from configuration import main_config
 from mod_process import WebRequestProcess, save_pidfile
 from utils import make_cookie_secret
 
 print('InPanel: starting')
-print('InPanel: config file: %s' % config_path)
+print('InPanel: config file : %s' % config_path)
+print('InPanel: pid file    : %s' % pidfile)
 
 root_path = dirname(__file__)
 root_path = abspath(dirname(dirname(__file__)))
+run_mode = 'source'
 
 if hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
     # runtime_tmpdir
+    run_mode = 'binary'
     root_path = sys._MEIPASS
 
+# print('InPanel: root path: %s' % root_path)
+print('InPanel: runtime mode: %s' % run_mode)
 print('InPanel: runtime path: %s' % root_path)
 
 # settings of tornado application
@@ -78,12 +83,12 @@ router = [
 application = mod_web.Application(router, **settings)
 
 # read configuration from config.ini
-cfg = configurations(config_path)
-server_ip = cfg.get('server', 'ip')
-server_port = cfg.get('server', 'port')
-force_https = cfg.getboolean('server', 'forcehttps')
-sslkey = cfg.get('server', 'sslkey')
-sslcrt = cfg.get('server', 'sslcrt')
+config = main_config(config_path)
+server_ip = config.get('server', 'ip')
+server_port = config.get('server', 'port')
+force_https = config.getboolean('server', 'forcehttps')
+sslkey = config.get('server', 'sslkey')
+sslcrt = config.get('server', 'sslcrt')
 
 ssl = {'certfile': sslcrt, 'keyfile': sslkey} if force_https else None
 
@@ -95,8 +100,11 @@ def main():
     server = httpserver.HTTPServer(application, ssl_options=ssl)
     server.listen(port=server_port, address=server_ip)
 
-    save_pidfile(pidfile, getpid())
-    print('InPanel: running on http%s://%s:%s' % ('s' if force_https else '', server_ip, server_port))
+    pid = getpid()
+
+    save_pidfile(pidfile, pid)
+    print('InPanel: running pid : %s' % pid)
+    print('InPanel: running on  : http%s://%s:%s' % ('s' if force_https else '', server_ip, server_port))
     ioloop.IOLoop.current().start()
 
 

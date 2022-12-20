@@ -15,7 +15,7 @@ import time
 from base64 import b64decode
 from os.path import dirname, join,abspath
 
-from configuration import configurations
+from configuration import main_config
 from utils import is_valid_ip, randstr
 from base import config_path
 
@@ -36,9 +36,9 @@ accesskeyenable: set the remote access switch. value: on or off
         sys.exit()
     # config_path = join(abspath(dirname(dirname(__file__))), 'data', 'config.ini')
     # print(config_path)
-    config = configurations(config_path)
+    config = main_config(config_path)
     # data_path = join(dirname(__file__), 'data')
-    # config = configurations(data_path + '/config.ini')
+    # config = main_config(data_path + '/config.ini')
 
     option, value = sys.argv[1:]
     if option == 'ip':

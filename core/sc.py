@@ -15,28 +15,91 @@ from shutil import copyfile
 
 from configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
                           readconfig, saveconfig, writeconfig)
-from configuration import configurations
+from configuration import main_config
 from server import ServerInfo
 from shell import run
+from base import os_name, kernel_name
+from platform import uname
 
 
-class ServerSet(object):
 
-    @classmethod
-    def hostname(self, hostname=None):
-        '''change hostname'''
-        if hostname is None:
-            return False
+def get_hostname():
+    '''Get Hostname'''
+    node = uname().node
+    if exists('/etc/hostname'):
+        with open('/etc/hostname', 'r', encoding='utf-8') as f:
+            line = f.readlines(1)
+            hostname = line[0].replace('\\n', '').replace('\\l', '').strip()
+            if hostname and hostname is not node:
+                return hostname
+    return node
+
+
+def set_hostname(hostname=None):
+    '''Change Hostname'''
+    if hostname is None:
+        return False
+
+    hostname = hostname.strip().replace(' ', '').replace('\n', '')
+    if hostname == '':
+        return False
+
+    if os_name == 'CentOS':
+        # change network, hosts, hostname
+        if saveconfig('/etc/sysconfig/network', {'HOSTNAME': hostname}) and\
+            raw_saveconfig('/etc/hosts', { '127.0.0.1': hostname, '::1': hostname }, delimiter=' ', quoter='') and\
+            run(str('hostname %s' % hostname)) == 0:
+            return True
         else:
-            hostname = hostname.replace(' ', '').replace('\n', '')
-            # change network, hosts, hostname
-            if saveconfig('/etc/sysconfig/network', {'HOSTNAME': hostname}) and\
-                saveconfig('/etc/hosts', {'127.0.0.1': hostname, '::1': hostname}) and\
-                run(str('hostname %s' % hostname)) == 0:
+            return False
+    elif os_name == 'Ubuntu':
+        try:
+            # change hosts, hostname
+            # TODO: Merge previous configurations
+            with open('/etc/hostname', 'w', encoding='utf-8') as f:
+                f.write(hostname)
+            newdata = {
+                '127.0.0.1': ['localhost', hostname],
+                '::1': ['localhost', hostname]
+            }
+            if run('hostnamectl set-hostname %s' % hostname) == 0 and\
+                raw_saveconfig('/etc/hosts', newdata, delimiter=' ', quoter=''):
                 return True
             else:
                 return False
+        except:
+            return False
+    else:
+        return False
 
+
+def get_nameservers():
+    """Read nameservers from config file.
+    """
+
+    if kernel_name in ('Linux', 'Darwin'):
+        nspath = '/etc/resolv.conf'
+        servers = raw_loadconfig(nspath, delimiter=' ', overwrite=False)
+        if servers:
+            return servers['nameserver']
+    elif kernel_name == 'Windows':
+        pass
+    return []
+
+
+def set_nameservers(nameservers=None):
+    """Write nameservers to config file.
+    Pass a dict type to config to write config.
+    """
+    if nameservers is None:
+        return False
+
+    nspath = '/etc/resolv.conf'
+    data = { 'nameserver': nameservers }
+    return raw_saveconfig(nspath, data, delimiter=' ', quoter='')
+
+
+class ServerSet(object):
 
     @classmethod
     def ifconfig(self, ifname, config=None):
@@ -75,26 +138,6 @@ class ServerSet(object):
             if config:
                 configs[ifname] = config
         return configs
-
-    @classmethod
-    def nameservers(self, nameservers=None):
-        """Read or write nameservers to config file.
-
-        Pass None to parameter config (as default) to read config,
-        or pass a dict type to config to write config.
-        """
-        nspath = '/etc/resolv.conf'
-        if nameservers is None:
-            nameservers = raw_loadconfig(
-                nspath, delimiter=' ', overwrite=False)
-            if nameservers:
-                return nameservers['nameserver']
-            else:
-                return []
-        else:
-            return raw_saveconfig(nspath,
-                                  {'nameserver': nameservers},
-                                  delimiter=' ', quoter='')
 
     @classmethod
     def timezone_regions(self):
@@ -286,14 +329,14 @@ if __name__ == '__main__':
             print('  GATEWAY: %s' % config['gw'])
         print('')
 
-    nameservers = ServerSet.nameservers()
+    nameservers = get_nameservers()
     print('* Nameservers:')
     for nameserver in nameservers:
         print('  %s' % nameserver)
     print('')
 
     print('* Write back nameservers:')
-    print('  Return: %s ' % str(ServerSet.nameservers(nameservers)))
+    print('  Return: %s ' % str(set_nameservers(nameservers)))
     print('')
 
     timezones = ServerSet.timezone_list()
@@ -312,7 +355,7 @@ if __name__ == '__main__':
             break
     print('')
 
-    inifile = configurations()
+    inifile = main_config()
     timezone = ServerSet.timezone(inifile)
     print('* Timezone: %s' % timezone)
     print('')

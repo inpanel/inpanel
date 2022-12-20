@@ -8,7 +8,6 @@
 # The full license can be found in 'LICENSE'.
 '''Module for file Management'''
 
-import re
 import shelve
 import stat
 from grp import getgrgid, getgrnam
@@ -21,10 +20,8 @@ from os import rename as osrename
 from os import symlink, walk
 import os.path
 from pwd import getpwnam, getpwuid
-from subprocess import PIPE, Popen
 from time import time
 from uuid import uuid4
-import chardet
 
 from server import ServerInfo
 from utils import b2h, ftime
@@ -38,8 +35,8 @@ def listdir(path, showdotfiles=False, onlydir=None):
     if not os.path.exists(path) or not os.path.isdir(path):
         return False
     items = sorted(oslistdir(path))
-    # if not showdotfiles:
-    #     items = [item for item in items if not item.startswith('.')]
+    if not showdotfiles:
+        items = [item for item in items if not item.startswith('.')]
     for i, item in enumerate(items):
         items[i] = getitem(os.path.join(path, item))
     # let folders list before files
@@ -219,7 +216,7 @@ def fsave(path, content, bakup=True):
             dname = os.path.dirname(path)
             filename = '.%s.bak' % os.path.basename(path)
             osrename(path, os.path.join(dname, filename))
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, 'wb') as f:
             f.write(content)
         return True
     except:
@@ -315,8 +312,8 @@ def tlist():
     # gather informations in each mount point's trash
     items = []
     for mount in mounts:
-        db = shelve.open(os.path.join(mount, '.deleted_files', '.fileinfo'),
-                         'c')
+        trashfile = os.path.join(mount, '.deleted_files', '.fileinfo')
+        db = shelve.open(trashfile, 'c')
         for uuid, info in db.items():
             fields = info.split('\t')
             item = {
@@ -334,7 +331,7 @@ def tlist():
                 item['islnk'] = stat.S_ISLNK(md)
             items.append(item)
         db.close()
-    items.sort(lambda x, y: cmp(y['time'], x['time']))
+    # items.sort(lambda x, y: cmp(y['time'], x['time']))
     return items
 
 

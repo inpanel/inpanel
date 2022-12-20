@@ -15,7 +15,7 @@ from os.path import basename, exists
 from shlex import split
 from subprocess import PIPE, Popen
 
-from base import kernel_name
+from base import kernel_name, os_name
 
 
 class Service(object):
@@ -121,6 +121,8 @@ class Service(object):
         """Return a list of the autostart service name.
         """
         if kernel_name == 'Linux':
+            if os_name == 'Ubuntu':
+                return []
             startlevel = -1
             with open('/etc/inittab', encoding='utf-8') as f:
                 for line in f:
