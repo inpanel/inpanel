@@ -20,6 +20,7 @@ from server import ServerInfo
 from shell import run
 from base import os_name, kernel_name
 from platform import uname
+from hashlib import md5
 
 
 
@@ -99,6 +100,44 @@ def set_nameservers(nameservers=None):
     return raw_saveconfig(nspath, data, delimiter=' ', quoter='')
 
 
+def get_timezone_regions():
+    """Return all the timezone regions.
+    """
+    return ('Africa', 'America', 'Antarctica', 'Arctic', 'Asia',
+            'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific', 'Etc')
+
+
+def get_timezone_list(region=None):
+    """Return timezone list.
+
+    Pass None to parameter region to get the full timezone name, such as:
+        Asia/Shanghai
+        Asia/Chongqing
+    Or else only the city name would be returned.
+    """
+    zonepath = '/usr/share/zoneinfo'
+    timezones = []
+    if region is None:
+        regions = get_timezone_regions()
+        for region in regions:
+            regionpath = join(zonepath, region)
+            for zonefile in listdir(regionpath):
+                if not isfile(join(regionpath, zonefile)):
+                    continue
+                timezones.append('%s/%s' % (region, zonefile))
+    else:
+        regionpath = join(zonepath, region)
+        if not exists(regionpath):
+            return []
+        for zonefile in listdir(regionpath):
+            if not isfile(join(regionpath, zonefile)):
+                continue
+            timezones.append(zonefile)
+
+    return sorted(timezones)
+
+
+
 class ServerSet(object):
 
     @classmethod
@@ -140,42 +179,6 @@ class ServerSet(object):
         return configs
 
     @classmethod
-    def timezone_regions(self):
-        """Return all the timezone regions.
-        """
-        return ('Africa', 'America', 'Antarctica', 'Arctic', 'Asia',
-                'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific', 'Etc')
-
-    @classmethod
-    def timezone_list(self, region=None):
-        """Return timezone list.
-
-        Pass None to parameter region to get the full timezone name, such as:
-            Asia/Shanghai
-            Asia/Chongqing
-        Or else only the city name would be returned.
-        """
-        zonepath = '/usr/share/zoneinfo'
-        timezones = []
-        if region is None:
-            regions = ServerSet.timezone_regions()
-            for region in regions:
-                regionpath = join(zonepath, region)
-                for zonefile in listdir(regionpath):
-                    if not isfile(join(regionpath, zonefile)):
-                        continue
-                    timezones.append('%s/%s' % (region, zonefile))
-        else:
-            regionpath = join(zonepath, region)
-            if not exists(regionpath):
-                return []
-            for zonefile in listdir(regionpath):
-                if not isfile(join(regionpath, zonefile)):
-                    continue
-                timezones.append(zonefile)
-        return timezones
-
-    @classmethod
     def timezone(self, config, timezone=None):
         """Get or set system timezone.
 
@@ -207,16 +210,16 @@ class ServerSet(object):
                 pass
 
             # or else find the file match /etc/localtime
-            with open(tzpath, encoding='utf-8') as f:
-                tzdata = f.read()
-            regions = ServerSet.timezone_regions()
+            with open(tzpath, 'rb') as f:
+                tzdata = md5(f.read()).hexdigest()
+            regions = get_timezone_regions()
             for region in regions:
                 regionpath = join(zonepath, region)
                 for zonefile in listdir(regionpath):
                     if not isfile(join(regionpath, zonefile)):
                         continue
-                    with open(join(regionpath, zonefile), encoding='utf-8') as f:
-                        if f.read() == tzdata:  # got it!
+                    with open(join(regionpath, zonefile), 'rb') as f:
+                        if md5(f.read()).hexdigest() == tzdata:  # got it!
                             return '%s/%s' % (region, zonefile)
         else:
             # check and set the timezone
@@ -339,7 +342,7 @@ if __name__ == '__main__':
     print('  Return: %s ' % str(set_nameservers(nameservers)))
     print('')
 
-    timezones = ServerSet.timezone_list()
+    timezones = get_timezone_list()
     print('* Timezone fullname list (first 10):')
     for i, timezone in enumerate(timezones):
         print('  %s' % timezone)
@@ -347,7 +350,7 @@ if __name__ == '__main__':
             break
     print('')
 
-    timezones = ServerSet.timezone_list('Asia')
+    timezones = get_timezone_list('Asia')
     print('* Timezone list in Asia (first 10):')
     for i, timezone in enumerate(timezones):
         print('  %s' % timezone)

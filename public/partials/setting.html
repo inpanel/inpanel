@@ -17,7 +17,9 @@
             <li ng-class="'active' | iftrue:activeTabName=='accesskey'"><a href="#accesskey" ng-click="sec('accesskey')" data-toggle="tab">远程控制</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='restart'"><a href="#restart" ng-click="sec('restart')" data-toggle="tab">重启服务</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='upversion'"><a href="#upversion" ng-click="sec('upversion')" data-toggle="tab">版本升级</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='about'"><a href="#about" ng-click="sec('about')" data-toggle="tab">关于</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='about'"><a href="#about" ng-click="sec('about')" data-toggle="tab">关于应用</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='license'"><a href="#license" ng-click="sec('license')" data-toggle="tab">开源协议</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='donation'"><a href="#donation" ng-click="sec('donation')" data-toggle="tab">捐助项目</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='authinfo'" id="authinfo" ng-init="loadAuthInfo()">
@@ -179,18 +181,18 @@
                     <div class="panel-body">
                         <p>InPanel v{{version.version}} b{{version.build}}</p>
                         <p>InPanel 是一款开源的 Linux 服务器管理面板，后端服务基于 Python 语言开发，前端页面基于框架 Angular JS v1.0.2</p>
-                        <p>授权协议：BSD</p>
                         <p>源码托管在 <a href="https://github.com/inpanel/inpanel" target="_blank">GitHub</a>、<a href="https://gitee.com/inpanel/inpanel" target="_blank">Gitee</a></p>
                         <p>国际网站：<a href="https://inpanel.org" target="_blank">https://inpanel.org</a>（提供多语言版本，针对国际用户）</p>
                         <p>国内网站：<a href="https://inpanel.cn" target="_blank">https://inpanel.cn</a>（只提供中文版，针对国内用户）</p>
                     </div>
                 </div>
-
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='license'" id="license">
                 <div class="panel panel-info">
                     <div class="panel-heading">
                         <div class="panel-title">
                             <i class="glyphicon glyphicon-copyright-mark"></i>
-                            <span> 关于 BSD 开源协议</span>
+                            <span> 使用 InPanel 需遵循 BSD 开源协议</span>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -201,11 +203,12 @@
                         <p>详细的条款许可请查阅 <a href="https://github.com/inpanel/inpanel/blob/main/LICENSE" target="_blank">这里</a></p>
                     </div>
                 </div>
-
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='donation'" id="donation">
                 <div class="panel panel-success">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <i class="glyphicon glyphicon-warning-sign"></i>
+                            <i class="glyphicon glyphicon-heart-empty"></i>
                             <span> 捐助项目</span>
                         </div>
                     </div>

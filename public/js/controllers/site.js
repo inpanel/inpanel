@@ -462,7 +462,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             } else {
                 $scope.getserver();
             }
-            $scope.load_nginx_version();
+            // $scope.load_nginx_version();
             $scope.load_proxy_caches();
         };
 

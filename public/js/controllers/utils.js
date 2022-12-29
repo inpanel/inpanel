@@ -235,7 +235,7 @@ var UtilsProcessCtrl = [
         };
 
         var getProcess = function() {
-            Request.get('/api/utils/process/list', function (res) {
+            Request.get('/api/process/list', function (res) {
                 if (res && res.code == 0) {
                     $scope.process.process = res.data;
                     $scope.process.total = res.data.length;
@@ -266,7 +266,7 @@ var UtilsProcessCtrl = [
         };
         $scope.processkill = function () {
             if ($scope.delete_process && $scope.delete_process['pid']) {
-                Request.post('/api/utils/process/kill/' + $scope.delete_process['pid'], null, function () {
+                Request.post('/api/process/kill/' + $scope.delete_process['pid'], null, function () {
                     $scope.delete_process = '';
                     $scope.refresh();
                 });
@@ -283,37 +283,37 @@ var UtilsProcessCtrl = [
         $scope.load_detial = function (pid) {
             if (pid) {
                 $scope.current_process_loaded = {'info': false, 'status': false, 'file': false, 'io': false, 'memory': false, 'network': false}
-                Request.get('/api/utils/process/info/' + pid, function (res) {
+                Request.get('/api/process/info/' + pid, function (res) {
                     $scope.current_process_loaded.info = true;
                     if (res && res.code == 0) {
                         $scope.current_process.info = res.data;
                     }
                 });
-                // Request.get('/api/utils/process/status/' + pid, function (res) {
+                // Request.get('/api/process/status/' + pid, function (res) {
                 //     $scope.current_process_loaded.status = true;
                 //     if (res && res.code == 0) {
                 //         $scope.current_process.status = res.data;
                 //     }
                 // });
-                Request.get('/api/utils/process/file/' + pid, function (res) {
+                Request.get('/api/process/file/' + pid, function (res) {
                     $scope.current_process_loaded.file = true;
                     if (res && res.code == 0) {
                         $scope.current_process.file = res.data;
                     }
                 });
-                // Request.get('/api/utils/process/io/' + pid, function (res) {
+                // Request.get('/api/process/io/' + pid, function (res) {
                 //     $scope.current_process_loaded.io = true;
                 //     if (res && res.code == 0) {
                 //         $scope.current_process.io = res.data;
                 //     }
                 // });
-                // Request.get('/api/utils/process/memory/' + pid, function (res) {
+                // Request.get('/api/process/memory/' + pid, function (res) {
                 //     $scope.current_process_loaded.memory = true;
                 //     if (res && res.code == 0) {
                 //         $scope.current_process.memory = res.data;
                 //     }
                 // });
-                Request.get('/api/utils/process/network/' + pid, function (res) {
+                Request.get('/api/process/network/' + pid, function (res) {
                     $scope.current_process_loaded.network = true;
                     if (res && res.code == 0) {
                         $scope.current_process.network = res.data;
@@ -353,19 +353,19 @@ var UtilsNetworkCtrl = [
         $scope.showRestartBtn = true;
 
         $scope.loadHostName = function () {
-            Request.get('/api/utils/network/hostname', function(data) {
+            Request.get('/api/network/hostname', function(data) {
                 $scope.hostname = data.hostname;
             });
         };
         $scope.saveHostName = function () {
-            Request.post('/api/utils/network/hostname', {
+            Request.post('/api/network/hostname', {
                 'hostname': $scope.hostname
             }, function (data) {
                 if (data.code == 0) $scope.loadHostName();
             });
         };
         $scope.loadIfNames = function() {
-            Request.get('/api/utils/network/ifnames', function(data) {
+            Request.get('/api/network/ifnames', function(data) {
                 $scope.ifnames = data.ifnames;
                 $scope.ifname = $scope.ifnames[0];
                 // load the default iface's config
@@ -374,14 +374,14 @@ var UtilsNetworkCtrl = [
         };
         $scope.loadIfConfig = function(ifname) {
             $scope.ifname = ifname;
-            Request.get('/api/utils/network/ifconfig/' + ifname, function(data) {
+            Request.get('/api/network/ifconfig/' + ifname, function(data) {
                 $scope.ip = data['ip'];
                 $scope.mask = data['mask'];
                 $scope.gw = data['gw'];
             });
         };
         $scope.saveIfConfig = function() {
-            Request.post('/api/utils/network/ifconfig/' + $scope.ifname, {
+            Request.post('/api/network/ifconfig/' + $scope.ifname, {
                 'ip': $scope.ip,
                 'mask': $scope.mask,
                 'gw': $scope.gw
@@ -390,7 +390,7 @@ var UtilsNetworkCtrl = [
             });
         };
         $scope.loadNameservers = function() {
-            Request.get('/api/utils/network/nameservers', function(data) {
+            Request.get('/api/network/nameservers', function(data) {
                 $scope.nameservers = data['nameservers'];
             });
         };
@@ -400,7 +400,7 @@ var UtilsNetworkCtrl = [
                 var ns = $(this).val();
                 if (ns) nameservers.push(ns);
             });
-            Request.post('/api/utils/network/nameservers', {
+            Request.post('/api/network/nameservers', {
                 'nameservers': nameservers.join(',')
             }, function(data) {
                 if (data.code == 0) $scope.loadNameservers();
@@ -450,7 +450,7 @@ var UtilsTimeCtrl = [
         $scope.ntpdStatus = null;
 
         $scope.loadDatetime = function() {
-            Request.get('/api/utils/time/datetime', function(data) {
+            Request.get('/api/time/datetime', function(data) {
                 $scope.datetime = data;
                 $scope.newDatetime = data.str;
             });
@@ -473,7 +473,7 @@ var UtilsTimeCtrl = [
         };
 
         $scope.loadTimezone = function() {
-            Request.get('/api/utils/time/timezone', function(data) {
+            Request.get('/api/time/timezone', function(data) {
                 var timezone = data.timezone;
                 $scope.timezone = timezone ? timezone : '时区不可识别';
                 if (timezone) {
@@ -488,15 +488,15 @@ var UtilsTimeCtrl = [
         };
         $scope.loadTimezones = function(region, callback) {
             if (region) {
-                Request.get('/api/utils/time/timezone_list/' + region, function(data) {
+                Request.get('/api/time/timezone_list/' + region, function(data) {
                     $scope.cities = data.cities;
                     if (callback) callback.call();
                 });
             } else {
-                Request.get('/api/utils/time/timezone_list', function(data) {
+                Request.get('/api/time/timezone_list', function(data) {
                     $scope.regions = data.regions;
                     var getcities = function() {
-                        Request.get('/api/utils/time/timezone_list/' + $scope.timezone_region, function(data) {
+                        Request.get('/api/time/timezone_list/' + $scope.timezone_region, function(data) {
                             $scope.cities = data.cities;
                         });
                     };
@@ -514,7 +514,7 @@ var UtilsTimeCtrl = [
         $scope.saveTimezone = function() {
             var region = $scope.timezone_region;
             var city = $scope.timezone_city;
-            Request.post('/api/utils/time/timezone', {
+            Request.post('/api/time/timezone', {
                 'timezone': region + '/' + city
             }, function(data) {
                 if (data.code == 0) {
@@ -1145,7 +1145,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
 
         $scope.load_keys = function (callback) {
             $scope.loading_keys = true;
-            Request.get('/api/utils/ssl/keys', function(res) {
+            Request.get('/api/ssl/keys', function(res) {
                 $scope.loading_keys = false;
                 if (res.list) {
                     $scope.list_keys = res.list;
@@ -1157,7 +1157,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
         $scope.load_crts = function (callback) {
             $scope.loading_crts = true;
-            Request.get('/api/utils/ssl/crts', function(res) {
+            Request.get('/api/ssl/crts', function(res) {
                 $scope.loading_crts = false;
                 if (res.list) {
                     $scope.list_crts = res.list;
@@ -1169,7 +1169,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
         $scope.load_csrs = function (callback) {
             $scope.loading_csrs = true;
-            Request.get('/api/utils/ssl/csrs', function(res) {
+            Request.get('/api/ssl/csrs', function(res) {
                 $scope.loading_csrs = false;
                 if (res.list) {
                     $scope.list_csrs = res.list;
@@ -1181,7 +1181,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
         $scope.load_host = function (callback) {
             $scope.loading_host = true;
-            Request.get('/api/utils/ssl/host', function(res) {
+            Request.get('/api/ssl/host', function(res) {
                 $scope.loading_host = false;
                 if (res.list) {
                     $scope.list_host = res.list;
@@ -1193,7 +1193,7 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
         };
         $scope.add_domain_keys = function (callback) {
             $scope.loading_host = true;
-            Request.post('/api/utils/ssl/keys', {
+            Request.post('/api/ssl/keys', {
                 'action': 'add_domain_keys'
             }, function(res) {
                 // $scope.loading_host = false;

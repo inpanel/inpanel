@@ -8,6 +8,7 @@
 # The full license can be found in 'LICENSE'.
 '''Module for file Management'''
 
+import os.path
 import shelve
 import stat
 from grp import getgrgid, getgrnam
@@ -17,8 +18,8 @@ from os import chown as oschown
 from os import listdir as oslistdir
 from os import lstat, mkdir, readlink
 from os import rename as osrename
+from os import stat as ostat
 from os import symlink, walk
-import os.path
 from pwd import getpwnam, getpwuid
 from time import time
 from uuid import uuid4
@@ -104,9 +105,9 @@ def getitem(path):
         if not linkfile.startswith('/'):
             linkfile = os.path.abspath(os.path.join(basepath, linkfile))
         try:
-            md = stat(linkfile)['st_mode']
-            item['link_isdir'] = stat.S_ISDIR(md)
-            item['link_isreg'] = stat.S_ISREG(md)
+            mode = ostat(linkfile).st_mode
+            item['link_isdir'] = stat.S_ISDIR(mode)
+            item['link_isreg'] = stat.S_ISREG(mode)
             item['link_broken'] = False
         except:
             item['link_broken'] = True
@@ -252,7 +253,7 @@ def delete(path):
     mounts = _getmounts()
     mount = ''
     for m in mounts:
-        if path.startswith(m.encode()):
+        if path.startswith(m):
             mount = m
             break
     if not mount:
@@ -313,24 +314,23 @@ def tlist():
     items = []
     for mount in mounts:
         trashfile = os.path.join(mount, '.deleted_files', '.fileinfo')
-        db = shelve.open(trashfile, 'c')
-        for uuid, info in db.items():
-            fields = info.split('\t')
-            item = {
-                'uuid': uuid,
-                'name': fields[0],
-                'path': fields[1],
-                'time': ftime(float(fields[2])),
-                'mount': mount
-            }
-            filepath = os.path.join(mount, '.deleted_files', uuid)
-            if os.path.exists(filepath):
-                md = stat(filepath)['st_mode']
-                item['isdir'] = stat.S_ISDIR(md)
-                item['isreg'] = stat.S_ISREG(md)
-                item['islnk'] = stat.S_ISLNK(md)
-            items.append(item)
-        db.close()
+        with shelve.open(trashfile, 'c') as db:
+            for uuid, info in db.items():
+                fields = info.split('\t')
+                item = {
+                    'uuid': uuid,
+                    'name': fields[0],
+                    'path': fields[1],
+                    'time': ftime(float(fields[2])),
+                    'mount': mount
+                }
+                filepath = os.path.join(mount, '.deleted_files', uuid)
+                if os.path.exists(filepath):
+                    mode = ostat(filepath).st_mode
+                    item['isdir'] = stat.S_ISDIR(mode)
+                    item['isreg'] = stat.S_ISREG(mode)
+                    item['islnk'] = stat.S_ISLNK(mode)
+                items.append(item)
     # items.sort(lambda x, y: cmp(y['time'], x['time']))
     return items
 
