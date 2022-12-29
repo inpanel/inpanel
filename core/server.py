@@ -281,7 +281,7 @@ class ServerInfo(object):
 
     @classmethod
     def netifaces(self):
-        netifaces = []
+        result = []
         if kernel_name == 'Linux':
             with open('/proc/net/dev', 'r', encoding='utf-8') as f:
                 for line in f:
@@ -292,7 +292,7 @@ class ServerInfo(object):
                     data = data.split()
                     rx = int(data[0])
                     tx = int(data[8])
-                    netifaces.append({
+                    result.append({
                         'name': name,
                         'rx': b2h(rx),
                         'tx': b2h(tx),
@@ -306,7 +306,7 @@ class ServerInfo(object):
                     if fields[1] != '00000000' or not int(fields[3], 16) & 2:
                         continue
                     gw = socket.inet_ntoa(struct.pack('<L', int(fields[2], 16)))
-                    for netiface in netifaces:
+                    for netiface in result:
                         if netiface['name'] == fields[0]:
                             netiface['gw'] = gw
                             break
@@ -317,12 +317,12 @@ class ServerInfo(object):
             pass
 
         # REF: http://linux.about.com/library/cmd/blcmdl7_netdevice.htm
-        for i, netiface in enumerate(netifaces):
+        for i, netiface in enumerate(result):
             guess_iface = False
             while True:
                 try:
                     ifname = netiface['name'][:15]
-                    ifnamepack = struct.pack('256s', ifname)
+                    ifnamepack = struct.pack('256s', ifname.encode('utf-8'))
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     sfd = s.fileno()
                     flags, = struct.unpack(
@@ -361,9 +361,9 @@ class ServerInfo(object):
                         '\x20\x00': 'InfiniBand',               # 32
                     }
                     hwtype = hwinfo[16:18]
-                    netiface['encap'] = encaps[hwtype]
-                    netiface['mac'] = ':'.join(
-                        ['%02X' % ord(char) for char in hwinfo[18:24]])
+                    netiface['encap'] = encaps[bytes.decode(hwtype)]
+                    # netiface['mac'] = ':'.join(['%02X' % ord(str(char)) for char in hwinfo[18:24]])
+                    netiface['mac'] = ':'.join(['%02X' % i for i in hwinfo[18:24]])
 
                     if not netiface['name'].startswith('venet'):
                         break
@@ -374,7 +374,7 @@ class ServerInfo(object):
                         guess_iface_name = netiface['name']
                         guess_iface_i = 0
                     else:
-                        netifaces.append(netiface)
+                        result.append(netiface)
                         guest_iface_i += 1
 
                     netiface = {
@@ -386,11 +386,11 @@ class ServerInfo(object):
                         'tx_bytes': 0,
                     }
                 except:
-                    #netifaces[i] = None
+                    #result[i] = None
                     break
 
-        netifaces = [iface for iface in netifaces if 'mac' in iface]
-        return netifaces
+        result = [iface for iface in result if 'mac' in iface]
+        return result
 
     @classmethod
     def nameservers(self):

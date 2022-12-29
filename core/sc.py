@@ -137,6 +137,69 @@ def get_timezone_list(region=None):
     return sorted(timezones)
 
 
+def get_timezone(config):
+    """Get system timezone.
+
+    Pass None to parameter config (as default) to get timezone.
+    """
+    tzpath = '/etc/localtime'
+    zonepath = '/usr/share/zoneinfo'
+
+    # firstly read from config file
+    timezone = ''
+    if not config.has_section('time'):
+        config.add_section('time')
+
+    if config.has_option('time', 'timezone'):
+        timezone = config.get('time', 'timezone')
+        if timezone:
+            return timezone
+
+    # or else check the system config file
+    dist = ServerInfo.dist()
+    if dist['name'] in ('centos', 'redhat'):
+        clockinfo = raw_loadconfig('/etc/sysconfig/clock')
+        if clockinfo and 'ZONE' in clockinfo:
+            timezone = clockinfo['ZONE']
+            return timezone
+    else:
+        pass
+
+    # or else find the file match /etc/localtime
+    with open(tzpath, 'rb') as f:
+        tzdata = md5(f.read()).hexdigest()
+    regions = get_timezone_regions()
+    for region in regions:
+        regionpath = join(zonepath, region)
+        for zonefile in listdir(regionpath):
+            if not isfile(join(regionpath, zonefile)):
+                continue
+            with open(join(regionpath, zonefile), 'rb') as f:
+                if md5(f.read()).hexdigest() == tzdata:  # got it!
+                    return '%s/%s' % (region, zonefile)
+
+def set_timezone(config, timezone=None):
+    """Set system timezone.
+
+    Pass timezone full name like 'Asia/Shanghai' to set timezone.
+    """
+    if timezone is None:
+        return False
+    # check and set the timezone
+    tzpath = '/etc/localtime'
+    zonepath = '/usr/share/zoneinfo'
+
+    timezonefile = join(zonepath, timezone)
+    if not exists(timezonefile):
+        return False
+    try:
+        copyfile(timezonefile, tzpath)
+    except:
+        return False
+
+    # write timezone setting to config file
+    return config.set('time', 'timezone', timezone)
+
 
 class ServerSet(object):
 
@@ -171,68 +234,13 @@ class ServerSet(object):
         """
         configs = {}
         ifaces = ServerInfo.netifaces()
+        print('ifaces', ifaces)
         for iface in ifaces:
             ifname = iface['name']
             config = ServerSet.ifconfig(ifname)
             if config:
                 configs[ifname] = config
         return configs
-
-    @classmethod
-    def timezone(self, config, timezone=None):
-        """Get or set system timezone.
-
-        Pass None to parameter config (as default) to get timezone,
-        or pass timezone full name like 'Asia/Shanghai' to set timezone.
-        """
-        tzpath = '/etc/localtime'
-        zonepath = '/usr/share/zoneinfo'
-
-        if not config.has_section('time'):
-            config.add_section('time')
-
-        if timezone is None:
-            # firstly read from config file
-            timezone = ''
-            if config.has_option('time', 'timezone'):
-                timezone = config.get('time', 'timezone')
-            if timezone:
-                return timezone
-
-            # or else check the system config file
-            dist = ServerInfo.dist()
-            if dist['name'] in ('centos', 'redhat'):
-                clockinfo = raw_loadconfig('/etc/sysconfig/clock')
-                if clockinfo and 'ZONE' in clockinfo:
-                    timezone = clockinfo['ZONE']
-                    return timezone
-            else:
-                pass
-
-            # or else find the file match /etc/localtime
-            with open(tzpath, 'rb') as f:
-                tzdata = md5(f.read()).hexdigest()
-            regions = get_timezone_regions()
-            for region in regions:
-                regionpath = join(zonepath, region)
-                for zonefile in listdir(regionpath):
-                    if not isfile(join(regionpath, zonefile)):
-                        continue
-                    with open(join(regionpath, zonefile), 'rb') as f:
-                        if md5(f.read()).hexdigest() == tzdata:  # got it!
-                            return '%s/%s' % (region, zonefile)
-        else:
-            # check and set the timezone
-            timezonefile = join(zonepath, timezone)
-            if not exists(timezonefile):
-                return False
-            try:
-                copyfile(timezonefile, tzpath)
-            except:
-                return False
-
-            # write timezone setting to config file
-            return config.set('time', 'timezone', timezone)
 
     @classmethod
     def _read_fstab(self, line, **params):
