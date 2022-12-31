@@ -30,8 +30,8 @@ rm -f /etc/init.d/inpanel
 #### Username and Password
 
 ```shell
-/usr/local/inpanel/config.py username 'your-username'
-/usr/local/inpanel/config.py password 'your-password'
+inpanel config username 'your-username'
+inpanel config password 'your-password'
 ```
 
 #### Features
