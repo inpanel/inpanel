@@ -31,18 +31,18 @@ def inpanel_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, in
         s.prompt()
         s.sendline('rm -f install.py')
         s.prompt()
-        s.sendline('/usr/local/inpanel/config.py loginlock on')
+        s.sendline('/usr/local/bin/inpanel config loginlock on')
         s.prompt()
         if accesskey != None:
-            s.sendline('/usr/local/inpanel/config.py accesskey %s' % accesskey)
+            s.sendline('/usr/local/bin/inpanel config accesskey %s' % accesskey)
             s.prompt()
-            s.sendline('/usr/local/inpanel/config.py accesskeyenable on')
+            s.sendline('/usr/local/bin/inpanel config accesskeyenable on')
             s.prompt()
         if inpanel_ip != None:
-            s.sendline('/usr/local/inpanel/config.py ip %s' % inpanel_ip)
+            s.sendline('/usr/local/bin/inpanel config ip %s' % inpanel_ip)
             s.prompt()
         if inpanel_port != None:
-            s.sendline('/usr/local/inpanel/config.py port %s' % inpanel_port)
+            s.sendline('/usr/local/bin/inpanel config port %s' % inpanel_port)
             s.prompt()
         s.sendline('service inpanel restart')
         s.prompt()
@@ -75,25 +75,25 @@ def inpanel_config(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, acc
         s.sendline('service inpanel stop')
         s.prompt()
         if accesskey != None:
-            s.sendline('/usr/local/inpanel/config.py accesskey %s' % accesskey)
+            s.sendline('/usr/local/bin/inpanel config accesskey %s' % accesskey)
             s.prompt()
         if accesskeyenable != None:
-            s.sendline('/usr/local/inpanel/config.py accesskeyenable %s' % (accesskeyenable and 'on' or 'off'))
+            s.sendline('/usr/local/bin/inpanel config accesskeyenable %s' % (accesskeyenable and 'on' or 'off'))
             s.prompt()
         if username != None:
-            s.sendline('/usr/local/inpanel/config.py username %s' % username)
+            s.sendline('/usr/local/bin/inpanel config username %s' % username)
             s.prompt()
         if password != None:
-            s.sendline('/usr/local/inpanel/config.py password %s' % password)
+            s.sendline('/usr/local/bin/inpanel config password %s' % password)
             s.prompt()
         if loginlock != None:
-            s.sendline('/usr/local/inpanel/config.py loginlock %s' % (loginlock and 'on' or 'off'))
+            s.sendline('/usr/local/bin/inpanel config loginlock %s' % (loginlock and 'on' or 'off'))
             s.prompt()
         if inpanel_ip != None:
-            s.sendline('/usr/local/inpanel/config.py ip %s' % inpanel_ip)
+            s.sendline('/usr/local/bin/inpanel config ip %s' % inpanel_ip)
             s.prompt()
         if inpanel_port != None:
-            s.sendline('/usr/local/inpanel/config.py port %s' % inpanel_port)
+            s.sendline('/usr/local/bin/inpanel config port %s' % inpanel_port)
             s.prompt()
         s.logout()
         return True

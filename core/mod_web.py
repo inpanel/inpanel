@@ -313,7 +313,7 @@ class LoginHandler(RequestHandler):
                 self.write({'code': -1,
                     'msg': '登录已被锁定，请在 %s 后重试登录。<br>'\
                         '如需立即解除锁定，请在服务器上执行以下命令：<br>'\
-                        '/usr/local/inpanel/config.py loginlock off' %
+                        'inpanel config loginlock off' %
                         datetime.fromtimestamp(loginlockexpire)
                             .strftime('%Y-%m-%d %H:%M:%S')})
                 return
@@ -329,9 +329,10 @@ class LoginHandler(RequestHandler):
         elif not password:
             self.write({'code': -1, 'msg': '密码不能为空！'})
         elif cfg_password == '':
-            self.write({'code': -1,
-                'msg': '登录密码还未设置，请在服务器上执行以下命令进行设置：<br>'\
-                    '/usr/local/inpanel/config.py password \'您的密码\''})
+            self.write({
+                'code': -1,
+                'msg': '登录密码还未设置，请在服务器上执行以下命令进行设置：<br>inpanel config password \'您的密码\''
+            })
         elif username != cfg_username:  # wrong with username
             self.write({'code': -1, 'msg': '用户不存在！'})
         else:   # username is corret
