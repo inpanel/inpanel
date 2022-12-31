@@ -8,14 +8,22 @@
 # pidfile:     /usr/local/var/run/inpanel.pid
 
 # Source function library.
-. /etc/rc.d/init.d/functions
+# . /etc/rc.d/init.d/functions
+# Source function library.
+if [ -f /etc/init.d/functions ];then
+   . /etc/init.d/functions
+# else
+#    echo "not found file /etc/init.d/functions"
+#    exit
+fi
 
 # Source networking configuration.
-. /etc/sysconfig/network
+# . /etc/sysconfig/network
 
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
+config_file="/usr/local/etc/inpanel/config.ini"
 exec="/usr/local/inpanel/inpanel"
 pidfile="/usr/local/var/run/inpanel.pid"
 
@@ -47,12 +55,14 @@ stop() {
         done
         rm -f $lockfile
     fi
+    rm -f $pidfile
     echo
     return $retval
 }
 
 restart() {
     stop
+    sleep 1
     start
 }
 
@@ -77,6 +87,58 @@ rh_status_q() {
     rh_status >/dev/null 2>&1
 }
 
+config_help() {
+    cat << EOF
+InPanel Config Usage:
+=======================================================================
+optional arguments:
+          mode : runtime mode. value: prod or demo
+            ip : ip address (need restart)
+          port : port number (need restart)
+      username : username of admin account
+      password : password of admin account
+     loginlock : set the login lock. value: on or off
+     accesskey : access key for remote access, must be empty
+                 or a 64-bytes string with base64 encoded.
+accesskeyenable: set the remote access switch. value: on or off
+
+EXAMPLE:
+    $0 config option value
+=======================================================================
+EOF
+}
+
+do_config() {
+    if [ $# != 3 ]; then
+        config_help
+        exit
+    fi
+    if [ "$2" = 'password' ]; then
+        key=$(date +%s%N | md5sum |cut -c 1-32)
+        value=$(echo -n $3 | md5sum | cut -c 1-32)
+        hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -c 13-44)
+        sed -i "s/^password =.*/password = $hmac:$key/" $config_file
+    elif [ "$2" = 'port' ]; then
+        echo 'Error: loginlock value should be either on or off'
+        exit
+    elif [ "$2" = 'loginlock' ]; then
+        if [ $3 = 'on' ]; then
+            sed -i "s/^loginlock =.*/loginlock = on/" $config_file
+            sed -i "s/^loginfails =.*/loginfails = 0/" $config_file
+            sed -i "s/^loginlockexpire =.*/loginlockexpire = 253402271999/" $config_file # Fri Dec 31 23:59:59 9999
+        elif [ $3 = 'off' ]; then
+            sed -i "s/^loginlock =.*/loginlock = off/" $config_file
+            sed -i "s/^loginfails =.*/loginfails = 0/" $config_file
+            sed -i "s/^loginlockexpire =.*/loginlockexpire = 0/" $config_file
+        else
+            echo 'Error: loginlock value should be either on or off'
+            exit
+        fi
+    else
+        sed -i "s/^$2 =.*/$2 = $3/" $config_file
+    fi
+}
+
 case "$1" in
     start)
         rh_status_q && exit 0
@@ -99,7 +161,9 @@ case "$1" in
     uninstall)
         $1
         ;;
+    config) do_config $1 $2 $3
+        ;;
     *)
-        echo $"Usage: $0 {start|stop|status|restart|uninstall}"
+        echo $"Usage: $0 {start|stop|status|restart|uninstall|config}"
         exit 2
 esac
