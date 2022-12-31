@@ -118,9 +118,9 @@ do_config() {
         value=$(echo -n $3 | md5sum | cut -c 1-32)
         hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -c 13-44)
         sed -i "s/^password =.*/password = $hmac:$key/" $config_file
-    elif [ "$2" = 'port' ]; then
-        echo 'Error: loginlock value should be either on or off'
-        exit
+    # elif [ "$2" = 'port' ]; then
+    #     echo 'Error: loginlock value should be either on or off'
+    #     exit
     elif [ "$2" = 'loginlock' ]; then
         if [ $3 = 'on' ]; then
             sed -i "s/^loginlock =.*/loginlock = on/" $config_file
