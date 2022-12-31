@@ -6,10 +6,11 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-from platform import mac_ver, platform, uname, win32_ver
 from os.path import exists
+from platform import mac_ver, platform, uname, win32_ver
 
 # 基本信息
+debug = False
 app_name = 'InPanel'
 version = '1.2.0'
 build = '27'
@@ -17,18 +18,18 @@ releasetime = '2022-03-15'
 
 # 版本信息
 version_info = {
-    'name': app_name,
-    'build': build,
-    'changelog': 'https://inpanel.org/changelog.html',
-    'releasetime': releasetime,
-    'version': version
+    'name'        : app_name,
+    'build'       : build,
+    'changelog'   : 'https://inpanel.org/changelog.html',
+    'releasetime' : releasetime,
+    'version'     : version
 }
 
 # 链接信息
 app_api = {
-    'latest': 'https://api.inpanel.org/?s=latest',
-    'site_packages': 'http://api.inpanel.org/?s=site_packages',
-    'download_package': 'http://api.inpanel.org/?s=site_packages&a=download'
+    'latest'           : 'https://api.inpanel.org/?s=latest',
+    'site_packages'    : 'https://api.inpanel.org/?s=site_packages',
+    'download_package' : 'https://api.inpanel.org/?s=site_packages&a=download'
 }
 
 # 配置文件
@@ -42,16 +43,16 @@ pidfile      = '/usr/local/var/run/inpanel.pid'
 kernel_name, hostname, kernel_release, kernel_version, machine, processor = uname()
 
 # 发行名称，如：CentOS release 8.0
-os_title = 'Unknown'
+os_title    = 'Unknown'
 
 # 发行名称，如：macOS
-os_name = 'Unknown'
+os_name     = 'Unknown'
 
 # 发行版本号，如：11.5.2
-os_version = ''
+os_version  = ''
 
 # 发行版本整数，如：11
-os_versint = 0
+os_versint  = 0
 
 os_platform = platform()
 
@@ -111,11 +112,11 @@ server_info = {
 __version__ = version
 
 __all__ = [
-    '__version__', 'app_api', 'app_name', 'build', 'config_path', 'execfile',
-    'releasetime', 'version_info', 'version', 'server_info', 'os_name',
-    'os_title', 'os_version', 'os_versint', 'os_platform', 'kernel_name',
-    'kernel_release', 'kernel_version', 'hostname', 'machine', 'runlogs_path',
-    'logfile', 'pidfile', 'processor'
+    '__version__', 'debug', 'app_api', 'app_name', 'build', 'config_path',
+    'execfile', 'releasetime', 'version_info', 'version', 'server_info',
+    'os_name', 'os_title', 'os_version', 'os_versint', 'os_platform',
+    'kernel_name', 'kernel_release', 'kernel_version', 'hostname', 'machine',
+    'runlogs_path', 'logfile', 'pidfile', 'processor'
 ]
 
 if __name__ == '__main__':

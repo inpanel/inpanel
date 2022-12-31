@@ -48,7 +48,7 @@ class WebRequestProcess(RequestHandler):
         self.authed()
 
         if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': 'DEMO状态不允许操作进程！'})
+            self.write({'code': -1, 'msg': '演示模式不允许操作进程！'})
             return
 
         if sec == 'kill':

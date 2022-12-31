@@ -11,14 +11,13 @@ import sys
 from os import getpid
 from os.path import abspath, dirname, join
 
-from tornado import httpserver, ioloop
-
 import mod_web
-from base import config_path, pidfile
+from base import config_path, debug, pidfile
 # from mod_yum import WebRequestRepoYUM
 from certificate import WebRequestSSLTLS
 from configuration import main_config
 from mod_process import WebRequestProcess, save_pidfile
+from tornado import httpserver, ioloop
 from utils import make_cookie_secret
 
 print('InPanel: starting')
@@ -27,29 +26,29 @@ print('InPanel: pid file    : %s' % pidfile)
 
 root_path = dirname(__file__)
 root_path = abspath(dirname(dirname(__file__)))
-run_mode = 'source'
+run_type = 'source'
 
 if hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
     # runtime_tmpdir
-    run_mode = 'binary'
+    run_type = 'binary'
     root_path = sys._MEIPASS
 
 # print('InPanel: root path: %s' % root_path)
-print('InPanel: runtime mode: %s' % run_mode)
+print('InPanel: runtime type: %s' % run_type)
 print('InPanel: runtime path: %s' % root_path)
 
 # settings of tornado application
 settings = {
-    'debug': True,
-    'autoreload': True,
+    'debug': debug,
+    'autoreload': debug,
+    'cookie_secret': 'debug' if debug else make_cookie_secret(),
     'root_path': root_path,
     'data_path': join(root_path, 'data'),
-    'index_path': join(root_path, 'public', 'index.html'),
+    'index_path': join(root_path, 'templates', 'index.html'),
     'template_path': join(root_path, 'templates'),
     'static_path': join(root_path, 'public'),
     'plugins_path': join(root_path, 'plugins'),
     'xsrf_cookies': True,
-    'cookie_secret': make_cookie_secret(),
     'gzip': True # or use 'compress_response': True
 }
 
@@ -84,11 +83,15 @@ application = mod_web.Application(router, **settings)
 
 # read configuration from config.ini
 config = main_config(config_path)
-server_ip = config.get('server', 'ip')
+mode   = config.get('runtime', 'mode')
+
+print('InPanel: runtime mode: %s' % mode)
+
+server_ip   = config.get('server', 'ip')
 server_port = config.get('server', 'port')
 force_https = config.getboolean('server', 'forcehttps')
-sslkey = config.get('server', 'sslkey')
-sslcrt = config.get('server', 'sslcrt')
+sslkey      = config.get('server', 'sslkey')
+sslcrt      = config.get('server', 'sslcrt')
 
 ssl = {'certfile': sslcrt, 'keyfile': sslkey} if force_https else None
 

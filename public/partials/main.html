@@ -7,7 +7,7 @@
     <div class="module-header">
         <h3>欢迎使用 InPanel 控制面板</h3>
         <p>
-            当前版本：v{{version.version}} b{{version.build}}&nbsp;&nbsp;
+            当前版本：v{{version.version}}&nbsp;&nbsp;
             <button class="btn btn-default btn-xs" ng-click="checkUpdate()" style="display:none" ng-show="!detectVer">
                 {{ '有新的可用版本，点此更新' | iftrue:hasNewver }}
                 {{ '检测新版本' | iftrue:!hasNewver }}
@@ -93,7 +93,7 @@
                                         <td ng-bind-html-unsafe="info['server.loadavg']['15min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']">
                                     </tr>
                                 </table>
-                                </td>
+                            </td>
                         </tr>
                         <tr>
                             <td>内存概览：</td>

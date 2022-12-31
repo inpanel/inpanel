@@ -36,7 +36,7 @@ def main_config(inifile=None, configs=None):
             'accesskeyenable': 'off',
         },
         'runtime': {
-            'mode': '',  # format: demo | dev | prod
+            'mode': 'prod',  # format: demo | prod
             'loginlock': 'off',
             'loginfails': '0',
             'loginlockexpire': '0',

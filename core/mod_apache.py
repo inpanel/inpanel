@@ -444,8 +444,8 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
                     include_file = fields[1] if fields[1].startswith('/') else join(HTTPDCONF, fields[1])
                     include_files = glob(include_file)
                     # order by domain name, excluding tld
-                    getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
-                    include_files = sorted(include_files, lambda x,y: cmp(getdm(x), getdm(y)))
+                    # getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
+                    # include_files = sorted(include_files, lambda x,y: cmp(getdm(x), getdm(y)))
                     for subconf in include_files:
                         if exists(subconf):
                             # print(subconf, getlineinfo, configs, context_stack)

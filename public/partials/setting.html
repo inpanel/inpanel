@@ -14,6 +14,7 @@
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='authinfo'"><a href="#authinfo" ng-click="sec('authinfo')" data-toggle="tab">账号设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='serverinfo'"><a href="#serverinfo" ng-click="sec('serverinfo')" data-toggle="tab">服务设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='runtime'"><a href="#runtime" ng-click="sec('runtime')" data-toggle="tab">运行设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='accesskey'"><a href="#accesskey" ng-click="sec('accesskey')" data-toggle="tab">远程控制</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='restart'"><a href="#restart" ng-click="sec('restart')" data-toggle="tab">重启服务</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='upversion'"><a href="#upversion" ng-click="sec('upversion')" data-toggle="tab">版本升级</a></li>
@@ -96,6 +97,33 @@
                         <label class="col-sm-2 control-label">强制HTTPS</label>
                         <div class="col-sm-10 checkbox">
                             <label><input ng-model="forcehttps" ng-disabled="processing" type="checkbox"> 强制使用 HTTPS 访问面板</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='runtime'" id="runtime" ng-init="loadRuntimeInfo()">
+                <div class="alert alert-info alert-dismissible">
+                    <p>注意事项：</p>
+                    <p>1. 修改运行模式前，请再三确认操作是否有必要 ！</p>
+                    <p>2. 在【演示模式】下，不允许再次进行修改 ！</p>
+                    <hr />
+                    <p>在【演示模式】下，如需调整到【正式模式】，请在服务器上执行以下命令：</p>
+                    <p>inpanel config mode prod</p>
+                </div>
+                <form class="form-horizontal form-horizontal-small" ng-submit="updateRuntimeInfo()" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="runtime_mode">运行模式</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" ng-model="runtime_mode" ng-disabled="processing">
+                                <option value="prod">正式模式</option>
+                                <option value="demo">演示模式</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-group form-inline">

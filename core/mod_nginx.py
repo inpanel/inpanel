@@ -567,8 +567,8 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
                             includepath = os.path.join(os.path.dirname(config['_files'][0]), includepath)
                         confs = glob(includepath)
                         # order by domain name, excluding tld
-                        getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
-                        confs = sorted(confs, lambda x,y: cmp(getdm(x), getdm(y)))
+                        # getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
+                        # confs = sorted(confs, lambda x,y: cmp(getdm(x), getdm(y)))
                         for subconf in confs:
                             if os.path.exists(subconf):
                                 if DEBUG:
@@ -1044,7 +1044,7 @@ def getservers(config=None):
         engine_orders = ['static', 'fastcgi', 'scgi', 'uwsgi', 'redirect', 'proxy', 'rewrite', 'return']
         engines = [(engine_orders.index(engine), engine) for engine in engines]
         engines.sort()
-        server['engines'] = zip(*engines)[1] if engines else []
+        server['engines'] = list(zip(*engines))[1] if engines else []
         # check the status of this server
         server['status'] = 'off' if s['_disabled'] else 'on'
         servers.append(server)

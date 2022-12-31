@@ -326,6 +326,11 @@ var SettingCtrl = [
                 $scope.sslcrt = res.sslcrt;
             });
         }
+        $scope.loadRuntimeInfo = function () {
+            Request.get('/api/setting/runtime', function (res) {
+                $scope.runtime_mode = res.mode;
+            });
+        }
         $scope.loadAccessKey = function () {
             Request.get('/api/setting/accesskey', function (res) {
                 $scope.accesskey = res.accesskey;
@@ -351,6 +356,14 @@ var SettingCtrl = [
                 sslcrt: $scope.sslcrt
             }, function (res) {
                 if (res.code == 0) $scope.loadServerInfo();
+            });
+        };
+
+        $scope.updateRuntimeInfo = function () {
+            Request.post('/api/setting/runtime', {
+                mode: $scope.runtime_mode
+            }, function (res) {
+                if (res.code == 0) $scope.loadRuntimeInfo();
             });
         };
 
