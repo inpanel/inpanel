@@ -7,6 +7,12 @@
 # processname: inpanel
 # pidfile:     /usr/local/var/run/inpanel.pid
 
+
+if [ $(whoami) != 'root' ]; then
+    echo "Must be root to run this script."
+    exit 1
+fi
+
 # Source function library.
 # . /etc/rc.d/init.d/functions
 # Source function library.
@@ -103,7 +109,14 @@ optional arguments:
 accesskeyenable: set the remote access switch. value: on or off
 
 EXAMPLE:
-    $0 config option value
+
+inpanel config option value
+inpanel config mode prod
+inpanel config username admin
+inpanel config username "admin"
+inpanel config username 'admin'
+inpanel config password $(date +%s%N | md5sum |cut -c 1-8)
+inpanel config port 8888
 =======================================================================
 EOF
 }
@@ -116,23 +129,41 @@ do_config() {
     if [ "$2" = 'password' ]; then
         key=$(date +%s%N | md5sum |cut -c 1-32)
         value=$(echo -n $3 | md5sum | cut -c 1-32)
-        hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -c 13-44)
+        # format: MD5(stdin)= 76b0f7235a106c39738c626d5c23d75c
+        # hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -c 13-44)
+        hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -d " " -f 2)
         sed -i "s/^password =.*/password = $hmac:$key/" $config_file
-    # elif [ "$2" = 'port' ]; then
-    #     echo 'Error: loginlock value should be either on or off'
-    #     exit
+    elif [ "$2" = 'port' ]; then
+        if [ $3 -gt 1000 -a $3 -lt 65535 ] 2>/dev/null; then
+            if [ -z "$(ss -lnp | grep :$3)" ]; then
+                sed -i "s/^port =.*/port = $3/" $config_file
+                echo 'Port changed: InPanel need to be restarted.'
+            elif [ $(sed '/^port =/!d;s/.*=//' $config_file) = $3 ]; then
+                echo "Error: InPanel is already running on port $3."
+            else
+                echo "Error: The port $3 is in use, please enter a new port number."
+            fi
+        else
+            echo 'Error: The port number should between 1000 - 65535.'
+        fi
+    elif [ "$2" = 'mode' ]; then
+        if [ $3 = 'demo' -o $3 = 'prod' ]; then
+            sed -i "s/^mode =.*/mode = $3/" $config_file
+        else
+            echo 'Error: mode value should be either prod or demo.'
+        fi
     elif [ "$2" = 'loginlock' ]; then
         if [ $3 = 'on' ]; then
             sed -i "s/^loginlock =.*/loginlock = on/" $config_file
             sed -i "s/^loginfails =.*/loginfails = 0/" $config_file
-            sed -i "s/^loginlockexpire =.*/loginlockexpire = 253402271999/" $config_file # Fri Dec 31 23:59:59 9999
+            # 253402271999 is Fri Dec 31 23:59:59 9999
+            sed -i "s/^loginlockexpire =.*/loginlockexpire = 253402271999/" $config_file
         elif [ $3 = 'off' ]; then
             sed -i "s/^loginlock =.*/loginlock = off/" $config_file
             sed -i "s/^loginfails =.*/loginfails = 0/" $config_file
             sed -i "s/^loginlockexpire =.*/loginlockexpire = 0/" $config_file
         else
             echo 'Error: loginlock value should be either on or off'
-            exit
         fi
     else
         sed -i "s/^$2 =.*/$2 = $3/" $config_file
@@ -164,6 +195,6 @@ case "$1" in
     config) do_config $1 $2 $3
         ;;
     *)
-        echo $"Usage: $0 {start|stop|status|restart|uninstall|config}"
+        echo 'Usage: inpanel {start|stop|status|restart|uninstall|config}'
         exit 2
 esac
