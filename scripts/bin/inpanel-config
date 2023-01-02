@@ -1,0 +1,110 @@
+#!/bin/sh
+#
+# Copyright (c) 2017, Jackson Dou
+# All rights reserved.
+#
+# InPanel is distributed under the terms of the New BSD License.
+# The full license can be found in 'LICENSE'.
+#
+# InPanel configuration command line interface script.
+# Written by Jackson Dou
+
+
+if [ $(whoami) != 'root' ]; then
+    echo "Must be root to run this script."
+    exit 1
+fi
+
+# the path to default config file
+CONFIG_INI='/usr/local/etc/inpanel/config.ini'
+CONFIG='/usr/local/bin/inpanel-config'
+
+config_help() {
+    if [ $0 = $CONFIG ]; then
+        cmd='inpanel-config'
+    else
+        cmd='inpanel config'
+    fi
+    cat << EOF
+InPanel Config Usage:
+=======================================================================
+optional arguments:
+          mode : runtime mode. value: prod or demo
+            ip : ip address (need restart)
+          port : port number (need restart)
+      username : username of admin account
+      password : password of admin account
+     loginlock : set the login lock. value: on or off
+     accesskey : access key for remote access, must be empty
+                 or a 64-bytes string with base64 encoded.
+accesskeyenable: set the remote access switch. value: on or off
+
+EXAMPLE:
+
+$cmd option   value
+$cmd mode     prod
+$cmd username admin
+$cmd username "admin"
+$cmd username 'admin'
+$cmd password $(date +%s%N | md5sum |cut -c 1-8)
+$cmd port     8888
+=======================================================================
+EOF
+}
+
+
+config_do() {
+    if [ $# != 2 ]; then
+        config_help
+        exit
+    fi
+    if [ "$1" = 'password' ]; then
+        key=$(date +%s%N | md5sum |cut -c 1-32)
+        value=$(echo -n $2 | md5sum | cut -c 1-32)
+        # format: MD5(stdin)= 76b0f7235a106c39738c626d5c23d75c
+        # hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -c 13-44)
+        hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -d " " -f 2)
+        sed -i "s/^password =.*/password = $hmac:$key/" $CONFIG_INI
+    elif [ "$1" = 'port' ]; then
+        if [ $2 -gt 1000 -a $2 -lt 65535 ] 2>/dev/null; then
+            if [ -z "$(ss -lnp | grep :$2)" ]; then
+                sed -i "s/^port =.*/port = $2/" $CONFIG_INI
+                echo 'Port changed: InPanel need to be restarted.'
+            elif [ $(sed '/^port =/!d;s/.*=//' $CONFIG_INI) = $2 ]; then
+                echo "Error: InPanel is already running on port $2."
+            else
+                echo "Error: The port $2 is in use, please enter a new port number."
+            fi
+        else
+            echo 'Error: The port number should between 1000 - 65535.'
+        fi
+    elif [ "$1" = 'mode' ]; then
+        if [ $2 = 'demo' -o $2 = 'prod' ]; then
+            sed -i "s/^mode =.*/mode = $2/" $CONFIG_INI
+        else
+            echo 'Error: mode value should be either prod or demo.'
+        fi
+    elif [ "$1" = 'loginlock' ]; then
+        if [ $2 = 'on' ]; then
+            sed -i "s/^loginlock =.*/loginlock = on/" $CONFIG_INI
+            sed -i "s/^loginfails =.*/loginfails = 0/" $CONFIG_INI
+            # 253402271999 is Fri Dec 31 23:59:59 9999
+            sed -i "s/^loginlockexpire =.*/loginlockexpire = 253402271999/" $CONFIG_INI
+        elif [ $2 = 'off' ]; then
+            sed -i "s/^loginlock =.*/loginlock = off/" $CONFIG_INI
+            sed -i "s/^loginfails =.*/loginfails = 0/" $CONFIG_INI
+            sed -i "s/^loginlockexpire =.*/loginlockexpire = 0/" $CONFIG_INI
+        else
+            echo 'Error: loginlock value should be either on or off'
+        fi
+    else
+        sed -i "s/^$1 =.*/$1 = $2/" $CONFIG_INI
+    fi
+}
+
+if [ $0 = $CONFIG ]; then
+    # The script is run directly from the command line
+    config_do $@
+    # else
+    # The script is run from external call
+fi

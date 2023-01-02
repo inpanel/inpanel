@@ -2,8 +2,14 @@
 #
 # init.d script
 # this script starts and stops the inpanel daemon
+#
 # Copyright (c) 2022 Jackson Dou
 # All rights reserved.
+#
+# InPanel is distributed under the terms of the New BSD License.
+# The full license can be found in 'LICENSE'.
+#
+# InPanel control script for Ubuntu.
 #
 ### BEGIN INIT INFO
 # Provides:          inpanel
@@ -168,8 +174,20 @@ status)
         exit 1
     fi
     ;;
+config)
+    . /usr/local/bin/inpanel-config
+    if [ $# != 3 ]; then
+        config_help
+    else
+        config_do $2 $3
+    fi
+    ;;
+uninstall)
+    . /usr/local/bin/inpanel-uninstall
+    uninstall_do $@
+    ;;
 *)
-    echo "Usage: $0 {start|stop|force-stop|restart|force-reload|status}" >&2
+    echo "Usage: $0 {start|stop|force-stop|restart|force-reload|status|config|uninstall}" >&2
     exit 1
     ;;
 esac

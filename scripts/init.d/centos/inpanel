@@ -1,23 +1,37 @@
 #!/bin/sh
 #
-# inpanel - this script starts and stops the inpanel daemon
+# Copyright (c) 2017, Jackson Dou
+# All rights reserved.
 #
-# chkconfig:   - 85 15
-# description: InPanel is a web-based linux VPS management tools
-# processname: inpanel
-# pidfile:     /usr/local/var/run/inpanel.pid
+# InPanel is distributed under the terms of the New BSD License.
+# The full license can be found in 'LICENSE'.
+#
+# InPanel control script for CentOS.
+
 
 # Source function library.
-. /etc/rc.d/init.d/functions
+if [ -f /etc/rc.d/init.d/functions ];then
+   . /etc/rc.d/init.d/functions
+else
+   echo 'not found file /etc/rc.d/init.d/functions'
+   exit
+fi
 
 # Source networking configuration.
-. /etc/sysconfig/network
+if [ -f /etc/sysconfig/network ];then
+   . /etc/sysconfig/network
+else
+   echo 'not found file /etc/sysconfig/network'
+   exit
+fi
 
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
-exec="/usr/local/inpanel/inpanel"
-pidfile="/usr/local/var/run/inpanel.pid"
+# the path to your inpanel binary
+exec='/usr/local/inpanel/inpanel'
+
+pidfile='/usr/local/var/run/inpanel.pid'
 
 lockfile=/var/lock/subsys/inpanel
 
@@ -47,12 +61,14 @@ stop() {
         done
         rm -f $lockfile
     fi
+    rm -f $pidfile
     echo
     return $retval
 }
 
 restart() {
     stop
+    sleep 1
     start
 }
 
@@ -84,7 +100,19 @@ case "$1" in
         rh_status_q || exit 7
         restart
         ;;
+    config)
+        . /usr/local/bin/inpanel-config
+        if [ $# != 3 ]; then
+            config_help
+        else
+            config_do $2 $3
+        fi
+        ;;
+    uninstall)
+        . /usr/local/bin/inpanel-uninstall
+        uninstall_do $@
+        ;;
     *)
-        echo $"Usage: $0 {start|stop|status|restart}"
+        echo 'Usage: inpanel {start|stop|status|restart|config|uninstall}'
         exit 2
 esac
