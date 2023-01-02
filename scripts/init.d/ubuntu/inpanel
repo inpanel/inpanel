@@ -97,6 +97,15 @@ force_stop() {
     rm -f $LOCKFILE
 }
 
+show_help() {
+    echo 'Usage: inpanel {start|stop|force-stop|restart|force-reload|status|config|uninstall}'
+    exit 1
+}
+
+if [ $# -lt 1 ]; then
+    show_help
+fi
+
 case "$1" in
 start)
     log_daemon_msg "Starting $DESC" "$NAME"
@@ -187,8 +196,7 @@ uninstall)
     uninstall_do $@
     ;;
 *)
-    echo "Usage: $0 {start|stop|force-stop|restart|force-reload|status|config|uninstall}" >&2
-    exit 1
+    show_help
     ;;
 esac
 

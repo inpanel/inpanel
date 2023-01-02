@@ -81,6 +81,15 @@ rh_status_q() {
     rh_status >/dev/null 2>&1
 }
 
+show_help() {
+    echo 'Usage: inpanel {start|stop|status|restart|config|uninstall}'
+    exit 2
+}
+
+if [ $# -lt 1 ]; then
+    show_help
+fi
+
 case "$1" in
     start)
         rh_status_q && exit 0
@@ -113,6 +122,6 @@ case "$1" in
         uninstall_do $@
         ;;
     *)
-        echo 'Usage: inpanel {start|stop|status|restart|config|uninstall}'
-        exit 2
+        show_help
+        ;;
 esac
