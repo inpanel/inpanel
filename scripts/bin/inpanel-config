@@ -79,10 +79,10 @@ config_do() {
             echo 'Error: The port number should between 1000 - 65535.'
         fi
     elif [ "$1" = 'mode' ]; then
-        if [ $2 = 'demo' -o $2 = 'prod' ]; then
+        if [ $2 = 'prod' -o $2 = 'dev' -o $2 = 'demo' ]; then
             sed -i "s/^mode =.*/mode = $2/" $CONFIG_INI
         else
-            echo 'Error: mode value should be either prod or demo.'
+            echo 'Error: mode value should be either prod, dev or demo.'
         fi
     elif [ "$1" = 'loginlock' ]; then
         if [ $2 = 'on' ]; then
