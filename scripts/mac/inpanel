@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (c) 2017, Jackson Dou
 # All rights reserved.
@@ -8,6 +8,7 @@
 #
 # InPanel control script for Darwin.
 
+set -e
 
 # pick up any necessary environment variables
 if test -f /usr/sbin/envvars; then
@@ -23,11 +24,7 @@ else
 fi
 
 LAUNCHCTL='/bin/launchctl'
-# LAUNCHD_JOB='/System/Library/LaunchDaemons/org.inpanel.service.plist'
-LAUNCHD_JOB='/Users/douzhenjiang/Library/LaunchAgents/org.inpanel.service.plist'
-
-chmod 600 $LAUNCHD_JOB
-chown root $LAUNCHD_JOB
+LAUNCHD_JOB='/System/Library/LaunchDaemons/org.inpanel.service.plist'
 
 run_launchctl() {
     if [ $(whoami) != 'root' ]; then

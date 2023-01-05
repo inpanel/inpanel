@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (c) 2017, Jackson Dou
 # All rights reserved.
@@ -9,6 +9,7 @@
 # InPanel configuration command line interface script.
 # Written by Jackson Dou
 
+set -e
 
 if [ $(whoami) != 'root' ]; then
     echo "Must be root to run this script."
@@ -18,6 +19,15 @@ fi
 # the path to default config file
 CONFIG_INI='/usr/local/etc/inpanel/config.ini'
 CONFIG='/usr/local/bin/inpanel-config'
+OS=$(uname -s)
+
+sedi() {
+    if [ ${OS} = 'Darwin' ]; then
+        sed -i '.bak' "$1" $2
+    elif [ ${OS} = 'Linux' ]; then
+        sed -i "$1" $2
+    fi
+}
 
 config_help() {
     if [ $0 = $CONFIG ]; then
@@ -25,11 +35,16 @@ config_help() {
     else
         cmd='inpanel config'
     fi
+    if [ ${OS} = 'Darwin' ]; then
+        password_rand=$(date +%s%N | md5 |cut -c 1-12)
+    elif [ ${OS} = 'Linux' ]; then
+        password_rand=$(date +%s%N | md5sum |cut -c 1-12)
+    fi
     cat << EOF
 InPanel Config Usage:
 =======================================================================
 optional arguments:
-          mode : runtime mode. value: prod or demo
+          mode : runtime mode. value: prod, dev or demo
             ip : ip address (need restart)
           port : port number (need restart)
       username : username of admin account
@@ -46,7 +61,7 @@ $cmd mode     prod
 $cmd username admin
 $cmd username "admin"
 $cmd username 'admin'
-$cmd password $(date +%s%N | md5sum |cut -c 1-8)
+$cmd password $password_rand
 $cmd port     8888
 =======================================================================
 EOF
@@ -59,16 +74,27 @@ config_do() {
         exit
     fi
     if [ "$1" = 'password' ]; then
-        key=$(date +%s%N | md5sum |cut -c 1-32)
-        value=$(echo -n $2 | md5sum | cut -c 1-32)
-        # format: MD5(stdin)= 76b0f7235a106c39738c626d5c23d75c
-        # hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -c 13-44)
-        hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -d " " -f 2)
-        sed -i "s/^password =.*/password = $hmac:$key/" $CONFIG_INI
+        if [ ${OS} = 'Darwin' ]; then
+            key=$(date +%s%N | md5 |cut -c 1-32)
+            password_md5=$(echo -n $2 | md5 | cut -c 1-32)
+            hmac=$(echo -n $password_md5 | openssl dgst -hmac $key -md5)
+        elif [ ${OS} = 'Linux' ]; then
+            key=$(date +%s%N | md5sum |cut -c 1-32)
+            password_md5=$(echo -n $2 | md5sum | cut -c 1-32)
+            # format: MD5(stdin)= 76b0f7235a106c39738c626d5c23d75c
+            # hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -c 13-44)
+            hmac=$(echo -n $password_md5 | openssl dgst -hmac $key -md5 | cut -d " " -f 2)
+        fi
+        sedi "s/^password =.*/password = $hmac:$key/" $CONFIG_INI
     elif [ "$1" = 'port' ]; then
         if [ $2 -gt 1000 -a $2 -lt 65535 ] 2>/dev/null; then
-            if [ -z "$(ss -lnp | grep :$2)" ]; then
-                sed -i "s/^port =.*/port = $2/" $CONFIG_INI
+            if [ ${OS} = 'Darwin' ]; then
+                portcheck=$(lsof -i :$2)
+            elif [ ${OS} = 'Linux' ]; then
+                portcheck=$(ss -lnp | grep :$2)
+            fi
+            if [ -z "${portcheck}" ]; then
+                sedi "s/^port =.*/port = $2/" $CONFIG_INI
                 echo 'Port changed: InPanel need to be restarted.'
             elif [ $(sed '/^port =/!d;s/.*=//' $CONFIG_INI) = $2 ]; then
                 echo "Error: InPanel is already running on port $2."
@@ -80,25 +106,25 @@ config_do() {
         fi
     elif [ "$1" = 'mode' ]; then
         if [ $2 = 'prod' -o $2 = 'dev' -o $2 = 'demo' ]; then
-            sed -i "s/^mode =.*/mode = $2/" $CONFIG_INI
+            sedi "s/^mode =.*/mode = $2/" $CONFIG_INI
         else
             echo 'Error: mode value should be either prod, dev or demo.'
         fi
     elif [ "$1" = 'loginlock' ]; then
         if [ $2 = 'on' ]; then
-            sed -i "s/^loginlock =.*/loginlock = on/" $CONFIG_INI
-            sed -i "s/^loginfails =.*/loginfails = 0/" $CONFIG_INI
+            sedi "s/^loginlock =.*/loginlock = on/" $CONFIG_INI
+            sedi "s/^loginfails =.*/loginfails = 0/" $CONFIG_INI
             # 253402271999 is Fri Dec 31 23:59:59 9999
-            sed -i "s/^loginlockexpire =.*/loginlockexpire = 253402271999/" $CONFIG_INI
+            sedi "s/^loginlockexpire =.*/loginlockexpire = 253402271999/" $CONFIG_INI
         elif [ $2 = 'off' ]; then
-            sed -i "s/^loginlock =.*/loginlock = off/" $CONFIG_INI
-            sed -i "s/^loginfails =.*/loginfails = 0/" $CONFIG_INI
-            sed -i "s/^loginlockexpire =.*/loginlockexpire = 0/" $CONFIG_INI
+            sedi "s/^loginlock =.*/loginlock = off/" $CONFIG_INI
+            sedi "s/^loginfails =.*/loginfails = 0/" $CONFIG_INI
+            sedi "s/^loginlockexpire =.*/loginlockexpire = 0/" $CONFIG_INI
         else
             echo 'Error: loginlock value should be either on or off'
         fi
     else
-        sed -i "s/^$1 =.*/$1 = $2/" $CONFIG_INI
+        sedi "s/^$1 =.*/$1 = $2/" $CONFIG_INI
     fi
 }
 

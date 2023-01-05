@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # init.d script
 # this script starts and stops the inpanel daemon
@@ -25,17 +25,25 @@
 
 # Default defaults.  Can be overridden by the /etc/default/$NAME
 
-NAME="inpanel"
-DESC="InPanel Daemon"
-PIDFILE="/usr/local/var/run/inpanel.pid"
+set -e
+
+NAME='inpanel'
+DESC='InPanel Daemon'
+PIDFILE='/usr/local/var/run/inpanel.pid'
 LOCKFILE="/var/lock/subsys/$NAME"
-DAEMON="/usr/local/inpanel/inpanel"
-RUNAS="root"
+DAEMON='/usr/local/inpanel/inpanel'
+RUNAS='root'
 STARTTIME=1
 DIETIME=10 # Time to wait for the server to die, in seconds
 # If this value is set too low you might not let some servers to die gracefully and 'restart' will not work
 
-. /lib/lsb/init-functions
+# Source function library.
+if [ -f /lib/lsb/init-functions ];then
+   . /lib/lsb/init-functions
+else
+   echo 'not found file /lib/lsb/init-functions'
+   exit
+fi
 
 check_pid() {
     # Check if a given process pid's cmdline matches a given name

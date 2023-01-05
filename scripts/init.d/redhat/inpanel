@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (c) 2017, Jackson Dou
 # All rights reserved.
@@ -8,6 +8,7 @@
 #
 # InPanel control script for RedHat.
 
+set -e
 
 # Source function library.
 if [ -f /etc/rc.d/init.d/functions ];then
@@ -28,26 +29,24 @@ fi
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
-# the path to your inpanel binary
-exec='/usr/local/inpanel/inpanel'
-
-pidfile='/usr/local/var/run/inpanel.pid'
-
-lockfile=/var/lock/subsys/inpanel
+NAME='inpanel'
+DAEMON='/usr/local/inpanel/inpanel'
+PIDFILE='/usr/local/var/run/inpanel.pid'
+LOCKFILE='/var/lock/subsys/inpanel'
 
 start() {
     [ -x $inpanel ] || exit 5
     echo -n $"Starting InPanel: "
-    daemon --pidfile="$pidfile" "$exec &"
+    daemon --pidfile="$PIDFILE" "$DAEMON &"
     retval=$?
     echo
-    [ $retval -eq 0 ] && touch $lockfile
+    [ $retval -eq 0 ] && touch $LOCKFILE
     return $retval
 }
 
 stop() {
     echo -n $"Stopping InPanel: "
-    killproc -p "$pidfile" $exec
+    killproc -p "$PIDFILE" $DAEMON
     #killproc $prog -TERM
     retval=$?
     if [ $retval -eq 0 ]; then
@@ -59,9 +58,9 @@ stop() {
             sleep 1
             echo -n $"."
         done
-        rm -f $lockfile
+        rm -f $LOCKFILE
     fi
-    rm -f $pidfile
+    rm -f $PIDFILE
     echo
     return $retval
 }
@@ -73,7 +72,7 @@ restart() {
 }
 
 rh_status() {
-    status -p "$pidfile" $exec
+    status -p "$PIDFILE" $DAEMON
     #status $prog
 }
 

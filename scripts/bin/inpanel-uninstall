@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (c) 2017, Jackson Dou
 # All rights reserved.
@@ -7,6 +7,8 @@
 # The full license can be found in 'LICENSE'.
 #
 # InPanel uninstall script.
+
+set -e
 
 if [ $(whoami) != 'root' ]; then
     echo "Must be root to run this script."

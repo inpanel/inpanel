@@ -1,14 +1,14 @@
 [program:inpanel]
 directory=/usr/local/inpanel/
-command=/usr/bin/python /usr/local/inpanel/inpanel.py
+command=/usr/local/inpanel/inpanel
 autostart=true
 autorestart=true
 startsecs=10
-stdout_logfile=/var/log/inpanel/stdout.log
+stdout_logfile=/usr/local/var/log/inpanel/main.log
 stdout_logfile_maxbytes=1MB
 stdout_logfile_backups=10
 stdout_capture_maxbytes=1MB
-stderr_logfile=/var/log/inpanel/stderr.log
+stderr_logfile=/usr/local/var/log/inpanel/error.log
 stderr_logfile_maxbytes=1MB
 stderr_logfile_backups=10
 stderr_capture_maxbytes=1MB
