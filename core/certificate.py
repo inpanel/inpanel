@@ -12,10 +12,10 @@ from os.path import basename, exists, isfile, join, splitext
 from shutil import copy
 from subprocess import PIPE, Popen
 
-from mod_web import RequestHandler
-
+import mod_file
+import os
 from acme import ACME
-from files import listfile
+from mod_web import RequestHandler
 
 
 class Certificate():
@@ -210,7 +210,7 @@ class Certificate():
         print(domain)
 
     def get_keys_list(self):
-        items = listfile(self.path_key)
+        items = mod_file.listfile(self.path_key)
         if items is None:
             return None
         res = []
@@ -227,7 +227,7 @@ class Certificate():
         return res
 
     def get_crts_list(self):
-        items = listfile(self.path_crt)
+        items = mod_file.listfile(self.path_crt)
         if items is None:
             return None
         res = []
@@ -244,7 +244,7 @@ class Certificate():
         return res
 
     def get_csrs_list(self):
-        items = listfile(self.path_csr)
+        items = mod_file.listfile(self.path_csr)
         if items is None:
             return None
         res = []

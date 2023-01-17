@@ -26,10 +26,10 @@ from uuid import uuid4
 
 import aliyuncs
 import fdisk
-import files
 import ftp
 import mod_apache
 import mod_cron
+import mod_file
 import mod_lighttpd
 import mod_mysql
 import mod_named
@@ -37,11 +37,11 @@ import mod_nginx
 import mod_proftpd
 import mod_pureftpd
 import mod_shell
+import mod_ssh
 import mod_vsftpd
 import mod_yum
 import php
 import remote
-import ssh
 import tornado
 import tornado.escape
 import tornado.gen
@@ -50,7 +50,6 @@ import tornado.ioloop
 import tornado.web
 import user
 import utils
-import yum
 from base import app_api, app_name, machine, os_name, os_versint, version_info
 from configuration import main_config, runlogs_config
 from lib import pyDes
@@ -1054,7 +1053,7 @@ class OperationHandler(RequestHandler):
             showhidden = self.get_argument('showhidden', 'off')
             remember = self.get_argument('remember', 'on')
             onlydir = self.get_argument('onlydir', 'off')
-            items = files.listdir(path, showhidden=='on', onlydir=='on')
+            items = mod_file.listdir(path, showhidden=='on', onlydir=='on')
             if items == False:
                 self.write({'code': -1, 'msg': '目录 %s 不存在！' % path})
             else:
@@ -1064,7 +1063,7 @@ class OperationHandler(RequestHandler):
 
         elif action == 'getitem':
             path = self.get_argument('path', '')
-            item = files.getitem(path)
+            item = mod_file.getitem(path)
             if item == False:
                 self.write({'code': -1, 'msg': '%s 不存在！' % path})
             else:
@@ -1073,24 +1072,24 @@ class OperationHandler(RequestHandler):
         elif action == 'fread':
             path = self.get_argument('path', '')
             remember = self.get_argument('remember', 'on')
-            size = files.fsize(path)
+            size = mod_file.fsize(path)
             if size == None:
                 self.write({'code': -1, 'msg': '文件 %s 不存在！' % path})
             elif size > 1024*1024*2: # support 1MB of file at max
                 self.write({'code': -1, 'msg': '读取 %s 失败！不允许在线编辑超过2MB的文件！' % path})
-            # elif not files.istext(path):
+            # elif not mod_file.istext(path):
             #     self.write({'code': -1, 'msg': '读取 %s 失败！无法识别文件类型！' % path})
             else:
                 if remember == 'on':
                     self.runlogs.set('file', 'lastfile', path)
-                charset, content = files.decode(path)
+                charset, content = mod_file.decode(path)
                 if not charset:
                     self.write({'code': -1, 'msg': '不可识别的文件编码 ！'})
                     return
                 data = {
                     'filename': os.path.basename(path),
                     'filepath': path,
-                    'mimetype': files.mimetype(path),
+                    'mimetype': mod_file.mimetype(path),
                     'charset': charset,
                     'content': content,
                 }
@@ -1110,14 +1109,14 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if not charset in files.charsets:
+            if not charset in mod_file.charsets:
                 self.write({'code': -1, 'msg': '不可识别的文件编码！'})
                 return
-            content = files.encode(content, charset)
+            content = mod_file.encode(content, charset)
             if not content:
                 self.write({'code': -1, 'msg': '文件编码转换出错，保存失败！'})
                 return
-            if files.fsave(path, content):
+            if mod_file.fsave(path, content):
                 self.write({'code': 0, 'msg': '文件保存成功！'})
             else:
                 self.write({'code': -1, 'msg': '文件保存失败！'})
@@ -1131,7 +1130,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if files.dadd(path, name):
+            if mod_file.dadd(path, name):
                 self.write({'code': 0, 'msg': '文件夹创建成功！'})
             else:
                 self.write({'code': -1, 'msg': '文件夹创建失败！'})
@@ -1145,7 +1144,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if files.fadd(path, name):
+            if mod_file.fadd(path, name):
                 self.write({'code': 0, 'msg': '文件创建成功！'})
             else:
                 self.write({'code': -1, 'msg': '文件创建失败！'})
@@ -1159,7 +1158,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
                     return
 
-            if files.rename(path, name):
+            if mod_file.rename(path, name):
                 self.write({'code': 0, 'msg': '重命名成功！'})
             else:
                 self.write({'code': -1, 'msg': '重命名失败！'})
@@ -1178,7 +1177,7 @@ class OperationHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许在除 /var/www 以外的目录下创建链接！'})
                     return
 
-            if files.link(srcpath, despath):
+            if mod_file.link(srcpath, despath):
                 self.write({'code': 0, 'msg': '链接 %s 创建成功！' % despath})
             else:
                 self.write({'code': -1, 'msg': '链接 %s 创建失败！' % despath})
@@ -1195,27 +1194,27 @@ class OperationHandler(RequestHandler):
 
             if len(paths) == 1:
                 path = paths[0]
-                if files.delete(path):
+                if mod_file.delete(path):
                     self.write({'code': 0, 'msg': '已将 %s 移入回收站！' % path})
                 else:
                     self.write({'code': -1, 'msg': '将 %s 移入回收站失败！' % path})
             else:
                 for path in paths:
-                    if not files.delete(path):
+                    if not mod_file.delete(path):
                         self.write({'code': -1, 'msg': '将 %s 移入回收站失败！' % path})
                         return
                 self.write({'code': 0, 'msg': '批量移入回收站成功！'})
 
         elif action == 'tlist':
-            self.write({'code': 0, 'msg': '', 'data': files.tlist()})
+            self.write({'code': 0, 'msg': '', 'data': mod_file.tlist()})
 
         elif action == 'trashs':
-            self.write({'code': 0, 'msg': '', 'data': files.trashs()})
+            self.write({'code': 0, 'msg': '', 'data': mod_file.trashs()})
 
         elif action == 'titem':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = files.titem(mount, uuid)
+            info = mod_file.titem(mount, uuid)
             if info:
                 self.write({'code': 0, 'msg': '', 'data': info})
             else:
@@ -1224,8 +1223,8 @@ class OperationHandler(RequestHandler):
         elif action == 'trestore':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = files.titem(mount, uuid)
-            if info and files.trestore(mount, uuid):
+            info = mod_file.titem(mount, uuid)
+            if info and mod_file.trestore(mount, uuid):
                 self.write({'code': 0, 'msg': '已还原 %s 到 %s！' % (info['name'], info['path'])})
             else:
                 self.write({'code': -1, 'msg': '还原失败！'})
@@ -1233,8 +1232,8 @@ class OperationHandler(RequestHandler):
         elif action == 'tdelete':
             mount = self.get_argument('mount', '')
             uuid = self.get_argument('uuid', '')
-            info = files.titem(mount, uuid)
-            if info and files.tdelete(mount, uuid):
+            info = mod_file.titem(mount, uuid)
+            if info and mod_file.tdelete(mount, uuid):
                 self.write({'code': 0, 'msg': '已删除 %s！' % info['name']})
             else:
                 self.write({'code': -1, 'msg': '删除失败！'})
@@ -1974,10 +1973,10 @@ class OperationHandler(RequestHandler):
         action = self.get_argument('action', '')
 
         if action == 'getsettings':
-            port = ssh.cfg_get('Port')
-            enable_pwdauth = ssh.cfg_get('PasswordAuthentication') == 'yes'
-            enable_pubkauth = ssh.cfg_get('PubkeyAuthentication') == 'yes'
-            subsystem = ssh.cfg_get('Subsystem')
+            port = mod_ssh.cfg_get('Port')
+            enable_pwdauth = mod_ssh.cfg_get('PasswordAuthentication') == 'yes'
+            enable_pubkauth = mod_ssh.cfg_get('PubkeyAuthentication') == 'yes'
+            subsystem = mod_ssh.cfg_get('Subsystem')
             enable_sftp = subsystem and 'sftp' in subsystem
             pubkey_path = '/root/.ssh/sshkey_inpanel.pub'
             prvkey_path = '/root/.ssh/sshkey_inpanel'
@@ -1996,9 +1995,11 @@ class OperationHandler(RequestHandler):
                 return
 
             port = self.get_argument('port', '')
-            if port: ssh.cfg_set('Port', port)
+            if port:
+                mod_ssh.cfg_set('Port', port)
             enable_pwdauth = self.get_argument('enable_pwdauth', '')
-            if enable_pwdauth: ssh.cfg_set('PasswordAuthentication', enable_pwdauth=='on' and 'yes' or 'no')
+            if enable_pwdauth:
+                mod_ssh.cfg_set('PasswordAuthentication', enable_pwdauth=='on' and 'yes' or 'no')
             enable_pubkauth = self.get_argument('enable_pubkauth', '')
             if enable_pubkauth:
                 if enable_pubkauth == 'on':
@@ -2006,11 +2007,12 @@ class OperationHandler(RequestHandler):
                     if not os.path.isfile(pubkey_path):
                         self.write({'code': -1, 'msg': '公钥文件不存在！'})
                         return
-                ssh.cfg_set('PubkeyAuthentication', enable_pubkauth=='on' and 'yes' or 'no')
-                ssh.cfg_set('AuthorizedKeysFile', pubkey_path)
+                mod_ssh.cfg_set('PubkeyAuthentication', enable_pubkauth=='on' and 'yes' or 'no')
+                mod_ssh.cfg_set('AuthorizedKeysFile', pubkey_path)
 
             enable_sftp = self.get_argument('enable_sftp', '')
-            if enable_sftp: ssh.cfg_set('Subsystem', 'sftp /usr/libexec/openssh/sftp-server', enable_sftp!='on')
+            if enable_sftp:
+                mod_ssh.cfg_set('Subsystem', 'sftp /usr/libexec/openssh/sftp-server', enable_sftp!='on')
             self.write({'code': 0, 'msg': 'SSH 服务配置保存成功！'})
 
     def cron(self):
@@ -2252,15 +2254,15 @@ class BackendHandler(RequestHandler):
             repo = self.get_argument('repo', '*')
             option = self.get_argument('option', '')
             if option == 'update':
-                if not pkg in [v for k,vv in yum.yum_pkg_alias.items() for v in vv]:
+                if not pkg in [v for k,vv in mod_yum.yum_pkg_alias.items() for v in vv]:
                     self.write({'code': -1, 'msg': '未支持的软件包！'})
                     return
             else:
                 option = 'install'
-                if not pkg in yum.yum_pkg_alias:
+                if not pkg in mod_yum.yum_pkg_alias:
                     self.write({'code': -1, 'msg': '未支持的软件包！'})
                     return
-                if repo not in yum.yum_repolist + ('installed', '*'):
+                if repo not in mod_yum.yum_repolist + ('installed', '*'):
                     self.write({'code': -1, 'msg': '未知的软件源 %s！' % repo})
                     return
             self._call(partial(self.yum_info, pkg, repo, option))
@@ -2276,14 +2278,14 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许此类操作！'})
                     return
 
-            if not pkg in yum.yum_pkg_relatives:
+            if not pkg in mod_yum.yum_pkg_relatives:
                 self.write({'code': -1, 'msg': '软件包不存在！'})
                 return
-            if ext and not ext in yum.yum_pkg_relatives[pkg]:
+            if ext and not ext in mod_yum.yum_pkg_relatives[pkg]:
                 self.write({'code': -1, 'msg': '扩展不存在！'})
                 return
             if jobname == 'yum_install':
-                if repo not in yum.yum_repolist:
+                if repo not in mod_yum.yum_repolist:
                     self.write({'code': -1, 'msg': '未知的软件源 %s！' % repo})
                     return
                 handler = self.yum_install
@@ -2294,7 +2296,7 @@ class BackendHandler(RequestHandler):
             self._call(partial(handler, repo, pkg, version, release, ext))
         elif jobname == 'yum_ext_info':
             pkg = self.get_argument('pkg', '')
-            if not pkg in yum.yum_pkg_relatives:
+            if not pkg in mod_yum.yum_pkg_relatives:
                 self.write({'code': -1, 'msg': '软件包不存在！'})
                 return
             self._call(partial(self.yum_ext_info, pkg))
@@ -2830,7 +2832,7 @@ class BackendHandler(RequestHandler):
             for line in lines:
                 if not line: continue
                 repo = line.split()[0]
-                if repo in yum.yum_repolist:
+                if repo in mod_yum.yum_repolist:
                     data.append(repo)
         else:
             code = -1
@@ -2849,7 +2851,7 @@ class BackendHandler(RequestHandler):
         jobname = 'yum_installrepo_%s' % repo
         if not self._start_job(jobname): return
 
-        if repo not in yum.yum_repolist:
+        if repo not in mod_yum.yum_repolist:
             self._finish_job(jobname, -1, '不可识别的软件源！')
             self._unlock_job('yum')
             return
@@ -2869,27 +2871,28 @@ class BackendHandler(RequestHandler):
 
         elif repo == 'ius':
             # REF: https://ius.io/GettingStarted/#install-via-automation
-            result, output = await mod_shell.async_command(yum.yum_repoinstallcmds['ius'])
+            result, output = await mod_shell.async_command(mod_yum.yum_repoinstallcmds['ius'])
             if result != 0: error = True
 
         elif repo == '10gen':
             # REF: http://docs.mongodb.org/manual/tutorial/install-mongodb-on-redhat-centos-or-fedora-linux/
             with open('/etc/yum.repos.d/10gen.repo', 'w', encoding='utf-8') as f:
-                f.write(yum.yum_repostr['10gen'][self.settings['arch']])
+                f.write(mod_yum.yum_repostr['10gen'][self.settings['arch']])
 
         elif repo == 'mariadb':
             # MariaDB Repositories REF: http://downloads.mariadb.org/mariadb/repositories
             with open('/etc/yum.repos.d/mariadb.repo', 'w', encoding='utf-8') as f:
-                f.write(yum.yum_repostr['mariadb'][self.settings['arch']])
+                f.write(mod_yum.yum_repostr['mariadb'][self.settings['arch']])
 
         elif repo == 'atomic':
             # REF: http://www.atomicorp.com/channels/atomic/
-            result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['atomic'], shell=True)
-            if result != 0: error = True
+            result, output = await mod_shell.async_command(mod_yum.yum_repoinstallcmds['atomic'])
+            if result != 0:
+                error = True
 
         error = False
         for cmd in cmds:
-            result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+            result, output = await mod_shell.async_command(cmd)
             if result !=0 and not 'already installed' in output:
                 error = True
                 break
@@ -2939,11 +2942,11 @@ class BackendHandler(RequestHandler):
 
         if repo == '*': repo = ''
         arch = self.settings['arch']
-        if pkg in yum.yum_pkg_noarchitecture:
+        if pkg in mod_yum.yum_pkg_noarchitecture:
             arch = 'noarch'
         if option == 'install':
             cmds = ['yum info %s %s.%s --showduplicates --disableplugin=fastestmirror'
-                    % (repo, alias, arch) for alias in yum.yum_pkg_alias[pkg]]
+                    % (repo, alias, arch) for alias in mod_yum.yum_pkg_alias[pkg]]
         else:
             cmds = ['yum info %s.%s --disableplugin=fastestmirror' % (pkg, arch)]
 
@@ -2973,7 +2976,7 @@ class BackendHandler(RequestHandler):
         if matched:
             code = 0
             msg = '获取软件版本信息成功！'
-            data = [pkg for pkg in data if pkg['repo'] in yum.yum_repolist+('installed',)]
+            data = [pkg for pkg in data if pkg['repo'] in mod_yum.yum_repolist+('installed',)]
             if option == 'update' and len(data) == 1:
                 msg = '没有找到可用的新版本！'
         else:
@@ -2999,7 +3002,7 @@ class BackendHandler(RequestHandler):
             self._update_job(jobname, 2, '正在下载并安装软件包，请耐心等候...')
 
         arch = self.settings['arch']
-        if pkg in yum.yum_pkg_noarchitecture:
+        if pkg in mod_yum.yum_pkg_noarchitecture:
             arch = 'noarch'
 
         if ext: # install extension
@@ -3014,17 +3017,17 @@ class BackendHandler(RequestHandler):
             if version: # install special version
                 if release:
                     pkgs = ['%s-%s-%s.%s' % (p, version, release, arch)
-                        for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
+                        for p, pinfo in mod_yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
                 else:
                     pkgs = ['%s-%s.%s' % (p, version, arch)
-                        for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
+                        for p, pinfo in mod_yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
             else:   # or judge by the system
                 pkgs = ['%s.%s' % (p, arch)
-                    for p, pinfo in yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
+                    for p, pinfo in mod_yum.yum_pkg_relatives[pkg].items() if pinfo['default']]
         repos = [repo, ]
         if repo in ('CentALT', 'ius', 'atomic', '10gen', 'mariadb'):
             repos.extend(['base', 'updates', 'epel'])
-        exclude_repos = [r for r in yum.yum_repolist if r not in repos]
+        exclude_repos = [r for r in mod_yum.yum_repolist if r not in repos]
 
         endinstall = False
         hasconflict = False
@@ -3101,17 +3104,17 @@ class BackendHandler(RequestHandler):
             self._update_job(jobname, 2, '正在卸载软件包...')
 
         arch = self.settings['arch']
-        if pkg in yum.yum_pkg_noarchitecture:
+        if pkg in mod_yum.yum_pkg_noarchitecture:
             arch = 'noarch'
 
         if ext:
             pkgs = ['%s-%s-%s.%s' % (ext, version, release, arch)]
         else:
             pkgs = ['%s-%s-%s.%s' % (p, version, release, arch)
-                for p, pinfo in yum.yum_pkg_relatives[pkg].items()
+                for p, pinfo in mod_yum.yum_pkg_relatives[pkg].items()
                 if 'base' in pinfo and pinfo['base']]
         ## also remove depends pkgs
-        #for p, pinfo in yum.yum_pkg_relatives[pkg].items():
+        #for p, pinfo in mod_yum.yum_pkg_relatives[pkg].items():
         #    if 'depends' in pinfo:
         #        pkgs += pinfo['depends']
         cmd = 'yum erase -y %s' % (' '.join(pkgs), )
@@ -3148,7 +3151,7 @@ class BackendHandler(RequestHandler):
         pkg_ext = ext and ext or pkg
 
         arch = self.settings['arch']
-        if pkg_ext in yum.yum_pkg_noarchitecture:
+        if pkg_ext in mod_yum.yum_pkg_noarchitecture:
             arch = 'noarch'
 
         cmd = 'yum update -y %s-%s-%s.%s' % (pkg_ext, version, release, arch)
@@ -3175,7 +3178,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在收集扩展信息...')
 
-        exts = [k for k, v in yum.yum_pkg_relatives[pkg].items() if 'isext' in v and v['isext']]
+        exts = [k for k, v in mod_yum.yum_pkg_relatives[pkg].items() if 'isext' in v and v['isext']]
         cmd = 'yum info %s --disableplugin=fastestmirror' % (' '.join(['%s.%s' % (ext, self.settings['arch']) for ext in exts]))
 
         data = []
@@ -3386,7 +3389,7 @@ class BackendHandler(RequestHandler):
         #cmd = 'chown %s %s:%s %s' % (option, user, group, ' '.join(paths))
 
         for path in paths:
-            result = yield tornado.gen.Task(callbackable(files.chown), path, user, group, option=='-R')
+            result = yield tornado.gen.Task(callbackable(mod_file.chown), path, user, group, option=='-R')
             if result == True:
                 code = 0
                 msg = '设置用户和用户组成功！'
@@ -3415,7 +3418,7 @@ class BackendHandler(RequestHandler):
             return
 
         for path in paths:
-            result = yield tornado.gen.Task(callbackable(files.chmod), path, perms, option=='-R')
+            result = yield tornado.gen.Task(callbackable(mod_file.chmod), path, perms, option=='-R')
             if result == True:
                 code = 0
                 msg = '权限修改成功！'
@@ -3811,7 +3814,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在生成密钥对...')
 
-        rt = yield tornado.gen.Task(callbackable(ssh.genkey), path, password)
+        rt = yield tornado.gen.Task(callbackable(mod_ssh.genkey), path, password)
         if rt != False:
             code = 0
             msg = '密钥对生成成功！'
@@ -3830,7 +3833,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在修改私钥密码...')
 
-        rt = yield tornado.gen.Task(callbackable(ssh.chpasswd), path, oldpassword, newpassword)
+        rt = yield tornado.gen.Task(callbackable(mod_ssh.chpasswd), path, oldpassword, newpassword)
         if rt != False:
             code = 0
             msg = '私钥密码修改成功！'

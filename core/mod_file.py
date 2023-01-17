@@ -62,6 +62,7 @@ def listfile(directory):
 
 
 def getitem(path):
+    '''get file stat'''
     if not os.path.exists(path) and not os.path.islink(path):
         return False
     name = os.path.basename(path)

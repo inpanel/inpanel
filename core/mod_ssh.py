@@ -9,7 +9,6 @@
 
 '''Module for ssh Management'''
 
-import os
 import re
 import shlex
 

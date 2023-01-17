@@ -7,29 +7,24 @@
 # The full license can be found in 'LICENSE'.
 '''Module for YUM Management'''
 
-from os import listdir
-from os.path import abspath, exists, isdir, join
-from platform import system
+import os
 
-from configuration import Config
-
+import base
+import configuration
+import mod_file
 from yum import yum_reporpms
 
-from files import delete
-
-os_type = system()
 config_path = '/etc/yum.repos.d'
-# print(os_type)
 
 
 def get_list():
     '''get repo list'''
     res = []
-    if os_type in ('Linux', 'Darwin'):
-        d = abspath(config_path)
-        if not exists(d) or not isdir(d):
+    if base.kernel_name in ('Linux', 'Darwin'):
+        d = os.path.abspath(config_path)
+        if not os.path.exists(d) or not os.path.isdir(d):
             return None
-        items = sorted(listdir(d))
+        items = sorted(os.listdir(d))
         return items if len(items) > 0 else []
     else:
         return None
@@ -37,16 +32,16 @@ def get_list():
 
 def item_exists(repo):
     '''exists'''
-    return exists(join(config_path, repo))
+    return os.path.exists(os.path.join(config_path, repo))
 
 
 def get_item(repo):
     '''get repo config'''
     if not repo:
         return None
-    repo_file = join(config_path, repo)
-    if exists(repo_file):
-        config = Config(repo_file)
+    repo_file = os.path.join(config_path, repo)
+    if os.path.exists(repo_file):
+        config = configuration.Config(repo_file)
         return config.get_config()
     return None
 
@@ -57,9 +52,9 @@ def set_item(repo, data):
         return None
     if not data:
         return None
-    repo_file = join(config_path, repo)
-    if exists(repo_file):
-        config = Config(repo_file, data)
+    repo_file = os.path.join(config_path, repo)
+    if os.path.exists(repo_file):
+        config = configuration.Config(repo_file, data)
         return True
         # return config.update()
     else:
@@ -72,11 +67,11 @@ def add_item(repo, data):
         return None
     if not data:
         return None
-    repo_file = join(config_path, repo)
-    if exists(repo_file):
+    repo_file = os.path.join(config_path, repo)
+    if os.path.exists(repo_file):
         return False
     else:
-        config = Config(repo_file, data)
+        config = configuration.Config(repo_file, data)
         return True
         # return config.update()
 
@@ -85,8 +80,8 @@ def del_item(repo):
     '''delete repo file'''
     if not repo:
         return None
-    repo_file = join(config_path, repo)
-    return delete(repo_file)
+    repo_file = os.path.join(config_path, repo)
+    return mod_file.delete(repo_file)
 
 
 def get_repo_release(os_versint, os_name, arch):
@@ -108,10 +103,11 @@ def get_repo_release(os_versint, os_name, arch):
         for rpm in yum_reporpms['base'][os_versint][arch]:
             cmds.append('rpm -U %s' % rpm)
 
-        if exists('/etc/issue.inpanel'):
+        if os.path.exists('/etc/issue.inpanel'):
             cmds.append('cp -f /etc/issue.inpanel /etc/issue')
-        if exists('/etc/redhat-release.inpanel'):
-            cmds.append('cp -f /etc/redhat-release.inpanel /etc/redhat-release')
+        if os.path.exists('/etc/redhat-release.inpanel'):
+            cmds.append(
+                'cp -f /etc/redhat-release.inpanel /etc/redhat-release')
     return cmds
 
 
@@ -134,7 +130,7 @@ def get_repo_epel(os_versint, os_name, arch):
 
 
 if __name__ == '__main__':
-    import json
+    # import json
     l = get_list()
     print(l)
     i = l[2]
