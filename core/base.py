@@ -33,12 +33,12 @@ app_api = {
 }
 
 # 配置文件
-config_path  = '/usr/local/etc/inpanel/config.ini'
-runlogs_path = '/usr/local/etc/inpanel/runlogs.ini'
+config_path  = '/etc/inpanel/config.ini'
+runlogs_path = '/etc/inpanel/runlogs.ini'
 share_path   = '/usr/local/share/inpanel'
-execfile     = '/usr/local/inpanel/inpanel'
-logfile      = '/usr/local/var/log/inpanel/main.log'
-pidfile      = '/usr/local/var/run/inpanel.pid'
+execfile     = '/usr/local/inpanel/inpaneld'
+logfile      = '/var/log/inpanel/main.log'
+pidfile      = '/var/run/inpanel.pid'
 
 kernel_name, hostname, kernel_release, kernel_version, machine, processor = uname()
 
@@ -77,6 +77,7 @@ elif kernel_name == 'Linux':
                 os_title = line[0].replace('\\n', '').replace('\\l', '').strip()
                 os_version = os_title.split()[1]
                 os_versint = int(os_version.split('.')[0])
+        # elif exists('/etc/os-release'):
     else:
         if '.el8.' in kernel_release:
             os_name = 'CentOS'

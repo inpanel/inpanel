@@ -3,17 +3,25 @@
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>org.inpanel.service</string>
+        <string>org.inpanel.inpaneld</string>
+
+        <key>WorkingDirectory</key>
+        <string>/usr/local/inpanel</string>
+
         <key>ProgramArguments</key>
         <array>
-            <string>/usr/local/inpanel/inpanel</string>
+            <string>/usr/local/inpanel/inpaneld</string>
         </array>
+
         <key>StandardOutPath</key>
-        <string>/usr/local/var/log/inpanel/main.log</string>
+        <string>/var/log/inpanel/main.log</string>
+
         <key>StandardErrorPath</key>
-        <string>/usr/local/var/log/inpanel/error.log</string>
+        <string>/var/log/inpanel/error.log</string>
+
         <key>RunAtLoad</key>
         <false/>
+
         <key>KeepAlive</key>
         <true/>
     </dict>

@@ -5,12 +5,22 @@
 #
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
-
 '''Module for Shell.'''
-
 
 import shlex
 import subprocess as sbps
+from asyncio import create_subprocess_shell
+from asyncio import subprocess as async_subprocess
+
+
+async def async_command(command):
+    '''async command'''
+    proc = await create_subprocess_shell(command,
+                                         stdout=async_subprocess.PIPE,
+                                         stderr=async_subprocess.PIPE,
+                                         shell=True)
+    output, _ = await proc.communicate()
+    return (proc.returncode, output.decode('utf-8'))
 
 
 def run(cmd, shell=False):
@@ -38,18 +48,9 @@ def exec_command(cmd, cwd):
             # print(p.cc.read())
         else:
             result = p.stderr.read()  # result = p.stderr.readlines()
-        return {
-            'code': p.wait(),
-            'cwd': cwd,
-            'data': result,
-            'msg': 'success'
-        }
+        return {'code': p.wait(), 'cwd': cwd, 'data': result, 'msg': 'success'}
     except:
-        return {
-            'code': -1,
-            'data': '',
-            'msg': 'error'
-        }
+        return {'code': -1, 'data': '', 'msg': 'error'}
 
 
 if __name__ == '__main__':

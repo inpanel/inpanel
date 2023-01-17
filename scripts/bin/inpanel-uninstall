@@ -11,7 +11,7 @@
 set -e
 
 if [ $(whoami) != 'root' ]; then
-    echo "Must be root to run this script."
+    echo "The command must be run as root."
     exit 1
 fi
 
@@ -22,7 +22,7 @@ uninstall_do() {
     inpanel stop
     rm -f /etc/init.d/inpanel
     # delete inpanel binary file
-    rm -f /usr/local/inpanel/inpanel
+    rm -f /usr/local/inpanel/inpaneld
     # delete inpanel control script
     rm -f /usr/local/bin/inpanel
     # delete inpanel configuration script

@@ -4,8 +4,8 @@
 import os.path
 
 block_cipher = None
-# bundle_identifier = 'org.inpanel.daemon'
-# runtime_tmpdir = '/tmp/org.inpanel.daemon'
+# bundle_identifier = 'org.inpanel.inpaneld'
+# runtime_tmpdir = '/tmp/org.inpanel.inpaneld'
 # root_path = os.path.dirname(__file__)
 
 datas=[
@@ -35,7 +35,7 @@ exe = EXE(pyz,
              a.zipfiles,
              a.datas,
              [],
-             name='inpanel',
+             name='inpaneld',
              debug=False,
              bootloader_ignore_signals=False,
              strip=False,

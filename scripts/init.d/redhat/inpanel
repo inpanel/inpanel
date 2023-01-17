@@ -30,8 +30,8 @@ fi
 [ "$NETWORKING" = "no" ] && exit 0
 
 NAME='inpanel'
-DAEMON='/usr/local/inpanel/inpanel'
-PIDFILE='/usr/local/var/run/inpanel.pid'
+DAEMON='/usr/local/inpanel/inpaneld'
+PIDFILE='/var/run/inpanel.pid'
 LOCKFILE='/var/lock/subsys/inpanel'
 
 start() {

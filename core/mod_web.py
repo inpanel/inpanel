@@ -20,10 +20,10 @@ from functools import partial
 from hashlib import md5
 from json import dumps, loads
 from logging import info as loginfo
+from shlex import quote
 from subprocess import PIPE, STDOUT, Popen
 from uuid import uuid4
 
-import asyncio
 import aliyuncs
 import fdisk
 import files
@@ -36,11 +36,11 @@ import mod_named
 import mod_nginx
 import mod_proftpd
 import mod_pureftpd
+import mod_shell
 import mod_vsftpd
 import mod_yum
 import php
 import remote
-import shell
 import ssh
 import tornado
 import tornado.escape
@@ -48,7 +48,6 @@ import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
-from tornado import gen
 import user
 import utils
 import yum
@@ -63,11 +62,6 @@ from server import ServerInfo, ServerTool
 from service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
-
-try:
-    from shlex import quote  # For Python 3
-except ImportError:
-    from pipes import quote  # For Python 2
 
 
 class Application(tornado.web.Application):
@@ -251,7 +245,7 @@ class FileUploadHandler(RequestHandler):
             self.write('正在上传...<br>')
             for item in self.request.files['ufile']:
                 filename = re.split('[\\\/]', item['filename'])[-1]
-                with open(os.path.join(path, filename), 'wb', encoding='utf-8') as f:
+                with open(os.path.join(path, filename), 'wb') as f:
                     f.write(item['body'])
                 self.write('%s 上传成功！<br>' % item['filename'])
 
@@ -383,9 +377,7 @@ class SitePackageHandler(RequestHandler):
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
-
-    @tornado.gen.coroutine
-    def getlist(self):
+    async def getlist(self):
         if not os.path.exists(self.settings['package_path']):
             os.mkdir(self.settings['package_path'])
 
@@ -402,14 +394,14 @@ class SitePackageHandler(RequestHandler):
 
         # fetch from api
         if not packages:
-            http = tornado.httpclient.AsyncHTTPClient()
-            response = yield tornado.gen.Task(http.fetch, app_api['site_packages'])
+            http_client = tornado.httpclient.AsyncHTTPClient()
+            response = await http_client.fetch(app_api['site_packages'])
             if response.error:
                 self.write({'code': -1, 'msg': '获取网站系统列表失败！'})
                 self.finish()
                 return
             else:
-                packages = response.body
+                packages = response.body.decode('utf-8')
                 with open(packages_cachefile, 'w', encoding='utf-8') as f:
                     f.write(packages)
 
@@ -662,8 +654,7 @@ class UtilsTimeHandler(RequestHandler):
 class SettingHandler(RequestHandler):
     """Settings for InPanel
     """
-    @tornado.gen.coroutine
-    def get(self, section):
+    async def get(self, section):
         self.authed()
         if section == 'auth':
             username = self.config.get('auth', 'username')
@@ -709,22 +700,23 @@ class SettingHandler(RequestHandler):
 
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
-                http = tornado.httpclient.AsyncHTTPClient()
-                response = yield http.fetch(app_api['latest'])
-                # response = yield tornado.gen.Task(http.fetch, app_api['latest'])
+                http_client = tornado.httpclient.AsyncHTTPClient()
+                response = await http_client.fetch(app_api['latest'])
                 if response.error:
                     self.write({'code': -1, 'msg': '获取新版本信息失败！'})
                 else:
-                    data = tornado.escape.json_decode(response.body)
-                    self.write({'code': 0, 'msg':'', 'data': data})
+                    data = response.body.decode('utf-8')
                     self.config.set('server', 'lastcheckupdate', int(time.time()))
-                    self.config.set('server', 'updateinfo', response.body)
+                    self.config.set('server', 'updateinfo', data)
+                    data = tornado.escape.json_decode(data)
+                    self.write({'code': 0, 'msg':'', 'data': data})
             else:
                 data = self.config.get('server', 'updateinfo')
                 try:
                     data = tornado.escape.json_decode(data)
                 except:
-                    data = {}
+                    data = None
+
                 self.write({'code': 0, 'msg': '', 'data': data})
 
             self.finish()
@@ -2188,6 +2180,7 @@ class BackendHandler(RequestHandler):
     def post(self, jobname):
         """Create a new backend process
         """
+        print('jobname: ', jobname)
         self.authed()
 
         # centos/redhat only job
@@ -2566,8 +2559,7 @@ class BackendHandler(RequestHandler):
 
         self.write({'code': 0, 'msg': ''})
 
-    @tornado.gen.coroutine
-    def update(self):
+    async def update(self):
         if not self._start_job('update'): return
 
         root_path = self.settings['root_path']
@@ -2579,12 +2571,12 @@ class BackendHandler(RequestHandler):
             return
 
         # install the latest version
-        http = tornado.httpclient.AsyncHTTPClient()
-        response = yield tornado.gen.Task(http.fetch, app_api['latest'])
+        http_client = tornado.httpclient.AsyncHTTPClient()
+        response = await http_client.fetch(app_api['latest'])
         if response.error:
             self._update_job('update', -1, '获取版本信息失败！')
             return
-        versioninfo = tornado.escape.json_decode(response.body)
+        versioninfo = tornado.escape.json_decode(response.body.decode('utf-8'))
         downloadurl = versioninfo['download']
         initscript = '%s/scripts/init.d/%s/inpanel' % (root_path, self.settings['os_name'])
         binscript = '%s/scripts/bin/inpanel' % root_path
@@ -2634,7 +2626,7 @@ class BackendHandler(RequestHandler):
             desc = step['desc']
             cmd = step['cmd']
             self._update_job('update', 2, desc)
-            result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+            result, output = await mod_shell.async_command(cmd)
             if result != 0:
                 self._update_job('update', -1, desc+'失败！')
                 break
@@ -2648,8 +2640,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job('update', code, msg)
 
-    @tornado.gen.coroutine
-    def service(self, action, service, name):
+    async def service(self, action, service, name):
         """Service operation."""
         jobname = 'service_%s_%s' % (action, service)
         if not self._start_job(jobname): return
@@ -2683,7 +2674,7 @@ class BackendHandler(RequestHandler):
             cmd = '/etc/init.d/%s %s' % (service, action)
         else:
             cmd = '/bin/systemctl %s %s.service' % (action, service)
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             msg = '%s 服务%s成功！' % (_d(name), action_str[action])
@@ -2693,8 +2684,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def datetime(self, newdatetime):
+    async def datetime(self, newdatetime):
         """Set datetime using system's date command.
         """
         jobname = 'datetime'
@@ -2703,18 +2693,17 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, '正在设置系统时间...')
 
         cmd = 'date -s %s' % (quote(newdatetime), )
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             msg = '系统时间设置成功！'
         else:
             code = -1
-            msg = '系统时间设置失败！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
+            msg = '系统时间设置失败！<p style="margin:10px">%s</p>' % output.strip().replace('\n', '<br>')
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def ntpdate(self, server):
+    async def ntpdate(self, server):
         """Run ntpdate command to sync time.
         """
         jobname = 'ntpdate_%s' % server
@@ -2722,7 +2711,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在从 %s 同步时间...' % server)
         cmd = 'ntpdate -u %s' % server
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             offset = output.split(' offset ')[-1].split()[0]
@@ -2734,12 +2723,11 @@ class BackendHandler(RequestHandler):
             elif 'no servers can be used' in output: # no address associated with hostname
                 msg = '同步时间失败！没有找到同步服务器的地址'
             else:
-                msg = '同步时间失败！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
+                msg = '同步时间失败！<p style="margin:10px">%s</p>' % output.strip().replace('\n', '<br>')
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def swapon(self, action, devname):
+    async def swapon(self, action, devname):
         """swapon or swapoff swap partition.
         """
         jobname = 'swapon_%s_%s' % (action, devname)
@@ -2754,7 +2742,7 @@ class BackendHandler(RequestHandler):
         else:
             cmd = 'swapoff /dev/%s' % devname
 
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             msg = '%s %s 成功！' % (action_str[action], _d(devname))
@@ -2764,8 +2752,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mount(self, action, devname, mountpoint, fstype):
+    async def mount(self, action, devname, mountpoint, fstype):
         """Mount or umount using system's mount command.
         """
         jobname = 'mount_%s_%s' % (action, devname)
@@ -2786,7 +2773,7 @@ class BackendHandler(RequestHandler):
         else:
             cmd = 'umount /dev/%s' % (devname)
 
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             msg = '%s %s 成功！' % (action_str[action], _d(devname))
@@ -2796,8 +2783,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def format(self, devname, fstype):
+    async def format(self, devname, fstype):
         """Format partition using system's mkfs.* commands.
         """
         jobname = 'format_%s' % devname
@@ -2813,7 +2799,7 @@ class BackendHandler(RequestHandler):
             cmd = 'mkswap -f /dev/%s' % devname
         else:
             cmd = 'mkfs.%s /dev/%s' % (fstype, devname)
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             msg = '%s 格式化成功！' % _d(devname)
@@ -2823,8 +2809,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def yum_repolist(self):
+    async def yum_repolist(self):
         """Get yum repository list.
         """
         jobname = 'yum_repolist'
@@ -2836,7 +2821,7 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, '正在获取软件源列表...')
 
         cmd = 'yum repolist --disableplugin=fastestmirror'
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         data = []
         if result == 0:
             code = 0
@@ -2854,8 +2839,7 @@ class BackendHandler(RequestHandler):
         self._finish_job(jobname, code, msg, data)
         self._unlock_job('yum')
 
-    @tornado.gen.coroutine
-    def yum_installrepo(self, repo):
+    async def yum_installrepo(self, repo):
         """Install yum repository.
 
         REFs:
@@ -2885,7 +2869,7 @@ class BackendHandler(RequestHandler):
 
         elif repo == 'ius':
             # REF: https://ius.io/GettingStarted/#install-via-automation
-            result, output = yield tornado.gen.Task(call_subprocess, self, yum.yum_repoinstallcmds['ius'], shell=True)
+            result, output = await mod_shell.async_command(yum.yum_repoinstallcmds['ius'])
             if result != 0: error = True
 
         elif repo == '10gen':
@@ -2940,8 +2924,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def yum_info(self, pkg, repo, option):
+    async def yum_info(self, pkg, repo, option):
         """Get package info in repository.
 
         Option can be 'install' or 'update'.
@@ -2967,9 +2950,9 @@ class BackendHandler(RequestHandler):
         data = []
         matched = False
         # change to en_US for fields
-        yield tornado.gen.Task(call_subprocess, self, 'LANG="en_US.UTF-8"')
+        await mod_shell.async_command('LANG="en_US.UTF-8"')
         for cmd in cmds:
-            result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+            result, output = await mod_shell.async_command(cmd)
             if result == 0:
                 matched = True
                 lines = output.split('\n')
@@ -3000,8 +2983,7 @@ class BackendHandler(RequestHandler):
         self._finish_job(jobname, code, msg, data)
         self._unlock_job('yum')
 
-    @tornado.gen.coroutine
-    def yum_install(self, repo, pkg, version, release, ext):
+    async def yum_install(self, repo, pkg, version, release, ext):
         """Install specified version of package.
         """
         jobname = 'yum_install_%s_%s_%s_%s_%s' % (repo, pkg, ext, version, release)
@@ -3050,7 +3032,7 @@ class BackendHandler(RequestHandler):
         while not endinstall:
             cmd = 'yum install -y %s --disablerepo=%s' % (' '.join(pkgs), ','.join(exclude_repos))
             #cmd = 'yum install -y %s' % (' '.join(pkgs), )
-            result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+            result, output = await mod_shell.async_command(cmd)
             pkg_ext = ext and ext or pkg
 
             pkgstr = version and '%s v%s-%s' % (pkg_ext, version, release) or (pkg_ext)
@@ -3058,7 +3040,7 @@ class BackendHandler(RequestHandler):
                 if hasconflict:
                     # install the conflict packages we just remove
                     cmd = 'yum install -y %s' % (' '.join(conflicts_backups), )
-                    result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+                    result, output = await mod_shell.async_command(cmd)
                 endinstall = True
                 code = 0
                 msg = '%s 安装成功！' % _d(pkgstr)
@@ -3077,7 +3059,7 @@ class BackendHandler(RequestHandler):
                         # remove the conflict package and packages depend on it
                         self._update_job(jobname, 2, '检测到软件冲突，正在卸载处理冲突...')
                         tcmd = 'yum erase -y %s' % conflict_pkg
-                        result, output = yield tornado.gen.Task(call_subprocess, self, tcmd)
+                        result, output = await mod_shell.async_command(tcmd)
                         if result == 0:
                             lines = output.split('\n')
                             conflicts_backups = []
@@ -3103,8 +3085,7 @@ class BackendHandler(RequestHandler):
         self._finish_job(jobname, code, msg)
         self._unlock_job('yum')
 
-    @tornado.gen.coroutine
-    def yum_uninstall(self, repo, pkg, version, release, ext):
+    async def yum_uninstall(self, repo, pkg, version, release, ext):
         """Uninstall specified version of package.
         """
         jobname = 'yum_uninstall_%s_%s_%s_%s' % (pkg, ext, version, release)
@@ -3134,7 +3115,7 @@ class BackendHandler(RequestHandler):
         #    if 'depends' in pinfo:
         #        pkgs += pinfo['depends']
         cmd = 'yum erase -y %s' % (' '.join(pkgs), )
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         pkg_ext = ext and ext or pkg
         if result == 0:
             code = 0
@@ -3147,10 +3128,9 @@ class BackendHandler(RequestHandler):
         self._finish_job(jobname, code, msg)
         self._unlock_job('yum')
 
-    @tornado.gen.coroutine
-    def yum_update(self, repo, pkg, version, release, ext):
+    async def yum_update(self, repo, pkg, version, release, ext):
         """Update a package.
-        
+
         The parameter repo and version here are only for showing.
         """
         jobname = 'yum_update_%s_%s_%s_%s_%s' % (repo, pkg, ext, version, release)
@@ -3172,20 +3152,19 @@ class BackendHandler(RequestHandler):
             arch = 'noarch'
 
         cmd = 'yum update -y %s-%s-%s.%s' % (pkg_ext, version, release, arch)
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
-            msg = '成功升级 %s 到版本 v%s-%s！' % (_d(pkg_ext), _d(version), _d(release))
+            msg = '成功升级 %s 到版本 v%s-%s！' % (pkg_ext, version, release)
         else:
             code = -1
             msg = '%s 升级到版本 v%s-%s 失败！<p style="margin:10px">%s</p>' % \
-                (_d(pkg_ext), _d(version), _d(release), _d(output.strip().replace('\n', '<br>')))
+                (pkg_ext, version, release, output.strip().replace('\n', '<br>'))
 
         self._finish_job(jobname, code, msg)
         self._unlock_job('yum')
 
-    @tornado.gen.coroutine
-    def yum_ext_info(self, pkg):
+    async def yum_ext_info(self, pkg):
         """Get ext info list of a pkg info.
         """
         jobname = 'yum_ext_info_%s' % pkg
@@ -3202,8 +3181,8 @@ class BackendHandler(RequestHandler):
         data = []
         matched = False
         # change to en_US for fields
-        yield tornado.gen.Task(call_subprocess, self, 'LANG="en_US.UTF-8"')
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        await mod_shell.async_command('LANG="en_US.UTF-8"')
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             matched = True
             lines = output.split('\n')
@@ -3227,71 +3206,71 @@ class BackendHandler(RequestHandler):
         self._finish_job(jobname, code, msg, data)
         self._unlock_job('yum')
 
-    @tornado.gen.coroutine
-    def copy(self, srcpath, despath):
+    async def copy(self, srcpath, despath):
         """Copy a directory or file to a new path.
         """
         jobname = 'copy_%s_%s' % (srcpath, despath)
-        if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, '正在复制 %s 到 %s...' % (_d(srcpath), _d(despath)))
+        print('job info: ', self._get_job(jobname)) # True 运行中 False 未运行
+        if not self._start_job(jobname):
+            # is running
+            return
+
+        self._update_job(jobname, 2, '正在复制 %s 到 %s...' % (srcpath, despath))
 
         cmd = 'cp -rf %s %s' % (quote(srcpath), quote(despath))
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell='*' in srcpath)
+        result, output = await mod_shell.async_command(cmd)
+
         if result == 0:
             code = 0
-            msg = '复制 %s 到 %s 完成！' % (_d(srcpath), _d(despath))
+            msg = '复制 %s 到 %s 完成！' % (srcpath, despath)
         else:
             code = -1
-            msg = '复制 %s 到 %s 失败！<p style="margin:10px">%s</p>' % (_d(srcpath), _d(despath), _d(output.strip().replace('\n', '<br>')))
+            msg = '复制 %s 到 %s 失败！<p style="margin:10px">%s</p>' % (srcpath, despath, output.strip().replace('\n', '<br>'))
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def move(self, srcpath, despath):
+    async def move(self, srcpath, despath):
         """Move a directory or file recursively to a new path.
         """
         jobname = 'move_%s_%s' % (srcpath, despath)
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, '正在移动 %s 到 %s...' % (_d(srcpath), _d(despath)))
+        self._update_job(jobname, 2, '正在移动 %s 到 %s...' % (srcpath, despath))
 
         # check if the despath exists
         # if exists, we first copy srcpath to despath, then remove the srcpath
         despath_exists = os.path.exists(despath)
 
-        shell = False
         if despath_exists:
             # secure check
             if not os.path.exists(srcpath):
                 self._finish_job(jobname, -1, '不可识别的源！')
                 return
             cmd = 'cp -rf %s/* %s' % (quote(srcpath), quote(despath))
-            shell = True
         else:
             cmd = 'mv %s %s' % (quote(srcpath), quote(despath))
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell=shell)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
-            msg = '移动 %s 到 %s 完成！' % (_d(srcpath), _d(despath))
+            msg = '移动 %s 到 %s 完成！' % (srcpath, despath)
         else:
             code = -1
-            msg = '移动 %s 到 %s 失败！<p style="margin:10px">%s</p>' % (_d(srcpath), _d(despath), _d(output.strip().replace('\n', '<br>')))
+            msg = '移动 %s 到 %s 失败！<p style="margin:10px">%s</p>' % (srcpath, despath, output.strip().replace('\n', '<br>'))
 
         if despath_exists and code == 0:
             # remove the srcpath
             cmd = 'rm -rf %s' % (quote(srcpath), )
-            result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+            result, output = await mod_shell.async_command(cmd)
             if result == 0:
                 code = 0
-                msg = '移动 %s 到 %s 完成！' % (_d(srcpath), _d(despath))
+                msg = '移动 %s 到 %s 完成！' % (srcpath, despath)
             else:
                 code = -1
-                msg = '移动 %s 到 %s 失败！<p style="margin:10px">%s</p>' % (_d(srcpath), _d(despath), _d(output.strip().replace('\n', '<br>')))
+                msg = '移动 %s 到 %s 失败！<p style="margin:10px">%s</p>' % (srcpath, despath, output.strip().replace('\n', '<br>'))
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
     async def remove(self, paths):
         """Remove a directory or file recursively.
         """
@@ -3302,12 +3281,7 @@ class BackendHandler(RequestHandler):
         for path in paths:
             self._update_job(jobname, 2, '正在删除 %s...' % path)
             cmd = 'rm -rf %s' % (quote(path))
-            print('jobcmd', cmd)
-            # result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
-            result, output = yield tornado.gen.Runner(call_subprocess, self, cmd)
-            # result, output = yield call_subprocess(self, cmd)
-            # result, output = await asyncio.wait(call_subprocess, self, cmd)
-            # result, output = yield Popen(cmd, stdout=PIPE, stderr=STDOUT, close_fds=True, shell=True)
+            result, output = await mod_shell.async_command(cmd)
 
             if result == 0:
                 code = 0
@@ -3318,15 +3292,12 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def compress(self, zippath, paths):
+    async def compress(self, zippath, paths):
         """Compress files or directorys.
         """
         jobname = 'compress_%s_%s' % (zippath, ','.join(paths))
         if not self._start_job(jobname): return
         self._update_job(jobname, 2, '正在压缩生成 %s...' % _d(zippath))
-
-        shell = False
 
         basepath = os.path.dirname(zippath) + '/'
         path = ' '.join([quote(item.replace(basepath, '')) for item in paths])
@@ -3339,14 +3310,13 @@ class BackendHandler(RequestHandler):
                 self._update_job(jobname, 2, '正在安装 zip...')
                 if self.settings['os_name'] in ('centos', 'redhat'):
                     cmd = 'yum install -y zip unzip'
-                    result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+                    result, output = await mod_shell.async_command(cmd)
                     if result == 0:
                         self._update_job(jobname, 0, 'zip 安装成功！')
                     else:
                         self._update_job(jobname, -1, 'zip 安装失败！')
                         return
             cmd = 'cd %s; zip -rq9 %s %s' % (quote(basepath), quote(zippath), path)
-            shell = True
         elif zippath.endswith('.gz'):
             path = ' '.join([quote(item) for item in paths])
             cmd = 'gzip -f %s' % path
@@ -3354,7 +3324,7 @@ class BackendHandler(RequestHandler):
             self._finish_job(jobname, -1, '不支持的类型！')
             return
 
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd, shell=shell)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             msg = '压缩到 %s 成功！' % _d(zippath)
@@ -3364,8 +3334,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def decompress(self, zippath, despath):
+    async def decompress(self, zippath, despath):
         """Decompress a zip file.
         """
         jobname = 'decompress_%s_%s' % (zippath, despath)
@@ -3381,7 +3350,7 @@ class BackendHandler(RequestHandler):
                 self._update_job(jobname, 2, '正在安装 unzip...')
                 if self.settings['os_name'] in ('centos', 'redhat'):
                     cmd = 'yum install -y zip unzip'
-                    result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+                    result, output = await mod_shell.async_command(cmd)
                     if result == 0:
                         self._update_job(jobname, 0, 'unzip 安装成功！')
                     else:
@@ -3394,7 +3363,7 @@ class BackendHandler(RequestHandler):
             self._finish_job(jobname, -1, '不支持的类型！')
             return
 
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             msg = '解压 %s 成功！' % _d(zippath)
@@ -3423,7 +3392,7 @@ class BackendHandler(RequestHandler):
                 msg = '设置用户和用户组成功！'
             else:
                 code = -1
-                msg = '设置 %s 的用户和用户组时失败！' % _d(path)
+                msg = '设置 %s 的用户和用户组时失败！' % path
                 break
 
         self._finish_job(jobname, code, msg)
@@ -3457,20 +3426,19 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def wget(self, url, path):
+    async def wget(self, url, path):
         """Run wget command to download file.
         """
         jobname = 'wget_%s' % tornado.escape.url_escape(url)
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, '正在下载 %s...' % _d(url))
+        self._update_job(jobname, 2, '正在下载 %s...' % url)
 
         if os.path.isdir(path): # download to the directory
             cmd = 'wget -q "%s" --directory-prefix=%s' % (quote(url), quote(path))
         else:
             cmd = 'wget -q "%s" -O %s' % (quote(url), quote(path))
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
             msg = '下载成功！'
@@ -3480,8 +3448,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_fupdatepwd(self, password):
+    async def mysql_fupdatepwd(self, password):
         """Force updating mysql root password.
         """
         jobname = 'mysql_fupdatepwd'
@@ -3489,13 +3456,13 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在检测 MySQL 服务状态...')
         cmd = 'service mysqld status'
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         isstopped = 'stopped' in output
 
         if not isstopped:
             self._update_job(jobname, 2, '正在停止 MySQL 服务...')
             cmd = 'service mysqld stop'
-            result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+            result, output = await mod_shell.async_command(cmd)
             if result != 0:
                 self._finish_job(jobname, -1, '停止 MySQL 服务时出错！<p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>')))
                 return
@@ -3503,7 +3470,7 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, '正在启用 MySQL 恢复模式...')
         manually = False
         cmd = 'service mysqld startsos'
-        result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+        result, output = await mod_shell.async_command(cmd)
         if result != 0:
             # some version of mysqld init.d script may not have startsos option
             # we run it manually
@@ -3562,7 +3529,7 @@ class BackendHandler(RequestHandler):
                 code = 0
                 msg = 'root 密码重置成功！'
         else:
-            result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
+            result, output = await mod_shell.async_command(cmd)
             if result == 0:
                 if error:
                     code = -1
@@ -4478,7 +4445,7 @@ class InPanelHandler(RequestHandler):
                 if v:
                     self.set_header(header, v)
             if response.body:
-                self.write(response.body)
+                self.write(response.body.decode('utf-8'))
             self.finish()
 
     def forward(self, port=None, host=None):

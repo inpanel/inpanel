@@ -1,0 +1,140 @@
+#!/bin/bash
+#
+# Copyright (c) 2017, Jackson Dou
+# All rights reserved.
+#
+# InPanel is distributed under the terms of the New BSD License.
+# The full license can be found in 'LICENSE'.
+#
+# InPanel control script for Darwin.
+
+set -e
+
+# pick up any necessary environment variables
+if test -f /usr/sbin/envvars; then
+    source /usr/sbin/envvars
+fi
+
+# Source function library.
+if [ -f /etc/rc.common ]; then
+    source /etc/rc.common
+else
+    echo 'not found file /etc/rc.common'
+    exit
+fi
+
+APP_NAME='InPanel'
+LAUNCHCTL='/bin/launchctl'
+SERVICE_NAME='org.inpanel.inpaneld'
+LAUNCHD_JOB="/Library/LaunchDaemons/$SERVICE_NAME.plist"
+
+echo_ok() {
+    echo -e "\033[1;32m$@\033[0m"
+}
+
+echo_error() {
+    echo -e "\033[40;37m$@\033[0m"
+}
+
+run_launchctl() {
+    if [ -f $LAUNCHD_JOB ]; then
+        if [ $(whoami) != 'root' ]; then
+            # echo_error "The command must be run as root."
+            # exit 1
+            sudo $LAUNCHCTL $@
+        else
+            $LAUNCHCTL $@
+        fi
+    else
+        echo_error "not found file $LAUNCHD_JOB"
+        exit 1
+    fi
+}
+
+start_service() {
+    if [[ -n $(get_pid) ]]; then
+        echo_ok "${APP_NAME} is running already."
+    else
+        run_launchctl load -w $LAUNCHD_JOB
+    fi
+}
+
+stop_service() {
+    if [[ -n $(get_pid) ]]; then
+        run_launchctl unload -w $LAUNCHD_JOB
+    else
+        echo_error "${APP_NAME} is not running."
+    fi
+}
+
+restart_service() {
+    run_launchctl unload -w $LAUNCHD_JOB 2>/dev/null
+    sleep 1
+    run_launchctl load -w $LAUNCHD_JOB
+}
+
+get_pid() {
+    pid=$(run_launchctl list | grep ${SERVICE_NAME})
+    echo $pid | awk '{print $1}'
+}
+
+show_pid() {
+    if [[ -n $(get_pid) ]]; then
+        echo_ok $(get_pid)
+    else
+        echo_error 'stoped'
+    fi
+}
+
+show_status() {
+    if [[ -n $(get_pid) ]]; then
+        echo_ok 'running'
+    else
+        echo_error 'stoped'
+    fi
+}
+
+show_help() {
+    echo 'Usage: inpanel {start|stop|restart|status|pid|config|uninstall}'
+    exit 2
+}
+
+if [ $# -lt 1 ]; then
+    show_help
+fi
+
+case "$1" in
+start)
+    start_service
+    ;;
+stop)
+    stop_service
+    ;;
+restart)
+    restart_service
+    ;;
+status)
+    show_status
+    ;;
+pid)
+    show_pid
+    ;;
+help)
+    show_help
+    ;;
+config)
+    . /usr/local/bin/inpanel-config
+    if [ $# != 3 ]; then
+        config_help
+    else
+        config_do $2 $3
+    fi
+    ;;
+uninstall)
+    . /usr/local/bin/inpanel-uninstall
+    uninstall_do $@
+    ;;
+*)
+    show_help
+    ;;
+esac

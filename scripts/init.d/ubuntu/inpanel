@@ -29,9 +29,9 @@ set -e
 
 NAME='inpanel'
 DESC='InPanel Daemon'
-PIDFILE='/usr/local/var/run/inpanel.pid'
+PIDFILE='/var/run/inpanel.pid'
 LOCKFILE="/var/lock/subsys/$NAME"
-DAEMON='/usr/local/inpanel/inpanel'
+DAEMON='/usr/local/inpanel/inpaneld'
 RUNAS='root'
 STARTTIME=1
 DIETIME=10 # Time to wait for the server to die, in seconds

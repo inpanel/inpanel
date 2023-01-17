@@ -8,13 +8,13 @@
 
 '''Package for Utils.'''
 
-import random
-import socket
 import base64
-import uuid
-import time
+import random
 import re
+import socket
 import string
+import time
+import uuid
 
 
 def randstr(length=32):

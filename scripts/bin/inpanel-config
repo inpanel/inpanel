@@ -12,13 +12,13 @@
 set -e
 
 if [ $(whoami) != 'root' ]; then
-    echo "Must be root to run this script."
+    echo "The command must be run as root."
     exit 1
 fi
 
 # the path to default config file
-CONFIG_INI='/usr/local/etc/inpanel/config.ini'
-CONFIG='/usr/local/bin/inpanel-config'
+CONFIG_INI='/etc/inpanel/config.ini'
+CONFIG_BIN='/usr/local/bin/inpanel-config'
 OS=$(uname -s)
 
 sedi() {
@@ -30,17 +30,17 @@ sedi() {
 }
 
 config_help() {
-    if [ $0 = $CONFIG ]; then
+    if [ $0 = $CONFIG_BIN ]; then
         cmd='inpanel-config'
     else
         cmd='inpanel config'
     fi
     if [ ${OS} = 'Darwin' ]; then
-        password_rand=$(date +%s%N | md5 |cut -c 1-12)
+        password_rand=$(date +%s%N | md5 | cut -c 1-12)
     elif [ ${OS} = 'Linux' ]; then
-        password_rand=$(date +%s%N | md5sum |cut -c 1-12)
+        password_rand=$(date +%s%N | md5sum | cut -c 1-12)
     fi
-    cat << EOF
+    cat <<EOF
 InPanel Config Usage:
 =======================================================================
 optional arguments:
@@ -67,7 +67,6 @@ $cmd port     8888
 EOF
 }
 
-
 config_do() {
     if [ $# != 2 ]; then
         config_help
@@ -75,11 +74,11 @@ config_do() {
     fi
     if [ "$1" = 'password' ]; then
         if [ ${OS} = 'Darwin' ]; then
-            key=$(date +%s%N | md5 |cut -c 1-32)
+            key=$(date +%s%N | md5 | cut -c 1-32)
             password_md5=$(echo -n $2 | md5 | cut -c 1-32)
             hmac=$(echo -n $password_md5 | openssl dgst -hmac $key -md5)
         elif [ ${OS} = 'Linux' ]; then
-            key=$(date +%s%N | md5sum |cut -c 1-32)
+            key=$(date +%s%N | md5sum | cut -c 1-32)
             password_md5=$(echo -n $2 | md5sum | cut -c 1-32)
             # format: MD5(stdin)= 76b0f7235a106c39738c626d5c23d75c
             # hmac=$(echo -n $value | openssl dgst -hmac $key -md5 | cut -c 13-44)
@@ -128,7 +127,7 @@ config_do() {
     fi
 }
 
-if [ $0 = $CONFIG ]; then
+if [ $0 = $CONFIG_BIN ]; then
     # The script is run directly from the command line
     config_do $@
     # else

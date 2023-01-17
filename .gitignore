@@ -3,6 +3,7 @@
 .idea
 *.pyc
 *.iml
-test/
+*.bak
 dist/
 build/
+test/
