@@ -42,7 +42,7 @@ var LoginCtrl = [
             }, function (data) {
                 if (data.code >= 0) {
                     $scope.loaded = false;
-                    var path = $rootScope.loginto ? $rootScope.loginto : '/main';
+                    var path = $rootScope.loginto ? $rootScope.loginto : '/';
                     var section = $rootScope.loginto_section;
                     if (data.code == 0) {
                         $location.path(path);

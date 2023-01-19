@@ -8,16 +8,15 @@
 # The full license can be found in 'LICENSE'.
 
 import datetime
-from hashlib import md5
 import hmac
 import sys
 import time
 from base64 import b64decode
-from os.path import dirname, join,abspath
+from hashlib import md5
 
-from configuration import main_config
+from base import config_file
+from mod_config import load_config
 from utils import is_valid_ip, randstr
-from base import config_path
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -34,11 +33,7 @@ accesskey:       access key for remote access, must be empty
 accesskeyenable: set the remote access switch. value: on or off
 ''' % sys.argv[0])
         sys.exit()
-    # config_path = join(abspath(dirname(dirname(__file__))), 'data', 'config.ini')
-    # print(config_path)
-    config = main_config(config_path)
-    # data_path = join(dirname(__file__), 'data')
-    # config = main_config(data_path + '/config.ini')
+    config = load_config(config_file)
 
     option, value = sys.argv[1:]
     if option == 'ip':

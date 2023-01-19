@@ -13,8 +13,8 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
         return r;
     };
     $routeProvider.
-    when('/', _r('login', LoginCtrl, true)).
-    when('/main', _r('main', MainCtrl)).
+    when('/login', _r('login', LoginCtrl, true)).
+    when('/', _r('main', MainCtrl)).
     when('/service/nginx', _r('service/nginx', ServiceNginxCtrl)).
     when('/service/apache', _r('service/apache', ServiceApacheCtrl)).
     when('/service/lighttpd', _r('service/lighttpd', ServiceLighttpdCtrl)).
@@ -123,7 +123,7 @@ var Auth = {
             if (authed) deferred.resolve();
         }, function (status) {
             if (status == 403) {
-                Message.setError('身份认证失败，请<a href="#/">重新登录</a>！');
+                Message.setError('身份认证失败，请<a href="#/login">重新登录</a>！');
             } else {
                 Message.setError('对不起，加载失败！（网络异常或服务器故障）');
             }

@@ -27,20 +27,22 @@ from uuid import uuid4
 import aliyuncs
 import fdisk
 import ftp
-import mod_apache
 import mod_cron
 import mod_file
+import mod_httpd
 import mod_lighttpd
 import mod_mysql
 import mod_named
 import mod_nginx
+import mod_php
 import mod_proftpd
 import mod_pureftpd
+import mod_sc
 import mod_shell
 import mod_ssh
+import mod_user
 import mod_vsftpd
 import mod_yum
-import php
 import remote
 import tornado
 import tornado.escape
@@ -48,15 +50,12 @@ import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
-import user
 import utils
 from base import app_api, app_name, machine, os_name, os_versint, version_info
-from configuration import main_config, runlogs_config
 from lib import pyDes
 from lib.async_process import call_subprocess, callbackable
-from sc import (ServerSet, get_hostname, get_nameservers, get_timezone,
-                get_timezone_list, get_timezone_regions, set_hostname,
-                set_nameservers, set_timezone)
+from mod_config import load_config, runlogs_config
+from mod_sc import ServerSet
 from server import ServerInfo, ServerTool
 from service import Service
 from tornado.escape import to_unicode as _d
@@ -71,7 +70,7 @@ class Application(tornado.web.Application):
             settings['arch'] = 'i386'
         settings['data_path'] = os.path.abspath(settings['data_path'])
         settings['package_path'] = os.path.join(settings['data_path'], 'packages')
-        config = main_config()
+        config = load_config()
 
         tornado.web.Application.__init__(self, handlers, default_host, transforms, **settings)
 
@@ -80,7 +79,7 @@ class RequestHandler(tornado.web.RequestHandler):
     def initialize(self):
         """Parse JSON data to argument list.
         """
-        self.config = main_config()
+        self.config = load_config()
         self.runlogs = runlogs_config()
 
         content_type = self.request.headers.get("Content-Type", "")
@@ -177,6 +176,25 @@ class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
         self.set_header('Server', app_name)
 
+    def authed(self):
+        # check for the access token
+        self.config = load_config()
+        access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
+        if access_token and self.config.get('auth', 'accesskeyenable') == 'on':
+            if access_token != self.config.get('auth', 'accesskey'):
+                raise tornado.web.HTTPError(403, 'Access Token Error')
+                # print('access_token matched')
+                # return
+        else:
+            cur_authed = self.get_secure_cookie('authed', None, 30.0/1440)
+            if not cur_authed:
+                raise tornado.web.HTTPError(403, "Please login first")
+            # get the cookie within 30 mins
+            if cur_authed.decode('utf-8') == 'yes':
+                # regenerate the cookie timestamp per 5 mins
+                if self.get_secure_cookie('authed', None, 5.0 / 1440) is None:
+                    self.set_secure_cookie('authed', 'yes', None)
+
 
 class ErrorHandler(tornado.web.ErrorHandler):
     def set_default_headers(self):
@@ -211,26 +229,6 @@ class FileDownloadHandler(StaticFileHandler):
         #         self.write(data)
         # self.finish()
 
-
-    def authed(self):
-        # check for the access token
-        access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
-        if access_token and self.config.get('auth', 'accesskeyenable') == 'on':
-            if access_token != self.config.get('auth', 'accesskey'):
-                raise tornado.web.HTTPError(403, 'Access Token Error')
-                # print('access_token matched')
-                # return
-        else:
-            cur_authed = self.get_secure_cookie('authed', None, 30.0/1440)
-            if not cur_authed:
-                raise tornado.web.HTTPError(403, "Please login first")
-            # get the cookie within 30 mins
-            if cur_authed.decode('utf-8') == 'yes':
-                # regenerate the cookie timestamp per 5 mins
-                if self.get_secure_cookie('authed', None, 5.0/1440) == None:
-                    self.set_secure_cookie('authed', 'yes', None)
-
-
 class FileUploadHandler(RequestHandler):
     def post(self):
         self.authed()
@@ -249,6 +247,27 @@ class FileUploadHandler(RequestHandler):
                 self.write('%s 上传成功！<br>' % item['filename'])
 
         self.write('</body>')
+
+
+class FilePreviewHandler(RequestHandler):
+    '''FilePreviewHandler
+    TODO: support multi
+    '''
+    def get(self, path):
+        self.authed()
+        p = os.path.join('/', path)
+        if not os.path.exists(p):
+            # logger.error("Kerberos failure: %s", err)
+            raise tornado.web.HTTPError(404, 'File Not Found', reason='File Not Found')
+        buffer = ''
+        mtype = 'image/png'
+        with open(p, 'rb') as f:
+            buffer = f.read()
+        data = {
+            'mtype': 'image/png',
+            'data': f'data:{mtype};base64,{str(b64encode(buffer), "utf-8")}'
+        }
+        self.render('file/preview.html', **data)
 
 
 class VersionHandler(RequestHandler):
@@ -556,7 +575,7 @@ class UtilsNetworkHandler(RequestHandler):
     def get(self, sec, ifname):
         self.authed()
         if sec == 'hostname':
-            self.write({'hostname': get_hostname()})
+            self.write({'hostname': mod_sc.get_hostname()})
         elif sec == 'ifnames':
             ifconfigs = ServerSet.ifconfigs()
             # filter lo
@@ -567,7 +586,7 @@ class UtilsNetworkHandler(RequestHandler):
             if ifconfig is not None:
                 self.write(ifconfig)
         elif sec == 'nameservers':
-            self.write({'nameservers': get_nameservers()})
+            self.write({'nameservers': mod_sc.get_nameservers()})
 
     def post(self, sec, ifname):
         self.authed()
@@ -578,7 +597,7 @@ class UtilsNetworkHandler(RequestHandler):
         if sec == 'hostname':
             hostname = self.get_argument('hostname', '')
             if hostname != '':
-                if set_hostname(hostname):
+                if mod_sc.set_hostname(hostname):
                     self.write({'code': 0, 'msg': '主机名保存成功！'})
                 else:
                     self.write({'code': -1, 'msg': '主机名保存失败！'})
@@ -617,7 +636,7 @@ class UtilsNetworkHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '%s 不是有效的IP地址！' % nameserver})
                     return
 
-            if set_nameservers(nameservers):
+            if mod_sc.set_nameservers(nameservers):
                 self.write({'code': 0, 'msg': 'DNS设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': 'DNS设置保存失败！'})
@@ -630,12 +649,12 @@ class UtilsTimeHandler(RequestHandler):
         if sec == 'datetime':
             self.write(ServerInfo.datetime(asstruct=True))
         elif sec == 'timezone':
-            self.write({'timezone': get_timezone(self.config)})
+            self.write({'timezone': mod_sc.get_timezone(self.config)})
         elif sec == 'timezone_list':
             if region is None:
-                self.write({'regions': get_timezone_regions()})
+                self.write({'regions': mod_sc.get_timezone_regions()})
             else:
-                self.write({'cities': get_timezone_list(region)})
+                self.write({'cities': mod_sc.get_timezone_list(region)})
 
     def post(self, sec, ifname):
         self.authed()
@@ -645,7 +664,7 @@ class UtilsTimeHandler(RequestHandler):
 
         if sec == 'timezone':
             timezone = self.get_argument('timezone', '')
-            if set_timezone(self.config, timezone):
+            if mod_sc.set_timezone(self.config, timezone):
                 self.write({'code': 0, 'msg': '时区设置保存成功！'})
             else:
                 self.write({'code': -1, 'msg': '时区设置保存失败！'})
@@ -948,11 +967,11 @@ class OperationHandler(RequestHandler):
 
         if action == 'listuser':
             fullinfo = self.get_argument('fullinfo', 'on')
-            self.write({'code': 0, 'msg': '成功获取用户列表！', 'data': user.listuser(fullinfo=='on')})
+            self.write({'code': 0, 'msg': '成功获取用户列表！', 'data': mod_user.listuser(fullinfo=='on')})
 
         elif action == 'listgroup':
             fullinfo = self.get_argument('fullinfo', 'on')
-            self.write({'code': 0, 'msg': '成功获取用户组列表！', 'data': user.listgroup(fullinfo=='on')})
+            self.write({'code': 0, 'msg': '成功获取用户组列表！', 'data': mod_user.listgroup(fullinfo=='on')})
 
         elif action in ('useradd', 'usermod'):
             if self.config.get('runtime', 'mode') == 'demo':
@@ -987,12 +1006,12 @@ class OperationHandler(RequestHandler):
                 createhome = self.get_argument('createhome', '')
                 createhome = (createhome == 'on') and True or False
                 options['createhome'] = createhome
-                if user.useradd(pw_name, options):
+                if mod_user.useradd(pw_name, options):
                     self.write({'code': 0, 'msg': '用户添加成功！'})
                 else:
                     self.write({'code': -1, 'msg': '用户添加失败！'})
             elif action == 'usermod':
-                if user.usermod(pw_name, options):
+                if mod_user.usermod(pw_name, options):
                     self.write({'code': 0, 'msg': '用户修改成功！'})
                 else:
                     self.write({'code': -1, 'msg': '用户修改失败！'})
@@ -1003,7 +1022,7 @@ class OperationHandler(RequestHandler):
                 return
 
             pw_name = self.get_argument('pw_name', '')
-            if user.userdel(pw_name):
+            if mod_user.userdel(pw_name):
                 self.write({'code': 0, 'msg': '用户删除成功！'})
             else:
                 self.write({'code': -1, 'msg': '用户删除失败！'})
@@ -1018,9 +1037,9 @@ class OperationHandler(RequestHandler):
             actionstr = {'groupadd': '添加', 'groupmod': '修改', 'groupdel': '删除'}
 
             if action == 'groupmod':
-                rt = user.groupmod(gr_name, gr_newname)
+                rt = mod_user.groupmod(gr_name, gr_newname)
             else:
-                rt = getattr(user, action)(gr_name)
+                rt = getattr(mod_user, action)(gr_name)
             if rt:
                 self.write({'code': 0, 'msg': '用户组%s成功！' % actionstr[action]})
             else:
@@ -1035,7 +1054,7 @@ class OperationHandler(RequestHandler):
             mem = self.get_argument('mem', '')
             option = action.split('_')[1]
             optionstr = {'add': '添加', 'del': '删除'}
-            if user.groupmems(gr_name, option, mem):
+            if mod_user.groupmems(gr_name, option, mem):
                 self.write({'code': 0, 'msg': '用户组成员%s成功！' % optionstr[option]})
             else:
                 self.write({'code': -1, 'msg': '用户组成员%s成功！' % optionstr[option]})
@@ -1054,8 +1073,8 @@ class OperationHandler(RequestHandler):
             remember = self.get_argument('remember', 'on')
             onlydir = self.get_argument('onlydir', 'off')
             items = mod_file.listdir(path, showhidden=='on', onlydir=='on')
-            if items == False:
-                self.write({'code': -1, 'msg': '目录 %s 不存在！' % path})
+            if items is False:
+                self.write({'code': -1, 'msg': f'目录 {path} 不存在！'})
             else:
                 if remember == 'on':
                     self.runlogs.set('file', 'lastdir', path)
@@ -1064,19 +1083,19 @@ class OperationHandler(RequestHandler):
         elif action == 'getitem':
             path = self.get_argument('path', '')
             item = mod_file.getitem(path)
-            if item == False:
-                self.write({'code': -1, 'msg': '%s 不存在！' % path})
+            if item is False:
+                self.write({'code': -1, 'msg': f'{path} 不存在！'})
             else:
-                self.write({'code': 0, 'msg': '成功获取 %s 的信息！' % path, 'data': item})
+                self.write({'code': 0, 'msg': f'成功获取 {path} 的信息！', 'data': item})
 
         elif action == 'fread':
             path = self.get_argument('path', '')
             remember = self.get_argument('remember', 'on')
             size = mod_file.fsize(path)
-            if size == None:
-                self.write({'code': -1, 'msg': '文件 %s 不存在！' % path})
+            if size is None:
+                self.write({'code': -1, 'msg': f'文件 {path} 不存在！'})
             elif size > 1024*1024*2: # support 1MB of file at max
-                self.write({'code': -1, 'msg': '读取 %s 失败！不允许在线编辑超过2MB的文件！' % path})
+                self.write({'code': -1, 'msg': f'读取 {path} 失败！不允许在线编辑超过2MB的文件！'})
             # elif not mod_file.istext(path):
             #     self.write({'code': -1, 'msg': '读取 %s 失败！无法识别文件类型！' % path})
             else:
@@ -1239,7 +1258,7 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '删除失败！'})
 
     def apache(self):
-        mod_apache.web_response(self)
+        mod_httpd.web_response(self)
 
     def nginx(self):
         action = self.get_argument('action', '')
@@ -1874,11 +1893,11 @@ class OperationHandler(RequestHandler):
         action = self.get_argument('action', '')
 
         if action == 'getphpsettings':
-            settings = php.loadconfig('php')
+            settings = mod_php.loadconfig('php')
             self.write({'code': 0, 'msg': '', 'data': settings})
 
         elif action == 'getfpmsettings':
-            settings = php.loadconfig('php-fpm')
+            settings = mod_php.loadconfig('php-fpm')
             self.write({'code': 0, 'msg': '', 'data': settings})
 
         elif action == 'updatephpsettings':
@@ -1912,14 +1931,14 @@ class OperationHandler(RequestHandler):
             post_max_size = '%sM' % post_max_size
             upload_max_filesize = '%sM' % upload_max_filesize
 
-            php.ini_set('short_open_tag', short_open_tag, initype='php')
-            php.ini_set('expose_php', expose_php, initype='php')
-            php.ini_set('max_execution_time', max_execution_time, initype='php')
-            php.ini_set('memory_limit', memory_limit, initype='php')
-            php.ini_set('display_errors', display_errors, initype='php')
-            php.ini_set('post_max_size', post_max_size, initype='php')
-            php.ini_set('upload_max_filesize', upload_max_filesize, initype='php')
-            php.ini_set('date.timezone', date_timezone, initype='php')
+            mod_php.ini_set('short_open_tag', short_open_tag, initype='php')
+            mod_php.ini_set('expose_php', expose_php, initype='php')
+            mod_php.ini_set('max_execution_time', max_execution_time, initype='php')
+            mod_php.ini_set('memory_limit', memory_limit, initype='php')
+            mod_php.ini_set('display_errors', display_errors, initype='php')
+            mod_php.ini_set('post_max_size', post_max_size, initype='php')
+            mod_php.ini_set('upload_max_filesize', upload_max_filesize, initype='php')
+            mod_php.ini_set('date.timezone', date_timezone, initype='php')
 
             self.write({'code': 0, 'msg': 'PHP设置保存成功！'})
 
@@ -1957,15 +1976,15 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': 'request_slowlog_timeout 必须为数字！'})
                 return
 
-            php.ini_set('listen', listen, initype='php-fpm')
-            php.ini_set('pm', pm, initype='php-fpm')
-            php.ini_set('pm.max_children', pm_max_children, initype='php-fpm')
-            php.ini_set('pm.start_servers', pm_start_servers, initype='php-fpm')
-            php.ini_set('pm.min_spare_servers', pm_min_spare_servers, initype='php-fpm')
-            php.ini_set('pm.max_spare_servers', pm_max_spare_servers, initype='php-fpm')
-            php.ini_set('pm.max_requests', pm_max_requests, initype='php-fpm')
-            php.ini_set('request_terminate_timeout', request_terminate_timeout, initype='php-fpm')
-            php.ini_set('request_slowlog_timeout', request_slowlog_timeout, initype='php-fpm')
+            mod_php.ini_set('listen', listen, initype='php-fpm')
+            mod_php.ini_set('pm', pm, initype='php-fpm')
+            mod_php.ini_set('pm.max_children', pm_max_children, initype='php-fpm')
+            mod_php.ini_set('pm.start_servers', pm_start_servers, initype='php-fpm')
+            mod_php.ini_set('pm.min_spare_servers', pm_min_spare_servers, initype='php-fpm')
+            mod_php.ini_set('pm.max_spare_servers', pm_max_spare_servers, initype='php-fpm')
+            mod_php.ini_set('pm.max_requests', pm_max_requests, initype='php-fpm')
+            mod_php.ini_set('request_terminate_timeout', request_terminate_timeout, initype='php-fpm')
+            mod_php.ini_set('request_slowlog_timeout', request_slowlog_timeout, initype='php-fpm')
 
             self.write({'code': 0, 'msg': 'PHP FastCGI 设置保存成功！'})
 
@@ -2116,7 +2135,7 @@ class PageHandler(RequestHandler):
             if self.request.query.startswith('=PHP'):
                 self.redirect('http://www.php.net/index.php?%s' % self.request.query)
             else:
-                self.write(php.phpinfo())
+                self.write(mod_php.phpinfo())
 
 
 class BackendHandler(RequestHandler):
@@ -2152,7 +2171,6 @@ class BackendHandler(RequestHandler):
         cls = BackendHandler
         cls.jobs[jobname]['code'] = code
         cls.jobs[jobname]['msg'] = msg
-        print('cls.jobs[jobname]', cls.jobs[jobname])
         return True
 
     def _get_job(self, jobname):
@@ -3424,7 +3442,7 @@ class BackendHandler(RequestHandler):
                 msg = '权限修改成功！'
             else:
                 code = -1
-                msg = '修改 %s 的权限时失败！' % _d(path)
+                msg = f'修改 {path} 的权限时失败！'
                 break
 
         self._finish_job(jobname, code, msg)
@@ -3433,9 +3451,10 @@ class BackendHandler(RequestHandler):
         """Run wget command to download file.
         """
         jobname = 'wget_%s' % tornado.escape.url_escape(url)
-        if not self._start_job(jobname): return
+        if not self._start_job(jobname):
+            return
 
-        self._update_job(jobname, 2, '正在下载 %s...' % url)
+        self._update_job(jobname, 2, f'正在下载 {url}...')
 
         if os.path.isdir(path): # download to the directory
             cmd = 'wget -q "%s" --directory-prefix=%s' % (quote(url), quote(path))
@@ -3690,18 +3709,19 @@ class BackendHandler(RequestHandler):
     def mysql_createuser(self, password, user, host, pwd=None):
         """Create MySQL user.
         """
-        username = '%s@%s' % (user, host)
-        jobname = 'mysql_createuser_%s' % username
-        if not self._start_job(jobname): return
+        username = f'{user}@{host}'
+        jobname = f'mysql_createuser_{username}'
+        if not self._start_job(jobname):
+            return
 
-        self._update_job(jobname, 2, '正在添加用户 %s...' % _d(username))
+        self._update_job(jobname, 2, f'正在添加用户 {username}...')
         result = yield tornado.gen.Task(callbackable(mod_mysql.create_user), password, user, host, pwd)
-        if result == True:
+        if result is True:
             code = 0
-            msg = '用户 %s 添加成功！' % _d(username)
+            msg = f'用户 {username} 添加成功！'
         else:
             code = -1
-            msg = '用户 %s 添加失败！' % _d(username)
+            msg = f'用户 {username} 添加失败！'
 
         self._finish_job(jobname, code, msg)
 
@@ -3709,32 +3729,33 @@ class BackendHandler(RequestHandler):
     def mysql_userprivs(self, password, user, host):
         """Get MySQL user privileges.
         """
-        username = '%s@%s' % (user, host)
-        jobname = 'mysql_userprivs_%s' % username
-        if not self._start_job(jobname): return
+        username = f'{user}@{host}'
+        jobname = f'mysql_userprivs_{username}'
+        if not self._start_job(jobname):
+            return
 
-        self._update_job(jobname, 2, '正在获取用户 %s 的权限...' % _d(username))
+        self._update_job(jobname, 2, f'正在获取用户 {username} 的权限...')
 
         privs = {'global':{}, 'bydb':{}}
         globalprivs = yield tornado.gen.Task(callbackable(mod_mysql.show_user_globalprivs), password, user, host)
         if globalprivs != False:
             code = 0
-            msg = '获取用户 %s 的全局权限成功！' % _d(username)
+            msg = f'获取用户 {username} 的全局权限成功！'
             privs['global'] = globalprivs
         else:
             code = -1
-            msg = '获取用户 %s 的全局权限失败！' % _d(username)
+            msg = f'获取用户 {username} 的全局权限失败！'
             privs = False
 
         if privs:
             dbprivs = yield tornado.gen.Task(callbackable(mod_mysql.show_user_dbprivs), password, user, host)
             if dbprivs != False:
                 code = 0
-                msg = '获取用户 %s 的数据库权限成功！' % _d(username)
+                msg = f'获取用户 {username} 的数据库权限成功！'
                 privs['bydb'] = dbprivs
             else:
                 code = -1
-                msg = '获取用户 %s 的数据库权限失败！' % _d(username)
+                msg = f'获取用户 {username} 的数据库权限失败！'
                 privs = False
 
         self._finish_job(jobname, code, msg, privs)
@@ -3743,25 +3764,26 @@ class BackendHandler(RequestHandler):
     def mysql_updateuserprivs(self, password, user, host, privs, dbname=None):
         """Update MySQL user privileges.
         """
-        username = '%s@%s' % (user, host)
+        username = f'{user}@{host}'
         if dbname:
-            jobname = 'mysql_updateuserprivs_%s_%s' % (username, dbname)
+            jobname = f'mysql_updateuserprivs_{username}_{dbname}'
         else:
-            jobname = 'mysql_updateuserprivs_%s' % username
-        if not self._start_job(jobname): return
+            jobname = f'mysql_updateuserprivs_{username}'
+        if not self._start_job(jobname):
+            return
 
         if dbname:
-            self._update_job(jobname, 2, '正在更新用户 %s 在数据库 %s 中的权限...' % (_d(username), _d(dbname)))
+            self._update_job(jobname, 2, f'正在更新用户 {username} 在数据库 {dbname} 中的权限...')
         else:
-            self._update_job(jobname, 2, '正在更新用户 %s 的权限...' % _d(username))
+            self._update_job(jobname, 2, f'正在更新用户 {username} 的权限...')
 
         rt = yield tornado.gen.Task(callbackable(mod_mysql.update_user_privs), password, user, host, privs, dbname)
         if rt != False:
             code = 0
-            msg = '用户 %s 的权限更新成功！' % _d(username)
+            msg = f'用户 {username} 的权限更新成功！'
         else:
             code = -1
-            msg = '用户 %s 的权限更新失败！' % _d(username)
+            msg = f'用户 {username} 的权限更新失败！'
 
         self._finish_job(jobname, code, msg)
 
@@ -3769,19 +3791,19 @@ class BackendHandler(RequestHandler):
     def mysql_setuserpassword(self, password, user, host, pwd):
         """Set password of MySQL user.
         """
-        username = '%s@%s' % (user, host)
+        username = f'{user}@{host}'
         jobname = 'mysql_setuserpassword_%s' % username
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, '正在更新用户 %s 的密码...' % _d(username))
+        self._update_job(jobname, 2, f'正在更新用户 {username} 的密码...')
 
         rt = yield tornado.gen.Task(callbackable(mod_mysql.set_user_password), password, user, host, pwd)
         if rt != False:
             code = 0
-            msg = '用户 %s 的密码更新成功！' % _d(username)
+            msg = f'用户 {username} 的密码更新成功 ！'
         else:
             code = -1
-            msg = '用户 %s 的密码更新失败！' % _d(username)
+            msg = f'用户 {username} 的密码更新失败 ！'
 
         self._finish_job(jobname, code, msg)
 
@@ -3789,19 +3811,20 @@ class BackendHandler(RequestHandler):
     def mysql_dropuser(self, password, user, host):
         """Drop a MySQL user.
         """
-        username = '%s@%s' % (user, host)
-        jobname = 'mysql_dropuser_%s' % username
-        if not self._start_job(jobname): return
+        username = f'{user}@{host}'
+        jobname = f'mysql_dropuser_{username}'
+        if not self._start_job(jobname):
+            return
 
-        self._update_job(jobname, 2, '正在删除用户 %s...' % _d(username))
+        self._update_job(jobname, 2, f'正在删除用户 {username}...')
 
         rt = yield tornado.gen.Task(callbackable(mod_mysql.drop_user), password, user, host)
         if rt != False:
             code = 0
-            msg = '用户 %s 删除成功！' % _d(username)
+            msg = f'用户 {username} 删除成功 ！'
         else:
             code = -1
-            msg = '用户 %s 删除失败！' % _d(username)
+            msg = f'用户 {username} 删除失败 ！'
 
         self._finish_job(jobname, code, msg)
 
@@ -3817,10 +3840,10 @@ class BackendHandler(RequestHandler):
         rt = yield tornado.gen.Task(callbackable(mod_ssh.genkey), path, password)
         if rt != False:
             code = 0
-            msg = '密钥对生成成功！'
+            msg = '密钥对生成成功 ！'
         else:
             code = -1
-            msg = '密钥对生成失败！'
+            msg = '密钥对生成失败 ！'
 
         self._finish_job(jobname, code, msg)
 
@@ -3987,7 +4010,7 @@ class RestoreHandler(RequestHandler):
                 f.write(file['body'])
 
             try:
-                # t = main_config(testpath)
+                # t = load_config(testpath)
                 with open(path, 'wb', encoding='utf-8') as f:
                     f.write(file['body'])
                 self.write('还原成功！')

@@ -18,7 +18,6 @@ from shutil import copyfile
 from base import kernel_name, os_name
 from configloader import (loadconfig, raw_loadconfig, raw_saveconfig,
                           readconfig, saveconfig, writeconfig)
-from configuration import main_config
 from mod_shell import run
 from server import ServerInfo
 
@@ -308,6 +307,7 @@ class ServerSet(object):
 
 
 if __name__ == '__main__':
+    from .mod_config import load_config
     print('')
 
     config = ServerSet.ifconfig('eth0')
@@ -365,7 +365,7 @@ if __name__ == '__main__':
             break
     print('')
 
-    inifile = main_config()
+    inifile = load_config()
     timezone = ServerSet.timezone(inifile)
     print('* Timezone: %s' % timezone)
     print('')

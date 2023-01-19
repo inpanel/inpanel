@@ -8,19 +8,36 @@
 
 '''Package for PHP operations.'''
 
-from shlex import split
-from subprocess import PIPE, Popen
+import os
+import subprocess
 from glob import glob
+from shlex import split
 
-PHPCFG = '/etc/php.ini'
-PHPFPMCFG = '/etc/php-fpm.conf'
+from base import config_path
+from mod_config import Config
+
+# load php module config
+php_config = Config(os.path.join(config_path, 'module/php.ini'))
+# print('php_config', php_config.get_config())
+base_config = php_config.get('base', 'config')
+base_php_fpm = php_config.get('base', 'php-fpm')
+
+if os.path.exists(base_config):
+    PHPCFG = base_config
+else:
+    PHPCFG = '/etc/php.ini'
+
+if os.path.exists(base_php_fpm):
+    PHPFPMCFG = base_php_fpm
+else:
+    PHPFPMCFG = '/etc/php-fpm.conf'
 
 
 def phpinfo():
     """Add or remove service to autostart list.
     """
     cmd = 'php-cgi -i'
-    p = Popen(split(cmd), stdout=PIPE, stderr=PIPE, close_fds=True)
+    p = subprocess.Popen(split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
     info = p.stdout.read().decode('utf8')
     p.stderr.read()
     p.wait()

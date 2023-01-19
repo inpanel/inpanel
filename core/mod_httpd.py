@@ -6,28 +6,43 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for Apache Management.'''
+'''Module for Apache HTTP Server Management.'''
 
 
+import os
 import re
 from glob import glob
 from io import StringIO
 from json import loads
-from os import stat, remove, unlink
-from os.path import exists, join
+from os import remove, stat, unlink
 from string import punctuation
 
+from base import COMMENTFLAG, GENBY, config_path
+from mod_config import Config
+from utils import is_valid_domain, is_valid_ip, is_valid_ipv4, is_valid_ipv6
 
-from utils import is_valid_domain, is_valid_ipv4, is_valid_ipv6, is_valid_ip
+# load httpd module config
+httpd_config = Config(os.path.join(config_path, 'module/httpd.ini'))
+# print('httpd_config', httpd_config.get_config())
+base_path = httpd_config.get('base', 'path')
+base_config = httpd_config.get('base', 'config')
+base_servers = httpd_config.get('base', 'servers')
 
+if os.path.exists(base_path):
+    HTTPDCONF = base_path
+else:
+    HTTPDCONF = '/etc/httpd/'
 
-DEBUG = False
+if os.path.exists(base_config):
+    APACHECONF = base_config
+else:
+    APACHECONF = '/etc/httpd/conf/httpd.conf'
 
-HTTPDCONF = '/etc/httpd/'
-APACHECONF = '/etc/httpd/conf/httpd.conf'
-SERVERCONF = '/etc/httpd/conf.d/'
-COMMENTFLAG = '#v#'
-GENBY = 'GENDBYINPANEL'
+if os.path.exists(base_servers):
+    SERVERCONF = base_servers
+else:
+    SERVERCONF = '/etc/httpd/conf.d/'
+
 
 CONFIGS = {
     'servertokens': 'os',
@@ -203,9 +218,9 @@ def web_response(self):
             'deleteserver': '删除',
         }
         if handler(name, ip, port):
-            self.write({'code': 0, 'msg': '站点 %s:%s %s成功！' % (name, port, opstr[action])})
+            self.write({'code': 0, 'msg': f'站点 {name}:{port} {opstr[action]}成功！'})
         else:
-            self.write({'code': -1, 'msg': '站点 %s:%s %s失败！' % (name, port, opstr[action])})
+            self.write({'code': -1, 'msg': f'站点 {name}:{port} {opstr[action]}失败！'})
 
     elif action == 'get_settings':
         # items = self.get_argument('items', '')
@@ -228,26 +243,26 @@ def web_response(self):
 
         ip = setting.get('ip', '')
         if ip not in ('', '*', '0.0.0.0') and not is_valid_ip(ip):
-            self.write({'code': -1, 'msg': '%s 不是有效的IP地址！' % ip})
+            self.write({'code': -1, 'msg': f'{ip} 不是有效的IP地址！'})
             return
 
         port = int(setting.get('port', 0))
         if port <= 0 or port > 65535:
-            self.write({'code': -1, 'msg': '%s 不是有效的端口号!' % setting.get('port')})
+            self.write({'code': -1, 'msg': f'{setting.get("port")} 不是有效的端口号!'})
             return
 
         servername = setting.get('servername')
         # print('servername', servername)
         if not is_valid_domain(servername):
-            self.write({'code': -1, 'msg': '%s 不是有效的域名！' % servername})
+            self.write({'code': -1, 'msg': f'{servername} 不是有效的域名！'})
             return
 
         documentroot = setting.get('documentroot', '')
         if not documentroot:
-            self.write({'code': -1, 'msg': '%s 不是有效的目录！' % documentroot})
+            self.write({'code': -1, 'msg': f'{documentroot} 不是有效的目录！'})
             return
         autocreate = setting.get('autocreate')
-        if not exists(documentroot):
+        if not os.path.exists(documentroot):
             if autocreate:
                 try:
                     mkdir(documentroot)
@@ -268,7 +283,7 @@ def web_response(self):
         version = self.get_argument('version', '')  # apache version
         for diret in directory:
             if 'path' in diret and diret['path']:
-                if not exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
+                if not os.path.exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
                     try:
                         mkdir(diret['path'])
                     except:
@@ -299,7 +314,7 @@ def loadconfig(conf=None, getlineinfo=False):
     '''
     if not conf:
         conf = APACHECONF
-    if not exists(conf):
+    if not os.path.exists(conf):
         return False
     return _loadconfig(conf, getlineinfo)
 
@@ -441,13 +456,13 @@ def _loadconfig(conf, getlineinfo, config=None, context_stack=None):
                     else:
                         configs[key] = [{'port': port, 'ip': ip}]
                 elif key == 'include':
-                    include_file = fields[1] if fields[1].startswith('/') else join(HTTPDCONF, fields[1])
+                    include_file = fields[1] if fields[1].startswith('/') else os.path.join(HTTPDCONF, fields[1])
                     include_files = glob(include_file)
                     # order by domain name, excluding tld
                     # getdm = lambda x: x.split('/')[-1].split('.')[-3::-1]
                     # include_files = sorted(include_files, lambda x,y: cmp(getdm(x), getdm(y)))
                     for subconf in include_files:
-                        if exists(subconf):
+                        if os.path.exists(subconf):
                             # print(subconf, getlineinfo, configs, context_stack)
                             # print('configs', configs)
                             _loadconfig(subconf, getlineinfo, configs, context_stack)
@@ -717,7 +732,7 @@ def _context_getupstreams(server_name, config=None, disabled=None, getlineinfo=T
 def _comment(filepath, start, end):
     """Commend some lines in the file.
     """
-    if not exists(filepath):
+    if not os.path.exists(filepath):
         return False
     data = []
     with open(filepath, encoding='utf-8') as f:
@@ -733,7 +748,7 @@ def _comment(filepath, start, end):
 def _uncomment(filepath, start, end):
     """Uncommend some lines in the file.
     """
-    if not exists(filepath):
+    if not os.path.exists(filepath):
         return False
     data = []
     with open(filepath, encoding='utf-8') as f:
@@ -752,7 +767,7 @@ def _delete(filepath, start, end, delete_emptyfile=True):
     If delete_emptyfile is set to True, then the empty file will 
     be deleted from file system.
     """
-    if not exists(filepath):
+    if not os.path.exists(filepath):
         return False
     data = []
     with open(filepath, encoding='utf-8') as f:
@@ -960,7 +975,8 @@ def http_getfirst(directive, config=None):
     """Get the first value of the directive in http context.
     """
     values = http_get(directive, config)
-    if values: return values[0]
+    if values:
+        return values[0]
     return None
 
 
@@ -1046,22 +1062,21 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
         return False
 
     # start generate the config string
-    servercfg = ['<VirtualHost %s:%s> # %s' % (ip, port, GENBY)]
-    servercfg.append('    ServerName %s' % serveraname)
-    servercfg.append('    DocumentRoot %s' % documentroot)
+    servercfg = [f'<VirtualHost {ip}:{port}> # {GENBY}']
+    servercfg.append(f'    ServerName {serveraname}')
+    servercfg.append(f'    DocumentRoot {documentroot}')
     if serveradmin:
-        servercfg.append('    ServerAdmin %s' % serveradmin)
+        servercfg.append(f'    ServerAdmin {serveradmin}')
     if serveralias:
-        servercfg.append('    ServerAlias %s' % (' '.join(serveralias)))
+        servercfg.append(f'    ServerAlias {" ".join(serveralias)}')
     if directoryindex:
-        servercfg.append('    DirectoryIndex %s' %
-                         (' '.join(directoryindex.split())))
+        servercfg.append(f'    DirectoryIndex {" ".join(directoryindex.split())}')
     else:
         servercfg.append('    DirectoryIndex index.html index.htm index.php')
     if errorlog:
-        servercfg.append('    ErrorLog %s' % errorlog)
+        servercfg.append(f'    ErrorLog {errorlog}')
     if customlog:
-        servercfg.append('    CustomLog %s' % customlog)
+        servercfg.append(f'    CustomLog {customlog}')
     if directory and len(directory) > 0:
         d = _extend_directory(directory)
         servercfg.extend(['    %s' % i for i in d])
@@ -1069,8 +1084,8 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
     servercfg.append('</VirtualHost>')
 
     #print '\n'.join(servercfg)
-    configfile = join(SERVERCONF, serveraname + '.conf')
-    configfile_exists = exists(configfile)
+    configfile = os.path.join(SERVERCONF, serveraname + '.conf')
+    configfile_exists = os.path.exists(configfile)
 
     # check if need to add a new line at the end of the file to
     # avoid first line go to the same former } line
@@ -1173,7 +1188,7 @@ if __name__ == '__main__':
 
     # print dumps(_context_getservers(disabled=None))
 
-    # path = join(SERVERCONF, clist[i])
+    # path = os.path.join(SERVERCONF, clist[i])
     # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
     # SERVERCONF = '/Users/douzhenjiang/Projects/inpanel/test'
     # print(servername_exists('1.1.1.1', 80, 'inpanel.org'))

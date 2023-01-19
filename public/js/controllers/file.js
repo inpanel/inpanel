@@ -91,7 +91,7 @@ var FileCtrl = [
                     $scope.items = data.data;
                     for (var i = 0; i < $scope.items.length; i++) {
                         var path = curpath.split('/')[0] == '' ? curpath.substr(1) : curpath;
-                        $scope.items[i]['download'] = encodeURIComponent(path + '/' + $scope.items[i].name);
+                        $scope.items[i]['uri'] = encodeURIComponent(path + '/' + $scope.items[i].name);
                     }
                     $scope.curpath = curpath;
                     $scope.lastpath = curpath;

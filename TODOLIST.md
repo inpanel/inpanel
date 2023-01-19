@@ -9,23 +9,23 @@
 
 **任务**
 
-- [x] 优化：前端界面及 JS、Bootstrap、jQuery 等
-- [ ] 优化：前端使用 VueJS 重写 or 升级 AngularJS
+- [x] ~~优化：前端界面及 JS、Bootstrap、jQuery 等~~
+- [ ] 优化：前端使用 VueJS 重写（其他方案：升级 AngularJS）
 - [x] 优化：网站程序快速安装
 - [x] 优化：在线版本升级
-- [ ] 兼容：Python 2.x、3.x
+- [x] 调整：支持 Python3，移除 Python2 的支持（~~兼容：Python 2.x、3.x~~）
 - [x] 新增：修改主机名
 - [ ] 新增：Apache 服务配置
 - [x] 新增：Apache 站点列表/添加/删除
 - [ ] 新增：Apache 站点修改
 - [ ] 新增：FTP 管理
-- [ ] 新增：DNS 管理
+- [x] 新增：DNS 管理
 - [ ] 新增：防火墙配置
 - [ ] 新增：备份管理
 - [x] 新增：定时任务 Cron 配置设置
 - [x] 新增：定时任务 Cron 作业：列表/添加/修改/删除
 - [x] 新增：进程监控列表
-- [ ] 新增：进程查看详情
+- [x] 新增：进程查看详情
 - [x] 新增：进程停止操作
 - [ ] 新增：日志管理
 - [ ] 新增：服务器迁移
@@ -44,4 +44,3 @@
 - [x] 支持：CentOS 7(RHEL 7)
 - [ ] 支持：主流发行版: Ubuntu/openSUSE/Debian/Arch/Slackware/FreeBSD
 - [ ] 支持：软件自定义安装
-

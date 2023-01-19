@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017, Jackson Dou
@@ -7,7 +6,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for user management.'''
+'''Module for system user management.'''
 
 import grp
 # import os

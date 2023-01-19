@@ -12,9 +12,9 @@ import os
 import re
 from glob import glob
 
+from base import COMMENTFLAG, DEBUG, GENBY, config_path
+from mod_config import Config
 from utils import is_valid_ipv4, is_valid_ipv6, version_get
-
-DEBUG = False
 
 # d stand for directive, and c stand for context
 DIRECTIVES = {
@@ -454,16 +454,31 @@ DEFAULTVALS = {
     'keepalive_timeout': '75s',
 }
 
-NGINXCONF = '/etc/nginx/nginx.conf'
-SERVERCONF = '/etc/nginx/conf.d/'
-COMMENTFLAG = '#v#'
-GENBY='GENDBYINPANEL'
+# load nginx module config
+nginx_config = Config(os.path.join(config_path, 'module/nginx.ini'))
+# print('nginx_config', nginx_config.get_config())
+base_config = nginx_config.get('base', 'config')
+base_servers = nginx_config.get('base', 'servers')
+
+if os.path.exists(base_config):
+    NGINXCONF = base_config
+else:
+    NGINXCONF = '/etc/nginx/nginx.conf'
+
+if os.path.exists(base_servers):
+    NGINXCONF = base_servers
+else:
+    SERVERCONF = '/etc/nginx/conf.d/'
+
 
 def loadconfig(conf=None, getlineinfo=False):
     """Load nginx config and return a dict.
     """
-    if not conf: conf = NGINXCONF
-    if not os.path.exists(conf): return False
+
+    if not conf:
+        conf = NGINXCONF
+    if not os.path.exists(conf):
+        return False
     return _loadconfig(conf, getlineinfo)
 
 

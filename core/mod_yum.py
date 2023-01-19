@@ -10,7 +10,7 @@
 import os
 
 import base
-import configuration
+import mod_config
 import mod_file
 from yum import yum_reporpms
 
@@ -41,7 +41,7 @@ def get_item(repo):
         return None
     repo_file = os.path.join(config_path, repo)
     if os.path.exists(repo_file):
-        config = configuration.Config(repo_file)
+        config = mod_config.Config(repo_file)
         return config.get_config()
     return None
 
@@ -54,7 +54,7 @@ def set_item(repo, data):
         return None
     repo_file = os.path.join(config_path, repo)
     if os.path.exists(repo_file):
-        config = configuration.Config(repo_file, data)
+        config = mod_config.Config(repo_file, data)
         return True
         # return config.update()
     else:
@@ -71,7 +71,7 @@ def add_item(repo, data):
     if os.path.exists(repo_file):
         return False
     else:
-        config = configuration.Config(repo_file, data)
+        config = mod_config.Config(repo_file, data)
         return True
         # return config.update()
 

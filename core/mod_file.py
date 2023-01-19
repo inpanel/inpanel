@@ -8,18 +8,12 @@
 # The full license can be found in 'LICENSE'.
 '''Module for file Management'''
 
-import os.path
+import imghdr
+import os
 import shelve
 import stat
 from grp import getgrgid, getgrnam
 from mimetypes import guess_type
-from os import chmod as oschmod
-from os import chown as oschown
-from os import listdir as oslistdir
-from os import lstat, mkdir, readlink
-from os import rename as osrename
-from os import stat as ostat
-from os import symlink, walk
 from pwd import getpwnam, getpwuid
 from time import time
 from uuid import uuid4
@@ -32,10 +26,11 @@ charsets = ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5', 'euc-jp', 'euc-kr',
 
 
 def listdir(path, showdotfiles=False, onlydir=None):
+    '''list folders (and files)'''
     path = os.path.abspath(path)
     if not os.path.exists(path) or not os.path.isdir(path):
         return False
-    items = sorted(oslistdir(path))
+    items = sorted(os.listdir(path))
     if not showdotfiles:
         items = [item for item in items if not item.startswith('.')]
     for i, item in enumerate(items):
@@ -57,7 +52,7 @@ def listfile(directory):
     d = os.path.abspath(directory)
     if not os.path.exists(d) or not os.path.isdir(d):
         return None
-    items = sorted(oslistdir(d))
+    items = sorted(os.listdir(d))
     return items if len(items) > 0 else []
 
 
@@ -67,7 +62,7 @@ def getitem(path):
         return False
     name = os.path.basename(path)
     basepath = os.path.dirname(path)
-    l_stat = lstat(path)
+    l_stat = os.lstat(path)
     mode = l_stat.st_mode
     try:
         uname = getpwuid(l_stat.st_uid).pw_name
@@ -100,13 +95,15 @@ def getitem(path):
         'mtime': ftime(l_stat.st_mtime),
         'ctime': ftime(l_stat.st_ctime),
     }
+    if not item['isdir']:
+        item['is_image'] = is_image(path)
     if item['islnk']:
-        linkfile = readlink(path)
+        linkfile = os.readlink(path)
         item['linkto'] = linkfile
         if not linkfile.startswith('/'):
             linkfile = os.path.abspath(os.path.join(basepath, linkfile))
         try:
-            mode = ostat(linkfile).st_mode
+            mode = os.stat(linkfile).st_mode
             item['link_isdir'] = stat.S_ISDIR(mode)
             item['link_isreg'] = stat.S_ISREG(mode)
             item['link_broken'] = False
@@ -122,7 +119,7 @@ def rename(oldpath, newname):
     try:
         basepath = os.path.dirname(oldpath)
         newpath = os.path.join(basepath, newname)
-        osrename(oldpath, newpath)
+        os.rename(oldpath, newpath)
         return True
     except:
         return False
@@ -130,7 +127,7 @@ def rename(oldpath, newname):
 
 def link(srcpath, despath):
     try:
-        symlink(srcpath, despath)
+        os.symlink(srcpath, despath)
         return True
     except:
         return False
@@ -144,7 +141,7 @@ def dadd(path, name):
     if os.path.exists(dpath):
         return False
     try:
-        mkdir(dpath)
+        os.mkdir(dpath)
         return True
     except:
         return False
@@ -165,12 +162,20 @@ def istext(filepath):
                           '.m3u8', '.tcl', '.eml', '.mht', '.mhtml', '.key')
     return False
 
+def is_image(filepath):
+    if not os.path.exists(filepath):
+        return False
+    if os.path.isdir(filepath):
+        return False
+    suffix = imghdr.what(filepath)
+    return suffix in ('rgb', 'gif', 'jpg', 'jpeg', 'png', 'bmp', 'webp')
+
 
 def mimetype(filepath):
     if not os.path.exists(filepath):
         return False
     if os.path.islink(filepath):
-        linkfile = readlink(filepath)
+        linkfile = os.readlink(filepath)
         if linkfile.startswith('/'):
             filepath = linkfile
         else:
@@ -192,7 +197,7 @@ def mimetype(filepath):
 def fsize(filepath):
     if not os.path.exists(filepath):
         return None
-    return lstat(filepath).st_size
+    return os.lstat(filepath).st_size
 
 
 def fadd(path, name):
@@ -217,7 +222,7 @@ def fsave(path, content, bakup=True):
         if bakup:
             dname = os.path.dirname(path)
             filename = '.%s.bak' % os.path.basename(path)
-            osrename(path, os.path.join(dname, filename))
+            os.rename(path, os.path.join(dname, filename))
         with open(path, 'wb') as f:
             f.write(content)
         return True
@@ -267,7 +272,7 @@ def delete(path):
         db = shelve.open(os.path.join(trashpath, '.fileinfo'), 'c')
         db[uuid] = '\t'.join([filename, path, str(int(time()))])
 
-        osrename(path, os.path.join(trashpath, uuid))
+        os.rename(path, os.path.join(trashpath, uuid))
         # deal with the .filename.bak
         dname = os.path.dirname(path)
         bakfilepath = os.path.join(dname, '.%s.bak' % filename)
@@ -296,7 +301,7 @@ def _inittrash(mounts=None):
     for mount in mounts:
         trashpath = os.path.join(mount, '.deleted_files')
         if not os.path.exists(trashpath):
-            mkdir(trashpath)
+            os.mkdir(trashpath)
             metafile = os.path.join(trashpath, '.fileinfo')
             shelve.open(metafile, 'c').close()
 
@@ -327,7 +332,7 @@ def tlist():
                 }
                 filepath = os.path.join(mount, '.deleted_files', uuid)
                 if os.path.exists(filepath):
-                    mode = ostat(filepath).st_mode
+                    mode = os.stat(filepath).st_mode
                     item['isdir'] = stat.S_ISDIR(mode)
                     item['isreg'] = stat.S_ISREG(mode)
                     item['islnk'] = stat.S_ISLNK(mode)
@@ -362,7 +367,7 @@ def trestore(mount, uuid):
     try:
         info = titem(mount, uuid)
         trashpath = os.path.join(mount, '.deleted_files')
-        osrename(os.path.join(trashpath, uuid), info['path'])
+        os.rename(os.path.join(trashpath, uuid), info['path'])
         db = shelve.open(os.path.join(trashpath, '.fileinfo'), 'c')
         del db[uuid]
         db.close()
@@ -394,18 +399,18 @@ def chown(path, user, group, recursively=False):
         if group:
             groupid = getgrnam(group).gr_gid
         if os.path.isdir(path) and recursively:
-            for root, dirs, files in walk(path):
+            for root, dirs, files in os.walk(path):
                 for momo in dirs:
                     tpath = os.path.join(root, momo)
                     if not os.path.exists(tpath):
                         continue  # maybe broken link
-                    oschown(tpath, userid, groupid)
+                    os.chown(tpath, userid, groupid)
                 for momo in files:
                     tpath = os.path.join(root, momo)
                     if not os.path.exists(tpath):
                         continue
-                    oschown(tpath, userid, groupid)
-        oschown(path, userid, groupid)
+                    os.chown(tpath, userid, groupid)
+        os.chown(path, userid, groupid)
     except:
         return False
     return True
@@ -416,18 +421,18 @@ def chmod(path, perms, recursively=False):
         return False
     try:
         if os.path.isdir(path) and recursively:
-            for root, dirs, files in walk(path):
+            for root, dirs, files in os.walk(path):
                 for momo in dirs:
                     tpath = os.path.join(root, momo)
                     if not os.path.exists(tpath):
                         continue  # maybe broken link
-                    oschmod(tpath, perms)
+                    os.chmod(tpath, perms)
                 for momo in files:
                     tpath = os.path.join(root, momo)
                     if not os.path.exists(tpath):
                         continue
-                    oschmod(tpath, perms)
-        oschmod(path, perms)
+                    os.chmod(tpath, perms)
+        os.chmod(path, perms)
     except:
         return False
     return True

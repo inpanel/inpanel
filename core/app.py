@@ -7,49 +7,36 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-import sys
-from os import getpid
-from os.path import abspath, dirname, join
+import os
 
 import mod_web
-from base import config_path, debug, pidfile
-# from mod_yum import WebRequestRepoYUM
+from base import DEBUG, PIDFILE, config_file, config_path, root_path, run_type
 from certificate import WebRequestSSLTLS
-from configuration import main_config
+from mod_config import load_config
 from mod_process import WebRequestProcess, save_pidfile
 from tornado import httpserver, ioloop
 from utils import make_cookie_secret
 
 print('InPanel: starting')
-print('InPanel: config file : %s' % config_path)
-print('InPanel: pid file    : %s' % pidfile)
+print(f'InPanel: config file : {config_file}')
+print(f'InPanel: pid file    : {PIDFILE}')
 
-root_path = dirname(__file__)
-root_path = abspath(dirname(dirname(__file__)))
-run_type = 'source'
-
-if hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
-    # runtime_tmpdir
-    run_type = 'binary'
-    root_path = sys._MEIPASS
-
-# print('InPanel: root path: %s' % root_path)
-print('InPanel: runtime type: %s' % run_type)
-print('InPanel: runtime path: %s' % root_path)
+print(f'InPanel: runtime type: {run_type}')
+print(f'InPanel: runtime path: {root_path}')
 
 # settings of tornado application
 settings = {
-    'debug': debug,
-    'autoreload': debug,
-    'cookie_secret': 'debug' if debug else make_cookie_secret(),
-    'root_path': root_path,
-    'data_path': join(root_path, 'data'),
-    'index_path': join(root_path, 'templates', 'index.html'),
-    'template_path': join(root_path, 'templates'),
-    'static_path': join(root_path, 'public'),
-    'plugins_path': join(root_path, 'plugins'),
-    'xsrf_cookies': True,
-    'gzip': True # or use 'compress_response': True
+    'debug'         : DEBUG,
+    'autoreload'    : DEBUG,
+    'cookie_secret' : 'debug' if DEBUG else make_cookie_secret(),
+    'root_path'     : root_path,
+    'data_path'     : config_path,
+    'index_path'    : os.path.join(root_path, 'templates', 'index.html'),
+    'template_path' : os.path.join(root_path, 'templates'),
+    'static_path'   : os.path.join(root_path, 'public'),
+    'plugins_path'  : os.path.join(root_path, 'plugins'),
+    'xsrf_cookies'  : True,
+    'gzip'          : True # or use 'compress_response': True
 }
 
 router = [
@@ -65,15 +52,17 @@ router = [
     (r'/api/repos/yum/(.+?)(?:/(.+))?', mod_web.RepoYumHander),
     (r'/api/setting/(.+)', mod_web.SettingHandler),
     (r'/api/operation/(.+)', mod_web.OperationHandler),
+    (r'/page/file/preview/(.+)', mod_web.FilePreviewHandler),
     (r'/page/(.+)/(.+)', mod_web.PageHandler),
     (r'/api/backend/(.+)', mod_web.BackendHandler),
     (r'/api/sitepackage/(.+)', mod_web.SitePackageHandler),
     (r'/api/client/(.+)', mod_web.ClientHandler),
     (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)', mod_web.StaticFileHandler, { 'path': settings['static_path'] }),
     (r'/api/plugins/(.*)', mod_web.StaticFileHandler, { 'path': settings['plugins_path']}),
-    (r'/api/download/(.+)', mod_web.FileDownloadHandler, { 'path': '/' }),
-    (r'/api/fileupload', mod_web.FileUploadHandler),
+    (r'/api/file/download/(.+)', mod_web.FileDownloadHandler, { 'path': '/' }),
+    (r'/api/file/upload', mod_web.FileUploadHandler),
     (r'/api/version', mod_web.VersionHandler),
+    # (r'/ws', WsockHandler, dict(loop=loop)),
     (r'/', mod_web.IndexHandler),
     (r'/($)', mod_web.StaticFileHandler, { 'path': settings['index_path'] }),
     (r'/.*', mod_web.ErrorHandler, { 'status_code': 404 })
@@ -82,10 +71,10 @@ router = [
 application = mod_web.Application(router, **settings)
 
 # read configuration from config.ini
-config = main_config(config_path)
+config = load_config(config_file)
 mode   = config.get('runtime', 'mode')
 
-print('InPanel: runtime mode: %s' % mode)
+print(f'InPanel: runtime mode: {mode}')
 
 server_ip   = config.get('server', 'ip')
 server_port = config.get('server', 'port')
@@ -103,11 +92,11 @@ def main():
     server = httpserver.HTTPServer(application, ssl_options=ssl)
     server.listen(port=server_port, address=server_ip)
 
-    pid = getpid()
+    pid = os.getpid()
 
-    save_pidfile(pidfile, pid)
-    print('InPanel: running pid : %s' % pid)
-    print('InPanel: running on  : http%s://%s:%s' % ('s' if force_https else '', server_ip, server_port))
+    save_pidfile(PIDFILE, pid)
+    print(f'InPanel: running pid : {pid}')
+    print(f'InPanel: running on  : http{"s" if force_https else ""}://{server_ip}:{server_port}')
     ioloop.IOLoop.current().start()
 
 

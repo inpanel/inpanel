@@ -12,11 +12,11 @@ from configparser import RawConfigParser
 from os.path import exists, expanduser, isdir, dirname
 from os import makedirs
 
-from base import config_path, runlogs_path
+from base import config_file, runlogs_path
 from lib.filelock import FileLock
 
 
-def main_config(inifile=None, configs=None):
+def load_config(inifile=None, configs=None):
     '''the configurations for InPanel'''
     default_configs = {
         'server': {
@@ -52,11 +52,11 @@ def main_config(inifile=None, configs=None):
         }
     } if configs is None else configs
 
-    return Config(config_path if inifile is None else inifile, default_configs)
+    return Config(config_file if inifile is None else inifile, default_configs)
 
 def runlogs_config():
     # to recode running data logs
-    return main_config(runlogs_path, {
+    return load_config(runlogs_path, {
         'file': {
             'lastdir': expanduser('~'), # user Home path
             'lastfile': '',
@@ -200,7 +200,7 @@ class Config(object):
         except:
             return False
 
-__all__ = ['main_config', 'runlogs_config', 'Config']
+__all__ = ['load_config', 'runlogs_config', 'Config']
 
 if __name__ == '__main__':
     import json

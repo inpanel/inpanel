@@ -88,7 +88,8 @@
                             <i class="glyphicon glyphicon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>
                             &nbsp;
                             <a class="black" ng-click="listdir(curpath+'/'+item.name)" ng-show="item.isdir||(item.islnk&&item.link_isdir)">{{item.name}}</a>
-                            <a class="black" ng-click="editfile(item.name)" ng-show="item.isreg||(item.islnk&&!item.link_isdir)">{{item.name}}</a>
+                            <a class="black" ng-click="editfile(item.name)" ng-show="!item.is_image && (item.isreg||(item.islnk&&!item.link_isdir))">{{item.name}}</a>
+                            <a class="black" href="/page/file/preview/{{item.uri}}" ng-show="item.is_image && !item.isdir" title="预览" target="_blank">{{item.name}}</a>
                             <span class="text-info" ng-show="item.islnk&&!item.link_broken"><br />-> {{item.linkto}}</span>
                             <span class="text-error" ng-show="item.islnk&&item.link_broken">(原文件已丢失)<br />-> {{item.linkto}}</span>
                         </td>
@@ -115,7 +116,14 @@
                                 <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动同步（即将推出）"><i class="glyphicon glyphicon-repeat"></i></button>
                                 <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动备份（即将推出）"><i class="glyphicon glyphicon-share-alt"></i></button>
                             </div>
-                            <a class="btn btn-default btn-xs" href="/api/download/{{item.download}}" ng-show="item.isreg||(item.islnk&&item.link_isreg)" title="下载"><i class="glyphicon glyphicon-download-alt"></i></button>
+                            <div ng-show="item.isreg||(item.islnk&&item.link_isreg)">
+                                <a class="btn btn-default btn-xs" href="/api/file/download/{{item.uri}}" title="下载">
+                                    <i class="glyphicon glyphicon-download-alt"></i>
+                                </a>
+                                <a class="btn btn-default btn-xs" href="/page/file/preview/{{item.uri}}" ng-show="item.is_image && !item.isdir" title="预览" target="_blank">
+                                    <i class="glyphicon glyphicon-eye-open"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -250,7 +258,7 @@
             <div class="modal-body">
                 <h5>请选择您要上传的文件：</h5>
                 <div ng-include src="'/api/xsrf'"></div>
-                <form id="uploadform" target="uploadframe" action="/api/fileupload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
+                <form id="uploadform" target="uploadframe" action="/api/file/upload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
                     <input type="hidden" name="_xsrf" value="" id="_xsrf">
                     <input type="hidden" name="path" value="{{curpath}}">
                     <div class="input-group">
