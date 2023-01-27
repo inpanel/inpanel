@@ -22,19 +22,21 @@ def updatepwd(pwd, oldpwd):
     """Update password of root.
     """
     try:
-        cmd = shlex.split('mysqladmin -uroot password "%s" -p' % pwd)
+        cmd = shlex.split(f'mysqladmin -uroot password "{pwd}" -p')
     except:
         return False
 
     child = pexpect.spawn(cmd[0], cmd[1:])
     i = child.expect(['Enter password', pexpect.EOF])
     if i == 1:
-        if child.isalive(): child.wait()
+        if child.isalive():
+            child.wait()
         return False
 
     child.sendline(oldpwd)
     i = child.expect(['error', pexpect.EOF])
-    if child.isalive(): return child.wait() == 0
+    if child.isalive():
+        return child.wait() == 0
     return i != 0
 
 def shutdown(pwd):
@@ -494,7 +496,8 @@ def drop_user(pwd, user, host):
     """Drop a user.
     """
     child = _mysql(pwd)
-    if not child: return False
+    if not child:
+        return False
 
     rs = _sql(child, "DROP USER '%s'@'%s'" % (_escape(user), _escape(host)), False)
 

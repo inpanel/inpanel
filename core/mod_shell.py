@@ -9,7 +9,7 @@
 
 import shlex
 import subprocess as sbps
-from asyncio import create_subprocess_shell
+from asyncio import coroutine, create_subprocess_shell, create_task
 from asyncio import subprocess as async_subprocess
 
 
@@ -21,6 +21,34 @@ async def async_command(command):
                                          shell=True)
     output, _ = await proc.communicate()
     return (proc.returncode, output.decode('utf-8'))
+
+
+async def async_task(func, *args, **kwds):
+    '''Make an asynchronous function.'''
+    @coroutine
+    def wrapper():
+        '''
+        user @asyncio.coroutine
+        or async
+        '''
+        # print('执行')
+        # await asyncio.sleep(10)
+        # print('执行2')
+        callback = None
+        if hasattr(kwds, 'callback'):
+            callback = kwds['callback']
+        if callback:
+            del kwds['callback']
+        result = func(*args, **kwds)
+        print('result-origin', result)
+        if callback:
+            return callback(result)
+        else:
+            return result
+    result = await create_task(wrapper())
+    # print('执行-结束')
+    # print('result-1', result)
+    return result
 
 
 def run(cmd, shell=False):

@@ -9,7 +9,7 @@
 """Module for ProFTPD configuration management."""
 
 
-def web_response(self):
+def web_handler(self):
     action = self.get_argument('action', '')
     if action == 'getsettings':
         self.write({'code': 0, 'msg': 'ProFTPD 配置信息获取成功！', 'data': get_config()})

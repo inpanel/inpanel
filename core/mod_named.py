@@ -9,12 +9,12 @@
 """Module for named configuration management."""
 
 
-def web_response(self):
-    action = self.get_argument('action', '')
+def web_handler(context):
+    action = context.get_argument('action', '')
     if action == 'getsettings':
-        self.write({'code': 0, 'msg': 'named 配置信息获取成功！', 'data': get_config()})
+        context.write({'code': 0, 'msg': 'named 配置信息获取成功！', 'data': get_config()})
     elif action == 'savesettings':
-        self.write({'code': 0, 'msg': 'named 服务配置保存成功！', 'data': set_config(self)})
+        context.write({'code': 0, 'msg': 'named 服务配置保存成功！', 'data': set_config(context)})
     return
 
 
@@ -22,5 +22,5 @@ def get_config():
     return dict()
 
 
-def set_config(self):
+def set_config():
     return dict()

@@ -268,12 +268,22 @@ class ServerInfo(object):
                     dev = os.stat(mount['path']).st_dev
                     mount['major'], mount['minor'] = os.major(dev), os.minor(dev)
         elif kernel_name == 'Darwin':
-            for mnt in glob.glob('/dev/disk?s*'):
+            # TODO
+            for mnt in glob.glob('/Volumes/*'):
                 # t = os.stat(mnt)
                 # if t.st_rdev == s.st_dev:
-                # print(mnt)
-                _mounts.append({'dev': mnt, 'path': '/', 'fstype': 'APFS'})
-            pass
+                # print(t)
+                _mounts.append({'dev': mnt, 'path': mnt, 'fstype': 'APFS'})
+
+                # for mount in _mounts:
+                #     stat = os.statvfs(mount['path'])
+                #     total = stat.f_blocks * stat.f_bsize
+                #     free = stat.f_bfree * stat.f_bsize
+                #     used = (stat.f_blocks - stat.f_bfree) * stat.f_bsize
+                #     mount['total'] = b2h(total)
+                #     mount['free'] = b2h(free)
+                #     mount['used'] = b2h(used)
+                #     mount['used_rate'] = div_percent(used, total)
         elif kernel_name == 'Windows':
             pass
 

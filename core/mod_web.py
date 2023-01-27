@@ -38,6 +38,7 @@ import mod_php
 import mod_proftpd
 import mod_pureftpd
 import mod_sc
+import mod_service
 import mod_shell
 import mod_ssh
 import mod_user
@@ -46,18 +47,15 @@ import mod_yum
 import remote
 import tornado
 import tornado.escape
-import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.web
 import utils
 from base import app_api, app_name, machine, os_name, os_versint, version_info
 from lib import pyDes
-from lib.async_process import call_subprocess, callbackable
 from mod_config import load_config, runlogs_config
 from mod_sc import ServerSet
 from server import ServerInfo, ServerTool
-from service import Service
 from tornado.escape import to_unicode as _d
 from tornado.escape import utf8 as _u
 
@@ -530,8 +528,8 @@ class QueryHandler(RequestHandler):
                     if q not in server_items: continue
                     result['%s.%s' % (sec, q)] = getattr(ServerInfo, q)()
             elif sec == 'service':
-                service_items = Service.service_items
-                autostart_services = Service.autostart_list()
+                service_items = mod_service.Service.service_items
+                autostart_services = mod_service.get_autostart_list()
                 if qs == '**':
                     qs = service_items.keys()
                 elif qs == '*':
@@ -539,7 +537,7 @@ class QueryHandler(RequestHandler):
                 for q in qs:
                     if q not in service_items:
                         continue
-                    status = Service.status(q)
+                    status = mod_service.Service.status(q)
                     result['%s.%s' % (sec, q)] = status and { 'status': status, 'autostart': q in autostart_services,} or None
             elif sec == 'config':
                 for q in qs:
@@ -950,17 +948,8 @@ class OperationHandler(RequestHandler):
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
-    def chkconfig(self):
-        name = self.get_argument('name', '')
-        service = self.get_argument('service', '')
-        autostart = self.get_argument('autostart', '')
-        if not name: name = service
-
-        autostart_str = {'on': '启用', 'off': '禁用'}
-        if Service.autostart_set(service, autostart == 'on' and True or False):
-            self.write({'code': 0, 'msg': '成功%s %s 自动启动！' % (autostart_str[autostart], name)})
-        else:
-            self.write({'code': -1, 'msg': '%s %s 自动启动失败！' % (autostart_str[autostart], name)})
+    def service(self):
+        mod_service.web_handler(self)
 
     def user(self):
         action = self.get_argument('action', '')
@@ -1060,205 +1049,10 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '用户组成员%s成功！' % optionstr[option]})
 
     def file(self):
-        action = self.get_argument('action', '')
-
-        if action == 'last':
-            lastdir = self.runlogs.get('file', 'lastdir')
-            lastfile = self.runlogs.get('file', 'lastfile')
-            self.write({'code': 0, 'msg': '', 'data': {'lastdir': lastdir, 'lastfile': lastfile}})
-
-        elif action == 'listdir':
-            path = self.get_argument('path', '')
-            showhidden = self.get_argument('showhidden', 'off')
-            remember = self.get_argument('remember', 'on')
-            onlydir = self.get_argument('onlydir', 'off')
-            items = mod_file.listdir(path, showhidden=='on', onlydir=='on')
-            if items is False:
-                self.write({'code': -1, 'msg': f'目录 {path} 不存在！'})
-            else:
-                if remember == 'on':
-                    self.runlogs.set('file', 'lastdir', path)
-                self.write({'code': 0, 'msg': '成功获取文件列表！', 'data': items})
-
-        elif action == 'getitem':
-            path = self.get_argument('path', '')
-            item = mod_file.getitem(path)
-            if item is False:
-                self.write({'code': -1, 'msg': f'{path} 不存在！'})
-            else:
-                self.write({'code': 0, 'msg': f'成功获取 {path} 的信息！', 'data': item})
-
-        elif action == 'fread':
-            path = self.get_argument('path', '')
-            remember = self.get_argument('remember', 'on')
-            size = mod_file.fsize(path)
-            if size is None:
-                self.write({'code': -1, 'msg': f'文件 {path} 不存在！'})
-            elif size > 1024*1024*2: # support 1MB of file at max
-                self.write({'code': -1, 'msg': f'读取 {path} 失败！不允许在线编辑超过2MB的文件！'})
-            # elif not mod_file.istext(path):
-            #     self.write({'code': -1, 'msg': '读取 %s 失败！无法识别文件类型！' % path})
-            else:
-                if remember == 'on':
-                    self.runlogs.set('file', 'lastfile', path)
-                charset, content = mod_file.decode(path)
-                if not charset:
-                    self.write({'code': -1, 'msg': '不可识别的文件编码 ！'})
-                    return
-                data = {
-                    'filename': os.path.basename(path),
-                    'filepath': path,
-                    'mimetype': mod_file.mimetype(path),
-                    'charset': charset,
-                    'content': content,
-                }
-                self.write({'code': 0, 'msg': '成功读取文件内容 ！', 'data': data})
-
-        elif action == 'fclose':
-            self.runlogs.set('file', 'lastfile', '')
-            self.write({'code': 0, 'msg': ''})
-
-        elif action == 'fwrite':
-            path = self.get_argument('path', '')
-            charset = self.get_argument('charset', '')
-            content = self.get_argument('content', '')
-
-            if self.config.get('runtime', 'mode') == 'demo':
-                if not path.startswith('/var/www'):
-                    self.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
-                    return
-
-            if not charset in mod_file.charsets:
-                self.write({'code': -1, 'msg': '不可识别的文件编码！'})
-                return
-            content = mod_file.encode(content, charset)
-            if not content:
-                self.write({'code': -1, 'msg': '文件编码转换出错，保存失败！'})
-                return
-            if mod_file.fsave(path, content):
-                self.write({'code': 0, 'msg': '文件保存成功！'})
-            else:
-                self.write({'code': -1, 'msg': '文件保存失败！'})
-
-        elif action == 'createfolder':
-            path = self.get_argument('path', '')
-            name = self.get_argument('name', '')
-
-            if self.config.get('runtime', 'mode') == 'demo':
-                if not path.startswith('/var/www') and not path.startswith(self.settings['package_path']):
-                    self.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
-                    return
-
-            if mod_file.dadd(path, name):
-                self.write({'code': 0, 'msg': '文件夹创建成功！'})
-            else:
-                self.write({'code': -1, 'msg': '文件夹创建失败！'})
-
-        elif action == 'createfile':
-            path = self.get_argument('path', '')
-            name = self.get_argument('name', '')
-
-            if self.config.get('runtime', 'mode') == 'demo':
-                if not path.startswith('/var/www'):
-                    self.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
-                    return
-
-            if mod_file.fadd(path, name):
-                self.write({'code': 0, 'msg': '文件创建成功！'})
-            else:
-                self.write({'code': -1, 'msg': '文件创建失败！'})
-
-        elif action == 'rename':
-            path = self.get_argument('path', '')
-            name = self.get_argument('name', '')
-
-            if self.config.get('runtime', 'mode') == 'demo':
-                if not path.startswith('/var/www'):
-                    self.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
-                    return
-
-            if mod_file.rename(path, name):
-                self.write({'code': 0, 'msg': '重命名成功！'})
-            else:
-                self.write({'code': -1, 'msg': '重命名失败！'})
-
-        elif action == 'exist':
-            path = self.get_argument('path', '')
-            name = self.get_argument('name', '')
-            self.write({'code': 0, 'msg': '', 'data': os.path.exists(os.path.join(path, name))})
-
-        elif action == 'link':
-            srcpath = self.get_argument('srcpath', '')
-            despath = self.get_argument('despath', '')
-
-            if self.config.get('runtime', 'mode') == 'demo':
-                if not despath.startswith('/var/www') and not despath.startswith(self.settings['package_path']):
-                    self.write({'code': -1, 'msg': '演示模式不允许在除 /var/www 以外的目录下创建链接！'})
-                    return
-
-            if mod_file.link(srcpath, despath):
-                self.write({'code': 0, 'msg': '链接 %s 创建成功！' % despath})
-            else:
-                self.write({'code': -1, 'msg': '链接 %s 创建失败！' % despath})
-
-        elif action == 'delete':
-            paths = self.get_argument('paths', '')
-            paths = paths.split(',')
-
-            if self.config.get('runtime', 'mode') == 'demo':
-                for path in paths:
-                    if not path.startswith('/var/www') and not path.startswith(self.settings['package_path']):
-                        self.write({'code': -1, 'msg': '演示模式不允许在除 /var/www 以外的目录执行删除操作！'})
-                        return
-
-            if len(paths) == 1:
-                path = paths[0]
-                if mod_file.delete(path):
-                    self.write({'code': 0, 'msg': '已将 %s 移入回收站！' % path})
-                else:
-                    self.write({'code': -1, 'msg': '将 %s 移入回收站失败！' % path})
-            else:
-                for path in paths:
-                    if not mod_file.delete(path):
-                        self.write({'code': -1, 'msg': '将 %s 移入回收站失败！' % path})
-                        return
-                self.write({'code': 0, 'msg': '批量移入回收站成功！'})
-
-        elif action == 'tlist':
-            self.write({'code': 0, 'msg': '', 'data': mod_file.tlist()})
-
-        elif action == 'trashs':
-            self.write({'code': 0, 'msg': '', 'data': mod_file.trashs()})
-
-        elif action == 'titem':
-            mount = self.get_argument('mount', '')
-            uuid = self.get_argument('uuid', '')
-            info = mod_file.titem(mount, uuid)
-            if info:
-                self.write({'code': 0, 'msg': '', 'data': info})
-            else:
-                self.write({'code': -1, 'msg': '获取项目信息失败！'})
-
-        elif action == 'trestore':
-            mount = self.get_argument('mount', '')
-            uuid = self.get_argument('uuid', '')
-            info = mod_file.titem(mount, uuid)
-            if info and mod_file.trestore(mount, uuid):
-                self.write({'code': 0, 'msg': '已还原 %s 到 %s！' % (info['name'], info['path'])})
-            else:
-                self.write({'code': -1, 'msg': '还原失败！'})
-
-        elif action == 'tdelete':
-            mount = self.get_argument('mount', '')
-            uuid = self.get_argument('uuid', '')
-            info = mod_file.titem(mount, uuid)
-            if info and mod_file.tdelete(mount, uuid):
-                self.write({'code': 0, 'msg': '已删除 %s！' % info['name']})
-            else:
-                self.write({'code': -1, 'msg': '删除失败！'})
+        mod_file.web_handler(self)
 
     def apache(self):
-        mod_httpd.web_response(self)
+        mod_httpd.web_handler(self)
 
     def nginx(self):
         action = self.get_argument('action', '')
@@ -2088,19 +1882,19 @@ class OperationHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '定时任务删除失败！'})
 
     def vsftpd(self):
-        mod_vsftpd.web_response(self)
+        mod_vsftpd.web_handler(self)
 
     def named(self):
-        mod_named.web_response(self)
+        mod_named.web_handler(self)
 
     def lighttpd(self):
-        mod_lighttpd.web_response(self)
+        mod_lighttpd.web_handler(self)
 
     def proftpd(self):
-        mod_proftpd.web_response(self)
+        mod_proftpd.web_handler(self)
 
     def pureftpd(self):
-        mod_pureftpd.web_response(self)
+        mod_pureftpd.web_handler(self)
 
     def shell(self):
         if self.config.get('runtime', 'mode') == 'demo':
@@ -2110,7 +1904,7 @@ class OperationHandler(RequestHandler):
         cmd = self.get_argument('cmd', '')
         cwd = self.get_argument('cwd', '')
         if action == 'exec_command':
-            self.write({'code': 0, 'msg': '命令已发送', 'data': shell.exec_command(cmd, cwd)})
+            self.write({'code': 0, 'msg': '命令已发送', 'data': mod_shell.exec_command(cmd, cwd)})
 
 class PageHandler(RequestHandler):
     """Return single page.
@@ -2226,7 +2020,7 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许此类操作！'})
                     return
 
-            if service not in Service.service_items:
+            if service not in mod_service.Service.service_items:
                 self.write({'code': -1, 'msg': '未支持的服务！'})
                 return
             if not name: name = service
@@ -2662,11 +2456,12 @@ class BackendHandler(RequestHandler):
 
     async def service(self, action, service, name):
         """Service operation."""
-        jobname = 'service_%s_%s' % (action, service)
-        if not self._start_job(jobname): return
+        jobname = f'service_{action}_{service}'
+        if not self._start_job(jobname):
+            return
 
         action_str = {'start': '启动', 'stop': '停止', 'restart': '重启'}
-        self._update_job(jobname, 2, '正在%s %s 服务...' % (action_str[action], _d(name)))
+        self._update_job(jobname, 2, f'正在{action_str[action]} {name} 服务...')
 
         # patch before start sendmail in redhat/centos 5.x
         # REF: http://www.mombu.com/gnu_linux/red-hat/t-why-does-sendmail-hang-during-rh-9-start-up-1068528.html
@@ -2691,16 +2486,16 @@ class BackendHandler(RequestHandler):
                 with open('/etc/hosts', 'w', encoding='utf-8') as f:
                     f.writelines(lines)
         if os_versint < 7:
-            cmd = '/etc/init.d/%s %s' % (service, action)
+            cmd = f'/etc/init.d/{service} {action}'
         else:
-            cmd = '/bin/systemctl %s %s.service' % (action, service)
+            cmd = f'/bin/systemctl {action} {service}.service'
         result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
-            msg = '%s 服务%s成功！' % (_d(name), action_str[action])
+            msg = f'{name} 服务{action_str[action]}成功！'
         else:
             code = -1
-            msg = '%s 服务%s失败！<p style="margin:10px">%s</p>' % (_d(name), action_str[action], _d(output.strip().replace('\n', '<br>')))
+            msg = f'{name} 服务{action_str[action]}失败！<p style="margin:10px">{output.strip().replace("\n", "<br>")}</p>'
 
         self._finish_job(jobname, code, msg)
 
@@ -2708,7 +2503,8 @@ class BackendHandler(RequestHandler):
         """Set datetime using system's date command.
         """
         jobname = 'datetime'
-        if not self._start_job(jobname): return
+        if not self._start_job(jobname):
+            return
 
         self._update_job(jobname, 2, '正在设置系统时间...')
 
@@ -2750,25 +2546,25 @@ class BackendHandler(RequestHandler):
     async def swapon(self, action, devname):
         """swapon or swapoff swap partition.
         """
-        jobname = 'swapon_%s_%s' % (action, devname)
-        if not self._start_job(jobname): return
+        jobname = f'swapon_{action}_{devname}'
+        if not self._start_job(jobname):
+            return
 
         action_str = {'on': '启用', 'off': '停用'}
-        self._update_job(jobname, 2, '正在%s %s...' % \
-                    (action_str[action], _d(devname)))
+        self._update_job(jobname, 2, f'正在{action_str[action]} {devname}...')
 
         if action == 'on':
-            cmd = 'swapon /dev/%s' % devname
+            cmd = f'swapon /dev/{devname}'
         else:
-            cmd = 'swapoff /dev/%s' % devname
+            cmd = f'swapoff /dev/{devname}'
 
         result, output = await mod_shell.async_command(cmd)
         if result == 0:
             code = 0
-            msg = '%s %s 成功！' % (action_str[action], _d(devname))
+            msg = f'{action_str[action]} {devname} 成功！'
         else:
             code = -1
-            msg = '%s %s 失败！<p style="margin:10px">%s</p>' % (action_str[action], _d(devname), _d(output.strip().replace('\n', '<br>')))
+            msg = f'{action_str[action]} {devname} 失败！<p style="margin:10px">{output.strip().replace("\n", "<br>")}</p>'
 
         self._finish_job(jobname, code, msg)
 
@@ -3394,8 +3190,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def chown(self, paths, user, group, option):
+    async def chown(self, paths, user, group, option):
         """Change owner of paths.
         """
         jobname = 'chown_%s' % ','.join(paths)
@@ -3407,7 +3202,8 @@ class BackendHandler(RequestHandler):
         #cmd = 'chown %s %s:%s %s' % (option, user, group, ' '.join(paths))
 
         for path in paths:
-            result = yield tornado.gen.Task(callbackable(mod_file.chown), path, user, group, option=='-R')
+            result = await mod_shell.async_task(mod_file.chown, path, user, group, option=='-R')
+            print('result', result)
             if result == True:
                 code = 0
                 msg = '设置用户和用户组成功！'
@@ -3418,8 +3214,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def chmod(self, paths, perms, option):
+    async def chmod(self, paths, perms, option):
         """Change perms of paths.
         """
         jobname = 'chmod_%s' % ','.join(paths)
@@ -3436,7 +3231,7 @@ class BackendHandler(RequestHandler):
             return
 
         for path in paths:
-            result = yield tornado.gen.Task(callbackable(mod_file.chmod), path, perms, option=='-R')
+            result = await mod_shell.async_task(mod_file.chmod, path, perms, option=='-R')
             if result == True:
                 code = 0
                 msg = '权限修改成功！'
@@ -3513,7 +3308,7 @@ class BackendHandler(RequestHandler):
 
         if manually:
             # 'service mysqld restart' cannot stop the manually start-up mysqld_safe process
-            result = yield tornado.gen.Task(callbackable(mod_mysql.shutdown), password)
+            result = await mod_shell.async_task(mod_mysql.shutdown, password)
             if result:
                 self._update_job(jobname, 0, '成功停止 MySQL 服务！')
             else:
@@ -3569,8 +3364,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_databases(self, password):
+    async def mysql_databases(self, password):
         """Show MySQL database list.
         """
         jobname = 'mysql_databases'
@@ -3578,7 +3372,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在获取数据库列表...')
         dbs = []
-        dbs = yield tornado.gen.Task(callbackable(mod_mysql.show_databases), password)
+        dbs = await mod_shell.async_task(mod_mysql.show_databases, password)
         if dbs:
             code = 0
             msg = '获取数据库列表成功！'
@@ -3588,8 +3382,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg, dbs)
 
-    @tornado.gen.coroutine
-    def mysql_users(self, password, dbname=None):
+    async def mysql_users(self, password, dbname=None):
         """Show MySQL user list.
         """
         if not dbname:
@@ -3601,10 +3394,10 @@ class BackendHandler(RequestHandler):
         if not dbname:
             self._update_job(jobname, 2, '正在获取用户列表...')
         else:
-            self._update_job(jobname, 2, '正在获取数据库 %s 的用户列表...' % _d(dbname))
+            self._update_job(jobname, 2, f'正在获取数据库 {dbname} 的用户列表...')
 
         users = []
-        users = yield tornado.gen.Task(callbackable(mod_mysql.show_users), password, dbname)
+        users = await mod_shell.async_task(mod_mysql.show_users, password, dbname)
         if users:
             code = 0
             msg = '获取用户列表成功！'
@@ -3614,8 +3407,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg, users)
 
-    @tornado.gen.coroutine
-    def mysql_dbinfo(self, password, dbname):
+    async def mysql_dbinfo(self, password, dbname):
         """Get MySQL database info.
         """
         jobname = 'mysql_dbinfo_%s' % dbname
@@ -3623,7 +3415,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在获取数据库 %s 的信息...' % _d(dbname))
         dbinfo = False
-        dbinfo = yield tornado.gen.Task(callbackable(mod_mysql.show_database), password, dbname)
+        dbinfo = await mod_shell.async_task(mod_mysql.show_database, password, dbname)
         if dbinfo:
             code = 0
             msg = '获取数据库 %s 的信息成功！' % _d(dbname)
@@ -3633,80 +3425,76 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg, dbinfo)
 
-    @tornado.gen.coroutine
-    def mysql_rename(self, password, dbname, newname):
+    async def mysql_rename(self, password, dbname, newname):
         """MySQL database rename.
         """
         jobname = 'mysql_rename_%s' % dbname
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, '正在重命名 %s...' % _d(dbname))
-        result = yield tornado.gen.Task(callbackable(mod_mysql.rename_database), password, dbname, newname)
+        self._update_job(jobname, 2, f'正在重命名 {dbname}...')
+        result = await mod_shell.async_task(mod_mysql.rename_database, password, dbname, newname)
         if result == True:
             code = 0
-            msg = '%s 重命名成功！' % _d(dbname)
+            msg = f'{dbname} 重命名成功！'
         else:
             code = -1
-            msg = '%s 重命名失败！' % _d(dbname)
+            msg = f'{dbname} 重命名失败！'
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_create(self, password, dbname, collation):
+    async def mysql_create(self, password, dbname, collation):
         """Create MySQL database.
         """
-        jobname = 'mysql_create_%s' % dbname
+        jobname = f'mysql_create_{dbname}'
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, '正在创建 %s...' % _d(dbname))
-        result = yield tornado.gen.Task(callbackable(mod_mysql.create_database), password, dbname, collation=collation)
+        self._update_job(jobname, 2, f'正在创建 {dbname}...')
+        result = await mod_shell.async_task(mod_mysql.create_database, password, dbname, collation=collation)
         if result == True:
             code = 0
-            msg = '%s 创建成功！' % _d(dbname)
+            msg = f'{dbname} 创建成功！'
         else:
             code = -1
-            msg = '%s 创建失败！' % _d(dbname)
+            msg = f'{dbname} 创建失败！'
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_export(self, password, dbname, path):
+    async def mysql_export(self, password, dbname, path):
         """MySQL database export.
         """
-        jobname = 'mysql_export_%s' % dbname
-        if not self._start_job(jobname): return
+        jobname = f'mysql_export_{dbname}'
+        if not self._start_job(jobname):
+            return
 
-        self._update_job(jobname, 2, '正在导出 %s...' % _d(dbname))
-        result = yield tornado.gen.Task(callbackable(mod_mysql.export_database), password, dbname, path)
+        self._update_job(jobname, 2, f'正在导出 {dbname}...')
+        result = await mod_shell.async_task(mod_mysql.export_database, password, dbname, path)
         if result == True:
             code = 0
-            msg = '%s 导出成功！' % _d(dbname)
+            msg = f'{dbname} 导出成功！'
         else:
             code = -1
-            msg = '%s 导出失败！' % _d(dbname)
+            msg = f'{dbname} 导出失败！'
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_drop(self, password, dbname):
+    async def mysql_drop(self, password, dbname):
         """Drop a MySQL database.
         """
-        jobname = 'mysql_drop_%s' % dbname
+        jobname = f'mysql_drop_{dbname}'
         if not self._start_job(jobname): return
 
-        self._update_job(jobname, 2, '正在删除 %s...' % _d(dbname))
-        result = yield tornado.gen.Task(callbackable(mod_mysql.drop_database), password, dbname)
+        self._update_job(jobname, 2, f'正在删除 {dbname}...')
+        result = await mod_shell.async_task(mod_mysql.drop_database, password, dbname)
         if result == True:
             code = 0
-            msg = '%s 删除成功！' % _d(dbname)
+            msg = f'{dbname} 删除成功！'
         else:
             code = -1
-            msg = '%s 删除失败！' % _d(dbname)
+            msg = f'{dbname} 删除失败！'
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_createuser(self, password, user, host, pwd=None):
+    async def mysql_createuser(self, password, user, host, pwd=None):
         """Create MySQL user.
         """
         username = f'{user}@{host}'
@@ -3715,7 +3503,7 @@ class BackendHandler(RequestHandler):
             return
 
         self._update_job(jobname, 2, f'正在添加用户 {username}...')
-        result = yield tornado.gen.Task(callbackable(mod_mysql.create_user), password, user, host, pwd)
+        result = await mod_shell.async_task(mod_mysql.create_user, password, user, host, pwd)
         if result is True:
             code = 0
             msg = f'用户 {username} 添加成功！'
@@ -3725,8 +3513,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_userprivs(self, password, user, host):
+    async def mysql_userprivs(self, password, user, host):
         """Get MySQL user privileges.
         """
         username = f'{user}@{host}'
@@ -3737,7 +3524,7 @@ class BackendHandler(RequestHandler):
         self._update_job(jobname, 2, f'正在获取用户 {username} 的权限...')
 
         privs = {'global':{}, 'bydb':{}}
-        globalprivs = yield tornado.gen.Task(callbackable(mod_mysql.show_user_globalprivs), password, user, host)
+        globalprivs = await mod_shell.async_task(mod_mysql.show_user_globalprivs, password, user, host)
         if globalprivs != False:
             code = 0
             msg = f'获取用户 {username} 的全局权限成功！'
@@ -3748,7 +3535,7 @@ class BackendHandler(RequestHandler):
             privs = False
 
         if privs:
-            dbprivs = yield tornado.gen.Task(callbackable(mod_mysql.show_user_dbprivs), password, user, host)
+            dbprivs = await mod_shell.async_task(mod_mysql.show_user_dbprivs, password, user, host)
             if dbprivs != False:
                 code = 0
                 msg = f'获取用户 {username} 的数据库权限成功！'
@@ -3760,8 +3547,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg, privs)
 
-    @tornado.gen.coroutine
-    def mysql_updateuserprivs(self, password, user, host, privs, dbname=None):
+    async def mysql_updateuserprivs(self, password, user, host, privs, dbname=None):
         """Update MySQL user privileges.
         """
         username = f'{user}@{host}'
@@ -3777,7 +3563,7 @@ class BackendHandler(RequestHandler):
         else:
             self._update_job(jobname, 2, f'正在更新用户 {username} 的权限...')
 
-        rt = yield tornado.gen.Task(callbackable(mod_mysql.update_user_privs), password, user, host, privs, dbname)
+        rt = await mod_shell.async_task(mod_mysql.update_user_privs, password, user, host, privs, dbname)
         if rt != False:
             code = 0
             msg = f'用户 {username} 的权限更新成功！'
@@ -3787,17 +3573,16 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_setuserpassword(self, password, user, host, pwd):
+    async def mysql_setuserpassword(self, password, user, host, pwd):
         """Set password of MySQL user.
         """
         username = f'{user}@{host}'
-        jobname = 'mysql_setuserpassword_%s' % username
+        jobname = f'mysql_setuserpassword_{username}'
         if not self._start_job(jobname): return
 
         self._update_job(jobname, 2, f'正在更新用户 {username} 的密码...')
 
-        rt = yield tornado.gen.Task(callbackable(mod_mysql.set_user_password), password, user, host, pwd)
+        rt = await mod_shell.async_task(mod_mysql.set_user_password, password, user, host, pwd)
         if rt != False:
             code = 0
             msg = f'用户 {username} 的密码更新成功 ！'
@@ -3807,8 +3592,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def mysql_dropuser(self, password, user, host):
+    async def mysql_dropuser(self, password, user, host):
         """Drop a MySQL user.
         """
         username = f'{user}@{host}'
@@ -3818,7 +3602,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, f'正在删除用户 {username}...')
 
-        rt = yield tornado.gen.Task(callbackable(mod_mysql.drop_user), password, user, host)
+        rt = await mod_shell.async_task(mod_mysql.drop_user, password, user, host)
         if rt != False:
             code = 0
             msg = f'用户 {username} 删除成功 ！'
@@ -3828,8 +3612,7 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def ssh_genkey(self, path, password=''):
+    async def ssh_genkey(self, path, password=''):
         """Generate a ssh key pair.
         """
         jobname = 'ssh_genkey'
@@ -3837,7 +3620,7 @@ class BackendHandler(RequestHandler):
 
         self._update_job(jobname, 2, '正在生成密钥对...')
 
-        rt = yield tornado.gen.Task(callbackable(mod_ssh.genkey), path, password)
+        rt = await mod_shell.async_task(mod_ssh.genkey, path, password)
         if rt != False:
             code = 0
             msg = '密钥对生成成功 ！'
@@ -3847,16 +3630,16 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def ssh_chpasswd(self, path, oldpassword, newpassword=''):
+    async def ssh_chpasswd(self, path, oldpassword, newpassword=''):
         """Change password of a ssh private key.
         """
         jobname = 'ssh_chpasswd'
-        if not self._start_job(jobname): return
+        if not self._start_job(jobname):
+            return
 
         self._update_job(jobname, 2, '正在修改私钥密码...')
 
-        rt = yield tornado.gen.Task(callbackable(mod_ssh.chpasswd), path, oldpassword, newpassword)
+        rt = await mod_shell.async_task(mod_ssh.chpasswd, path, oldpassword, newpassword)
         if rt != False:
             code = 0
             msg = '私钥密码修改成功！'
@@ -3866,35 +3649,33 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def inpanel_install(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport=None, accesskey=None):
-        """Install InPanel"""
-        jobname = 'inpanel_install_%s' % ssh_ip
-        if not self._start_job(jobname): return
+    async def inpanel_install(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport=None, accesskey=None):
+        """Install InPanel to Remote Host"""
+        jobname = f'remote_inpanel_install_{ssh_ip}'
+        if not self._start_job(jobname):
+            return
 
-        self._update_job(jobname, 2, '正在将 InPanel 安装到 %s...' % ssh_ip)
+        self._update_job(jobname, 2, f'正在将 InPanel 安装到 {ssh_ip}...')
 
-        result = yield tornado.gen.Task(callbackable(remote.inpanel_install),
-                    ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey, inpanel_port=accessport)
+        result = await mod_shell.async_task(remote.inpanel_install, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey, inpanel_port=accessport)
         if result == True:
             code = 0
             msg = 'InPanel 安装成功！'
-            self.config.set('inpanel', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
+            self.config.set('inpanel', instance_name, f'{accesskey}|{accessnet}|{accessport}')
         else:
             code = -1
             msg = 'InPanel 安装过程中发生错误！'
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def inpanel_uninstall(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name):
+    async def inpanel_uninstall(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name):
         """Uninstall InPanel"""
-        jobname = 'inpanel_uninstall_%s' % ssh_ip
-        if not self._start_job(jobname): return
+        jobname = f'remote_inpanel_uninstall_{ssh_ip}'
+        if not self._start_job(jobname):
+            return
 
-        self._update_job(jobname, 2, '正在卸载 %s 上的 InPanel...' % ssh_ip)
-        result = yield tornado.gen.Task(callbackable(remote.inpanel_uninstall),
-                    ssh_ip, ssh_port, ssh_user, ssh_password)
+        self._update_job(jobname, 2, f'正在卸载 {ssh_ip} 上的 InPanel...')
+        result = await mod_shell.async_task(remote.inpanel_uninstall, ssh_ip, ssh_port, ssh_user, ssh_password)
         if result == True:
             code = 0
             msg = 'InPanel 卸载成功！'
@@ -3908,16 +3689,15 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def inpanel_config(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
+    async def inpanel_config(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
         """Update InPanel Config"""
-        jobname = 'inpanel_config%s' % ssh_ip
-        if not self._start_job(jobname): return
+        jobname = f'remote_inpanel_config_{ssh_ip}'
+        if not self._start_job(jobname):
+            return
 
-        self._update_job(jobname, 2, '正在更新 %s 上的 InPanel 配置...' % ssh_ip)
+        self._update_job(jobname, 2, f'正在更新 {ssh_ip} 上的 InPanel 配置...')
 
-        result = yield tornado.gen.Task(callbackable(remote.inpanel_config),
-                    ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey)
+        result = await mod_shell.async_task(remote.inpanel_config, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=accesskey)
         if result == True:
             code = 0
             msg = 'InPanel 配置更新成功！'
@@ -3927,26 +3707,21 @@ class BackendHandler(RequestHandler):
 
         self._finish_job(jobname, code, msg)
 
-    @tornado.gen.coroutine
-    def uploadtoftp(self, address, account, password, source, target):
+    async def uploadtoftp(self, address, account, password, source, target):
         '''transmit files to ftp server.'''
-        jobname = 'uploadtoftp_%s_%s_%s' % (address, source, target)
-        # jobname = 'uploadtoftp_%s' % address
-        if not self._start_job(jobname): return
+        jobname = f'upload_to_ftp_{address}_{source}_{target}'
+        if not self._start_job(jobname):
+            return
 
         if not os.path.isfile(source):
             self._finish_job(jobname, -1, '传输失败！文件不存在')
             return
 
-        self._update_job(jobname, 2, '正在传输文件 %s...' % source)
-        result = yield tornado.gen.Task(callbackable(ftp.uploadtoftp), address, account, password, source, target)
-        # result = yield tornado.gen.Task(callbackable(ftp.uploadtoftpa), address, account, password, source, target)
-        # cmd = 'ping www.baidu.com -c 8'
-        # result, output = yield tornado.gen.Task(call_subprocess, self, cmd)
-        # print(result)
+        self._update_job(jobname, 2, f'正在传输文件 {source}...')
+        result = await mod_shell.async_task(ftp.uploadtoftp, address, account, password, source, target)
         if result == True:
             code = 0
-            msg = '文件 %s 已成功传输到 %s 服务器！' % (source, address)
+            msg = f'文件 {source} 已成功传输到 {address} 服务器！'
         else:
             code = -1
             msg = '文件传输失败！' # <p style="margin:10px">%s</p>' % _d(output.strip().replace('\n', '<br>'))
@@ -4142,8 +3917,7 @@ class ECSHandler(RequestHandler):
 
         return False
 
-    @tornado.gen.coroutine
-    def get(self, section):
+    async def get(self, section):
         self.authed()
 
         if section == 'instances':
@@ -4158,7 +3932,7 @@ class ECSHandler(RequestHandler):
                 return
 
             srv = aliyuncs.ECS(access_key_id, access_key_secret)
-            result, data, reqid = yield tornado.gen.Task(callbackable(srv.DescribeInstanceStatus), PageNumber=page_number, PageSize=page_size)
+            result, data, reqid = await mod_shell.async_task(srv.DescribeInstanceStatus, PageNumber=page_number, PageSize=page_size)
             if not result:
                 self.write({'code': -1, 'msg': '云服务器列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -4168,7 +3942,7 @@ class ECSHandler(RequestHandler):
             tasks = []
             if 'InstanceStatusSets' in data:
                 for instance in data['InstanceStatusSets']:
-                    tasks.append(tornado.gen.Task(callbackable(srv.DescribeInstanceAttribute), instance['InstanceName']))
+                    tasks.append(await mod_shell.async_task(srv.DescribeInstanceAttribute, instance['InstanceName']))
                     instances.append(instance)
 
             if tasks:
@@ -4209,7 +3983,7 @@ class ECSHandler(RequestHandler):
                 return
 
             srv = aliyuncs.ECS(access_key_id, access_key_secret)
-            result, instdata, reqid = yield tornado.gen.Task(callbackable(srv.DescribeInstanceAttribute), instance_name)
+            result, instdata, reqid = await mod_shell.async_task(srv.DescribeInstanceAttribute, instance_name)
             if not result:
                 self.write({'code': -1, 'msg': '云服务器 %s 信息加载失败！（%s）' % (instance_name, instdata['Message'])})
                 self.finish()
@@ -4231,7 +4005,7 @@ class ECSHandler(RequestHandler):
                 return
 
             srv = aliyuncs.ECS(access_key_id, access_key_secret)
-            result, data, reqid = yield tornado.gen.Task(callbackable(srv.DescribeImages), RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
+            result, data, reqid = await mod_shell.async_task(srv.DescribeImages, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
             if not result:
                 self.write({'code': -1, 'msg': '系统镜像列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -4261,7 +4035,7 @@ class ECSHandler(RequestHandler):
                 return
 
             srv = aliyuncs.ECS(access_key_id, access_key_secret)
-            result, data, reqid = yield tornado.gen.Task(callbackable(srv.DescribeDisks), InstanceName=instance_name)
+            result, data, reqid = await mod_shell.async_task(srv.DescribeDisks, InstanceName=instance_name)
             if not result:
                 self.write({'code': -1, 'msg': '磁盘列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -4289,7 +4063,7 @@ class ECSHandler(RequestHandler):
                 return
 
             srv = aliyuncs.ECS(access_key_id, access_key_secret)
-            result, data, reqid = yield tornado.gen.Task(callbackable(srv.DescribeSnapshots), InstanceName=instance_name, DiskCode=disk_code)
+            result, data, reqid = await mod_shell.async_task(srv.DescribeSnapshots, InstanceName=instance_name, DiskCode=disk_code)
             if not result:
                 self.write({'code': -1, 'msg': '磁盘快照列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -4332,8 +4106,7 @@ class ECSHandler(RequestHandler):
             self.write({'code': -1, 'msg': '未定义的操作！'})
             self.finish()
 
-    @tornado.gen.coroutine
-    def post(self, section):
+    async def post(self, section):
         self.authed()
 
         if section in ('startinstance', 'stopinstance', 'rebootinstance', 'resetinstance'):
@@ -4360,13 +4133,13 @@ class ECSHandler(RequestHandler):
 
             srv = aliyuncs.ECS(access_key_id, access_key_secret)
             if section == 'startinstance':
-                result, data, reqid = yield tornado.gen.Task(callbackable(srv.StartInstance), instance_name)
+                result, data, reqid = await mod_shell.async_task(srv.StartInstance, instance_name)
             elif section == 'stopinstance':
-                result, data, reqid = yield tornado.gen.Task(callbackable(srv.StopInstance), instance_name, ForceStop=force)
+                result, data, reqid = await mod_shell.async_task(srv.StopInstance, instance_name, ForceStop=force)
             elif section == 'rebootinstance':
-                result, data, reqid = yield tornado.gen.Task(callbackable(srv.RebootInstance), instance_name, ForceStop=force)
+                result, data, reqid = await mod_shell.async_task(srv.RebootInstance, instance_name, ForceStop=force)
             elif section == 'resetinstance':
-                result, data, reqid = yield tornado.gen.Task(callbackable(srv.ResetInstance), instance_name, ImageCode=image_code)
+                result, data, reqid = await mod_shell.async_task(srv.ResetInstance, instance_name, ImageCode=image_code)
             if not result:
                 self.write({'code': -1, 'msg': '云服务器 %s %s失败！（%s）' % (instance_name, opstr[section], data['Message'])})
                 self.finish()
@@ -4398,13 +4171,13 @@ class ECSHandler(RequestHandler):
 
             srv = aliyuncs.ECS(access_key_id, access_key_secret)
             if section == 'createsnapshot':
-                result, data, reqid = yield tornado.gen.Task(callbackable(srv.CreateSnapshot), InstanceName=instance_name, DiskCode=disk_code)
+                result, data, reqid = await mod_shell.async_task(srv.CreateSnapshot, InstanceName=instance_name, DiskCode=disk_code)
             elif section == 'deletesnapshot':
-                result, data, reqid = yield tornado.gen.Task(callbackable(srv.DeleteSnapshot), InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
+                result, data, reqid = await mod_shell.async_task(srv.DeleteSnapshot, InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
             elif section == 'cancelsnapshot':
-                result, data, reqid = yield tornado.gen.Task(callbackable(srv.CancelSnapshotRequest), InstanceName=instance_name, SnapshotCode=snapshot_code)
+                result, data, reqid = await mod_shell.async_task(srv.CancelSnapshotRequest, InstanceName=instance_name, SnapshotCode=snapshot_code)
             elif section == 'rollbacksnapshot':
-                result, data, reqid = yield tornado.gen.Task(callbackable(srv.RollbackSnapshot), InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
+                result, data, reqid = await mod_shell.async_task(srv.RollbackSnapshot, InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
             if not result:
                 self.write({'code': -1, 'msg': '快照%s失败！（%s）' % (opstr[section], data['Message'])})
                 self.finish()
@@ -4513,7 +4286,6 @@ class InPanelHandler(RequestHandler):
         access_token = b64encode(access_token)
         return access_token
 
-    @tornado.gen.coroutine
     def get(self, instance_name, ip, port, uri):
         self.authed()
         self.request.body = None
@@ -4521,7 +4293,6 @@ class InPanelHandler(RequestHandler):
         self.request.headers['X-ACCESS-TOKEN'] = self.gen_token(instance_name)
         self.forward(port, ip)
 
-    @tornado.gen.coroutine
     def post(self, instance_name, ip, port, uri):
         self.authed()
         self.request.uri = '/'+uri

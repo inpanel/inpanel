@@ -24,7 +24,8 @@ var ServiceCtrl = [
         };
         $scope.toggleAutostart = function (name, service) {
             var autostart = $scope.info['service.' + service]['autostart'];
-            Request.post('/api/operation/chkconfig', {
+            Request.post('/api/operation/service', {
+                'action': 'chkconfig',
                 'name': name,
                 'service': service,
                 'autostart': !autostart

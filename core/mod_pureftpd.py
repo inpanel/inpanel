@@ -9,7 +9,7 @@
 """Module for Pure-FTPd configuration management."""
 
 
-def web_response(self):
+def web_handler(self):
     action = self.get_argument('action', '')
     if action == 'getsettings':
         self.write({'code': 0, 'msg': 'Pure-FTPd 配置信息获取成功！', 'data': get_config()})

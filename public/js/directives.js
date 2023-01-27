@@ -94,7 +94,8 @@ angular.module('inpanel.directives', []).
                 };
 
                 $scope.toggleAutostart = function () {
-                    Request.post('/api/operation/chkconfig', {
+                    Request.post('/api/operation/service', {
+                        'action': 'chkconfig',
                         'name': $scope.name,
                         'service': $scope.service,
                         'autostart': !$scope.$parent.autostart

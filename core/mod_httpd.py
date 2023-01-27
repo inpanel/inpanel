@@ -200,17 +200,17 @@ GZIP = '''<IfModule mod_deflate.c>
     SetEnvIfNoCase Request_URI .(?:pdf|doc)$ no-gzip dont-vary
 </IfModule>'''
 
-def web_response(self):
+def web_handler(context):
     '''for web server'''
-    action = self.get_argument('action', '')
+    action = context.get_argument('action', '')
     if action == 'getservers':
         sites = getservers()
-        self.write({'code': 0, 'msg': '', 'data': sites})
+        context.write({'code': 0, 'msg': '', 'data': sites})
 
     elif action in ('enableserver', 'disableserver', 'deleteserver'):
-        ip = self.get_argument('ip', '')
-        port = self.get_argument('port', '')
-        name = self.get_argument('server_name', '')
+        ip = context.get_argument('ip', '')
+        port = context.get_argument('port', '')
+        name = context.get_argument('server_name', '')
         handler = getattr(locals(), action)
         opstr = {
             'enableserver': '启用',
@@ -218,48 +218,48 @@ def web_response(self):
             'deleteserver': '删除',
         }
         if handler(name, ip, port):
-            self.write({'code': 0, 'msg': f'站点 {name}:{port} {opstr[action]}成功！'})
+            context.write({'code': 0, 'msg': f'站点 {name}:{port} {opstr[action]}成功！'})
         else:
-            self.write({'code': -1, 'msg': f'站点 {name}:{port} {opstr[action]}失败！'})
+            context.write({'code': -1, 'msg': f'站点 {name}:{port} {opstr[action]}失败！'})
 
     elif action == 'get_settings':
-        # items = self.get_argument('items', '')
+        # items = context.get_argument('items', '')
         # items = items.split(',')
         config = loadconfig()
-        self.write({'code': 0, 'msg': '', 'data': config})
+        context.write({'code': 0, 'msg': '', 'data': config})
 
     elif action == 'getserver':
-        ip = self.get_argument('ip', '')
-        port = self.get_argument('port', '')
-        name = self.get_argument('name', '')
+        ip = context.get_argument('ip', '')
+        port = context.get_argument('port', '')
+        name = context.get_argument('name', '')
         serverinfo = getserver(ip, port, name)
         if serverinfo:
-            self.write({'code': 0, 'msg': '站点信息读取成功！', 'data': serverinfo})
+            context.write({'code': 0, 'msg': '站点信息读取成功！', 'data': serverinfo})
         else:
-            self.write({'code': -1, 'msg': '站点不存在！'})
+            context.write({'code': -1, 'msg': '站点不存在！'})
 
     elif action in ('addserver', 'updateserver'):
-        setting = loads(self.get_argument('setting', '')) or {}
+        setting = loads(context.get_argument('setting', '')) or {}
 
         ip = setting.get('ip', '')
         if ip not in ('', '*', '0.0.0.0') and not is_valid_ip(ip):
-            self.write({'code': -1, 'msg': f'{ip} 不是有效的IP地址！'})
+            context.write({'code': -1, 'msg': f'{ip} 不是有效的IP地址！'})
             return
 
         port = int(setting.get('port', 0))
         if port <= 0 or port > 65535:
-            self.write({'code': -1, 'msg': f'{setting.get("port")} 不是有效的端口号!'})
+            context.write({'code': -1, 'msg': f'{setting.get("port")} 不是有效的端口号!'})
             return
 
         servername = setting.get('servername')
         # print('servername', servername)
         if not is_valid_domain(servername):
-            self.write({'code': -1, 'msg': f'{servername} 不是有效的域名！'})
+            context.write({'code': -1, 'msg': f'{servername} 不是有效的域名！'})
             return
 
         documentroot = setting.get('documentroot', '')
         if not documentroot:
-            self.write({'code': -1, 'msg': f'{documentroot} 不是有效的目录！'})
+            context.write({'code': -1, 'msg': f'{documentroot} 不是有效的目录！'})
             return
         autocreate = setting.get('autocreate')
         if not os.path.exists(documentroot):
@@ -267,10 +267,10 @@ def web_response(self):
                 try:
                     mkdir(documentroot)
                 except:
-                    self.write({'code': -1, 'msg': '站点目录 %s 创建失败！' % documentroot})
+                    context.write({'code': -1, 'msg': f'站点目录 {documentroot} 创建失败！'})
                     return
             else:
-                self.write({'code': -1, 'msg': '站点目录 %s 不存在！' % documentroot})
+                context.write({'code': -1, 'msg': f'站点目录 {documentroot} 不存在！'})
                 return
 
         directoryindex = setting.get('directoryindex')
@@ -280,33 +280,33 @@ def web_response(self):
         customlog = setting.get('customlog')
         directory = setting.get('directory')
 
-        version = self.get_argument('version', '')  # apache version
+        version = context.get_argument('version', '')  # apache version
         for diret in directory:
             if 'path' in diret and diret['path']:
                 if not os.path.exists(diret['path']) and 'autocreate' in diret and diret['autocreate']:
                     try:
                         mkdir(diret['path'])
                     except:
-                        self.write({'code': -1, 'msg': '路径 %s 创建失败！' % diret['path']})
+                        context.write({'code': -1, 'msg': '路径 %s 创建失败！' % diret['path']})
                         return
             else:
-                self.write({'code': -1, 'msg': '请选择路径！'})
+                context.write({'code': -1, 'msg': '请选择路径！'})
                 return
         if action == 'addserver':
             if not addserver(servername, ip, port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
                 errorlog=errorlog, customlog=customlog, version=version):
-                self.write({'code': -1, 'msg': '新站点添加失败！请检查站点域名是否重复。', 'data': setting})
+                context.write({'code': -1, 'msg': '新站点添加失败！请检查站点域名是否重复。', 'data': setting})
             else:
-                self.write({'code': 0, 'msg': '新站点添加成功！', 'data': setting})
+                context.write({'code': 0, 'msg': '新站点添加成功！', 'data': setting})
         else:
-            c_ip = _u(self.get_argument('ip', ''))
-            c_port = _u(self.get_argument('port', ''))
-            c_name = _u(self.get_argument('name', ''))
+            c_ip = context.get_argument('ip', '')
+            c_port = context.get_argument('port', '')
+            c_name = context.get_argument('name', '')
             if not updateserver(c_name, c_ip, c_port, serveralias=serveralias, serveradmin=serveradmin, documentroot=documentroot, directoryindex=directoryindex, directory=directory,
                 errorlog=errorlog, customlog=customlog, version=version):
-                self.write({'code': -1, 'msg': '站点设置更新失败！请检查配置信息（如域名是否重复？）', 'data': setting})
+                context.write({'code': -1, 'msg': '站点设置更新失败！请检查配置信息（如域名是否重复？）', 'data': setting})
             else:
-                self.write({'code': 0, 'msg': '站点设置更新成功！', 'data': setting})
+                context.write({'code': 0, 'msg': '站点设置更新成功！', 'data': setting})
 
 
 def loadconfig(conf=None, getlineinfo=False):

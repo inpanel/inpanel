@@ -17,12 +17,213 @@ from mimetypes import guess_type
 from pwd import getpwnam, getpwuid
 from time import time
 from uuid import uuid4
+from base import kernel_name
 
 from server import ServerInfo
 from utils import b2h, ftime
 
 charsets = ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5', 'euc-jp', 'euc-kr',
             'iso-8859-2', 'shift_jis')
+
+
+def web_handler(context):
+    '''handler for web server'''
+    action = context.get_argument('action', '')
+
+    if action == 'last':
+        lastdir = context.runlogs.get('file', 'lastdir')
+        lastfile = context.runlogs.get('file', 'lastfile')
+        context.write({'code': 0, 'msg': '', 'data': {'lastdir': lastdir, 'lastfile': lastfile}})
+
+    elif action == 'listdir':
+        path = context.get_argument('path', '')
+        showhidden = context.get_argument('showhidden', 'off')
+        remember = context.get_argument('remember', 'on')
+        onlydir = context.get_argument('onlydir', 'off')
+        items = listdir(path, showhidden=='on', onlydir=='on')
+        if items is False:
+            context.write({'code': -1, 'msg': f'目录 {path} 不存在！'})
+        else:
+            if remember == 'on':
+                context.runlogs.set('file', 'lastdir', path)
+            context.write({'code': 0, 'msg': '成功获取文件列表！', 'data': items})
+
+    elif action == 'getitem':
+        path = context.get_argument('path', '')
+        item = getitem(path)
+        if item is False:
+            context.write({'code': -1, 'msg': f'{path} 不存在！'})
+        else:
+            context.write({'code': 0, 'msg': f'成功获取 {path} 的信息！', 'data': item})
+
+    elif action == 'fread':
+        path = context.get_argument('path', '')
+        remember = context.get_argument('remember', 'on')
+        size = fsize(path)
+        if size is None:
+            context.write({'code': -1, 'msg': f'文件 {path} 不存在！'})
+        elif size > 1024*1024*2: # support 1MB of file at max
+            context.write({'code': -1, 'msg': f'读取 {path} 失败！不允许在线编辑超过2MB的文件！'})
+        # elif not mod_file.istext(path):
+        #     context.write({'code': -1, 'msg': f'读取 {path} 失败！无法识别文件类型 ！'})
+        else:
+            if remember == 'on':
+                context.runlogs.set('file', 'lastfile', path)
+            charset, content = decode(path)
+            if not charset:
+                context.write({'code': -1, 'msg': '不可识别的文件编码 ！'})
+                return
+            data = {
+                'filename': os.path.basename(path),
+                'filepath': path,
+                'mimetype': mimetype(path),
+                'charset': charset,
+                'content': content,
+            }
+            context.write({'code': 0, 'msg': '成功读取文件内容 ！', 'data': data})
+
+    elif action == 'fclose':
+        context.runlogs.set('file', 'lastfile', '')
+        context.write({'code': 0, 'msg': ''})
+
+    elif action == 'fwrite':
+        path = context.get_argument('path', '')
+        charset = context.get_argument('charset', '')
+        content = context.get_argument('content', '')
+
+        if context.config.get('runtime', 'mode') == 'demo':
+            if not path.startswith('/var/www'):
+                context.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
+                return
+
+        if not charset in charsets:
+            context.write({'code': -1, 'msg': '不可识别的文件编码！'})
+            return
+        content = encode(content, charset)
+        if not content:
+            context.write({'code': -1, 'msg': '文件编码转换出错，保存失败！'})
+            return
+        if fsave(path, content):
+            context.write({'code': 0, 'msg': '文件保存成功！'})
+        else:
+            context.write({'code': -1, 'msg': '文件保存失败！'})
+
+    elif action == 'createfolder':
+        path = context.get_argument('path', '')
+        name = context.get_argument('name', '')
+
+        if context.config.get('runtime', 'mode') == 'demo':
+            if not path.startswith('/var/www') and not path.startswith(context.settings['package_path']):
+                context.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
+                return
+
+        if dadd(path, name):
+            context.write({'code': 0, 'msg': '文件夹创建成功！'})
+        else:
+            context.write({'code': -1, 'msg': '文件夹创建失败！'})
+
+    elif action == 'createfile':
+        path = context.get_argument('path', '')
+        name = context.get_argument('name', '')
+
+        if context.config.get('runtime', 'mode') == 'demo':
+            if not path.startswith('/var/www'):
+                context.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
+                return
+
+        if fadd(path, name):
+            context.write({'code': 0, 'msg': '文件创建成功！'})
+        else:
+            context.write({'code': -1, 'msg': '文件创建失败！'})
+
+    elif action == 'rename':
+        path = context.get_argument('path', '')
+        name = context.get_argument('name', '')
+
+        if context.config.get('runtime', 'mode') == 'demo':
+            if not path.startswith('/var/www'):
+                context.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
+                return
+
+        if rename(path, name):
+            context.write({'code': 0, 'msg': '重命名成功！'})
+        else:
+            context.write({'code': -1, 'msg': '重命名失败！'})
+
+    elif action == 'exist':
+        path = context.get_argument('path', '')
+        name = context.get_argument('name', '')
+        context.write({'code': 0, 'msg': '', 'data': os.path.exists(os.path.join(path, name))})
+
+    elif action == 'link':
+        srcpath = context.get_argument('srcpath', '')
+        despath = context.get_argument('despath', '')
+
+        if context.config.get('runtime', 'mode') == 'demo':
+            if not despath.startswith('/var/www') and not despath.startswith(context.settings['package_path']):
+                context.write({'code': -1, 'msg': '演示模式不允许在除 /var/www 以外的目录下创建链接！'})
+                return
+
+        if link(srcpath, despath):
+            context.write({'code': 0, 'msg': f'链接 {despath} 创建成功 ！'})
+        else:
+            context.write({'code': -1, 'msg': f'链接 {despath} 创建失败 ！'})
+
+    elif action == 'delete':
+        paths = context.get_argument('paths', '')
+        paths = paths.split(',')
+
+        if context.config.get('runtime', 'mode') == 'demo':
+            for path in paths:
+                if not path.startswith('/var/www') and not path.startswith(context.settings['package_path']):
+                    context.write({'code': -1, 'msg': '演示模式不允许在除 /var/www 以外的目录执行删除操作！'})
+                    return
+
+        if len(paths) == 1:
+            path = paths[0]
+            if delete(path):
+                context.write({'code': 0, 'msg': f'已将 {path} 移入回收站 ！'})
+            else:
+                context.write({'code': -1, 'msg': f'将 {path} 移入回收站失败 ！'})
+        else:
+            for path in paths:
+                if not delete(path):
+                    context.write({'code': -1, 'msg': f'将 {path} 移入回收站失败 ！'})
+                    return
+            context.write({'code': 0, 'msg': '批量移入回收站成功！'})
+
+    elif action == 'tlist':
+        context.write({'code': 0, 'msg': '', 'data': tlist()})
+
+    elif action == 'trashs':
+        context.write({'code': 0, 'msg': '', 'data': trashs()})
+
+    elif action == 'titem':
+        mount = context.get_argument('mount', '')
+        uuid = context.get_argument('uuid', '')
+        info = titem(mount, uuid)
+        if info:
+            context.write({'code': 0, 'msg': '', 'data': info})
+        else:
+            context.write({'code': -1, 'msg': '获取项目信息失败！'})
+
+    elif action == 'trestore':
+        mount = context.get_argument('mount', '')
+        uuid = context.get_argument('uuid', '')
+        info = titem(mount, uuid)
+        if info and trestore(mount, uuid):
+            context.write({'code': 0, 'msg': f'已还原 {info["name"]} 到 {info["path"]} ！'})
+        else:
+            context.write({'code': -1, 'msg': '还原失败！'})
+
+    elif action == 'tdelete':
+        mount = context.get_argument('mount', '')
+        uuid = context.get_argument('uuid', '')
+        info = titem(mount, uuid)
+        if info and tdelete(mount, uuid):
+            context.write({'code': 0, 'msg': f'已删除 {info["name"]} ！'})
+        else:
+            context.write({'code': -1, 'msg': '删除失败！'})
 
 
 def listdir(path, showdotfiles=False, onlydir=None):
@@ -253,18 +454,22 @@ def encode(content, charset):
 
 
 def delete(path):
+    '''Move files to the Recycle Bin'''
     if not os.path.exists(path) and not os.path.islink(path):
         return False
     path = os.path.abspath(path)
     mounts = _getmounts()
-    mount = ''
-    for m in mounts:
-        if path.startswith(m):
-            mount = m
-            break
-    if not mount:
-        return False
-    trashpath = os.path.join(mount, '.deleted_files')
+    if kernel_name == 'Darwin':
+        trashpath = os.path.join(os.path.expanduser('~'), '.deleted_files')
+    else:
+        mount = ''
+        for m in mounts:
+            if path.startswith(m):
+                mount = m
+                break
+        if not mount:
+            return False
+        trashpath = os.path.join(mount, '.deleted_files')
     _inittrash(mounts)
     try:
         uuid = str(uuid4())
@@ -286,12 +491,15 @@ def delete(path):
 
 
 def _getmounts():
-    mounts = ServerInfo.mounts()
-    mounts = [mount['path'] for mount in mounts]
-    # let the longest path at the first
-    # mounts.sort(lambda x, y: cmp(len(y), len(x)))
-    return sorted(mounts, key=lambda x: len(x), reverse=False)
-    # return mounts
+    if kernel_name == 'Darwin':
+        return [os.path.expanduser('~')]
+    else:
+        mounts = ServerInfo.mounts()
+        mounts = [mount['path'] for mount in mounts]
+        # let the longest path at the first
+        # mounts.sort(lambda x, y: cmp(len(y), len(x)))
+        return sorted(mounts, key=lambda x: len(x), reverse=False)
+        # return mounts
 
 
 def _inittrash(mounts=None):
@@ -380,8 +588,7 @@ def tdelete(mount, uuid):
     # the real file or directory should be deleted external
     # _inittrash()
     try:
-        db = shelve.open(os.path.join(mount, '.deleted_files', '.fileinfo'),
-                         'c')
+        db = shelve.open(os.path.join(mount, '.deleted_files', '.fileinfo'), 'c')
         del db[uuid]
         db.close()
         return True
