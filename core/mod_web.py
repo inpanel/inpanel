@@ -2495,7 +2495,8 @@ class BackendHandler(RequestHandler):
             msg = f'{name} 服务{action_str[action]}成功！'
         else:
             code = -1
-            msg = f'{name} 服务{action_str[action]}失败！<p style="margin:10px">{output.strip().replace("\n", "<br>")}</p>'
+            txt = output.strip().replace('\n', '<br>')
+            msg = f'{name} 服务{action_str[action]}失败！<p style="margin:10px">{txt}</p>'
 
         self._finish_job(jobname, code, msg)
 
@@ -2515,7 +2516,8 @@ class BackendHandler(RequestHandler):
             msg = '系统时间设置成功！'
         else:
             code = -1
-            msg = '系统时间设置失败！<p style="margin:10px">%s</p>' % output.strip().replace('\n', '<br>')
+            txt = output.strip().replace('\n', '<br>')
+            msg = f'系统时间设置失败！<p style="margin:10px">{txt}</p>'
 
         self._finish_job(jobname, code, msg)
 
@@ -2564,7 +2566,8 @@ class BackendHandler(RequestHandler):
             msg = f'{action_str[action]} {devname} 成功！'
         else:
             code = -1
-            msg = f'{action_str[action]} {devname} 失败！<p style="margin:10px">{output.strip().replace("\n", "<br>")}</p>'
+            txt = output.strip().replace('\n', '<br>')
+            msg = f'{action_str[action]} {devname} 失败！<p style="margin:10px">{txt}</p>'
 
         self._finish_job(jobname, code, msg)
 
