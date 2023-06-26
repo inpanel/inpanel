@@ -2,16 +2,16 @@ angular.module('inpanel.services', []).
 factory('Auth', ['$rootScope', '$http', '$location', function ($scope, $http, $location) {
     var Auth = {};
     Auth.required = function (callback, errCallback) {
-        $http.post('/authstatus').success(function (data) {
+        $http.post('/api/authstatus').success(function (data) {
             if (callback) callback.call(null, data.authed == 'yes');
             if (data.authed == 'no') {
                 $scope.loginto = $location.path();
                 $scope.loginto_section = $location.search().s;
-                if ($scope.loginto == '/' || $scope.loginto == '/logout') {
-                    $scope.loginto = '/main';
+                if ($scope.loginto == '/login' || $scope.loginto == '/logout') {
+                    $scope.loginto = '/';
                     $scope.loginto_section = '';
                 }
-                $location.path('/');
+                $location.path('/login');
                 $scope.sec(null);
             }
         }).error(function (data, status) {
@@ -19,7 +19,7 @@ factory('Auth', ['$rootScope', '$http', '$location', function ($scope, $http, $l
         });
     };
     Auth.getlastactive = function (callback) {
-        $http.get('/authstatus?' + Math.random()).success(function (data) {
+        $http.get('/api/authstatus?' + Math.random()).success(function (data) {
             if (callback) callback.call(null, data.lastactive);
         });
     };
@@ -161,11 +161,11 @@ factory('Request', ['$http', '$rootScope', '$location', '$timeout', 'Message', f
                 Message.setError('登录无效或超时，请重新登录。', true);
                 $scope.loginto = $location.path();
                 $scope.loginto_section = $location.search().s;
-                if ($scope.loginto == '/' || $scope.loginto == '/logout') {
-                    $scope.loginto = '/main';
+                if ($scope.loginto == '/login' || $scope.loginto == '/logout') {
+                    $scope.loginto = '/';
                     $scope.loginto_section = '';
                 }
-                $location.path('/');
+                $location.path('/login');
                 $scope.sec(null);
             } else {
                 Message.setError('发生未知错误！');

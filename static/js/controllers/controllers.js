@@ -36,13 +36,13 @@ var LoginCtrl = [
                 return
             }
             $scope.loginText = '登录中...';
-            Request.post('/login', {
+            Request.post('/api/login', {
                 username: $scope.username,
                 password: rawpwd ? $scope.password : hex_md5($scope.password)
             }, function (data) {
                 if (data.code >= 0) {
                     $scope.loaded = false;
-                    var path = $rootScope.loginto ? $rootScope.loginto : '/main';
+                    var path = $rootScope.loginto ? $rootScope.loginto : '/';
                     var section = $rootScope.loginto_section;
                     if (data.code == 0) {
                         $location.path(path);
@@ -81,8 +81,8 @@ var LogoutCtrl = [
         $scope.loaded = false;
         Timeout(function () {
             $scope.loaded = true;
-            Request.get('/xsrf', function () {
-                Request.post('/logout', {}, function (data) {
+            Request.get('/api/xsrf', function () {
+                Request.post('/api/logout', {}, function (data) {
                     Timeout(function () {
                         $location.path('/');
                     }, 3000, module);
@@ -105,39 +105,56 @@ var deepUpdate = function (orgObj, newObj) {
 };
 
 var MainCtrl = [
-    '$scope', '$routeParams', '$location', 'Module', 'Timeout', 'Request', 'version',
-    function ($scope, $routeParams, $location, Module, Timeout, Request, version) {
+    '$scope', '$routeParams', '$location', 'Module', 'Timeout', 'Request',
+    function ($scope, $routeParams, $location, Module, Timeout, Request) {
         var module = 'main';
         Module.init(module, '首页');
         Module.initSection('server');
-        $scope.version = version;
+        $scope.version = {};
         $scope.info = null;
         $scope.loaded = false;
 
         $scope.detectVer = true;
         $scope.hasNewver = false;
         $scope.auto_refresh = false;
-        Request.get('/setting/upver', function (data) {
-            if (data.code == -1) {
-                $scope.upverMessage = data.msg;
-            } else if (data.code == 0) {
-                var v = data.data;
-                if (parseFloat(v.version) > parseFloat(version.version) ||
-                    (parseFloat(v.version) == parseFloat(version.version) &&
-                        parseInt(v.build) > parseInt(version.build))) {
-                    $scope.detectVer = false;
-                    $scope.hasNewver = true;
+
+        $scope.load = function () {
+            $scope.loadInfo('**');
+            $scope.checkUpVersion();
+        };
+
+        $scope.checkUpVersion = function () {
+            Request.get('/api/version', function (res) {
+                $scope.version = res.data;
+                $scope.checkNewVersion();
+            });
+        }
+
+        $scope.checkNewVersion = function () {
+            Request.get('/api/setting/upver', function (data) {
+                if (data.code == -1) {
+                    $scope.upverMessage = data.msg;
+                } else if (data.code == 0) {
+                    var v = data.data;
+                    if (
+                        parseFloat(v.version) > parseFloat($scope.version.version) ||
+                        (parseFloat(v.version) == parseFloat($scope.version.version) && parseInt(v.build) > parseInt($scope.version.build))
+                    ) {
+                        $scope.detectVer = false;
+                        $scope.hasNewver = true;
+                    }
                 }
-            }
-        });
+            });
+        };
 
         $scope.checkUpdate = function () {
             $location.path('/setting');
             $scope.sec('upversion');
         }
+
         $scope.loadInfo = function (items) {
             if (!items) items = '*';
-            Request.get('/query/' + items, function (data) {
+            Request.get('/api/query/' + items, function (data) {
                 if ($scope.info == null) {
                     $scope.info = data;
                     $scope.info['server.cpustat']['total']['used_rate'] = '获取中...';
@@ -272,12 +289,12 @@ var LogCtrl = [
 ];
 
 var SettingCtrl = [
-    '$scope', '$routeParams', 'Module', 'Timeout', 'Message', 'Request', 'version',
-    function ($scope, $routeParams, Module, Timeout, Message, Request, version) {
+    '$scope', '$routeParams', 'Module', 'Timeout', 'Message', 'Request',
+    function ($scope, $routeParams, Module, Timeout, Message, Request) {
         var module = 'setting';
         Module.init(module, '系统设置');
         Module.initSection('authinfo');
-        $scope.version = version;
+        $scope.version = {};
         $scope.newVersion = '';
         $scope.newReleasetime = '';
         $scope.newBuild = '';
@@ -287,14 +304,21 @@ var SettingCtrl = [
         $scope.password = '';
         $scope.passwordc = '';
 
+        $scope.load = function () {
+            Request.get('/api/version', function (res) {
+                $scope.version = res.data;
+                $scope.checkUpVersion();
+            });
+        }
+
         $scope.loadAuthInfo = function () {
-            Request.get('/setting/auth', function (res) {
+            Request.get('/api/setting/auth', function (res) {
                 $scope.username = res.username;
                 $scope.passwordcheck = res.passwordcheck;
             });
         }
         $scope.loadServerInfo = function () {
-            Request.get('/setting/server', function (res) {
+            Request.get('/api/setting/server', function (res) {
                 $scope.forcehttps = res.forcehttps;
                 $scope.ip = res.ip;
                 $scope.port = res.port;
@@ -302,14 +326,19 @@ var SettingCtrl = [
                 $scope.sslcrt = res.sslcrt;
             });
         }
+        $scope.loadRuntimeInfo = function () {
+            Request.get('/api/setting/runtime', function (res) {
+                $scope.runtime_mode = res.mode;
+            });
+        }
         $scope.loadAccessKey = function () {
-            Request.get('/setting/accesskey', function (res) {
+            Request.get('/api/setting/accesskey', function (res) {
                 $scope.accesskey = res.accesskey;
                 $scope.accesskeyenable = res.accesskeyenable;
             });
         }
         $scope.updateAuthInfo = function () {
-            Request.post('/setting/auth', {
+            Request.post('/api/setting/auth', {
                 username: $scope.username,
                 password: $scope.password ? hex_md5($scope.password) : '',
                 passwordc: $scope.passwordc ? hex_md5($scope.passwordc) : '',
@@ -319,7 +348,7 @@ var SettingCtrl = [
             });
         };
         $scope.updateServerInfo = function () {
-            Request.post('/setting/server', {
+            Request.post('/api/setting/server', {
                 forcehttps: $scope.forcehttps,
                 ip: $scope.ip,
                 port: $scope.port,
@@ -327,6 +356,14 @@ var SettingCtrl = [
                 sslcrt: $scope.sslcrt
             }, function (res) {
                 if (res.code == 0) $scope.loadServerInfo();
+            });
+        };
+
+        $scope.updateRuntimeInfo = function () {
+            Request.post('/api/setting/runtime', {
+                mode: $scope.runtime_mode
+            }, function (res) {
+                if (res.code == 0) $scope.loadRuntimeInfo();
             });
         };
 
@@ -355,7 +392,7 @@ var SettingCtrl = [
         };
 
         $scope.updateAccessKey = function () {
-            Request.post('/setting/accesskey', {
+            Request.post('/api/setting/accesskey', {
                 accesskey: $scope.accesskey,
                 accesskeyenable: $scope.accesskeyenable
             }, function (res) {
@@ -364,13 +401,15 @@ var SettingCtrl = [
         };
         $scope.checkUpVersion = function () {
             $scope.upverMessage = '正在检测新版本...';
-            Request.get('/setting/upver?force=1', function (data) {
+            Request.get('/api/setting/upver?force=1', function (data) {
                 if (data.code == -1) {
                     $scope.upverMessage = data.msg;
                 } else if (data.code == 0) {
                     var v = data.data;
-                    if (parseFloat(v.version.split('.').join('')) > parseFloat(version.version.split('.').join('')) ||
-                        (v.version == version.version && parseInt(v.build) > parseInt(version.build))) {
+                    if (
+                        parseFloat(v.version.split('.').join('')) > parseFloat($scope.version.version.split('.').join('')) ||
+                        (v.version == $scope.version.version && parseInt(v.build) > parseInt($scope.version.build))
+                    ) {
                         $scope.upverMessage = '<table class="table table-hover table-bordered">' +
                             '<thead><tr><th colspan="2">有可用的新版本</th></tr></thead>' +
                             '<tbody><tr><td style="width: 200px;">版本信息：</td><td>v' + v.version + ' b' + v.build + '</td></tr>' +
@@ -391,9 +430,9 @@ var SettingCtrl = [
         $scope.update = function () {
             $scope.upverMessage = '正在升级，请稍候...'
             $scope.showUpdateBtn = false;
-            Request.post('/backend/update', {}, function (data) {
+            Request.post('/api/backend/update', {}, function (data) {
                 var getUpdateStatus = function () {
-                    Request.get('backend/update', function (data) {
+                    Request.get('/api/backend/update', function (data) {
                         Message.setInfo('')
                         if (data.msg) $scope.upverMessage = data.msg;
                         if (data.code == -1) {
@@ -402,11 +441,11 @@ var SettingCtrl = [
                             // restart service
                             $scope.upverMessage = '正在重启 InPanel...';
                             Timeout(function () {
-                                Request.post('/backend/service_restart', {
+                                Request.post('/api/backend/service_restart', {
                                     service: 'inpanel'
                                 }, function (data) {
                                     var getRestartStatus = function () {
-                                        Request.get('backend/service_restart_inpanel', function (data) {
+                                        Request.get('/api/backend/service_restart_inpanel', function (data) {
                                             Message.setInfo('')
                                             if (data.msg) $scope.upverMessage = data.msg;
                                             Timeout(getRestartStatus, 500, module);
@@ -430,16 +469,16 @@ var SettingCtrl = [
                 Timeout(getUpdateStatus, 500, module);
             });
         };
-        $scope.restartMessage = '是否要重启 InPanel ？';
+        $scope.restartMessage = '是否要重启 InPanel 服务 ？';
         $scope.restart = function () {
             $scope.restartMessage = '正在重启，请稍候...'
             $scope.showRestartBtn = false;
             Timeout(function () {
-                Request.post('/backend/service_restart', {
+                Request.post('/api/backend/service_restart', {
                     service: 'inpanel'
                 }, function (data) {
                     var getRestartStatus = function () {
-                        Request.get('backend/service_restart_inpanel', function (data) {
+                        Request.get('/api/backend/service_restart_inpanel', function (data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             Timeout(getRestartStatus, 500, module);
                         }, function (data, status) { // error occur because server is terminate

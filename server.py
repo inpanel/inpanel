@@ -18,7 +18,7 @@ sys.path.insert(0, join(root_path, 'lib'))
 import tornado.httpserver
 import tornado.ioloop
 from core import web
-from core.modules.repo_yum import WebRequestRepoYUM
+from core.modules.repo_yum import RepoYumHander
 from core.modules.certificate import WebRequestSSLTLS
 from core.modules.configuration import configurations
 from core.modules.process import WebRequestProcess
@@ -47,30 +47,32 @@ def main():
     }
 
     application = web.Application([
-        (r'/xsrf', web.XsrfHandler),
-        (r'/authstatus', web.AuthStatusHandler),
-        (r'/login', web.LoginHandler),
-        (r'/logout', web.LogoutHandler),
-        (r'/query/(.+)', web.QueryHandler),
-        (r'/utils/network/(.+?)(?:/(.+))?', web.UtilsNetworkHandler),
-        (r'/utils/process/(.+?)(?:/(.+))?', WebRequestProcess),
-        (r'/utils/time/(.+?)(?:/(.+))?', web.UtilsTimeHandler),
-        (r'/utils/ssl/(.+?)(?:/(.+))?', WebRequestSSLTLS),
-        (r'/repos/yum/(.+?)(?:/(.+))?', WebRequestRepoYUM),
-        (r'/setting/(.+)', web.SettingHandler),
-        (r'/operation/(.+)', web.OperationHandler),
+        (r'/api/xsrf', web.XsrfHandler),
+        (r'/api/authstatus', web.AuthStatusHandler),
+        (r'/api/login', web.LoginHandler),
+        (r'/api/logout', web.LogoutHandler),
+        (r'/api/query/(.+)', web.QueryHandler),
+        (r'/api/network/(.+?)(?:/(.+))?', web.UtilsNetworkHandler),
+        (r'/api/process/(.+?)(?:/(.+))?', WebRequestProcess),
+        (r'/api/time/(.+?)(?:/(.+))?', web.UtilsTimeHandler),
+        (r'/api/ssl/(.+?)(?:/(.+))?', WebRequestSSLTLS),
+        (r'/api/repos/yum/(.+?)(?:/(.+))?', RepoYumHander),
+        (r'/api/setting/(.+)', web.SettingHandler),
+        (r'/api/operation/(.+)', web.OperationHandler),
+        (r'/page/file/preview/(.+)', web.FilePreviewHandler),
         (r'/page/(.+)/(.+)', web.PageHandler),
-        (r'/backend/(.+)', web.BackendHandler),
-        (r'/sitepackage/(.+)', web.SitePackageHandler),
-        (r'/client/(.+)', web.ClientHandler),
-        (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)',
-         web.StaticFileHandler, {'path': settings['static_path']}),
-        (r'/plugins/(.*)', web.StaticFileHandler, {'path': settings['plugins_path']}),
-        (r'/($)', web.StaticFileHandler, {'path': settings['index_path']}),
-        (r'/download/(.+)', web.FileDownloadHandler, {'path': '/'}),
-        (r'/fileupload', web.FileUploadHandler),
-        (r'/version', web.VersionHandler),
-        (r'/.*', web.ErrorHandler, {'status_code': 404})
+        (r'/api/backend/(.+)', web.BackendHandler),
+        (r'/api/sitepackage/(.+)', web.SitePackageHandler),
+        (r'/api/client/(.+)', web.ClientHandler),
+        (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)', web.StaticFileHandler, { 'path': settings['static_path'] }),
+        (r'/api/plugins/(.*)', web.StaticFileHandler, { 'path': settings['plugins_path']}),
+        (r'/api/file/download/(.+)', web.FileDownloadHandler, { 'path': '/' }),
+        (r'/api/file/upload', web.FileUploadHandler),
+        (r'/api/version', web.VersionHandler),
+        # (r'/ws', WsockHandler, dict(loop=loop)),
+        (r'/', web.IndexHandler, {'path': settings['index_path']}),
+        (r'/($)', web.StaticFileHandler, { 'path': settings['index_path'] }),
+        (r'/.*', web.ErrorHandler, { 'status_code': 404 })
     ], **settings)
 
     # read configuration from config.ini

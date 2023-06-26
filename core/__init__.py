@@ -11,22 +11,24 @@
 
 import platform
 
-__version__ = '1.1.1.25'
-
 name = 'InPanel'
 version = '1.1.1'
-build = '25'
-releasetime = '2020-12-03 23:00:00 GMT+0800'
+build = '26'
+releasetime = '2023-06-26 18:47:00 GMT+0800'
+__version__ = '.'.join([version, build])
+
 version_info = {
     'name': name,
     'build': build,
     'version': version,
-    'releasetime': releasetime
+    'releasetime': releasetime,
+    'changelog': 'http://inpanel.org/changelog.html'
 }
+
 api = {
-    'latest': 'http://api.inpanel.org/?s=latest',
-    'site_packages': 'http://api.inpanel.org/?s=site_packages',
-    'download_package': 'http://api.inpanel.org/?s=site_packages&a=download'
+    'latest': 'https://api.inpanel.org/?s=latest',
+    'site_packages': 'https://api.inpanel.org/?s=site_packages',
+    'download_package': 'https://api.inpanel.org/?s=site_packages&a=download'
 }
 system = None
 distribution = None

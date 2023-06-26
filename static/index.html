@@ -1,23 +1,21 @@
 <!doctype html>
-<html lang="en" ng-app="inpanel">
+<html lang="zh-CN" ng-app="inpanel">
 
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8" />
     <title ng-bind-template="{{ htmlTitle }} - InPanel">InPanel</title>
-    <meta name="renderer" content="webkit"/>
-    <meta name="force-rendering" content="webkit"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css"/>
-    <!-- <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-responsive.min.css"/> -->
-    <link rel="stylesheet" href="lib/codemirror/codemirror.css"/>
-    <!--[if lt IE 9]>
-    <script src="lib/html5shim/html5shiv-printshiv.min.js"></script>
-    <![endif]-->
+    <meta name="renderer" content="webkit" />
+    <meta name="force-rendering" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="CROGRAM" />
+    <meta name="copyright" content="CROGRAM 程江科技" />
+    <meta name="description" content="开源Linux服务器管理面板" />
+    <meta name="keywords" content="InPanel, VPSMate, Linux, VPS, VPS Management, 开源, VPS管理面板, 开源Linux服务器管理面板" />
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" />
+    <!-- <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-theme.min.css" /> -->
+    <link rel="stylesheet" href="lib/codemirror/codemirror.css" />
     <link rel="stylesheet" href="css/global.css"/>
-    <!--[if lte IE 8]>
-    <link rel="stylesheet" href="css/ie-patch.css"/>
-    <![endif]-->
 </head>
 
 <body>
@@ -55,7 +53,8 @@
                         <span>Powered by <a href="http://inpanel.org" target="_blank">InPanel</a></span>
                     </p>
                     <p class="navbar-text pull-right">
-                        <span><a href="http://crogram.org" target="_blank">Crogram</a></span>
+                        <span>&copy;&nbsp;2023</span>
+                        <span><a href="http://crogram.org?utm_source=InPanel" target="_blank">CROGRAM</a></span>
                     </p>
                 </div>
             </footer>
@@ -64,10 +63,6 @@
 
     <div class="well" style="width:300px; margin:100px auto auto;" ng-show="!navbar_loaded"><img src="images/loading.gif" style="margin-right:5px"> 正在加载，请稍候...</div>
 
-    <!--[if lte IE 6]>
-    <script src="lib/ie6warning/warning.js"></script>
-    <script>document.body.innerHTML='';e("lib/ie6warning/")</script>
-    <![endif]-->
     <script src="lib/angular/1.0.2/angular.min.js"></script>
     <script src="lib/jquery/jquery-1.12.4.min.js"></script>
     <script src="lib/bootstrap/js/bootstrap.min.js"></script>
@@ -75,7 +70,8 @@
     <script src="lib/md5/md5.min.js"></script>
     <script>
         var location_path = location.pathname.replace(/(\s+)?\/$/, '');
-        var template_path = '';
+        var template_path = '{{ template_path }}';
+        var releasetime = '{{ releasetime }}';
     </script>
     <!-- <script src="js.min/app.js"></script> -->
     <!-- Uncomment it in dev mode -->

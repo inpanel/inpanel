@@ -1,4 +1,4 @@
-<div ng-include src="'/xsrf'"></div>
+<div ng-include src="'/api/xsrf'"></div>
 
 <div navbar ng-init="currentItem='setting'"></div>
 <div ng-show="!loaded">
@@ -10,13 +10,17 @@
         <h3>设置</h3>
     </div>
 
-    <div class="tabbable">
+    <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='authinfo'"><a href="#authinfo" ng-click="sec('authinfo')" data-toggle="tab">登录设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='authinfo'"><a href="#authinfo" ng-click="sec('authinfo')" data-toggle="tab">账号设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='serverinfo'"><a href="#serverinfo" ng-click="sec('serverinfo')" data-toggle="tab">服务设置</a></li>
+            <!-- <li ng-class="'active' | iftrue:activeTabName=='runtime'"><a href="#runtime" ng-click="sec('runtime')" data-toggle="tab">运行设置</a></li> -->
             <li ng-class="'active' | iftrue:activeTabName=='accesskey'"><a href="#accesskey" ng-click="sec('accesskey')" data-toggle="tab">远程控制</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='upversion'"><a href="#upversion" ng-click="sec('upversion')" data-toggle="tab">版本升级</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='restart'"><a href="#restart" ng-click="sec('restart')" data-toggle="tab">重启服务</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='upversion'"><a href="#upversion" ng-click="sec('upversion')" data-toggle="tab">版本升级</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='about'"><a href="#about" ng-click="sec('about')" data-toggle="tab">关于应用</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='license'"><a href="#license" ng-click="sec('license')" data-toggle="tab">开源协议</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='donation'"><a href="#donation" ng-click="sec('donation')" data-toggle="tab">捐助项目</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='authinfo'" id="authinfo" ng-init="loadAuthInfo()">
@@ -103,6 +107,34 @@
                     </div>
                 </form>
             </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='runtime'" id="runtime" ng-init="loadRuntimeInfo()">
+                <div class="alert alert-info alert-dismissible">
+                    <p>注意事项：</p>
+                    <p>1. 修改运行模式前，请再三确认操作是否有必要 ！</p>
+                    <p>2. 在【演示模式】下，不允许再次进行修改 ！</p>
+                    <hr />
+                    <p>在【演示模式】下，如需调整到【正式模式】，请在服务器上执行以下命令：</p>
+                    <p>inpanel config mode prod</p>
+                </div>
+                <form class="form-horizontal form-horizontal-small" ng-submit="updateRuntimeInfo()" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label" for="runtime_mode">运行模式</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" ng-model="runtime_mode" ng-disabled="processing">
+                                <option value="prod">生产模式</option>
+                                <option value="dev">开发模式</option>
+                                <option value="demo">演示模式</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-default" ng-disabled="processing">保存设置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='accesskey'" id="accesskey" ng-init="loadAccessKey()">
                 <div class="form-horizontal form-horizontal-small">
                     <div class="form-group form-inline">
@@ -126,7 +158,21 @@
                     </div>
                 </div>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='upversion'" id="upversion" ng-init="checkUpVersion()">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='restart'" id="restart" ng-init="restartService()">
+                <div class="panel panel-danger">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-refresh"></i>
+                            <span> 重启服务</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <p ng-bind-html-unsafe="restartMessage"></p>
+                        <button class="btn btn-default" ng-show="showRestartBtn" ng-click="restart()" ng-disabled="processing">确定并重启服务</button>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='upversion'" id="upversion">
                 <table class="table table-hover table-bordered">
                     <thead>
                         <tr>
@@ -153,17 +199,80 @@
                     <button class="btn btn-default" ng-click="update()" ng-disabled="processing">{{updateBtnText}}</button>
                 </p>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='restart'" id="restart" ng-init="restartService()">
-                <div class="panel panel-danger">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='about'" id="about">
+                <div class="panel panel-default">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            <i class="glyphicon glyphicon-refresh"></i>
-                            <span> 重启服务</span>
+                            <i class="glyphicon glyphicon-info-sign"></i>
+                            <span> 关于 InPanel</span>
                         </div>
                     </div>
                     <div class="panel-body">
-                        <p ng-bind-html-unsafe="restartMessage"></p>
-                        <button class="btn btn-default" ng-show="showRestartBtn" ng-click="restart()" ng-disabled="processing">确定并重启服务</button>
+                        <p>InPanel v{{version.version}} b{{version.build}}</p>
+                        <p>InPanel 是一款开源的 Linux 服务器管理面板，后端服务基于 Python 语言开发，前端页面基于框架 Angular JS v1.0.2</p>
+                        <p>源码托管在 <a href="https://github.com/inpanel/inpanel" target="_blank">GitHub</a>、<a href="https://gitee.com/inpanel/inpanel" target="_blank">Gitee</a></p>
+                        <p>国际网站：<a href="https://inpanel.org" target="_blank">https://inpanel.org</a>（提供多语言版本，针对国际用户）</p>
+                        <p>国内网站：<a href="https://inpanel.cn" target="_blank">https://inpanel.cn</a>（只提供中文版，针对国内用户）</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='license'" id="license">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-copyright-mark"></i>
+                            <span> 使用 InPanel 需遵循 BSD 开源协议</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <p>您可以自由的使用，修改源代码，也可以将修改后的代码作为开源或者专有软件再发布。当您发布使用了 BSD 协议的代码，或者以 BSD 协议代码为基础，进行二次开发自己的产品时，需要遵循以下三个原则：</p>
+                        <p>1. 如果再发布的产品中包含源代码，则在源代码中必须带有原来代码中的 BSD 协议。</p>
+                        <p>2. 如果再发布的只是二进制类库/软件，则需要在类库/软件的文档和版权声明中包含原来代码中的 BSD 协议。</p>
+                        <p>3. 不可以用开源代码的作者/机构名字和原来产品的名字做市场推广。</p>
+                        <p>详细的条款许可请查阅 <a href="https://github.com/inpanel/inpanel/blob/main/LICENSE" target="_blank">这里</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='donation'" id="donation">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-heart-empty"></i>
+                            <span> 捐助项目</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <p>如果本项目对您有帮助，您可以请作者喝奶茶。</p>
+                        <p>收到您的捐助后，我们将会在网站上进行展示，<a href="https://inpanel.cn" target="_blank">点击这里查看</a>（<a href="https://crogram.org/donation.html" target="_blank">对公转账请点击这里查看</a>）。</p>
+                        <p>转账时请备注：捐助InPanel，感谢您的捐助，祝您生活愉快 ！</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-6">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <div class="panel-title">
+                                    <i class="glyphicon glyphicon-qrcode"></i>
+                                    <span> 通过【支付宝】转账</span>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <img src="images/alipay.jpg" class="img-responsive img-rounded">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-6">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <div class="panel-title">
+                                    <i class="glyphicon glyphicon-qrcode"></i>
+                                    <span> 通过【微信支付】转账</span>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <img src="images/weixin.jpg" class="img-responsive img-rounded">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

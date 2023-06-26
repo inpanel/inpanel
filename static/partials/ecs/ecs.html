@@ -62,12 +62,12 @@
                                 <i class="icon-wrench"></i> 管理
                             </a>
                             <a ng-show="instance.InPanelStatus&&instance.InPanelStatus.accessnet=='public'" class="btn btn-small"
-                                href="/{{instance.InstanceName|urlencode}}/{{instance.PublicIpAddress.AllocateIpAddress|urlencode}}/8888/#/main"
+                                href="/{{instance.InstanceName|urlencode}}/{{instance.PublicIpAddress.AllocateIpAddress|urlencode}}/8888/#/"
                                 target="_blank">
                                 <i class="icon-home"></i> 打开 InPanel
                             </a>
                             <a ng-show="instance.InPanelStatus&&instance.InPanelStatus.accessnet=='inner'" class="btn btn-small"
-                                href="/{{instance.InstanceName|urlencode}}/{{instance.InnerIpAddress|urlencode}}/8888/#/main"
+                                href="/{{instance.InstanceName|urlencode}}/{{instance.InnerIpAddress|urlencode}}/8888/#/"
                                 target="_blank">
                                 <i class="icon-home"></i> 打开 InPanel
                             </a>

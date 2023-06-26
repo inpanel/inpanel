@@ -85,7 +85,7 @@
                         <label class="col-sm-2 control-label"></label>
                         <div class="col-sm-10">
                             <button class="btn btn-default btn-sm" ng-show="setting.prvkey" ng-click="chpasswd()">修改私钥密码</button>
-                            <a class="btn btn-default btn-sm" href="/download{{setting.prvkey}}" ng-show="setting.prvkey">下载私钥</a>
+                            <a class="btn btn-default btn-sm" href="/api/file/download{{setting.prvkey}}" ng-show="setting.prvkey">下载私钥</a>
                         </div>
                     </div>
                     <div class="form-group form-inline">

@@ -10,19 +10,19 @@
 
     <div ng-init="load()" id="list" class="file-list">
         <div class="row padding-bottom">
-            <div class="col-md-8 col-sm-9 col-xs-9">
+            <div class="col-md-10 col-sm-10 col-xs-9">
                 <form onsubmit="return false;" ng-submit="listdir()">
                     <div class="input-group input-group-sm">
                         <span class="input-group-addon">当前目录</span>
                         <input class="form-control" type="text" ng-model="path">
                         <div class="input-group-btn">
                             <button class="btn btn-default btn-sm" type="submit" title="刷新"><span class="glyphicon glyphicon-refresh"></span>
-                            <button class="btn btn-default btn-sm" type="submit" title="进入"><span class="glyphicon glyphicon-menu-right"></span></button>
+                            <button class="btn btn-default btn-sm" type="submit" title="打开"><span class="glyphicon glyphicon-menu-right"></span></button>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="col-md-4 col-sm-3 col-xs-3">
+            <div class="col-md-2 col-sm-2 col-xs-3">
                 <a class="btn btn-default btn-sm pull-right" href="#/file/trash">
                     <span class="glyphicon glyphicon-trash"></span> 回收站
                 </a>
@@ -41,38 +41,36 @@
         </div>
         <div class="row">
             <div class="col-md-9 pull-left">
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="upandlist()"><i class="glyphicon glyphicon-level-up"></i> 返回上级</button>
-                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="newfolder()"><i class="glyphicon glyphicon-plus-sign"></i> 新建文件夹</button>
-                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="newfile()"><i class="glyphicon glyphicon-plus-sign"></i> 新建文件</button>
-                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="upload()"><i class="glyphicon glyphicon-upload"></i> 上传文件</button>
-                    <button class="btn btn-default" ng-disabled="fileloading" ng-click="download()"><i class="glyphicon glyphicon-download"></i> 下载资源</button>
-                    <button class="btn btn-default" ng-click="paste()" ng-disabled="clipboard.count==0||fileloading"><i class="glyphicon glyphicon-paste"></i> 粘贴/链接</button>
-                </div>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="upandlist()"><i class="glyphicon glyphicon-arrow-up"></i> 返回上级</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="newfolder()"><i class="glyphicon glyphicon-plus-sign"></i> 新建文件夹</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="newfile()"><i class="glyphicon glyphicon-plus-sign"></i> 新建文件</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="upload()"><i class="glyphicon glyphicon-upload"></i> 上传文件</button>
+                <button class="btn btn-default btn-sm" ng-disabled="fileloading" ng-click="download()"><i class="glyphicon glyphicon-download"></i> 下载资源</button>
+                <button class="btn btn-default btn-sm" ng-disabled="clipboard.count==0||fileloading" ng-click="paste()"><i class="glyphicon glyphicon-paste"></i> 粘贴/链接</button>
             </div>
             <div class="col-md-3">
                 <button class="btn btn-default btn-sm pull-right" data-toggle="button" ng-click="togglehidden()"><i class="glyphicon glyphicon-eye-open"></i> 显示隐藏文件和目录</button>
             </div>
         </div>
 
-        <div style="margin-top:30px;margin-bottom: 30px;" ng-show="fileloading">
+        <div ng-show="fileloading" style="margin-top:30px;margin-bottom: 30px;">
             <div waiting ng-init="waitingText='正在加载文件列表，请稍候...'"></div>
         </div>
 
-        <div ng-show="!fileloading">
-            <table class="table table-hover table-bordered table-condensed" style="margin-top:10px;">
+        <div ng-show="!fileloading" class="table-responsive" style="margin-top:10px;">
+            <table class="table table-hover table-bordered table-condensed text-center">
                 <thead>
                     <tr>
                         <th style="width:10px"><input type="checkbox" ng-model="selectall"></th>
                         <th>名称</th>
-                        <th style="width:50px">大小</th>
-                        <th style="width:50px">用户</th>
-                        <th style="width:50px">组</th>
-                        <th style="width:40px">权限</th>
-                        <th style="width:150px">修改时间</th>
-                        <th style="width:140px">操作</th>
-                        <th style="width:40px">压缩</th>
-                        <th style="width:70px">其它</th>
+                        <th class="text-center">大小</th>
+                        <th class="text-center" class="text-right">用户</th>
+                        <th class="text-center">组</th>
+                        <th class="text-center">权限</th>
+                        <th class="text-center" style="width:140px; min-width:140px;">修改时间</th>
+                        <th class="text-center" style="width:150px; min-width:150px;">操作</th>
+                        <th class="text-center" style="width:70px;">压缩</th>
+                        <th class="text-center" style="width:80px;">其它</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,41 +79,47 @@
                     </tr>
                     <tr ng-class="'warning'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]" ng-repeat="item in items">
                         <td><input type="checkbox" ng-model="selects[item.name]"></td>
-                        <td>
+                        <td class="text-left">
                             <i class="glyphicon glyphicon-folder-open" title="文件夹" ng-show="item.isdir"></i>
                             <i class="glyphicon glyphicon-file" title="文件" ng-show="item.isreg"></i>
                             <i class="glyphicon glyphicon-link" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>
                             <i class="glyphicon glyphicon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i>
                             &nbsp;
-                            <a class="black" ng-click="listdir(curpath+'/'+item.name)" ng-show="item.isdir||(item.islnk&&item.link_isdir)">{{item.name}}</a>
-                            <a class="black" ng-click="editfile(item.name)" ng-show="item.isreg||(item.islnk&&!item.link_isdir)">{{item.name}}</a>
-                            <span class="text-info" ng-show="item.islnk&&!item.link_broken"><br />-> {{item.linkto}}</span>
-                            <span class="text-error" ng-show="item.islnk&&item.link_broken">(原文件已丢失)<br />-> {{item.linkto}}</span>
+                            <a ng-click="listdir(curpath+'/'+item.name)" ng-show="item.isdir||(item.islnk&&item.link_isdir)">{{item.name}}</a>
+                            <a ng-click="editfile(item.name)" ng-show="!item.is_image && (item.isreg||(item.islnk&&!item.link_isdir))">{{item.name}}</a>
+                            <a href="/page/file/preview/{{item.uri}}" ng-show="item.is_image && !item.isdir" title="预览" target="_blank">{{item.name}}</a>
+                            <span ng-show="item.islnk&&!item.link_broken"><br /><i class="glyphicon glyphicon-hand-right"></i> &nbsp; {{item.linkto}}</span>
+                            <span ng-show="item.islnk&&item.link_broken">(原文件已丢失)<br /><i class="glyphicon glyphicon-hand-right"></i> &nbsp; {{item.linkto}}</span>
                         </td>
-                        <td class="text-right" style="padding-right:15px">{{item.size}}</td>
-                        <td><a class="black" ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.uname|iftrue:item.uname!=''}}{{item.uid|iftrue:item.uname==''}}</a></td>
-                        <td><a class="black" ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.gname|iftrue:item.gname!=''}}{{item.gid|iftrue:item.gname==''}}</a></td>
-                        <td><a class="black" ng-click="chmodconfirm(item.name, item.perms, item.isdir)">{{item.perms}}</a></td>
+                        <td style="padding-right:15px">{{item.size}}</td>
+                        <td><a ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.uname|iftrue:item.uname!=''}}{{item.uid|iftrue:item.uname==''}}</a></td>
+                        <td><a ng-click="chownconfirm(item.name, item.uname, item.gname, item.isdir)">{{item.gname|iftrue:item.gname!=''}}{{item.gid|iftrue:item.gname==''}}</a></td>
+                        <td><a ng-click="chmodconfirm(item.name, item.perms, item.isdir)">{{item.perms}}</a></td>
                         <td>{{item.mtime}}</td>
                         <td>
-                            <div class="btn-group">
-                                <button class="btn btn-default btn-xs" ng-click="rename(item.name)" title="改名">改</button>
-                                <button class="btn btn-default btn-xs" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='copy'" ng-click="togglecopy(item.name)" title="复制">复</button>
-                                <button class="btn btn-default btn-xs" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='cut'" ng-click="togglecut(item.name)" title="剪切">剪</button>
-                                <button class="btn btn-default btn-xs" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='link'" ng-click="togglelink(item.name)" title="链接">链</button>
-                                <button class="btn btn-default btn-xs" ng-click="move2trash(item.name)" title="删除">删</button>
-                            </div>
+                            <button class="btn btn-default btn-xs" ng-click="rename(item.name)" title="重命名"><i class="glyphicon glyphicon-edit"></i></button>
+                            <button class="btn btn-default btn-xs" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='copy'" ng-click="togglecopy(item.name)" title="复制"><i class="glyphicon glyphicon-duplicate"></i></button>
+                            <button class="btn btn-default btn-xs" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='cut'" ng-click="togglecut(item.name)" title="剪切"><i class="glyphicon glyphicon-scissors"></i></button>
+                            <button class="btn btn-default btn-xs" ng-class="'active'|iftrue:clipboard.srcpath==curpath&&clipboard.items[item.name]=='link'" ng-click="togglelink(item.name)" title="链接"><i class="glyphicon glyphicon-link" title="链接"></i></button>
+                            <button class="btn btn-default btn-xs" ng-click="move2trash(item.name)" title="删除"><i class="glyphicon glyphicon-trash"></i></button>
                         </td>
                         <td>
                             <button class="btn btn-default btn-xs" ng-click="decompress(item.name)" ng-show="true | ifmatch:[item.name, '.*\.(zip|gz|tgz|bz2)']" title="解压">解压</button>
                             <button class="btn btn-default btn-xs" ng-click="compressconfirm(item.name, item.isreg)" ng-show="true | ifnotmatch:[item.name, '.*\.(zip|gz|tgz|bz2)']" title="压缩">压缩</button>
                         </td>
                         <td>
-                            <div class="btn-group" ng-show="item.isdir||(item.islnk&&item.link_isdir)">
+                            <div ng-show="item.isdir||(item.islnk&&item.link_isdir)">
                                 <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动同步（即将推出）"><i class="glyphicon glyphicon-repeat"></i></button>
-                                <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动备份（即将推出）"><i class="glyphicon glyphicon-share-alt"></i></button>
+                                <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动备份（即将推出）"><i class="glyphicon glyphicon-cloud-upload"></i></button>
                             </div>
-                            <a class="btn btn-default btn-xs" href="/download/{{item.download}}" ng-show="item.isreg||(item.islnk&&item.link_isreg)" title="下载"><i class="glyphicon glyphicon-download-alt"></i></button>
+                            <div ng-show="item.isreg||(item.islnk&&item.link_isreg)">
+                                <a class="btn btn-default btn-xs" href="/api/file/download/{{item.uri}}" title="下载">
+                                    <i class="glyphicon glyphicon-download-alt"></i>
+                                </a>
+                                <a class="btn btn-default btn-xs" href="/page/file/preview/{{item.uri}}" ng-show="item.is_image && !item.isdir" title="预览" target="_blank">
+                                    <i class="glyphicon glyphicon-eye-open"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -137,7 +141,7 @@
     </div>
 
     <div style="display:none" id="edit">
-        <h4>正在编辑：{{filepath}}</h4>
+        <h4><span>正在编辑：</span>{{filepath}}</h4>
         <div style="margin:15px 0;height:30px;">
             <div class="pull-left">
                 <button class="btn btn-default btn-sm" ng-click="return2list()">
@@ -249,8 +253,8 @@
             </div>
             <div class="modal-body">
                 <h5>请选择您要上传的文件：</h5>
-                <div ng-include src="'/xsrf'"></div>
-                <form id="uploadform" target="uploadframe" action="/fileupload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
+                <div ng-include src="'/api/xsrf'"></div>
+                <form id="uploadform" target="uploadframe" action="/api/file/upload" enctype="multipart/form-data" method="post" onsubmit="$('#_xsrf').val(getCookie('XSRF-TOKEN'))">
                     <input type="hidden" name="_xsrf" value="" id="_xsrf">
                     <input type="hidden" name="path" value="{{curpath}}">
                     <div class="input-group">

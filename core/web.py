@@ -33,7 +33,7 @@ import tornado.ioloop
 import tornado.web
 from async_process import call_subprocess, callbackable
 from core import api as core_api
-from core import utils
+from core import utils, releasetime
 from modules import (aliyuncs, apache, cron, fdisk, files, ftp,
                      lighttpd, mysql, named, nginx, php, proftpd,
                      pureftpd, remote, shell, ssh, user, vsftpd, yum)
@@ -154,6 +154,20 @@ class RequestHandler(tornado.web.RequestHandler):
         return self._xsrf_token
 
 
+class IndexHandler(tornado.web.StaticFileHandler):
+    def set_default_headers(self):
+        self.set_header('Server', core.name)
+
+    def get(self):
+        with open(self.settings['index_path']) as f:
+            html = f.read()
+            # html = html.replace('<link rel="stylesheet" href="', '<link rel="stylesheet" href="/inpanel/')
+            # html = html.replace('<script src="', '<script src="/inpanel/')
+            html = html.replace("{{ template_path }}", "")
+            html = html.replace("{{ releasetime }}", releasetime)
+            self.write(html)
+
+
 class StaticFileHandler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
         self.set_header('Server', core.name)
@@ -220,10 +234,31 @@ class FileUploadHandler(RequestHandler):
         self.write('</body>')
 
 
+class FilePreviewHandler(RequestHandler):
+    '''FilePreviewHandler
+    TODO: support multi
+    '''
+    def get(self, path):
+        self.authed()
+        p = joinpath('/', path)
+        if not exists(p):
+            # logger.error("Kerberos failure: %s", err)
+            raise tornado.web.HTTPError(404, 'File Not Found', reason='File Not Found')
+        buffer = ''
+        mtype = 'image/png'
+        with open(p, 'rb') as f:
+            buffer = f.read()
+        data = {
+            'mtype': 'image/png',
+            'data': 'data:%s;base64,%s' % (mtype, str(b64encode(buffer), "utf-8"))
+        }
+        self.render('file/preview.html', **data)
+
+
 class VersionHandler(RequestHandler):
     def get(self):
         self.authed()
-        self.write(core.version_info)
+        self.write({'code': 0, 'data': core.version_info})
 
 
 class XsrfHandler(RequestHandler):
@@ -4522,6 +4557,7 @@ class InPanelIndexHandler(RequestHandler):
         html = html.replace('<link rel="stylesheet" href="', '<link rel="stylesheet" href="/inpanel/')
         html = html.replace('<script src="', '<script src="/inpanel/')
         html = html.replace("var template_path = '';", "var template_path = '/inpanel';")
+        html = html.replace("var releasetime = '';", "var releasetime = '%s';" % releasetime)
         self.write(html)
 
 

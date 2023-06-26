@@ -52,6 +52,21 @@ filter('urlencode', function () {
         return input ? encodeURIComponent(input) : '';
     };
 }).
+filter('datetime', function () {
+    return function (input) {
+        function fix(x) {
+            return x < 10 ? '0' + x : x
+        }
+        var t = input ? new Date(input) : new Date()
+        var y = t.getFullYear()
+        var m = fix(t.getMonth() + 1)
+        var d = fix(t.getDate())
+        var h = fix(t.getHours())
+        var mi = fix(t.getMinutes())
+        var s = fix(t.getSeconds())
+        return y + '-' + m + '-' + d + ' ' + h + ':' + mi + ':' + s
+    };
+}).
 filter('netiface.updown', function () {
     return function (input) {
         return input == 'up' ?

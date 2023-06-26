@@ -10,16 +10,22 @@
 
     <div ng-init="tlist()">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 col-sm-6 col-xs-6">
                 <a class="btn btn-default btn-sm" href="#/file">
                     <span class="glyphicon glyphicon-chevron-left"></span> 返回文件管理
                 </a>
-            </div>
-            <div class="col-md-6" ng-show="items.length>0">
-                <button class="btn btn-danger btn-sm pull-right" ng-click="tcleanconfirm()">
-                    <span class="glyphicon glyphicon-trash"></span> 清空回收站
+                <button class="btn btn-danger btn-sm" ng-click="tcleanconfirm()">
+                    <span class="glyphicon glyphicon-remove"></span> 清空回收站
                 </button>
             </div>
+            <!-- <div class="col-md-6 col-sm-6 col-xs-6" ng-show="items.length>0">
+                <button class="btn btn-danger btn-sm pull-right" ng-click="tcleanconfirm()">
+                    <span class="glyphicon glyphicon-remove"></span> 清空回收站
+                </button>
+                <a class="btn btn-default btn-sm pull-right" href="#/file">
+                    <span class="glyphicon glyphicon-chevron-left"></span> 返回文件管理
+                </a>
+            </div> -->
         </div>
 
         <div style="margin-top: 10px;" ng-show="fileloading">
@@ -40,8 +46,8 @@
             </div>
         </div>
 
-        <div ng-show="!fileloading && items.length>0">
-            <table class="table table-hover table-bordered table-condensed" style="margin-top:10px;">
+        <div ng-show="!fileloading && items.length>0" class="table-responsive" style="margin-top:10px;">
+            <table class="table table-hover table-bordered table-condensed">
                 <thead>
                     <tr>
                         <th>名称</th>
@@ -61,8 +67,8 @@
                         <td>{{item.path}}</td>
                         <td>{{item.time}}</td>
                         <td>
-                            <button class="btn btn-default btn-xs" ng-click="restore(item.mount, item.uuid)">还原</button>
-                            <button class="btn btn-default btn-xs" ng-click="tdeleteconfirm(item.name, item.mount, item.uuid)">删除</button>
+                            <button class="btn btn-primary btn-xs" ng-click="restore(item.mount, item.uuid)">还原文件</button>
+                            <button class="btn btn-default btn-xs" ng-click="tdeleteconfirm(item.name, item.mount, item.uuid)">彻底删除</button>
                         </td>
                     </tr>
                 </tbody>

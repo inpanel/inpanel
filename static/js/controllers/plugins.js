@@ -58,8 +58,8 @@ var PluginsHome = [
             //         return r;
             //     };
             //     $routeProvider.
-            //     when('/plugins/acme', {redirectTo: '/plugins/acme/index'}).
-            //     when('/plugins/acme/index', PluginsRouters);
+            //     when('/api/plugins/acme', {redirectTo: '/api/plugins/acme/index'}).
+            //     when('/api/plugins/acme/index', PluginsRouters);
             // }]);
         };
     }

@@ -1,4 +1,4 @@
-var releasetime = '2020-12-03 23:00:00 GMT+0800';
+// var releasetime = '2020-12-03 23:00:00 GMT+0800';
 var _v = new Date(releasetime).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
 var inpanel = angular.module('inpanel', ['inpanel.services', 'inpanel.directives', 'inpanel.filters']);
@@ -13,8 +13,8 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
         return r;
     };
     $routeProvider.
-    when('/', _r('login', LoginCtrl, true)).
-    when('/main', _r('main', MainCtrl)).
+    when('/login', _r('login', LoginCtrl, true)).
+    when('/', _r('main', MainCtrl)).
     when('/service/nginx', _r('service/nginx', ServiceNginxCtrl)).
     when('/service/apache', _r('service/apache', ServiceApacheCtrl)).
     when('/service/lighttpd', _r('service/lighttpd', ServiceLighttpdCtrl)).
@@ -87,7 +87,7 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
     $rootScope.virt = '?';
     $rootScope.checkVirt = function (callback) {
         if ($rootScope.virt != '?') return;
-        Request.get('/query/server.virt', function (data) {
+        Request.get('/api/query/server.virt', function (data) {
             $rootScope.virt = data['server.virt'];
             if (callback) callback.call();
         });
@@ -106,12 +106,12 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
     };
     $rootScope.$proxyroot = location_path;
 }]);
-inpanel.value('version', {
-    'version': '1.1.1',
-    'build': '25',
-    'releasetime': releasetime,
-    'changelog': 'http://inpanel.org/changelog.html'
-});
+// inpanel.value('version', {
+//     'version': '1.1.1',
+//     'build': '26',
+//     'releasetime': releasetime,
+//     'changelog': 'http://inpanel.org/changelog.html'
+// });
 
 var Auth = {
     // auth should be done before enter the module
@@ -123,7 +123,7 @@ var Auth = {
             if (authed) deferred.resolve();
         }, function (status) {
             if (status == 403) {
-                Message.setError('身份认证失败，请<a href="#/">重新登录</a>！');
+                Message.setError('身份认证失败，请<a href="#/login">重新登录</a>！');
             } else {
                 Message.setError('对不起，加载失败！（网络异常或服务器故障）');
             }

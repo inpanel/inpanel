@@ -21,7 +21,7 @@ os_type = system()
 config_path = '/etc/yum.repos.d'
 # print(os_type)
 
-class WebRequestRepoYUM(RequestHandler):
+class RepoYumHander(RequestHandler):
     """Handler for YUM Request.
     """
     def get(self, sec, repo=None):

@@ -97,11 +97,19 @@
                 </form>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='restart'" id="restart" ng-init="restartService()">
-                <div class="well">
-                    <p><span ng-bind-html-unsafe="restartMessage"></span></p>
-                    <p style="display:none;margin-top:20px" ng-show="showRestartBtn">
-                        <button class="btn btn-default" ng-click="restart()" ng-disabled="processing">确定并重启网络</button>
-                    </p>
+                <div class="panel panel-danger">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-refresh"></i>
+                            <span> 重启网络</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <p><span ng-bind-html-unsafe="restartMessage"></span></p>
+                        <p style="display:none;margin-top:20px;" ng-show="showRestartBtn">
+                            <button class="btn btn-default" ng-click="restart()" ng-disabled="processing">确定并重启网络</button>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -28,7 +28,7 @@
             </li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='user'" id="user" ng-init="loadUsers()">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='user'" id="user" ng-init="loadUsers()">
                 <div ng-show="loading.user"><div waiting></div></div>
                 <table ng-hide="loading.user" class="table table-hover table-bordered table-condensed">
                     <thead>
@@ -60,7 +60,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='group'" id="group" ng-init="loadGroups()">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='group'" id="group" ng-init="loadGroups()">
                 <div ng-show="loading.group"><div waiting></div></div>
                 <table ng-hide="loading.group" class="table table-hover table-bordered table-condensed">
                     <thead>

@@ -5,7 +5,7 @@
 
 <div id="main" ng-show="loaded" style="display:none">
     <div class="module-header">
-        <h3>欢迎使用 InPanel ！</h3>
+        <h3>欢迎使用 InPanel 控制面板</h3>
         <p>
             当前版本：v{{version.version}} b{{version.build}}&nbsp;&nbsp;
             <button class="btn btn-default btn-xs" ng-click="checkUpdate()" style="display:none" ng-show="!detectVer">
@@ -15,7 +15,7 @@
         </p>
     </div>
 
-    <div class="tabbable" ng-init="loadInfo('**')">
+    <div class="tabbable" ng-init="load()">
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='server'"><a href="#server" ng-click="sec('server')" data-toggle="tab">状态概览</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='network'"><a href="#network" ng-click="sec('network')" data-toggle="tab">网络信息</a></li>
@@ -31,7 +31,7 @@
             </li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='server'" id="server">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='server'" id="server">
                 <table class="table">
                     <thead>
                         <tr>
@@ -93,7 +93,7 @@
                                         <td ng-bind-html-unsafe="info['server.loadavg']['15min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']">
                                     </tr>
                                 </table>
-                                </td>
+                            </td>
                         </tr>
                         <tr>
                             <td>内存概览：</td>
@@ -199,7 +199,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='network'" id="network">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='network'" id="network">
                 <table class="table">
                     <thead>
                         <tr>
@@ -275,7 +275,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='service'" id="service">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='service'" id="service">
                 <table class="table">
                     <thead>
                         <tr>
@@ -356,7 +356,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
                 <table class="table">
                     <thead>
                         <tr>
@@ -365,7 +365,7 @@
                     </thead>
                     <tbody>
                         <tr ng-show="info['server.virt']">
-                            <td style="width:100px">虚拟平台：</td>
+                            <td style="width:100px">系统平台：</td>
                             <td>{{ info['server.virt'] }}</td>
                         </tr>
                         <tr>
@@ -388,7 +388,7 @@
                 </table>
 
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='hardware'" id="hardware">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='hardware'" id="hardware">
                 <table class="table">
                     <thead>
                         <tr>

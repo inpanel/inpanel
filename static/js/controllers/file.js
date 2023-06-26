@@ -51,7 +51,7 @@ var FileCtrl = [
                     if (route_file) $scope.editfile(route_file);
                 });
             } else { // load from history
-                Request.post('/operation/file', {
+                Request.post('/api/operation/file', {
                     'action': 'last'
                 }, function(data) {
                     if (data.code == 0) {
@@ -81,7 +81,7 @@ var FileCtrl = [
 
             var curpath = $scope.path;
             $scope.fileloading = true;
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'listdir',
                 'path': curpath,
                 'showhidden': $scope.showhidden,
@@ -91,7 +91,7 @@ var FileCtrl = [
                     $scope.items = data.data;
                     for (var i = 0; i < $scope.items.length; i++) {
                         var path = curpath.split('/')[0] == '' ? curpath.substr(1) : curpath;
-                        $scope.items[i]['download'] = encodeURIComponent(path + '/' + $scope.items[i].name);
+                        $scope.items[i]['uri'] = encodeURIComponent(path + '/' + $scope.items[i].name);
                     }
                     $scope.curpath = curpath;
                     $scope.lastpath = curpath;
@@ -112,7 +112,7 @@ var FileCtrl = [
                 oldname = name;
             else
                 delete $scope.selects[oldname];
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'getitem',
                 'path': $scope.curpath + '/' + name
             }, function(data) {
@@ -174,7 +174,7 @@ var FileCtrl = [
             $scope.listdir(patharr.join('/') + '/', true);
         };
         $scope.editfile = function(path) {
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'fread',
                 'path': $scope.curpath + '/' + path,
                 'remember': remember_file
@@ -204,12 +204,12 @@ var FileCtrl = [
                 $scope.confirm = function() {
                     $('#edit').hide();
                     $('#list').show();
-                    Request.post('/operation/file', { 'action': 'fclose' }, false, false, true);
+                    Request.post('/api/operation/file', { 'action': 'fclose' }, false, false, true);
                 };
             } else {
                 $('#edit').hide();
                 $('#list').show();
-                Request.post('/operation/file', { 'action': 'fclose' }, false, false, true);
+                Request.post('/api/operation/file', { 'action': 'fclose' }, false, false, true);
             }
         };
         $scope.savefile = function() {
@@ -217,7 +217,7 @@ var FileCtrl = [
                 Message.setInfo('文件未修改，无须保存！');
                 return;
             }
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'fwrite',
                 'path': $scope.filepath,
                 'charset': $scope.filecharset,
@@ -235,7 +235,7 @@ var FileCtrl = [
             $scope.newname_name = '';
             $('#newname').modal();
             $scope.newname = function() {
-                Request.post('/operation/file', {
+                Request.post('/api/operation/file', {
                     'action': 'createfolder',
                     'path': $scope.curpath,
                     'name': $scope.newname_name
@@ -252,7 +252,7 @@ var FileCtrl = [
             $scope.newname_name = '';
             $('#newname').modal();
             $scope.newname = function() {
-                Request.post('/operation/file', {
+                Request.post('/api/operation/file', {
                     'action': 'createfile',
                     'path': $scope.curpath,
                     'name': $scope.newname_name
@@ -269,7 +269,10 @@ var FileCtrl = [
         $scope.doupload = function() {
             var pathinfo = $('#uploadform').find('input[name=ufile]').val().split(/[\\\/]/);
             var name = pathinfo[pathinfo.length - 1];
-            Request.post('/operation/file', {
+            if (!name) {
+                return;
+            }
+            Request.post('/api/operation/file', {
                 'action': 'getitem',
                 'path': $scope.curpath + '/' + name
             }, function(data) {
@@ -291,8 +294,8 @@ var FileCtrl = [
                 Backend.call(
                     $scope,
                     module,
-                    '/backend/wget',
-                    '/backend/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
+                    '/api/backend/wget',
+                    '/api/backend/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
                         'url': $scope.downloadurl,
                         'path': $scope.curpath
                     }, {
@@ -313,7 +316,7 @@ var FileCtrl = [
             $scope.newname_name = oldname;
             $('#newname').modal();
             $scope.newname = function() {
-                Request.post('/operation/file', {
+                Request.post('/api/operation/file', {
                     'action': 'rename',
                     'path': $scope.curpath + '/' + oldname,
                     'name': $scope.newname_name
@@ -369,8 +372,8 @@ var FileCtrl = [
                 Backend.call(
                     $scope,
                     module,
-                    '/backend/copy',
-                    '/backend/copy_' + srcpath + '_' + despath, {
+                    '/api/backend/copy',
+                    '/api/backend/copy_' + srcpath + '_' + despath, {
                         'srcpath': srcpath,
                         'despath': despath
                     }, {
@@ -389,8 +392,8 @@ var FileCtrl = [
                 Backend.call(
                     $scope,
                     module,
-                    '/backend/move',
-                    '/backend/move_' + srcpath + '_' + despath, {
+                    '/api/backend/move',
+                    '/api/backend/move_' + srcpath + '_' + despath, {
                         'srcpath': srcpath,
                         'despath': despath
                     }, {
@@ -406,7 +409,7 @@ var FileCtrl = [
                     }
                 );
             } else if (type == 'link') {
-                Request.post('/operation/file', {
+                Request.post('/api/operation/file', {
                     'action': 'link',
                     'srcpath': srcpath,
                     'despath': despath
@@ -426,7 +429,7 @@ var FileCtrl = [
             for (name in $scope.clipboard.items) break;
             if (!name) return;
             var type = $scope.clipboard.items[name];
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'exist',
                 'name': newname ? newname : name,
                 'path': $scope.curpath
@@ -459,7 +462,7 @@ var FileCtrl = [
             });
         };
         $scope.move2trash = function(name) {
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'delete',
                 'paths': $scope.curpath + '/' + name
             }, function(data) {
@@ -490,8 +493,8 @@ var FileCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/compress',
-                '/backend/compress_' + zippath + '_' + srcpath, {
+                '/api/backend/compress',
+                '/api/backend/compress_' + zippath + '_' + srcpath, {
                     'zippath': zippath,
                     'paths': srcpath
                 }, {
@@ -514,8 +517,8 @@ var FileCtrl = [
                 Backend.call(
                     $scope,
                     module,
-                    '/backend/decompress',
-                    '/backend/decompress_' + zippath + '_', {
+                    '/api/backend/decompress',
+                    '/api/backend/decompress_' + zippath + '_', {
                         'zippath': zippath
                     }, {
                         'success': function(data) {
@@ -533,7 +536,7 @@ var FileCtrl = [
                 $('#selector').modal('hide');
                 // check if file exists in the path
                 Message.setInfo('正在检测目录...', true);
-                Request.post('/operation/file', {
+                Request.post('/api/operation/file', {
                     'action': 'listdir',
                     'path': path,
                     'showhidden': true,
@@ -546,8 +549,8 @@ var FileCtrl = [
                             Backend.call(
                                 $scope,
                                 module,
-                                '/backend/decompress',
-                                '/backend/decompress_' + zippath + '_' + path, {
+                                '/api/backend/decompress',
+                                '/api/backend/decompress_' + zippath + '_' + path, {
                                     'zippath': zippath,
                                     'despath': path
                                 }, {
@@ -609,7 +612,7 @@ var FileCtrl = [
                 Message.setError('请先选择文件或目录！');
                 return;
             }
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'delete',
                 'paths': paths.join(',')
             }, function(data) {
@@ -652,8 +655,8 @@ var FileCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/compress',
-                '/backend/compress_' + zippath + '_' + srcpaths.join(','), {
+                '/api/backend/compress',
+                '/api/backend/compress_' + zippath + '_' + srcpaths.join(','), {
                     'zippath': zippath,
                     'paths': srcpaths.join(',')
                 }, {
@@ -676,7 +679,7 @@ var FileCtrl = [
                 }
             }
             if (!$scope.users) {
-                Request.post('/operation/user', {
+                Request.post('/api/operation/user', {
                     'action': 'listuser',
                     'fullinfo': false
                 }, function(data) {
@@ -686,7 +689,7 @@ var FileCtrl = [
                 }, false, true);
             }
             if (!$scope.groups) {
-                Request.post('/operation/user', {
+                Request.post('/api/operation/user', {
                     'action': 'listgroup',
                     'fullinfo': false
                 }, function(data) {
@@ -716,8 +719,8 @@ var FileCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/chown',
-                '/backend/chown_' + paths, {
+                '/api/backend/chown',
+                '/api/backend/chown_' + paths, {
                     'paths': paths,
                     'user': $scope.chown_user,
                     'group': $scope.chown_group,
@@ -774,8 +777,8 @@ var FileCtrl = [
             Backend.call(
                 $scope,
                 module,
-                '/backend/chmod',
-                '/backend/chmod_' + paths, {
+                '/api/backend/chmod',
+                '/api/backend/chmod_' + paths, {
                     'paths': paths,
                     'perms': perms,
                     'recursively': $scope.chmod_recursively
@@ -823,7 +826,7 @@ var FileTrashCtrl = [
         $scope.fileloading = false;
         $scope.tlist = function() {
             $scope.fileloading = true;
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'tlist'
             }, function(data) {
                 if (data.code == 0) {
@@ -833,7 +836,7 @@ var FileTrashCtrl = [
             });
         };
         $scope.restore = function(mount, uuid) {
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'trestore',
                 'mount': mount,
                 'uuid': uuid
@@ -852,7 +855,7 @@ var FileTrashCtrl = [
             };
         };
         $scope.tdelete = function(mount, uuid) {
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'titem',
                 'mount': mount,
                 'uuid': uuid
@@ -862,12 +865,12 @@ var FileTrashCtrl = [
                     Backend.call(
                         $scope,
                         module,
-                        '/backend/remove',
-                        '/backend/remove_' + path, {
+                        '/api/backend/remove',
+                        '/api/backend/remove_' + path, {
                             'paths': path
                         },
                         function() {
-                            Request.post('/operation/file', {
+                            Request.post('/api/operation/file', {
                                 'action': 'tdelete',
                                 'mount': mount,
                                 'uuid': uuid
@@ -890,7 +893,7 @@ var FileTrashCtrl = [
             };
         };
         $scope.tclean = function() {
-            Request.post('/operation/file', {
+            Request.post('/api/operation/file', {
                 'action': 'trashs'
             }, function(data) {
                 if (data.code == 0) {
@@ -898,8 +901,8 @@ var FileTrashCtrl = [
                     Backend.call(
                         $scope,
                         module,
-                        '/backend/remove',
-                        '/backend/remove_' + trashs, {
+                        '/api/backend/remove',
+                        '/api/backend/remove_' + trashs, {
                             'paths': trashs
                         },
                         function() {
