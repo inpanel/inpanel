@@ -659,6 +659,22 @@ class SettingHandler(RequestHandler):
             self.write({'username': username, 'passwordcheck': passwordcheck})
             self.finish()
 
+        elif section == 'runtime':
+            mode = self.config.get('runtime', 'mode')
+            loginlockexpire = self.config.getint('runtime', 'loginlockexpire')
+            loginfails = self.config.getint('runtime', 'loginfails')
+            loginlock = self.config.getboolean('runtime', 'loginlock')
+            if not mode:
+                mode = 'prod'
+                self.config.set('runtime', 'mode', 'prod')
+            self.write({
+                'mode': mode,
+                'loginlockexpire': loginlockexpire,
+                'loginfails': loginfails,
+                'loginlock': loginlock
+            })
+            self.finish()
+
         elif section == 'server':
             ip = self.config.get('server', 'ip')
             port = self.config.get('server', 'port')

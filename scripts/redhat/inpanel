@@ -1,0 +1,126 @@
+#!/bin/bash
+#
+# Copyright (c) 2017, Jackson Dou
+# All rights reserved.
+#
+# InPanel is distributed under the terms of the New BSD License.
+# The full license can be found in 'LICENSE'.
+#
+# InPanel control script for RedHat.
+
+set -e
+
+# Source function library.
+if [ -f /etc/rc.d/init.d/functions ];then
+   . /etc/rc.d/init.d/functions
+else
+   echo 'not found file /etc/rc.d/init.d/functions'
+   exit
+fi
+
+# Source networking configuration.
+if [ -f /etc/sysconfig/network ];then
+   . /etc/sysconfig/network
+else
+   echo 'not found file /etc/sysconfig/network'
+   exit
+fi
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+NAME='inpanel'
+DAEMON='/usr/local/inpanel/server.py'
+PIDFILE='/var/run/inpanel.pid'
+LOCKFILE='/var/lock/subsys/inpanel'
+
+start() {
+    [ -x $inpanel ] || exit 5
+    echo -n $"Starting InPanel: "
+    daemon --pidfile="$PIDFILE" "$DAEMON &"
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $LOCKFILE
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping InPanel: "
+    killproc -p "$PIDFILE" $DAEMON || echo "InPanel is not running"
+    #killproc $prog -TERM
+    retval=$?
+    if [ $retval -eq 0 ]; then
+        if [ "$CONSOLETYPE" != "serial" ]; then
+           echo -en "\\033[16G"
+        fi
+        while rh_status_q
+        do
+            sleep 1
+            echo -n $"."
+        done
+        rm -f $LOCKFILE
+    fi
+    rm -f $PIDFILE
+    echo
+    return $retval
+}
+
+restart() {
+    stop
+    sleep 1
+    start
+}
+
+rh_status() {
+    status -p "$PIDFILE" $DAEMON
+    #status $prog
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+show_help() {
+    echo 'Usage: inpanel {start|stop|status|restart|config|uninstall}'
+    exit 2
+}
+
+if [ $# -lt 1 ]; then
+    show_help
+fi
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    status|status_q)
+        rh_$1
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 7
+        restart
+        ;;
+    config)
+        . /usr/local/bin/inpanel-config
+        if [ $# != 3 ]; then
+            config_help
+        else
+            config_do $2 $3
+        fi
+        ;;
+    uninstall)
+        . /usr/local/bin/inpanel-uninstall
+        uninstall_do $@
+        ;;
+    *)
+        show_help
+        ;;
+esac

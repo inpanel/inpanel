@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# Copyright (c) 2017, Jackson Dou
+# All rights reserved.
+#
+# InPanel is distributed under the terms of the New BSD License.
+# The full license can be found in 'LICENSE'.
+#
+# InPanel uninstall script.
+
+set -e
+
+if [ $(whoami) != 'root' ]; then
+    echo "The command must be run as root."
+    exit 1
+fi
+
+UNINSTALL='/usr/local/bin/inpanel-uninstall'
+
+uninstall_do() {
+    echo 'Deleting InPanel... '
+    inpanel stop
+    rm -f /etc/init.d/inpanel
+    # delete inpanel binary file
+    # rm -f /usr/local/inpanel/server.py
+    # delete inpanel control script
+    rm -f /usr/local/bin/inpanel
+    # delete inpanel configuration script
+    rm -f /usr/local/bin/inpanel-config
+    # backup data
+    test ! -d /root/inpanel_backup_data && mkdir /root/inpanel_backup_data
+    mv /usr/local/inpanel/data /root/inpanel_backup_data
+    echo 'Backup InPanel Config to /root/inpanel_backup_data'
+    # delete uninstall script
+    rm -f $UNINSTALL
+    echo 'InPanel uninstalled successfully !'
+}
+
+if [ $0 = $UNINSTALL ]; then
+    # The script is run directly from the command line
+    uninstall_do $@
+    # else
+    # The script is run from external call
+fi
