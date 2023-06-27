@@ -1,15 +1,25 @@
 # InPanel
 
+English | [简体中文](README-zh.md)
 
-> The goal of this project is to make the easiest, fastest, and most painless way of Linux VPS management. This project has been forked from VPSMate since 11 Jan 2017 but changed a lot.
+## Introduction
 
-Official Website: [inpanel.org](https://inpanel.org "InPanel")
+InPanel is an open source Linux server management tool, the goal of this project is to make server management easy and fast.
 
-Author: [Jackson Dou](https://github.com/jksdou "Jackson Dou")
+## Features
 
-#### Installation
+1. Free, concise, and open source
+2. Fast in-line installation, small and resource-saving
+3. Supports CentOS/Redhat 5.4+, 6.x, 7.x, 8.x
+4. Software Management Mechanism Based on Distribution Software Source
+5. Easily build Linux + Nginx + MySQL + PHP environments
+6. Powerful online file management and recycle bin mechanism
+7. Quickly create and install multiple sites
+8. Useful System Tools
 
-```shell
+## Installation
+
+```bash
 # stable version
 curl -O https://raw.githubusercontent.com/inpanel/inpanel/main/install.py
 python install.py
@@ -19,40 +29,33 @@ curl -O https://raw.githubusercontent.com/inpanel/inpanel/dev/install.py
 python install.py --dev
 ```
 
-#### Uninstall
+## Uninstall
 
-```shell
+```bash
 service inpanel stop
 rm -rf /usr/local/inpanel
 rm -f /etc/init.d/inpanel
 ```
 
-#### Username and Password
+## Admin Username and Password
 
-```shell
+```bash
 /usr/local/inpanel/config.py username 'your-username'
 /usr/local/inpanel/config.py password 'your-password'
 ```
 
-#### Features
+## Issues
 
-- 免费、简洁、开源
-- 快速在线安装、小巧且节省资源
-- 当前支持 CentOS/Redhat 5.4+、6.x、7.x、8.x
-- 基于发行版软件源的软件管理机制
-- 轻松构建 Linux + Nginx + MySQL + PHP 环境
-- 强大的在线文件管理和回收站机制
-- 快速创建和安装多种站点
-- 丰富实用的系统工具
+Please file an issue at [Issues](https://github.com/inpanel/inpanel/issues).
 
-#### from VPSMate to InPanel
+## License
 
-本管理面板只是在 UI 层面对系统服务及功能进行管理配置，并不会在系统中生成多余的依赖及配置文件，不管 VPSMate 还是 InPanel，只是工具而已，卸载或安装，对系统已配置好的服务是没有影响的
+InPanel is released under the [BSD 3-Clause License](./LICENSE).
 
-~~现阶段两者使用同一个进程服务文件，所以**只需要卸载 VPSMate ，再安装 InPanel 即可**~~
+## Author
 
-从版本 v1.1.1b16 开始，不再使用 vpsmate 进程名，改用进程名为 intranet，在全新安装面板时，可以对已安装的 VPSMate 进行保留（或者删除）操作
+[Jackson Dou](https://github.com/jksdou 'Jackson Dou')
 
-从版本 v1.1.1b18 开始，不再使用 intranet 进程名，改用进程名为 inpanel，统一标识为"inpanel"
+## Information
 
-> 希望你用得愉快 ！
+Official Website: [inpanel.org](https://inpanel.org 'InPanel')
