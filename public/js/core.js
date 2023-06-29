@@ -115,7 +115,7 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
 
 var Auth = {
     // auth should be done before enter the module
-    auth: function ($q, Auth, Message) {
+    auth: function ($q, $location, Auth, Message) {
         var deferred = $q.defer();
         Message.setInfo('正在加载，请稍候...', true);
         Auth.required(function (authed) {
@@ -124,6 +124,7 @@ var Auth = {
         }, function (status) {
             if (status == 403) {
                 Message.setError('身份认证失败，请<a href="#/login">重新登录</a>！');
+                $location.path('/login');
             } else {
                 Message.setError('对不起，加载失败！（网络异常或服务器故障）');
             }
@@ -193,7 +194,7 @@ var Auth = {
         }
     }
 };
-Auth.auth.$inject = ['$q', 'Auth', 'Message'];
+Auth.auth.$inject = ['$q', '$location', 'Auth', 'Message'];
 Auth.auto_auth.$inject = ['$rootScope', '$location', 'Auth', 'Timeout'];
 
 var getCookie = function (name) {
