@@ -25,6 +25,7 @@ from subprocess import PIPE, STDOUT, Popen
 from uuid import uuid4
 
 import core
+# import httplib
 import pyDes
 import tornado
 import tornado.gen
@@ -46,7 +47,9 @@ from tornado.escape import utf8 as _u
 
 try:
     from shlex import quote  # For Python 3
+    from urllib.request import urlopen, Request  # Python 3
 except ImportError:
+    from urllib2 import urlopen, Request  # Python 2
     from pipes import quote  # For Python 2
 
 
@@ -698,7 +701,8 @@ class SettingHandler(RequestHandler):
             # detect new version daily
             if force or time.time() > lastcheck + 86400:
                 http = tornado.httpclient.AsyncHTTPClient()
-                response = yield tornado.gen.Task(http.fetch, core_api['latest'])
+                response = yield tornado.gen.Task(utils.httpclient, core_api['latest'])
+                # response = utils.httpclient(core_api['latest'])
                 if response.error:
                     self.write({'code': -1, 'msg': u'获取新版本信息失败！'})
                 else:
@@ -2694,7 +2698,7 @@ class BackendHandler(RequestHandler):
             return
         versioninfo = tornado.escape.json_decode(response.body)
         downloadurl = versioninfo['download']
-        initscript = u'%s/scripts/init.d/%s/inpanel' % (root_path, distname)
+        initscript = u'%s/scripts/%s/inpanel' % (root_path, distname)
         steps = [
             {
                 'desc': u'正在备份当前配置文件...',
