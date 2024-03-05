@@ -16,8 +16,23 @@
                         <span class="input-group-addon">当前目录</span>
                         <input class="form-control" type="text" ng-model="path">
                         <div class="input-group-btn">
-                            <button class="btn btn-default btn-sm" type="submit" title="刷新"><span class="glyphicon glyphicon-refresh"></span>
+                            <button class="btn btn-default btn-sm" type="submit" title="刷新"><span class="glyphicon glyphicon-refresh"></span></button>
                             <button class="btn btn-default btn-sm" type="submit" title="打开"><span class="glyphicon glyphicon-menu-right"></span></button>
+                            <button class="btn btn-default btn-sm dropdown-toggle" type="button" title="快捷操作" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></button>
+                            <ul class="dropdown-menu dropdown-menu-right" style="max-height: 500px; overflow-x: auto;">
+                                <li class="dropdown-header"><span class="glyphicon glyphicon-star"></span> 常用目录</li>
+                                <li><a ng-click="listdir('/home')">用户目录 /home</a></li>
+                                <li><a ng-click="listdir('/var/www')">站点目录 /var/www</a></li>
+                                <li><a ng-click="listdir('/etc')">配置目录 /etc</a></li>
+                                <li><a ng-click="listdir('/etc/nginx')">Nginx配置 /etc/nginx</a></li>
+                                <li><a ng-click="listdir('/usr/local/inpanel')">InPanel目录 /usr/local/inpanel</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li class="dropdown-header"><span class="glyphicon glyphicon-time"></span> 浏览历史（最大30条）</li>
+                                <li ng-repeat="path in path_history" ng-show="path_history.length > 0">
+                                    <a ng-click="listdir(path)">{{$index+1}}. {{path}}</a>
+                                </li>
+                                <li ng-show="path_history.length < 1"><a ng-click="listdir(lastpath)">1. {{lastpath}}</a></li>
+                            </ul>
                         </div>
                     </div>
                 </form>

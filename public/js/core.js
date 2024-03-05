@@ -201,3 +201,21 @@ var getCookie = function (name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
     return r ? r[1] : undefined;
 };
+var set_cookie = function (name, value) {
+  var Days = 30;
+  var exp = new Date();
+  exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
+  document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + exp.toGMTString();
+}
+var get_cookie = function(name) {
+  var arr, reg = new RegExp('(^| )' + name + '=([^;]*)(;|$)');
+  return (arr = document.cookie.match(reg)) ? decodeURIComponent(arr[2]) : null;
+}
+var del_cookie = function (name) {
+    var exp = new Date();
+    exp.setTime(exp.getTime() - 1);
+    var cval = get_cookie(name);
+    if (cval != null) {
+        document.cookie= name + "="+cval+";expires="+exp.toGMTString();
+    }
+}

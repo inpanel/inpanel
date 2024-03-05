@@ -18,6 +18,7 @@ var FileCtrl = [
             'items': {} // name: copy|cut|link
         };
         $scope.confirm = $scope.cancel = function() {};
+        $scope.path_history = [];
 
         var parse_path = function() {
             // parse dir to array
@@ -35,8 +36,40 @@ var FileCtrl = [
             $scope.pathinfos = pathinfos;
         };
 
+        var set_history_path = function(p) {
+            if ($scope.path_history.length == 0) {
+                $scope.path_history.unshift(p);
+            } else {
+                var num = $scope.path_history.indexOf(p);
+                if (num > -1) {
+                    $scope.path_history.splice(num, 1)
+                    $scope.path_history.unshift(p);
+                } else if (num == -1) {
+                    $scope.path_history.unshift(p);
+                }
+            }
+            if ($scope.path_history.length > 30) {
+                $scope.path_history.length = 30;
+            }
+            set_cookie('path_history', JSON.stringify($scope.path_history));
+        };
+        var get_history_path = function() {
+            var path_tmp = get_cookie('path_history');
+            if (path_tmp) {
+                try {
+                    path_tmp = JSON.parse(path_tmp);
+                    if (Object.prototype.toString.call(path_tmp) == '[object Array]') {
+                        $scope.path_history = path_tmp;
+                    };
+                } catch (error) {
+                    $scope.path_history = [];
+                }
+            }
+        };
+
         $scope.loaded = false;
         $scope.load = function() {
+            get_history_path();
             if (route_path || route_file) { // load the specified path and file
                 $scope.loaded = true;
                 remember_path = false;
@@ -95,6 +128,7 @@ var FileCtrl = [
                     }
                     $scope.curpath = curpath;
                     $scope.lastpath = curpath;
+                    set_history_path(curpath);
                     if (clearselect) {
                         $scope.selects = {};
                         $scope.selectall = false;

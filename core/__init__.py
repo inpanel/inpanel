@@ -13,8 +13,8 @@ import platform
 
 name = 'InPanel'
 version = '1.1.1'
-build = '29'
-releasetime = '2023-07-06 16:51:00 GMT+0800'
+build = '30'
+releasetime = '2024-03-06 16:51:00 GMT+0800'
 __version__ = '.'.join([version, build])
 
 version_info = {
