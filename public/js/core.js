@@ -27,6 +27,7 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/service/redis', _r('service/redis', ServiceRedisCtrl)).
     when('/service/memcache', _r('service/memcache', ServiceMemcacheCtrl)).
     when('/service/mongodb', _r('service/mongodb', ServiceMongoDBCtrl)).
+    when('/service/minio', _r('service/minio', ServiceMinIOCtrl)).
     when('/service/php', _r('service/php', ServicePHPCtrl)).
     when('/service/sendmail', _r('service/sendmail', ServiceSendmailCtrl)).
     when('/service/ssh', _r('service/ssh', ServiceSSHCtrl)).

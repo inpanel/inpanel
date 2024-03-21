@@ -717,7 +717,39 @@ var ServiceMongoDBCtrl = [
         };
     }
 ];
+var ServiceMinIOCtrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.minio';
+        Module.init(module, 'MinIO');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
 
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.minio', function (res) {
+                var info = res['service.minio'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
 var ServicePHPCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function ($scope, $routeParams, Module, Request) {

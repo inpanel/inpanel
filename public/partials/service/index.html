@@ -13,6 +13,7 @@
             <li ng-class="'active' | iftrue:activeTabName=='http'"><a href="#http" ng-click="sec('http')" data-toggle="tab">HTTP</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='database'"><a href="#database" ng-click="sec('database')" data-toggle="tab">数据库</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='storage'"><a href="#storage" ng-click="sec('storage')" data-toggle="tab">文件存储</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='appengine'"><a href="#appengine" ng-click="sec('appengine')" data-toggle="tab">脚本引擎</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='mail'"><a href="#mail" ng-click="sec('mail')" data-toggle="tab">邮件</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统</a></li>
@@ -64,6 +65,14 @@
                             <td class="muted">基于 Nginx 的高效稳定安全的 HTTP 服务器软件</td>
                             <td style="width:150px">
                                 <div srvminiop ng-init="name='Tengine';service='tengine';urlname='tengine'"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width:100px">Caddy(开发中)</td>
+                            <td style="width:60px" ng-bind-html-unsafe="info['service.caddy']['status'] | service.status"></td>
+                            <td class="muted">自动 SSL 的 HTTP 服务器软件</td>
+                            <td style="width:150px">
+                                <div srvminiop ng-init="name='Caddy';service='caddy';urlname='caddy'"></div>
                             </td>
                         </tr>
                     </tbody>
@@ -131,7 +140,7 @@
                         <tr>
                             <td>Redis</td>
                             <td ng-bind-html-unsafe="info['service.redis']['status'] | service.status"></td>
-                            <td class="muted">高性能内存数据库</td>
+                            <td class="muted">高性能内存KV数据库</td>
                             <td>
                                 <div srvminiop ng-init="name='Redis';service='redis';urlname='redis'"></div>
                             </td>
@@ -139,7 +148,7 @@
                         <tr>
                             <td>Memcache</td>
                             <td ng-bind-html-unsafe="info['service.memcached']['status'] | service.status"></td>
-                            <td class="muted">内存数据库</td>
+                            <td class="muted">高性能的分布式内存对象缓存系统</td>
                             <td>
                                 <div srvminiop ng-init="name='Memcache';service='memcached';urlname='memcache'"></div>
                             </td>
@@ -147,9 +156,36 @@
                         <tr>
                             <td>MongoDB</td>
                             <td ng-bind-html-unsafe="info['service.mongod']['status'] | service.status"></td>
-                            <td class="muted">分布式高性能的数据库服务器</td>
+                            <td class="muted">分布式高性能的NOSQL数据库服务器</td>
                             <td>
                                 <div srvminiop ng-init="name='MongoDB';service='mongod';urlname='mongodb'"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>PostgreSQL[未完成]</td>
+                            <td ng-bind-html-unsafe="info['service.postgresql']['status'] | service.status"></td>
+                            <td class="muted">功能强大的开源数据库</td>
+                            <td>
+                                <div srvminiop ng-init="name='PostgreSQL';service='postgresql';urlname='postgresql'"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='storage'" id="storage">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th colspan="4">文件存储服务</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:100px">MinIO</td>
+                            <td style="width:60px" ng-bind-html-unsafe="info['service.minio']['status'] | service.status"></td>
+                            <td class="muted">MinIO是一个开源的轻量级对象存储服务</td>
+                            <td style="width:150px">
+                                <div srvminiop ng-init="name='MinIO';service='minio';urlname='minio'"></div>
                             </td>
                         </tr>
                     </tbody>

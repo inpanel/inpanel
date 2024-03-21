@@ -29,6 +29,7 @@ class Service(object):
         'redis': False,
         'memcached': False,
         'mongod': False,
+        'minio': False,
         'php-fpm': False,
         'sendmail': False,
         'postfix': False,
