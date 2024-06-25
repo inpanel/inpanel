@@ -14,7 +14,7 @@
     </div>
     <div class="tabbable">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='normal'"><a href="#normal" ng-click="tab_sec('normal')" data-toggle="tab">普通任务</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='normal'"><a href="#normal" ng-click="tab_sec('normal')" data-toggle="tab">用户任务</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="tab_sec('system')" data-toggle="tab">系统任务</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='environment'"><a href="#environment" ng-click="tab_sec('environment')" data-toggle="tab">环境变量</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='local'"><a href="#local" ng-click="tab_sec('local')" data-toggle="tab">本地任务</a></li>
@@ -27,7 +27,7 @@
                 <div ng-show="!loading.normal">
                     <div class="row">
                         <div class="col-md-6 col-sm-6 col-xs-5">
-                            <h5>普通任务列表</h5>
+                            <h5>用户任务列表</h5>
                         </div>
                         <div class="col-md-6 col-sm-6 col-xs-7">
                             <div class="form-inline pull-right">
@@ -43,13 +43,13 @@
                         <table class="table table-hover table-bordered table-condensed">
                             <thead>
                                 <tr>
-                                    <th style="width: 50px;">ID</th>
+                                    <th style="width: 50px;">序号</th>
+                                    <th style="width: 65px;">用户</th>
                                     <th style="width: 50px;">分钟</th>
                                     <th style="width: 50px;">小时</th>
                                     <th style="width: 50px;">天</th>
                                     <th style="width: 50px;">月份</th>
                                     <th style="width: 65px;">星期</th>
-                                    <th style="width: 65px;">用户</th>
                                     <th>命令</th>
                                     <th style="width: 100px;">操作</th>
                                 </tr>
@@ -60,12 +60,12 @@
                                 </tr>
                                 <tr ng-repeat="info in cron_normal.list">
                                     <td>{{info.id}}</td>
+                                    <td>{{info.user}}</td>
                                     <td>{{info.minute}}</td>
                                     <td>{{info.hour}}</td>
                                     <td>{{info.day}}</td>
                                     <td>{{info.month}}</td>
                                     <td>{{info.weekday}}</td>
-                                    <td>{{info.user}}</td>
                                     <td><code>{{info.command}}</code></td>
                                     <td>
                                         <button class="btn btn-default btn-xs" ng-click="cron_detail(info, 'normal')">查看</button>
