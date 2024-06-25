@@ -7,3 +7,4 @@ test/
 dist/
 build/
 todo/
+*config.ini
