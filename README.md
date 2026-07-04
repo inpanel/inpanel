@@ -37,10 +37,8 @@ python install.py --dev
 
 ```bash
 service inpanel stop
-rm -rf /usr/local/inpanel/inpaneld
-rm -rf /usr/local/bin/inpanel
-rm -rf /usr/local/bin/inpanel-config
-rm -rf /usr/local/bin/inpanel-uninstall
+rm -rf /usr/local/inpanel/inpanel
+rm -rf /usr/local/bin/inpanelctl
 rm -f /etc/init.d/inpanel
 ```
 

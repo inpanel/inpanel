@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of The New BSD License.
@@ -12,18 +12,19 @@
 import getpass
 import os
 import platform
+from pathlib import Path
 import shlex
 import socket
 import subprocess
 import sys
-# import re
 import getopt
 import readline
 
-try:
-    import urllib2 as request # For Python 2
-except ImportError:
-    import urllib.request as request  # For Python 3
+import urllib.request as request
+
+# Add core directory to path for package_manager import
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'core'))
+from mod.package import get_package_manager, resolve_package_names
 
 
 
@@ -43,20 +44,14 @@ class Install(object):
             print('')
             sys.exit()
 
-        if sys.version_info[0] < 3:
-            self.input = raw_input
-        else:
-            self.input = input
-        if hasattr(platform, 'linux_distribution'):
-            self.dist = platform.linux_distribution(full_distribution_name=0)
-        else:
-            self.dist = platform.dist()
+        self.input = input
+        self.dist = self._get_linux_dist()
         self.arch = platform.machine()
         if self.arch != 'x86_64':
             self.arch = 'i386'
         self.initd_script = '/etc/init.d/inpanel'
         self.installpath = '/usr/local/inpanel'
-        self.listen_port = 8888
+        self.listen_port = 14433
         self.username = 'admin'
         self.password = 'admin'
         self.repository = 'https://github.com/inpanel/inpanel.git'
@@ -65,6 +60,7 @@ class Install(object):
         self.sys_version = self.dist[1]
         self.sys_version = self.sys_version[0:self.sys_version.find('.', self.sys_version.index('.') + 1)]
         self.os = platform.system()
+        self.pm = get_package_manager()
         print('Platform %s %s [%s]' % (self.dist[0], self.dist[1], self.os))
 
     def handle_options(self):
@@ -109,6 +105,66 @@ class Install(object):
         else:
             return subprocess.call(shlex.split(cmd))
 
+    def _get_linux_dist(self):
+        '''Get Linux distribution info using standard library
+        Returns tuple: (dist_id, version, codename)
+        '''
+        dist_id = ''
+        version = ''
+        codename = ''
+
+        # Try /etc/os-release first (most modern distributions)
+        if Path('/etc/os-release').exists():
+            with open('/etc/os-release', 'r') as f:
+                info = {}
+                for line in f:
+                    if '=' in line:
+                        key, val = line.strip().split('=', 1)
+                        info[key] = val.strip('"')
+                dist_id = info.get('ID', '').lower()
+                version = info.get('VERSION_ID', '').strip('"')
+                codename = info.get('VERSION_CODENAME', '')
+                # If no codename, try to extract from VERSION
+                if not codename and 'VERSION' in info:
+                    ver = info.get('VERSION', '')
+                    if '(' in ver and ')' in ver:
+                        codename = ver.split('(')[1].split(')')[0]
+            return (dist_id, version, codename)
+
+        # Fallback to /etc/redhat-release for older RHEL/CentOS
+        if Path('/etc/redhat-release').exists():
+            with open('/etc/redhat-release', 'r') as f:
+                content = f.read().lower()
+                if 'centos' in content:
+                    dist_id = 'centos'
+                elif 'red hat' in content or 'rhel' in content:
+                    dist_id = 'rhel'
+                # Extract version number
+                import re
+                match = re.search(r'(\d+\.?\d*)', content)
+                if match:
+                    version = match.group(1)
+            return (dist_id, version, codename)
+
+        # Fallback to /etc/lsb-release for older Ubuntu/Debian
+        if Path('/etc/lsb-release').exists():
+            with open('/etc/lsb-release', 'r') as f:
+                info = {}
+                for line in f:
+                    if '=' in line:
+                        key, val = line.strip().split('=', 1)
+                        info[key] = val.strip('"')
+                dist_id = info.get('DISTRIB_ID', '').lower()
+                version = info.get('DISTRIB_RELEASE', '')
+                codename = info.get('DISTRIB_CODENAME', '')
+            return (dist_id, version, codename)
+
+        # Fallback to platform.uname()
+        uname = platform.uname()
+        dist_id = uname.system.lower()
+        version = uname.release
+        return (dist_id, version, codename)
+
     def check_platform(self):
         supported = True
         if self.distname == 'centos':
@@ -132,15 +188,18 @@ class Install(object):
     def handle_git(self):
         '''install git'''
         success = True
-        print('* Install GIT ...'),
+        print('* Install GIT ...', end='')
         try:
-            if self.distname in ('centos', 'redhat'):
-                self._run('yum install -y git')
-            if self.distname in ('ubuntu', 'debian'):
-                self._run('apt-get -y install git')
-            success = True
-            print('[ %s ]' % OK)
-        except:
+            if self.pm:
+                packages = resolve_package_names(self.pm, ['git'])
+                success, output = self.pm.install(packages)
+            else:
+                if self.distname in ('centos', 'redhat'):
+                    self._run('yum install -y git')
+                elif self.distname in ('ubuntu', 'debian'):
+                    self._run('apt-get -y install git')
+            print('[ %s ]' % (OK if success else FAILED))
+        except Exception as e:
             success = False
             print('[ %s ]' % FAILED)
         return success
@@ -148,47 +207,52 @@ class Install(object):
     def handle_dependent(self):
         '''Install dependent software'''
         success = True
-        print('* Install Dependent Software...'),
+        print('* Install Dependent Software...', end='')
         try:
-            self._run('yum install -y -q epel-release')
-            self._run('yum install -y -q wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
-            success = True
-            print('[ %s ]' % OK)
-        except:
+            if self.pm:
+                packages = resolve_package_names(self.pm, ['epel-release', 'wget', 'net-tools', 'vim', 'psmisc', 'rsync', 'libxslt-devel', 'GeoIP', 'GeoIP-devel', 'gd', 'gd-devel'])
+                success, output = self.pm.install(packages)
+            else:
+                if self.distname in ('centos', 'redhat'):
+                    self._run('yum install -y -q epel-release')
+                    self._run('yum install -y -q wget net-tools vim psmisc rsync libxslt-devel GeoIP GeoIP-devel gd gd-devel')
+                elif self.distname in ('ubuntu', 'debian'):
+                    self._run('apt-get -y install wget net-tools vim psmisc rsync libxslt-dev geoip-bin libgeoip-dev libgd-dev')
+            print('[ %s ]' % (OK if success else FAILED))
+        except Exception as e:
             success = False
             print('[ %s ]' % FAILED)
         return success
 
     def handle_python(self):
-        '''handle Python and install Python 2.6'''
-        # check python version
-        print('* Current Python Version is [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1])),
-        if (sys.version_info[:2] == (2, 6) or sys.version_info[:2] == (2, 7)):
+        '''handle Python and install Python 3'''
+        print('* Current Python Version is [%s.%s] ...' % (sys.version_info[:2][0], sys.version_info[:2][1]), end='')
+        if sys.version_info[:2] >= (3, 6):
             print('[ %s ]' % OK)
             return True
         else:
             print('[ %s ]' % FAILED)
-        # Install Python
-        print('* Installing Python 2 ...'),
-        if self.distname == 'centos':
-            self._run('yum -y install python2')
-
-        elif self.distname == 'redhat':
-            self._run('yum -y install python2')
-
-        elif self.distname == 'ubuntu':
-            self._run('apt-get -y install python')
-
-        elif self.distname == 'debian':
-            self._run('apt-get -y install python')
-        print('[ %s ]' % OK)
+            print('* Installing Python 3 ...', end='')
+            try:
+                if self.pm:
+                    packages = resolve_package_names(self.pm, ['python3'])
+                    success, output = self.pm.install(packages)
+                else:
+                    if self.distname in ('centos', 'redhat'):
+                        self._run('yum -y install python3')
+                    elif self.distname in ('ubuntu', 'debian'):
+                        self._run('apt-get -y install python3')
+                print('[ %s ]' % OK)
+            except Exception as e:
+                print('[ %s ]' % FAILED)
+            return True
 
     def handle_inpanel(self):
         # handle InPanel
         # get the latest InPanel version
         print('* Installing InPanel')
         # localpkg_found = False
-        # if os.path.exists(os.path.join(os.path.dirname(__file__), 'inpanel.tar.gz')):
+        # if Path(os.path.join(os.path.dirname(__file__), 'inpanel.tar.gz')):
         #     # local install package found
         #     localpkg_found = True
         # else:
@@ -206,11 +270,11 @@ class Install(object):
         # if not localpkg_found: os.remove('inpanel.tar.gz')
 
         # stop service
-        if os.path.exists(self.initd_script):
+        if Path(self.initd_script).exists():
             self._run('%s stop' % self.initd_script)
 
         # backup data and remove old code
-        # if os.path.exists('%s/data/' % self.installpath):
+        # if Path('%s/data/' % self.installpath):
         #     self._run('mkdir /tmp/inpanel_data', True)
         #     self._run('/bin/cp -rf %s/data/* /tmp/inpanel_data/' % self.installpath, True)
 
@@ -234,7 +298,7 @@ class Install(object):
 
     def handle_intranet(self):
         '''handle the old version Intranet Panel'''
-        if os.path.exists('/etc/init.d/intranet'):
+        if Path('/etc/init.d/intranet').exists():
             print('* Found Intranet')
             self._run('/etc/init.d/intranet stop')
             self._run('rm -rf /etc/init.d/intranet')
@@ -245,13 +309,13 @@ class Install(object):
         '''config firewall'''
         print('* Config firewall...'),
         if self.distname in ('centos', 'redhat'):
-            if self.sys_version < 7 and os.path.exists('/etc/init.d/iptables'):
+            if self.sys_version < 7 and Path('/etc/init.d/iptables').exists():
                 self._run('iptables -A INPUT -m state --state NEW -p tcp --dport %s -j ACCEPT' % self.listen_port)
                 self._run('iptables -A OUTPUT -m state --state NEW -p tcp --sport %s -j ACCEPT' % self.listen_port)
                 self._run('service iptables save')
                 self._run('/etc/init.d/iptables restart')
                 print('[ %s ]' % OK)
-            elif os.path.exists('/etc/firewalld/firewalld.conf'):
+            elif Path('/etc/firewalld/firewalld.conf').exists():
                 self._run('firewall-cmd --permanent --zone=public --add-port=%s/tcp' % self.listen_port)
                 self._run('systemctl restart firewalld.service')
                 print('[ %s ]' % OK)
@@ -279,8 +343,8 @@ class Install(object):
     def config_port(self):
         # config listen port
         # port = self.find_free_port()
-        if self.listen_port == 8888 or not self.listen_port.isdigit() or int(self.listen_port) < 5000:
-            port = self.input('InPanel Port [default: 8888, minimum: 5000]: ').strip()
+        if self.listen_port == 14433 or not self.listen_port.isdigit() or int(self.listen_port) < 5000:
+            port = self.input('InPanel Port [default: 14433, minimum: 5000]: ').strip()
             if port and port.isdigit() and int(port) >= 5000:
                 self.listen_port = int(port)
         self._run('%s/config.py port "%s"' % (self.installpath, self.listen_port))
@@ -312,7 +376,7 @@ class Install(object):
     def handle_vpsmate(self):
         # handle VPSMate
         v_script = '/etc/init.d/vpsmate'
-        if not os.path.exists(v_script):
+        if not Path(v_script).exists():
             return False
 
         print('* Checking VPSMate')
@@ -336,7 +400,7 @@ class Install(object):
 
     def start_service(self):
         # start service
-        if not os.path.exists(self.initd_script):
+        if not Path(self.initd_script).exists():
             print('Starting InPanel [ %s ]' % FAILED)
             return False
         if self.distname in ('centos', 'redhat'):

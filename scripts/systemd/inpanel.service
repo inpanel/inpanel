@@ -6,13 +6,14 @@ Type = simple
 User = root
 Group = root
 Type = simple
-PIDFile = /var/run/inpanel.pid
 # WorkingDirectory = /usr/local/inpanel
 # ExecStartPre =
-ExecStart = /usr/local/inpanel/inpaneld
+ExecStart = /usr/local/inpanel/inpanel
+PIDFile = /var/run/inpanel.pid
 # ExecReload =
 # ExecStop =
 StartLimitInterval = 30min
+RestartSec=5
 
 [Install]
 WantedBy = multi-user.target

@@ -25,7 +25,7 @@
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='baseconfig'" id="baseconfig">
                 <form class="form-horizontal form-horizontal-small" ng-submit="savesettings()" onsubmit="return false">
                     <div class="form-group">
-                        <label class="control-label" for="anonymous_enable">anonymous_enable</label>
+                        <label class="control-label" for="anonymous_enable">是否允许匿名登录</label>
                         <div style="margin-left: 160px">
                             <input class="form-control" ng-model="baseconfigs.anonymous_enable" ng-disabled="processing" type="text" id="anonymous_enable" placeholder="anonymous_enable">
                         </div>
@@ -43,13 +43,13 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label" for="anon_upload_enable">anon_upload_enable</label>
+                        <label class="control-label" for="anon_upload_enable">匿名用户可上传文件</label>
                         <div style="margin-left: 160px">
-                            <input class="form-control" ng-model="baseconfigs.anon_upload_enable" ng-disabled="processing" type="text" id="anon_upload_enable" placeholder="anon_upload_enable">
+                            <input class="form-control" ng-model="baseconfigs.anon_upload_enable" ng-disabled="processing" type="text" id="anon_upload_enable" placeholder="是否允许匿名用户登录，YES允许，NO不允许，默认值为YES。 ">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label" for="anon_mkdir_write_enable">anon_mkdir_write_enable</label>
+                        <label class="control-label" for="anon_mkdir_write_enable">匿名用户可创建文件夹</label>
                         <div style="margin-left: 160px">
                             <input class="form-control" ng-model="baseconfigs.anon_mkdir_write_enable" ng-disabled="processing" type="text" id="anon_mkdir_write_enable" placeholder="anon_mkdir_write_enable">
                         </div>
@@ -67,7 +67,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label" for="connect_from_port_20">connect_from_port_20</label>
+                        <label class="control-label" for="connect_from_port_20">主动模式需要连接项</label>
                         <div style="margin-left: 160px">
                             <input class="form-control" ng-model="baseconfigs.connect_from_port_20" ng-disabled="processing" type="text" id="connect_from_port_20" placeholder="connect_from_port_20">
                         </div>
@@ -151,13 +151,13 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label" for="chroot_list_enable">chroot_list_enable</label>
+                        <label class="control-label" for="chroot_list_enable">是否可切换到上级目录</label>
                         <div style="margin-left: 160px">
                             <input class="form-control" ng-model="baseconfigs.chroot_list_enable" ng-disabled="processing" type="text" id="chroot_list_enable" placeholder="chroot_list_enable">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label" for="chroot_list_file">chroot_list_file</label>
+                        <label class="control-label" for="chroot_list_file">可登录用户</label>
                         <div style="margin-left: 160px">
                             <input class="form-control" ng-model="baseconfigs.chroot_list_file" ng-disabled="processing" type="text" id="chroot_list_file" placeholder="chroot_list_file">
                         </div>

@@ -5,6 +5,7 @@
 import os
 import time
 import errno
+from pathlib import Path
  
 class FileLockException(Exception):
     pass
@@ -20,7 +21,7 @@ class FileLock(object):
             the maximum timeout and the delay between each attempt to lock.
         """
         self.is_locked = False
-        self.lockfile = os.path.join(os.getcwd(), "%s.lock" % file_name)
+        self.lockfile = str(Path.cwd() / ("%s.lock" % file_name))
         self.file_name = file_name
         self.timeout = timeout
         self.delay = delay

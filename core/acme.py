@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -13,8 +13,8 @@ from base64 import urlsafe_b64encode
 from binascii import unhexlify
 from hashlib import sha256
 from json import dumps, loads
-from os import remove
-from os.path import exists, isfile, join
+from pathlib import Path
+import os
 from subprocess import PIPE, STDOUT, Popen
 from time import sleep
 
@@ -140,7 +140,8 @@ class ACME():
         acc_key = account_key
         if acc_key is None:
             acc_key = self.account_key
-        if not exists(acc_key) or not isfile(acc_key):
+        acc_key_path = Path(acc_key)
+        if not acc_key_path.exists() or not acc_key_path.is_file():
             return None
         cmd = ['openssl', 'rsa', '-in', acc_key, '-noout', '-text']
         out = self._cmd(cmd, err_msg='openssl error')
@@ -219,7 +220,7 @@ class ACME():
             challenge = [c for c in authorization['challenges'] if c['type'] == "http-01"][0]
             token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
             key_auth = "{0}.{1}".format(token, self.thumbprint)
-            wellknown_path = join(self.acme_check_dir, token)
+            wellknown_path = str(Path(self.acme_check_dir) / token)
             with open(wellknown_path, 'w', encoding='utf-8') as f:
                 f.write(key_auth)
 
@@ -228,7 +229,7 @@ class ACME():
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 assert(disable_check or self._request(wellknown_url)[0] == key_auth)
             except (AssertionError, ValueError) as e:
-                remove(wellknown_path)
+                os.remove(wellknown_path)
                 raise ValueError("Wrote file to {0}, but couldn't download {1}: {2}".format(
                     wellknown_path, wellknown_url, e))
 

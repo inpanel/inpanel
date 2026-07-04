@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2019, Jackson Dou
+# Copyright (c) 2019-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the (new) BSD License.

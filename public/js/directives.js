@@ -773,7 +773,7 @@ angular.module('inpanel.directives', []).
                 'pluginsName': '='
             },
             replace: true,
-            templateUrl: template_path + '/api/plugins/acme/static/index.html',
+            templateUrl: template_path + '/plugins/acme/static/index.html',
             link: function ($scope, $element, $attrs, ctrl) {
                 console.log($scope.pluginsName);
             },

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -62,7 +62,7 @@ $cmd username admin
 $cmd username "admin"
 $cmd username 'admin'
 $cmd password $password_rand
-$cmd port     8888
+$cmd port     14433
 =======================================================================
 EOF
 }

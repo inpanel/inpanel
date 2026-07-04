@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -25,7 +25,7 @@ fi
 
 APP_NAME='InPanel'
 LAUNCHCTL='/bin/launchctl'
-SERVICE_NAME='org.inpanel.inpaneld'
+SERVICE_NAME='org.inpanel.inpanel'
 LAUNCHD_JOB="/Library/LaunchDaemons/$SERVICE_NAME.plist"
 
 echo_ok() {

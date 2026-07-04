@@ -10,7 +10,10 @@
 
     <div class="tabbable" ng-show="has_dbserver">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none"><a href="#mysql" ng-click="sec('mysql')" data-toggle="tab">MySQL 数据库管理</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none"><a href="#mysql" ng-click="sec('mysql')" data-toggle="tab">MySQL</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='mongodb'" ng-show="mongodb_supported" style="display:none"><a href="#mongodb" ng-click="sec('mongodb')" data-toggle="tab">MongoDB</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='redis'" ng-show="redis_supported" style="display:none"><a href="#redis" ng-click="sec('redis')" data-toggle="tab">Redis</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='memcache'" ng-show="memcache_supported" style="display:none"><a href="#memcache" ng-click="sec('memcache')" data-toggle="tab">Memcache</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mysql'" ng-show="mysql_supported" style="display:none" id="mysql">
@@ -135,6 +138,21 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='mongodb'" ng-show="mongodb_supported" style="display:none" id="mongodb">
+                <div>
+                    <div waiting ng-init="waitingText='暂不支持 MongoDB，请等待新版本...'"></div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='redis'" ng-show="redis_supported" style="display:none" id="redis">
+                <div>
+                    <div waiting ng-init="waitingText='暂不支持 Redis，请等待新版本...'"></div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='memcache'" ng-show="memcache_supported" style="display:none" id="memcache">
+                <div>
+                    <div waiting ng-init="waitingText='暂不支持 Memcache，请等待新版本...'"></div>
                 </div>
             </div>
         </div>

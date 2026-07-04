@@ -1,11 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-# from core import build, version
+# from core import version
 import os.path
 
 block_cipher = None
-# bundle_identifier = 'org.inpanel.inpaneld'
-# runtime_tmpdir = '/tmp/org.inpanel.inpaneld'
+# bundle_identifier = 'org.inpanel.inpanel'
+# runtime_tmpdir = '/tmp/org.inpanel.inpanel'
 # root_path = os.path.dirname(__file__)
 
 datas=[
@@ -35,7 +35,7 @@ exe = EXE(pyz,
              a.zipfiles,
              a.datas,
              [],
-             name='inpaneld',
+             name='inpanel',
              debug=False,
              bootloader_ignore_signals=False,
              strip=False,

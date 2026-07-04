@@ -14,7 +14,7 @@
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='authinfo'"><a href="#authinfo" ng-click="sec('authinfo')" data-toggle="tab">账号设置</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='serverinfo'"><a href="#serverinfo" ng-click="sec('serverinfo')" data-toggle="tab">服务设置</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='runtime'"><a href="#runtime" ng-click="sec('runtime')" data-toggle="tab">运行设置</a></li>
+            <!-- <li ng-class="'active' | iftrue:activeTabName=='runtime'"><a href="#runtime" ng-click="sec('runtime')" data-toggle="tab">运行设置</a></li> -->
             <li ng-class="'active' | iftrue:activeTabName=='accesskey'"><a href="#accesskey" ng-click="sec('accesskey')" data-toggle="tab">远程控制</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='restart'"><a href="#restart" ng-click="sec('restart')" data-toggle="tab">重启服务</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='upversion'"><a href="#upversion" ng-click="sec('upversion')" data-toggle="tab">版本升级</a></li>
@@ -182,7 +182,7 @@
                     <tbody>
                         <tr>
                             <td style="width: 200px;">版本信息：</td>
-                            <td>v{{version.version}} b{{version.build}}</td>
+                            <td>v{{version.version}}</td>
                         </tr>
                         <tr>
                             <td>发布时间：</td>
@@ -208,7 +208,7 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <p>InPanel v{{version.version}} b{{version.build}}</p>
+                        <p>InPanel v{{version.version}}</p>
                         <p>InPanel 是一款开源的 Linux 服务器管理面板，后端服务基于 Python 语言开发，前端页面基于框架 Angular JS v1.0.2</p>
                         <p>源码托管在 <a href="https://github.com/inpanel/inpanel" target="_blank">GitHub</a>、<a href="https://gitee.com/inpanel/inpanel" target="_blank">Gitee</a></p>
                         <p>国际网站：<a href="https://inpanel.org" target="_blank">https://inpanel.org</a>（提供多语言版本，针对国际用户）</p>
@@ -225,10 +225,10 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <p>您可以自由的使用，修改源代码，也可以将修改后的代码作为开源或者专有软件再发布。当您发布使用了 BSD 协议的代码，或者以 BSD 协议代码为基础做二次开发自己的产品时，需要满足三个条件：</p>
-                        <p>1． 如果再发布的产品中包含源代码，则在源代码中必须带有原来代码中的 BSD 协议。</p>
-                        <p>2． 如果再发布的只是二进制类库/软件，则需要在类库/软件的文档和版权声明中包含原来代码中的 BSD 协议。</p>
-                        <p>3． 不可以用开源代码的作者/机构名字和原来产品的名字做市场推广。</p>
+                        <p>您可以自由的使用，修改源代码，也可以将修改后的代码作为开源或者专有软件再发布。当您发布使用了 BSD 协议的代码，或者以 BSD 协议代码为基础，进行二次开发自己的产品时，需要遵循以下三个原则：</p>
+                        <p>1. 如果再发布的产品中包含源代码，则在源代码中必须带有原来代码中的 BSD 协议。</p>
+                        <p>2. 如果再发布的只是二进制类库/软件，则需要在类库/软件的文档和版权声明中包含原来代码中的 BSD 协议。</p>
+                        <p>3. 不可以用开源代码的作者/机构名字和原来产品的名字做市场推广。</p>
                         <p>详细的条款许可请查阅 <a href="https://github.com/inpanel/inpanel/blob/main/LICENSE" target="_blank">这里</a></p>
                     </div>
                 </div>
@@ -242,15 +242,13 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <p>您可以选择赞助 InPanel 的开发，用于维持作者在项目中的资金投入（如作者的时间和身体健康，用于软件服务而维持的服务器和域名等）。</p>
-                        <p>您的捐助可以为开发者提供更好的开发条件和健康的身体，期待使得 InPanel 更加完善。</p>
-                        <p>针对您的捐助，我们将在网站上进行公示。</p>
-                        <p>感谢您的捐助，祝好！</p>
-                        <p>让我们一起见证开源的力量。</p>
+                        <p>如果本项目对您有帮助，您可以请作者喝奶茶。</p>
+                        <p>收到您的捐助后，我们将会在网站上进行展示，<a href="https://inpanel.cn" target="_blank">点击这里查看</a>（<a href="https://crogram.org/donation.html" target="_blank">对公转账请点击这里查看</a>）。</p>
+                        <p>转账时请备注：您的称呼，感谢您的捐助，祝您生活愉快 ！</p>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6 col-xs-12">
+                    <div class="col-md-6 col-sm-6">
                         <div class="panel panel-info">
                             <div class="panel-heading">
                                 <div class="panel-title">
@@ -263,7 +261,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xs-12">
+                    <div class="col-md-6 col-sm-6">
                         <div class="panel panel-info">
                             <div class="panel-heading">
                                 <div class="panel-title">

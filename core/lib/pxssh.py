@@ -35,8 +35,8 @@ class pxssh (spawn):
         import getpass
         try:                                                            
             s = pxssh.pxssh()
-            hostname = raw_input('hostname: ')
-            username = raw_input('username: ')
+            hostname = input('hostname: ')
+            username = input('username: ')
             password = getpass.getpass('password: ')
             s.login (hostname, username, password)
             s.sendline ('uptime')  # run a command
@@ -64,8 +64,8 @@ class pxssh (spawn):
 
             s = pxssh.pxssh()
             s.force_password = True
-            hostname = raw_input('hostname: ')
-            username = raw_input('username: ')
+            hostname = input('hostname: ')
+            username = input('username: ')
             password = getpass.getpass('password: ')
             s.login (hostname, username, password)
     """
@@ -85,12 +85,12 @@ class pxssh (spawn):
         #prompt command different than the regex.
 
         # used to match the command-line prompt
-        self.UNIQUE_PROMPT = "\[PEXPECT\][\$\#] "
+        self.UNIQUE_PROMPT = r"\[PEXPECT\][\$\#] "
         self.PROMPT = self.UNIQUE_PROMPT
 
         # used to set shell command-line prompt to UNIQUE_PROMPT.
-        self.PROMPT_SET_SH = "PS1='[PEXPECT]\$ '"
-        self.PROMPT_SET_CSH = "set prompt='[PEXPECT]\$ '"
+        self.PROMPT_SET_SH = "PS1='[PEXPECT]\\$ '"
+        self.PROMPT_SET_CSH = "set prompt='[PEXPECT]\\$ '"
         self.SSH_OPTS = "-o'RSAAuthentication=no' -o 'PubkeyAuthentication=no'"
         # Disabling X11 forwarding gets rid of the annoying SSH_ASKPASS from
         # displaying a GUI password dialog. I have not figured out how to

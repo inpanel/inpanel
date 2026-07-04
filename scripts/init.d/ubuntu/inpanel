@@ -3,7 +3,7 @@
 # init.d script
 # this script starts and stops the inpanel daemon
 #
-# Copyright (c) 2022 Jackson Dou
+# Copyright (c) 2022-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -31,7 +31,7 @@ NAME='inpanel'
 DESC='InPanel Daemon'
 PIDFILE='/var/run/inpanel.pid'
 LOCKFILE="/var/lock/subsys/$NAME"
-DAEMON='/usr/local/inpanel/inpaneld'
+DAEMON='/usr/local/inpanel/inpanel'
 RUNAS='root'
 STARTTIME=1
 DIETIME=10 # Time to wait for the server to die, in seconds

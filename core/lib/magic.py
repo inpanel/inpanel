@@ -17,9 +17,9 @@ Usage:
 
 """
 
-import os.path
 import ctypes
 import ctypes.util
+from pathlib import Path
 
 from ctypes import c_char_p, c_int, c_size_t, c_void_p
 
@@ -63,7 +63,7 @@ class Magic:
         raises IOError if the file does not exist
         """
 
-        if not os.path.exists(filename):
+        if not Path(filename).exists():
             raise IOError("File does not exist: " + filename)
 
         return magic_file(self.cookie, filename)

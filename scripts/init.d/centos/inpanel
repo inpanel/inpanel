@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -30,7 +30,7 @@ fi
 [ "$NETWORKING" = "no" ] && exit 0
 
 NAME='inpanel'
-DAEMON='/usr/local/inpanel/inpaneld'
+DAEMON='/usr/local/inpanel/inpanel'
 PIDFILE='/var/run/inpanel.pid'
 LOCKFILE='/var/lock/subsys/inpanel'
 

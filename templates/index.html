@@ -17,9 +17,9 @@
     <link rel="stylesheet" href="lib/codemirror/codemirror.css" />
     <link rel="stylesheet" href="{{static_url('css/global.css')}}" />
     <script>
-        // var releasetime = "{{ releasetime }}";
+        var releasetime = "{{ releasetime }}";
         var location_path = location.pathname.replace(/(\s+)?\/$/, '');
-        var template_path = '';
+        var template_path = '{{ template_path }}';
     </script>
 </head>
 

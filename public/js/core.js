@@ -1,4 +1,4 @@
-var releasetime = '2022-01-14 00:57:00 GMT+0800';
+// var releasetime = '2020-12-03 23:00:00 GMT+0800';
 var _v = new Date(releasetime).getTime() / 1000;
 //if (1) _v += Math.random(); // ie test mode
 var inpanel = angular.module('inpanel', ['inpanel.services', 'inpanel.directives', 'inpanel.filters']);
@@ -27,6 +27,7 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/service/redis', _r('service/redis', ServiceRedisCtrl)).
     when('/service/memcache', _r('service/memcache', ServiceMemcacheCtrl)).
     when('/service/mongodb', _r('service/mongodb', ServiceMongoDBCtrl)).
+    when('/service/minio', _r('service/minio', ServiceMinIOCtrl)).
     when('/service/php', _r('service/php', ServicePHPCtrl)).
     when('/service/sendmail', _r('service/sendmail', ServiceSendmailCtrl)).
     when('/service/ssh', _r('service/ssh', ServiceSSHCtrl)).
@@ -106,16 +107,15 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
     };
     $rootScope.$proxyroot = location_path;
 }]);
-inpanel.value('version', {
-    'version': '1.1.1',
-    'build': '26',
-    'releasetime': releasetime,
-    'changelog': 'http://inpanel.org/changelog.html'
-});
+// inpanel.value('version', {
+//     'version': '1.1.27',
+//     'releasetime': releasetime,
+//     'changelog': 'http://inpanel.org/changelog.html'
+// });
 
 var Auth = {
     // auth should be done before enter the module
-    auth: function ($q, Auth, Message) {
+    auth: function ($q, $location, Auth, Message) {
         var deferred = $q.defer();
         Message.setInfo('正在加载，请稍候...', true);
         Auth.required(function (authed) {
@@ -124,6 +124,7 @@ var Auth = {
         }, function (status) {
             if (status == 403) {
                 Message.setError('身份认证失败，请<a href="#/login">重新登录</a>！');
+                $location.path('/login');
             } else {
                 Message.setError('对不起，加载失败！（网络异常或服务器故障）');
             }
@@ -193,10 +194,28 @@ var Auth = {
         }
     }
 };
-Auth.auth.$inject = ['$q', 'Auth', 'Message'];
+Auth.auth.$inject = ['$q', '$location', 'Auth', 'Message'];
 Auth.auto_auth.$inject = ['$rootScope', '$location', 'Auth', 'Timeout'];
 
 var getCookie = function (name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
     return r ? r[1] : undefined;
 };
+var set_cookie = function (name, value) {
+  var Days = 30;
+  var exp = new Date();
+  exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
+  document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + exp.toGMTString();
+}
+var get_cookie = function(name) {
+  var arr, reg = new RegExp('(^| )' + name + '=([^;]*)(;|$)');
+  return (arr = document.cookie.match(reg)) ? decodeURIComponent(arr[2]) : null;
+}
+var del_cookie = function (name) {
+    var exp = new Date();
+    exp.setTime(exp.getTime() - 1);
+    var cval = get_cookie(name);
+    if (cval != null) {
+        document.cookie= name + "="+cval+";expires="+exp.toGMTString();
+    }
+}

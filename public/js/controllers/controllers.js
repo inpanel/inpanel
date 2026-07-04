@@ -137,8 +137,7 @@ var MainCtrl = [
                 } else if (data.code == 0) {
                     var v = data.data;
                     if (
-                        parseFloat(v.version) > parseFloat($scope.version.version) ||
-                        (parseFloat(v.version) == parseFloat($scope.version.version) && parseInt(v.build) > parseInt($scope.version.build))
+                        !!v && parseFloat(v.version) > parseFloat($scope.version.version)
                     ) {
                         $scope.detectVer = false;
                         $scope.hasNewver = true;
@@ -297,7 +296,6 @@ var SettingCtrl = [
         $scope.version = {};
         $scope.newVersion = '';
         $scope.newReleasetime = '';
-        $scope.newBuild = '';
         $scope.showUpdateBtn = false;
         $scope.showRestartBtn = true;
         $scope.loaded = true;
@@ -407,19 +405,17 @@ var SettingCtrl = [
                 } else if (data.code == 0) {
                     var v = data.data;
                     if (
-                        parseFloat(v.version.split('.').join('')) > parseFloat($scope.version.version.split('.').join('')) ||
-                        (v.version == $scope.version.version && parseInt(v.build) > parseInt($scope.version.build))
+                        !!v && parseFloat(v.version.split('.').join('')) > parseFloat($scope.version.version.split('.').join(''))
                     ) {
                         $scope.upverMessage = '<table class="table table-hover table-bordered">' +
                             '<thead><tr><th colspan="2">有可用的新版本</th></tr></thead>' +
-                            '<tbody><tr><td style="width: 200px;">版本信息：</td><td>v' + v.version + ' b' + v.build + '</td></tr>' +
+                            '<tbody><tr><td style="width: 200px;">版本信息：</td><td>v' + v.version + '</td></tr>' +
                             '<tr><td>发布时间：</td><td>' + v.releasetime + '</td></tr>' +
                             '<tr><td>变更记录：</td><td><a href="' + v.changelog + '" target="_blank">' +
                             '查看版本变更记录</a></td></tr></tbody></table>';
                         $scope.updateBtnText = '开始在线升级';
                         $scope.showUpdateBtn = true;
                         $scope.newVersion = v.version;
-                        $scope.newBuild = v.build;
                         $scope.newReleasetime = v.releasetime;
                     } else {
                         $scope.upverMessage = '当前已是最新版本！';
@@ -452,6 +448,7 @@ var SettingCtrl = [
                                         }, function (data, status) { // error occur because server is terminate
                                             if (status == 403 || status == 0) {
                                                 $scope.upverMessage = '升级成功！请刷新页面重新登录。';
+                                                $scope.forceUpdateStatic();
                                                 return false;
                                             }
                                             return true;
@@ -468,7 +465,7 @@ var SettingCtrl = [
                 Timeout(getUpdateStatus, 500, module);
             });
         };
-        $scope.restartMessage = '是否要重启 InPanel ？';
+        $scope.restartMessage = '是否要重启 InPanel 服务 ？';
         $scope.restart = function () {
             $scope.restartMessage = '正在重启，请稍候...'
             $scope.showRestartBtn = false;
@@ -532,6 +529,29 @@ var SettingCtrl = [
             };
 
             $scope.accesskey = b64encode(randstring);
+        };
+
+        $scope.forceUpdateStatic = function () {
+            // 前端静态资源重新加载
+            $scope.version['version'] = $scope.newVersion;
+            $scope.version['releasetime'] = $scope.newReleasetime;
+            releasetime = $scope.newReleasetime;
+            _v = new Date($scope.newReleasetime.replace(/-/g, '/')).getTime() / 1000;
+            [
+                'core',
+                'services',
+                'controllers/controllers',
+                'controllers/service',
+                'controllers/file',
+                'controllers/site',
+                'controllers/database',
+                'controllers/ecs',
+                'controllers/utils',
+                'directives',
+                'filters'
+            ].forEach(function (item) {
+                $.getScript('/js/' + item + '.js');
+            });
         };
     }
 ];

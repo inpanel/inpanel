@@ -22,6 +22,7 @@
             <li ng-class="'active' | iftrue:activeTabName=='service'"><a href="#service" ng-click="sec('service')" data-toggle="tab">服务状态</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统信息</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='hardware'"><a href="#hardware" ng-click="sec('hardware')" data-toggle="tab">硬件信息</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='panel'"><a href="#panel" ng-click="sec('panel')" data-toggle="tab">面板信息</a></li>
             <li class="pull-right">
                 <div class="btn-group btn-group-sm">
                     <button class="btn btn-default" title="刷新数据" ng-click="refresh()" ng-disabled="auto_refresh"><i class="glyphicon glyphicon-refresh"></i></button>
@@ -31,7 +32,7 @@
             </li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='server'" id="server">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='server'" id="server">
                 <table class="table">
                     <thead>
                         <tr>
@@ -199,7 +200,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='network'" id="network">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='network'" id="network">
                 <table class="table">
                     <thead>
                         <tr>
@@ -275,7 +276,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='service'" id="service">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='service'" id="service">
                 <table class="table">
                     <thead>
                         <tr>
@@ -356,7 +357,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
                 <table class="table">
                     <thead>
                         <tr>
@@ -388,7 +389,7 @@
                 </table>
 
             </div>
-            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='hardware'" id="hardware">
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='hardware'" id="hardware">
                 <table class="table">
                     <thead>
                         <tr>
@@ -404,7 +405,7 @@
                             <td>CPU核心：</td>
                             <td>
                                 <table class="table table-condensed table-borderless table-layout" ng-class="'table-nopadding' | iftrue:info['server.cpuinfo']['core_count']==1">
-                                    <tr>
+                                    <tr ng-show="info['server.cpuinfo']['core_count'] > 0">
                                         <td colspan="2">共有 {{ info['server.cpuinfo']['core_count'] }} 个核心，型号如下：</td>
                                     </tr>
                                     <tr ng-repeat="core in info['server.cpuinfo']['cores']">
@@ -430,6 +431,100 @@
                                     </tr>
                                 </table>
                             </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='panel'" id="panel">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">面板信息</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:130px">面板版本：</td>
+                            <td>{{ info['server.panelinfo']['version'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>发布时间：</td>
+                            <td>{{ info['server.panelinfo']['releasetime'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>启动时间：</td>
+                            <td>{{ info['server.panelinfo']['start_time'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>运行时长：</td>
+                            <td>{{ info['server.panelinfo']['uptime'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>运行用户：</td>
+                            <td>{{ info['server.panelinfo']['run_user'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>运行方式：</td>
+                            <td>{{ info['server.panelinfo']['run_mode'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>进程ID：</td>
+                            <td>{{ info['server.panelinfo']['pid'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>运行命令：</td>
+                            <td><code style="word-break: break-all;">{{ info['server.panelinfo']['run_command'] }}</code></td>
+                        </tr>
+                        <tr>
+                            <td>绑定地址：</td>
+                            <td>{{ info['server.panelinfo']['bind_addr'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>访问地址：</td>
+                            <td><a href="{{ info['server.panelinfo']['access_url'] }}" target="_blank">{{ info['server.panelinfo']['access_url'] }}</a></td>
+                        </tr>
+                        <tr>
+                            <td>内存占用：</td>
+                            <td>
+                                <table class="table table-condensed table-borderless table-layout" style="width:300px">
+                                    <tr>
+                                        <td style="width:100px">物理内存：</td>
+                                        <td>{{ info['server.panelinfo']['mem_rss'] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>虚拟内存：</td>
+                                        <td>{{ info['server.panelinfo']['mem_vms'] }}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CPU占用率：</td>
+                            <td>{{ info['server.panelinfo']['cpu_percent'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>根目录：</td>
+                            <td>{{ info['server.panelinfo']['root_path'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>配置文件：</td>
+                            <td>{{ info['server.panelinfo']['config_file'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>执行文件：</td>
+                            <td>{{ info['server.panelinfo']['exec_file'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>PID文件：</td>
+                            <td>{{ info['server.panelinfo']['pid_file'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>日志文件：</td>
+                            <td>{{ info['server.panelinfo']['log_file'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>错误日志：</td>
+                            <td>{{ info['server.panelinfo']['error_log_file'] }}</td>
                         </tr>
                     </tbody>
                 </table>

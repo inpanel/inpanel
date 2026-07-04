@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the (new) BSD License.
@@ -212,7 +212,7 @@ def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
     """
     #cfgfile = SSHCFG
     v = cfg_get(cfgfile, item, delimiter, detail=True, config=config)
-    if delimiter == '\s+':
+    if delimiter == r'\s+':
         delimiter = ' '
     if v:
         # detect if value change

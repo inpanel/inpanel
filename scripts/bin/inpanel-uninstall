@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the New BSD License.
@@ -19,14 +19,12 @@ UNINSTALL='/usr/local/bin/inpanel-uninstall'
 
 uninstall_do() {
     echo 'Deleting InPanel... '
-    inpanel stop
+    inpanelctl stop
     rm -f /etc/init.d/inpanel
     # delete inpanel binary file
-    rm -f /usr/local/inpanel/inpaneld
+    rm -f /usr/local/inpanel/inpanel
     # delete inpanel control script
-    rm -f /usr/local/bin/inpanel
-    # delete inpanel configuration script
-    rm -f /usr/local/bin/inpanel-config
+    rm -f /usr/local/bin/inpanelctl
     # backup data
     test ! -d /root/inpanel_backup_data && mkdir /root/inpanel_backup_data
     mv /usr/local/inpanel/data /root/inpanel_backup_data

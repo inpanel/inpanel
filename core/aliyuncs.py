@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # ECSMate is distributed under the terms of the (new) BSD License.
@@ -237,7 +237,7 @@ if __name__ == '__main__':
         print('## Regions\n')
         regions = ecs.DescribeRegions()[1]
         pp.pprint(regions)
-        print
+        print()
 
         for region in regions['Regions']:
             print('## Zones in %s\n' % region['RegionCode'])
@@ -247,16 +247,16 @@ if __name__ == '__main__':
                 continue
             zones = zones[1]
             pp.pprint(zones)
-            print
+            print()
 
             for zone in zones['Zones']:
                 print('## Instances in %s\n' % zone['ZoneCode'])
                 instances = ecs.DescribeInstanceStatus(
                     region['RegionCode'], zone['ZoneCode'])[1]
                 pp.pprint(instances)
-                print
+                print()
 
-            print
+            print()
 
     #pp.pprint(ecs.DescribeInstanceStatus(PageSize=10, PageNumber=1))
     #pp.pprint(ecs.DescribeInstanceStatus('cn-hangzhou-dg-a01', 'cn-hangzhou-dg101-a'))

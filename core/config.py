@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017, Jackson Dou
+# Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of The New BSD License.
@@ -15,7 +15,7 @@ from base64 import b64decode
 from hashlib import md5
 
 from base import config_file
-from mod_config import load_config
+from mod.config import load_config
 from utils import is_valid_ip, randstr
 
 if __name__ == "__main__":
