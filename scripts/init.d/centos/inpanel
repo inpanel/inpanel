@@ -3,85 +3,67 @@
 # Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
-# InPanel is distributed under the terms of the New BSD License.
+# InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 #
 # InPanel control script for CentOS.
+# chkconfig: 2345 99 01
+# description: InPanel Control Panel
 
-set -e
+NAME='inpanel'
+DAEMON='/usr/bin/inpanel'
+LOCKFILE='/var/lock/subsys/inpanel'
 
 # Source function library.
 if [ -f /etc/rc.d/init.d/functions ];then
    . /etc/rc.d/init.d/functions
 else
    echo 'not found file /etc/rc.d/init.d/functions'
-   exit
+   exit 1
 fi
 
 # Source networking configuration.
 if [ -f /etc/sysconfig/network ];then
    . /etc/sysconfig/network
-else
-   echo 'not found file /etc/sysconfig/network'
-   exit
 fi
 
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
-NAME='inpanel'
-DAEMON='/usr/local/inpanel/inpanel'
-PIDFILE='/var/run/inpanel.pid'
-LOCKFILE='/var/lock/subsys/inpanel'
-
 start() {
-    [ -x $inpanel ] || exit 5
     echo -n $"Starting InPanel: "
-    daemon --pidfile="$PIDFILE" "$DAEMON &"
+    $DAEMON start
     retval=$?
-    echo
     [ $retval -eq 0 ] && touch $LOCKFILE
     return $retval
 }
 
 stop() {
     echo -n $"Stopping InPanel: "
-    killproc -p "$PIDFILE" $DAEMON
-    #killproc $prog -TERM
+    $DAEMON stop
     retval=$?
-    if [ $retval -eq 0 ]; then
-        if [ "$CONSOLETYPE" != "serial" ]; then
-           echo -en "\\033[16G"
-        fi
-        while rh_status_q
-        do
-            sleep 1
-            echo -n $"."
-        done
-        rm -f $LOCKFILE
-    fi
-    rm -f $PIDFILE
-    echo
+    [ $retval -eq 0 ] && rm -f $LOCKFILE
     return $retval
 }
 
 restart() {
-    stop
-    sleep 1
-    start
+    $DAEMON restart
+    retval=$?
+    return $retval
+}
+
+reload() {
+    $DAEMON reload
+    retval=$?
+    return $retval
 }
 
 rh_status() {
-    status -p "$PIDFILE" $DAEMON
-    #status $prog
-}
-
-rh_status_q() {
-    rh_status >/dev/null 2>&1
+    $DAEMON status
 }
 
 show_help() {
-    echo 'Usage: inpanel {start|stop|status|restart|config|uninstall}'
+    echo "Usage: $NAME {start|stop|status|restart|reload|config}"
     exit 2
 }
 
@@ -91,36 +73,33 @@ fi
 
 case "$1" in
     start)
-        rh_status_q && exit 0
-        $1
+        $DAEMON status >/dev/null 2>&1 && exit 0
+        start
         ;;
     stop)
-        rh_status_q || exit 0
-        $1
+        $DAEMON status >/dev/null 2>&1 || exit 0
+        stop
         ;;
     restart)
-        $1
+        restart
         ;;
-    status|status_q)
-        rh_$1
+    reload)
+        reload
+        ;;
+    status)
+        rh_status
         ;;
     condrestart|try-restart)
-        rh_status_q || exit 7
+        $DAEMON status >/dev/null 2>&1 || exit 7
         restart
         ;;
     config)
-        . /usr/local/bin/inpanel-config
-        if [ $# != 3 ]; then
-            config_help
-        else
-            config_do $2 $3
-        fi
-        ;;
-    uninstall)
-        . /usr/local/bin/inpanel-uninstall
-        uninstall_do $@
+        shift
+        $DAEMON config "$@"
         ;;
     *)
         show_help
         ;;
 esac
+
+exit $?

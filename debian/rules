@@ -1,0 +1,70 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME = inpanel
+export PYBUILD_DESTDIR = $(CURDIR)/debian/inpanel
+export PYBUILD_INSTALL_ARGS = --install-layout=deb
+
+%:
+	dh $@ --with python3
+
+override_dh_install:
+	python3 -m pip install . --root=$(CURDIR)/debian/inpanel --no-deps --install-layout=deb
+	mkdir -p $(CURDIR)/debian/inpanel/usr/lib/systemd/system
+	mkdir -p $(CURDIR)/debian/inpanel/etc/init.d
+	mkdir -p $(CURDIR)/debian/inpanel/var/log/inpanel
+
+	cat > $(CURDIR)/debian/inpanel/usr/lib/systemd/system/inpanel.service << 'EOF'
+[Unit]
+Description=InPanel Control Panel
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/inpanel run
+ExecStop=/usr/bin/inpanel stop
+ExecReload=/usr/bin/inpanel reload
+PIDFile=/var/run/inpanel.pid
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+	cat > $(CURDIR)/debian/inpanel/etc/init.d/inpanel << 'EOF'
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          inpanel
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: InPanel Control Panel
+# Description:       InPanel is a web-based Linux server management tool
+### END INIT INFO
+
+PROG="inpanel"
+PROG_PATH="/usr/bin/inpanel"
+
+case "$1" in
+    start|stop|status|restart|reload)
+        $PROG_PATH $1
+        ;;
+    config)
+        shift
+        $PROG_PATH config "$@"
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status|restart|reload|config}"
+        exit 1
+        ;;
+esac
+
+exit 0
+EOF
+
+	chmod 755 $(CURDIR)/debian/inpanel/etc/init.d/inpanel
+
+override_dh_installsystemd:
+	dh_installsystemd --name=inpanel

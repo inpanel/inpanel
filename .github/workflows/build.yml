@@ -1,0 +1,216 @@
+name: Build and Publish Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-sdist:
+    name: Build Source Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+          
+      - name: Build source distribution
+        run: python -m build --sdist
+        
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  build-rpm:
+    name: Build RPM Packages
+    runs-on: ubuntu-latest
+    needs: build-sdist
+    strategy:
+      matrix:
+        distro: [centos7, centos8, centos9]
+        
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Download sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+          
+      - name: Build RPM for ${{ matrix.distro }}
+        uses: docker://quay.io/centos/centos:${{ matrix.distro == 'centos7' && '7' || matrix.distro == 'centos8' && 'stream8' || 'stream9' }}
+        with:
+          entrypoint: /bin/bash
+          args: |
+            -c "
+            yum install -y rpm-build python3 python3-devel python3-setuptools python3-wheel make gcc
+            pip3 install build
+            mkdir -p /rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+            cp dist/*.tar.gz /rpmbuild/SOURCES/
+            cp inpanel.spec /rpmbuild/SPECS/
+            rpmbuild --define '_topdir /rpmbuild' -ba /rpmbuild/SPECS/inpanel.spec
+            cp /rpmbuild/RPMS/noarch/*.rpm /github/workspace/dist/
+            "
+            
+      - name: Upload RPM
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-${{ matrix.distro }}
+          path: dist/*.noarch.rpm
+
+  build-deb:
+    name: Build DEB Packages
+    runs-on: ubuntu-latest
+    needs: build-sdist
+    strategy:
+      matrix:
+        distro: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Download sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+          
+      - name: Build DEB for ${{ matrix.distro }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y debhelper python3-all python3-setuptools dpkg-dev
+          
+          mkdir -p deb-build
+          cd deb-build
+          tar xzf ../dist/*.tar.gz
+          cd inpanel-*
+          cp -r ../debian .
+          dpkg-buildpackage -b -us -uc
+          cd ..
+          cp *.deb ../dist/
+          
+      - name: Upload DEB
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-${{ matrix.distro }}
+          path: dist/*.deb
+
+  publish-release:
+    name: Publish to GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-rpm, build-deb]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: packages
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            packages/**/*.rpm
+            packages/**/*.deb
+            dist/*.tar.gz
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-repo:
+    name: Deploy to repo.inpanel.org
+    runs-on: ubuntu-latest
+    needs: [build-rpm, build-deb]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: packages
+          
+      - name: Install repository tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y createrepo-c reprepro gnupg
+          
+      - name: Configure GPG
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --import || true
+          
+      - name: Clone repo.inpanel.org
+        run: |
+          git clone https://${{ secrets.REPO_DEPLOY_TOKEN }}@github.com/inpanel/repo.inpanel.org.git repo
+          
+      - name: Build RPM repository
+        run: |
+          mkdir -p repo/rpm/centos/7
+          mkdir -p repo/rpm/centos/8
+          mkdir -p repo/rpm/centos/9
+          
+          cp packages/rpm-centos7/*.rpm repo/rpm/centos/7/ 2>/dev/null || true
+          cp packages/rpm-centos8/*.rpm repo/rpm/centos/8/ 2>/dev/null || true
+          cp packages/rpm-centos9/*.rpm repo/rpm/centos/9/ 2>/dev/null || true
+          
+          createrepo_c repo/rpm/centos/7
+          createrepo_c repo/rpm/centos/8
+          createrepo_c repo/rpm/centos/9
+          
+      - name: Build DEB repository
+        run: |
+          mkdir -p repo/deb/conf
+          
+          if [ ! -f repo/deb/conf/distributions ]; then
+            cat > repo/deb/conf/distributions << 'EOF'
+Origin: InPanel
+Label: InPanel
+Suite: stable
+Codename: focal
+Version: 1.0
+Architectures: all source
+Components: main
+Description: InPanel Debian/Ubuntu Repository
+EOF
+          fi
+          
+          cp packages/deb-ubuntu-20.04/*.deb repo/deb/ 2>/dev/null || true
+          reprepro -b repo/deb -C main includedeb focal repo/deb/*.deb 2>/dev/null || true
+          
+      - name: Export GPG key
+        run: |
+          mkdir -p repo/gpg
+          gpg --armor --export "${{ secrets.GPG_KEY_ID }}" > repo/gpg/inpanel.gpg.key 2>/dev/null || true
+          
+      - name: Push to repo.inpanel.org
+        run: |
+          cd repo
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git commit -m "Update packages from inpanel v${GITHUB_REF#refs/tags/v}" || true
+          git push origin gh-pages

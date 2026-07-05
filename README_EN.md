@@ -22,8 +22,8 @@ python install.py --dev
 
 ```bash
 service inpanel stop
-rm -rf /usr/local/inpanel/inpanel
-rm -rf /usr/local/bin/inpanelctl
+rm -f /usr/bin/inpanel
+rm -rf /etc/inpanel
 rm -f /etc/init.d/inpanel
 ```
 

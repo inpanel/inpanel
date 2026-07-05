@@ -1,0 +1,14 @@
+Source: inpanel
+Section: admin
+Priority: optional
+Maintainer: Jackson Dou <jksdou@qq.com>
+Build-Depends: debhelper (>= 10), python3-all, python3-setuptools
+Standards-Version: 3.9.6
+Homepage: https://inpanel.org/
+
+Package: inpanel
+Architecture: all
+Depends: python3 (>= 3.7), python3-tornado, python3-psutil, python3-pexpect, python3-cryptography
+Description: InPanel - A Web-based Linux Server Management Tool
+ InPanel is a web-based Linux server management tool that provides
+ a graphical interface for managing Linux servers.

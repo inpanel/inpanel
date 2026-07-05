@@ -6,11 +6,11 @@
         <string>org.inpanel.inpanel</string>
 
         <key>WorkingDirectory</key>
-        <string>/usr/local/inpanel</string>
+        <string>/usr/bin/inpanel</string>
 
         <key>ProgramArguments</key>
         <array>
-            <string>/usr/local/inpanel/inpanel</string>
+            <string>/usr/bin/inpanel/inpanel</string>
         </array>
 
         <key>StandardOutPath</key>

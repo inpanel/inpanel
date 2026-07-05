@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    configure)
+        mkdir -p /var/log/inpanel
+        mkdir -p /etc/inpanel
+
+        if [ -d /etc/systemd/system ]; then
+            systemctl daemon-reload
+            systemctl enable inpanel
+        else
+            update-rc.d inpanel defaults
+        fi
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
