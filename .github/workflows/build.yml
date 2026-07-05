@@ -38,7 +38,13 @@ jobs:
     needs: build-sdist
     strategy:
       matrix:
-        distro: [centos7, centos8, centos9]
+        include:
+          - distro: centos7
+            docker_tag: '7'
+          - distro: centos8
+            docker_tag: 'stream8'
+          - distro: centos9
+            docker_tag: 'stream9'
         
     steps:
       - uses: actions/checkout@v4
@@ -55,7 +61,7 @@ jobs:
           path: dist
           
       - name: Build RPM for ${{ matrix.distro }}
-        uses: docker://quay.io/centos/centos:${{ matrix.distro == 'centos7' && '7' || matrix.distro == 'centos8' && 'stream8' || 'stream9' }}
+        uses: docker://quay.io/centos/centos:${{ matrix.docker_tag }}
         with:
           entrypoint: /bin/bash
           args: |
