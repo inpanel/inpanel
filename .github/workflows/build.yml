@@ -186,16 +186,14 @@ jobs:
           mkdir -p repo/deb/conf
           
           if [ ! -f repo/deb/conf/distributions ]; then
-            cat > repo/deb/conf/distributions << 'EOF'
-Origin: InPanel
-Label: InPanel
-Suite: stable
-Codename: focal
-Version: 1.0
-Architectures: all source
-Components: main
-Description: InPanel Debian/Ubuntu Repository
-EOF
+            echo "Origin: InPanel" > repo/deb/conf/distributions
+            echo "Label: InPanel" >> repo/deb/conf/distributions
+            echo "Suite: stable" >> repo/deb/conf/distributions
+            echo "Codename: focal" >> repo/deb/conf/distributions
+            echo "Version: 1.0" >> repo/deb/conf/distributions
+            echo "Architectures: all source" >> repo/deb/conf/distributions
+            echo "Components: main" >> repo/deb/conf/distributions
+            echo "Description: InPanel Debian/Ubuntu Repository" >> repo/deb/conf/distributions
           fi
           
           cp packages/deb-ubuntu-20.04/*.deb repo/deb/ 2>/dev/null || true
