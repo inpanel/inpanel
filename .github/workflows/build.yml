@@ -46,13 +46,16 @@ jobs:
           - distro: centos9
             docker_tag: 'stream9'
         
+    container:
+      image: quay.io/centos/centos:${{ matrix.docker_tag }}
+      
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+      - name: Install build dependencies
+        run: |
+          yum install -y rpm-build python3 python3-devel python3-setuptools python3-wheel make gcc
+          pip3 install build
           
       - name: Download sdist
         uses: actions/download-artifact@v4
@@ -61,20 +64,13 @@ jobs:
           path: dist
           
       - name: Build RPM for ${{ matrix.distro }}
-        uses: docker://quay.io/centos/centos:${{ matrix.docker_tag }}
-        with:
-          entrypoint: /bin/bash
-          args: |
-            -c "
-            yum install -y rpm-build python3 python3-devel python3-setuptools python3-wheel make gcc
-            pip3 install build
-            mkdir -p /rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-            cp dist/*.tar.gz /rpmbuild/SOURCES/
-            cp inpanel.spec /rpmbuild/SPECS/
-            rpmbuild --define '_topdir /rpmbuild' -ba /rpmbuild/SPECS/inpanel.spec
-            cp /rpmbuild/RPMS/noarch/*.rpm /github/workspace/dist/
-            "
-            
+        run: |
+          mkdir -p /rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+          cp dist/*.tar.gz /rpmbuild/SOURCES/
+          cp inpanel.spec /rpmbuild/SPECS/
+          rpmbuild --define '_topdir /rpmbuild' -ba /rpmbuild/SPECS/inpanel.spec
+          cp /rpmbuild/RPMS/noarch/*.rpm dist/
+          
       - name: Upload RPM
         uses: actions/upload-artifact@v4
         with:
