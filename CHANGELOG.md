@@ -1,4 +1,4 @@
-#### InPanel v1.2.0 (2023-02-xx)
+#### InPanel v1.2.0 (2026-07-05)
 
 > **特别说明：本次变更不兼容之前版本，导致本次更新需要全新安装，不能从之前的版本兼容升级，很抱歉因此给你带来不便。**
 >
@@ -6,17 +6,60 @@
 >
 > - 发布 InPanel v1.2.0
 >
+> **核心重构:**
+>
+> - 代码重构：全面升级到 Python3，移除对 Python2 的支持
+> - 依赖升级：升级 tornado 到 6.0+、psutil 到 5.6+、pexpect 到 4.6+、cryptography 到 2.8+
+> - 项目结构重构：所有源码迁移到 inpanel/ 子目录，符合 Python 包规范
+> - 新增 pyproject.toml，使用现代 Python 打包规范（PEP 621）
+>
+> **安装与分发:**
+>
+> - 发布形式调整：使用 Python 包形式分发，支持 pip/RPM/DEB 多种安装方式
+> - 命令入口统一：`/usr/bin/inpanel`，支持 start/stop/status/restart/reload/run/config 子命令
+> - 新增 yum/apt 一键安装支持，用户可通过 `curl | bash` 自动配置源并安装
+> - 新增 RPM 打包支持，兼容 CentOS/RHEL/Fedora 发行版
+> - 新增 DEB 打包支持，兼容 Ubuntu/Debian 发行版
+> - 新增 GitHub Actions CI/CD 自动构建部署流程，标签触发自动构建
+> - 新增 scripts/build_package.sh，一键构建 RPM/DEB 包
+> - 新增 scripts/build_repo.sh，构建 yum/apt 仓库
+> - 新增 scripts/init_repo.sh，初始化 repo.inpanel.org 仓库
+> - 新增 install_repo.sh，用户一键安装脚本
+>
+> **配置与数据:**
+>
+> - 配置文件调整：移入 /etc/inpanel/config.ini，默认自动生成，默认账号/密码 admin
+> - 日志文件：放置在 /var/log/inpanel 目录
+> - 支持通过命令行修改配置：`inpanel config <section> <key> <value>`
+> - 支持修改用户名和密码：`inpanel config username/password <value>`
+>
+> **服务管理:**
+>
+> - 更新 systemd 服务配置（/usr/lib/systemd/system/inpanel.service）
+> - 更新 init.d 服务配置（/etc/init.d/inpanel），支持 CentOS/RHEL/Ubuntu
+> - 更新 macOS 服务配置（launchd）
+> - 支持服务自启动：安装后自动启用并启动服务
+> - 支持服务卸载：`inpanel uninstall` 命令，可选保留或删除配置和日志
+>
+> **系统兼容:**
+>
+> - 支持 CentOS/RHEL 7/8/9
+> - 支持 Ubuntu 20.04/22.04/24.04
+> - 支持 Debian 10/11/12
+> - 支持 macOS 系统基础功能
+> - 基础功能支持：系统概览、文件管理、用户管理、进程查看等
+>
 > **功能改进:**
 >
-> - 代码重构：升级到 Python3，同时移除对 Python2 的支持，升级 tornado 及其他依赖包
-> - 发布形式调整：通过构建单个二进制可执行文件进行分发和运行，安装位置可自行调整，推荐默认位置：/usr/bin/inpanel
-> - 配置文件调整：移入 /etc/inpanel/config.ini，默认自动生成，默认账号/密码 admin
-> - 其他数据文件：放置在 /usr/bin/inpanel/data/ 目录
-> - 系统兼容：支持在不同 Linux 发行版和 Mac 系统下的基础功能支持：如系统概览、文件管理、用户管理、进程查看等
-> - 新增运行模式设置：生产模式、演示模式，（调整到演示模式后不支持再次修改）
+> - 新增运行模式设置：生产模式、演示模式（调整到演示模式后不支持再次修改）
 > - 新增页面：【关于应用】、【捐助项目】，增加了捐助通道（微信、支付宝扫码）
-> - 文件管理：新增图片预览
-> - 新增命令脚本：用于服务配置和服务控制，安装位置在 /usr/bin/inpanelctl
+> - 文件管理：新增图片预览功能
+> - 插件系统：支持 acme、shadowsocks-libev 等插件
+> - 文件管理：支持回收站机制
+> - 站点管理：支持 Nginx/Apache 站点的创建和管理
+> - 数据库管理：支持 MySQL/MariaDB 数据库管理
+> - 软件包管理：支持 yum/dnf/apt 多种包管理器
+> - 防火墙管理：支持 iptables/firewalld/ufw
 >
 > **Bug 修复:**
 >
