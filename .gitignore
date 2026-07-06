@@ -7,6 +7,6 @@
 dist/
 build/
 test/
-data/inpanel.pid
+inpanel/data/*
 inpanel.egg-info
 *.egg-info
