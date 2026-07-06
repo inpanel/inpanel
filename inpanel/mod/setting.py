@@ -18,6 +18,7 @@ import tornado.httpclient
 import tornado.escape
 from ..base import app_api
 from .. import utils
+from .config import update_info_config
 from . import server
 
 
@@ -62,7 +63,8 @@ async def handle_get(context, section):
 
     elif section == 'upver':
         force = context.get_argument('force', '')
-        lastcheck = context.config.get('server', 'lastcheckupdate')
+        update_info = update_info_config()
+        lastcheck = update_info.get('update', 'lastcheck')
         lastcheck = 0 if lastcheck == '' else int(lastcheck)
 
         # detect new version daily
@@ -77,8 +79,8 @@ async def handle_get(context, section):
                     if not data:
                         context.write({'code': -1, 'msg': '获取新版本信息失败！'})
                     else:
-                        context.config.set('server', 'lastcheckupdate', int(time.time()))
-                        context.config.set('server', 'updateinfo', data)
+                        update_info.set('update', 'lastcheck', int(time.time()))
+                        update_info.set('update', 'updateinfo', data)
                         try:
                             data = tornado.escape.json_decode(data)
                             context.write({'code': 0, 'msg':'', 'data': data})
@@ -87,7 +89,7 @@ async def handle_get(context, section):
             except:
                 context.write({'code': -1, 'msg': '获取新版本信息失败！'})
         else:
-            data = context.config.get('server', 'updateinfo')
+            data = update_info.get('update', 'updateinfo')
             try:
                 data = tornado.escape.json_decode(data)
             except:

@@ -67,6 +67,8 @@ if hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
     config_path  = '/etc/inpanel/'
     config_file  = '/etc/inpanel/config.ini'
     runlogs_path = '/etc/inpanel/runlogs.ini'
+    update_info_path = '/etc/inpanel/update_info.ini'
+    history_path = '/etc/inpanel/history.txt'
     logging_path = '/var/log/inpanel/'
     logfile      = '/var/log/inpanel/main.log'
     logerror     = '/var/log/inpanel/error.log'
@@ -80,6 +82,8 @@ else:
         config_path  = '/etc/inpanel/'
         config_file  = '/etc/inpanel/config.ini'
         runlogs_path = '/etc/inpanel/runlogs.ini'
+        update_info_path = '/etc/inpanel/update_info.ini'
+        history_path = '/etc/inpanel/history.txt'
         logging_path = '/var/log/inpanel/'
         logfile      = '/var/log/inpanel/main.log'
         logerror     = '/var/log/inpanel/error.log'
@@ -91,6 +95,8 @@ else:
         config_path  = str(Path(root_path) / 'data')
         config_file  = str(Path(root_path) / 'data' / 'config.ini')
         runlogs_path = str(Path(root_path) / 'data' / 'runlogs.ini')
+        update_info_path = str(Path(root_path) / 'data' / 'update_info.ini')
+        history_path = str(Path(root_path) / 'data' / 'history.txt')
         logging_path = str(Path(root_path) / 'data')
         logfile      = str(Path(root_path) / 'data' / 'main.log')
         logerror     = str(Path(root_path) / 'data' / 'error.log')
@@ -183,8 +189,8 @@ __all__ = [
     'run_type', 'config_file', 'root_path', 'COMMENTFLAG', 'GENBY', 'execfile',
     'releasetime', 'version_info', 'server_info', 'os_name', 'os_title',
     'os_version', 'os_versint', 'os_platform', 'kernel_name', 'kernel_release',
-    'kernel_version', 'hostname', 'machine', 'runlogs_path', 'logfile', 'logerror',
-    'pidfile', 'processor'
+    'kernel_version', 'hostname', 'machine', 'runlogs_path', 'update_info_path',
+    'history_path', 'logfile', 'logerror', 'pidfile', 'processor'
 ]
 
 if __name__ == '__main__':

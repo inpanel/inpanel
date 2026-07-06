@@ -49,6 +49,42 @@ def web_handler(context):
         lastfile = context.runlogs.get('file', 'lastfile')
         context.write({'code': 0, 'msg': '', 'data': {'lastdir': lastdir, 'lastfile': lastfile}})
 
+    elif action == 'history':
+        from ..base import history_path
+        from pathlib import Path
+        paths = []
+        if Path(history_path).exists():
+            with open(history_path, 'r', encoding='utf-8') as f:
+                paths = [line.strip() for line in f.readlines() if line.strip()]
+        context.write({'code': 0, 'msg': '', 'data': paths})
+
+    elif action == 'add_history':
+        path = context.get_argument('path', '')
+        if not path:
+            context.write({'code': -1, 'msg': '路径不能为空！'})
+            return
+        
+        from ..base import history_path
+        from pathlib import Path
+        
+        paths = []
+        if Path(history_path).exists():
+            with open(history_path, 'r', encoding='utf-8') as f:
+                paths = [line.strip() for line in f.readlines() if line.strip()]
+        
+        if path in paths:
+            paths.remove(path)
+        paths.insert(0, path)
+        
+        if len(paths) > 30:
+            paths = paths[:30]
+        
+        Path(history_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(history_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(paths))
+        
+        context.write({'code': 0, 'msg': '', 'data': paths})
+
     elif action == 'listdir':
         path = context.get_argument('path', '')
         showhidden = context.get_argument('showhidden', 'off')

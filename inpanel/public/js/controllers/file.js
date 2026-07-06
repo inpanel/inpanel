@@ -37,34 +37,23 @@ var FileCtrl = [
         };
 
         var set_history_path = function(p) {
-            if ($scope.path_history.length == 0) {
-                $scope.path_history.unshift(p);
-            } else {
-                var num = $scope.path_history.indexOf(p);
-                if (num > -1) {
-                    $scope.path_history.splice(num, 1)
-                    $scope.path_history.unshift(p);
-                } else if (num == -1) {
-                    $scope.path_history.unshift(p);
+            Request.post('/api/operation/file', {
+                'action': 'add_history',
+                'path': p
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.path_history = data.data;
                 }
-            }
-            if ($scope.path_history.length > 30) {
-                $scope.path_history.length = 30;
-            }
-            set_cookie('path_history', JSON.stringify($scope.path_history));
+            }, false, true);
         };
         var get_history_path = function() {
-            var path_tmp = get_cookie('path_history');
-            if (path_tmp) {
-                try {
-                    path_tmp = JSON.parse(path_tmp);
-                    if (Object.prototype.toString.call(path_tmp) == '[object Array]') {
-                        $scope.path_history = path_tmp;
-                    };
-                } catch (error) {
-                    $scope.path_history = [];
+            Request.post('/api/operation/file', {
+                'action': 'history'
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.path_history = data.data;
                 }
-            }
+            }, false, true);
         };
 
         $scope.loaded = false;

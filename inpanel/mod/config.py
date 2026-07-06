@@ -11,7 +11,7 @@
 from configparser import RawConfigParser
 from pathlib import Path
 
-from ..base import config_file, runlogs_path, config_path, run_type
+from ..base import config_file, runlogs_path, update_info_path, config_path, run_type
 from ..lib.filelock import FileLock
 
 
@@ -27,8 +27,6 @@ def load_config(inifile=None, configs=None):
             'ip': '*',
             'port': '14433',
             'forcehttps': 'off',  # force use https
-            'lastcheckupdate': '0',
-            'updateinfo': '',
             'sslkey': str(Path(ssl_cert_path) / 'inpanel.key'),
             'sslcrt': str(Path(ssl_cert_path) / 'inpanel.crt')
         },
@@ -64,6 +62,16 @@ def runlogs_config():
         'file': {
             'lastdir': str(Path.home()), # user Home path
             'lastfile': '',
+        }
+    })
+
+
+def update_info_config():
+    # to record version update information separately from config
+    return load_config(update_info_path, {
+        'update': {
+            'lastcheck': '0',
+            'updateinfo': '',
         }
     })
 
@@ -333,7 +341,7 @@ def writeconfig(filepath, readfunc, writefunc, **params):
     return True
 
 
-__all__ = ['load_config', 'runlogs_config', 'Config', 'raw_loadconfig', 'raw_saveconfig', 'loadconfig', 'saveconfig', 'readconfig', 'writeconfig']
+__all__ = ['load_config', 'runlogs_config', 'update_info_config', 'Config', 'raw_loadconfig', 'raw_saveconfig', 'loadconfig', 'saveconfig', 'readconfig', 'writeconfig']
 
 if __name__ == '__main__':
     import json

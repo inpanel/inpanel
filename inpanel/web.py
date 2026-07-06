@@ -517,7 +517,6 @@ class OperationHandler(RequestHandler):
     def service(self):
         mod.service.web_handler(self)
 
-
     def user(self):
         mod.user.web_handler(self)
 
@@ -530,18 +529,14 @@ class OperationHandler(RequestHandler):
     def nginx(self):
         mod.nginx.web_handler(self)
 
-
     def mysql(self):
         mod.mysql.web_handler(self)
-
 
     def php(self):
         mod.php.web_handler(self)
 
-
     def ssh(self):
         mod.ssh.web_handler(self)
-
 
     def cron(self):
         mod.cron.web_handler(self)
