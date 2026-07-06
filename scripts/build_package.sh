@@ -81,9 +81,9 @@ build_rpm() {
     
     cp "$sdist_file" "$rpmbuild_dir/SOURCES/"
     
-    if [ -f "$SOURCE_DIR/inpanel.spec" ]; then
-        cp "$SOURCE_DIR/inpanel.spec" "$rpmbuild_dir/SPECS/"
-        rpmbuild --define "_topdir $rpmbuild_dir" -ba "$rpmbuild_dir/SPECS/inpanel.spec" || fail "Failed to build RPM"
+    if [ -f "$SOURCE_DIR/rpmbuild.spec" ]; then
+        cp "$SOURCE_DIR/rpmbuild.spec" "$rpmbuild_dir/SPECS/"
+        rpmbuild --define "_topdir $rpmbuild_dir" -ba "$rpmbuild_dir/SPECS/rpmbuild.spec" || fail "Failed to build RPM"
     else
         fail "RPM spec file not found"
     fi

@@ -63,8 +63,8 @@ jobs:
             pip3 install build
             mkdir -p /rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
             cp dist/*.tar.gz /rpmbuild/SOURCES/
-            cp inpanel.spec /rpmbuild/SPECS/
-            rpmbuild --define '_topdir /rpmbuild' -ba /rpmbuild/SPECS/inpanel.spec
+            cp rpmbuild.spec /rpmbuild/SPECS/
+            rpmbuild --define '_topdir /rpmbuild' -ba /rpmbuild/SPECS/rpmbuild.spec
             cp /rpmbuild/RPMS/noarch/*.rpm dist/
             "
           

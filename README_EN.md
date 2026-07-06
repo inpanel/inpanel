@@ -276,7 +276,7 @@ pip install build
 python -m build
 
 # Build RPM package (requires rpmbuild)
-rpmbuild -bb inpanel.spec
+rpmbuild -bb rpmbuild.spec
 
 # Build DEB package (requires debuild)
 debuild -us -uc

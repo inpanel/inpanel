@@ -308,7 +308,7 @@ pip install build
 python -m build
 
 # 构建 RPM 包（需要 rpmbuild）
-rpmbuild -bb inpanel.spec
+rpmbuild -bb rpmbuild.spec
 
 # 构建 DEB 包（需要 debuild）
 debuild -us -uc
