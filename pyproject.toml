@@ -46,6 +46,7 @@ inpanel = "inpanel.app:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["inpanel*"]
+exclude = ["test*", "tests*"]
 
 [tool.setuptools.package-data]
 inpanel = [
