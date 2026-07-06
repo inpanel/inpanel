@@ -1,12 +1,11 @@
 %define name inpanel
-%define version 1.2.27
 %define release 1
 %define arch noarch
 %define summary InPanel - A Web-based Linux Server Management Tool
 %define desc InPanel is a web-based Linux server management tool
 
 Name: %{name}
-Version: %{version}
+Version: %{pyproject_version}
 Release: %{release}
 Summary: %{summary}
 License: BSD
@@ -14,7 +13,7 @@ URL: https://inpanel.org/
 Group: System/Administration
 BuildArch: %{arch}
 BuildRequires: python3-devel python3-setuptools python3-wheel
-Requires: python3 >= 3.7 python3-tornado python3-psutil python3-pexpect python3-cryptography
+Requires: python3 >= 3.6 python3-tornado python3-psutil python3-pexpect python3-cryptography
 
 %description
 %{desc}
@@ -117,5 +116,6 @@ fi
 %dir /var/log/inpanel
 
 %changelog
-* Wed Jul 05 2026 Jackson Dou <jksdou@qq.com> - 1.2.27-1
-- Initial release
+* Mon Jul 06 2026 Jackson Dou <jksdou@qq.com> - 1.2.0-1
+- Python 3.6+ compatibility
+- Version unified management

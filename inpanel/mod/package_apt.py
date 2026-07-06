@@ -9,6 +9,8 @@
 '''Module for APT(Advanced Packaging Tool) Management'''
 
 import shutil
+from typing import List, Tuple
+
 from .package_base import PackageManager
 from .system import is_debian_family
 
@@ -21,39 +23,39 @@ class AptPM(PackageManager):
             return False
         return is_debian_family()
     
-    def install(self, packages: list[str], assume_yes: bool = True) -> tuple[bool, str]:
+    def install(self, packages: List[str], assume_yes: bool = True) -> Tuple[bool, str]:
         cmd = ["apt"]
         if assume_yes:
             cmd.append("-y")
         cmd.extend(["install"] + packages)
         return self._run_cmd(cmd)
     
-    def remove(self, packages: list[str], assume_yes: bool = True) -> tuple[bool, str]:
+    def remove(self, packages: List[str], assume_yes: bool = True) -> Tuple[bool, str]:
         cmd = ["apt"]
         if assume_yes:
             cmd.append("-y")
         cmd.extend(["remove"] + packages)
         return self._run_cmd(cmd)
     
-    def refresh(self) -> tuple[bool, str]:
+    def refresh(self) -> Tuple[bool, str]:
         return self._run_cmd(["apt", "update"])
     
-    def search(self, pattern: str) -> tuple[bool, str]:
+    def search(self, pattern: str) -> Tuple[bool, str]:
         return self._run_cmd(["apt", "search", pattern])
     
-    def list_installed(self) -> tuple[bool, str]:
+    def list_installed(self) -> Tuple[bool, str]:
         return self._run_cmd(["dpkg", "-l"])
     
-    def update(self) -> tuple[bool, str]:
+    def update(self) -> Tuple[bool, str]:
         return self._run_cmd(["apt", "-y", "upgrade"])
     
-    def upgrade(self) -> tuple[bool, str]:
+    def upgrade(self) -> Tuple[bool, str]:
         return self._run_cmd(["apt", "-y", "full-upgrade"])
     
-    def info(self, package: str) -> tuple[bool, str]:
+    def info(self, package: str) -> Tuple[bool, str]:
         return self._run_cmd(["apt", "show", package])
     
-    def clean(self) -> tuple[bool, str]:
+    def clean(self) -> Tuple[bool, str]:
         return self._run_cmd(["apt", "clean"])
     
     def get_os_type(self) -> str:

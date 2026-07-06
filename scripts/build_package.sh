@@ -117,6 +117,16 @@ build_deb() {
         fail "Debian directory not found"
     fi
     
+    local version=$(grep '^version =' "$SOURCE_DIR/pyproject.toml" | sed 's/version = "\(.*\)"/\1/')
+    
+    cat > debian/changelog << EOF
+inpanel (${version}-1) unstable; urgency=medium
+
+  * Build from pyproject.toml version ${version}
+
+ -- Jackson Dou <jksdou@qq.com>  $(date -R)
+EOF
+    
     dpkg-buildpackage -b -us -uc || fail "Failed to build DEB"
     
     cd "$deb_build_dir"

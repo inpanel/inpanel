@@ -8,6 +8,8 @@
 '''Module for YUM Package Manager'''
 
 import shutil
+from typing import List, Tuple
+
 from .package_base import PackageManager
 from .system import is_rhel_family, get_os_version_major
 
@@ -26,37 +28,37 @@ class YumPM(PackageManager):
         version_major = get_os_version_major()
         return version_major in (5, 6, 7) or version_major == 0
     
-    def install(self, packages: list[str], assume_yes: bool = True) -> tuple[bool, str]:
+    def install(self, packages: List[str], assume_yes: bool = True) -> Tuple[bool, str]:
         cmd = ["yum"]
         if assume_yes:
             cmd.append("-y")
         cmd.extend(["install"] + packages)
         return self._run_cmd(cmd)
     
-    def remove(self, packages: list[str], assume_yes: bool = True) -> tuple[bool, str]:
+    def remove(self, packages: List[str], assume_yes: bool = True) -> Tuple[bool, str]:
         cmd = ["yum"]
         if assume_yes:
             cmd.append("-y")
         cmd.extend(["remove"] + packages)
         return self._run_cmd(cmd)
     
-    def refresh(self) -> tuple[bool, str]:
+    def refresh(self) -> Tuple[bool, str]:
         return self._run_cmd(["yum", "makecache"])
     
-    def search(self, pattern: str) -> tuple[bool, str]:
+    def search(self, pattern: str) -> Tuple[bool, str]:
         return self._run_cmd(["yum", "search", pattern])
     
-    def list_installed(self) -> tuple[bool, str]:
+    def list_installed(self) -> Tuple[bool, str]:
         return self._run_cmd(["yum", "list", "installed"])
     
-    def update(self) -> tuple[bool, str]:
+    def update(self) -> Tuple[bool, str]:
         return self._run_cmd(["yum", "-y", "update"])
     
-    def upgrade(self) -> tuple[bool, str]:
+    def upgrade(self) -> Tuple[bool, str]:
         return self._run_cmd(["yum", "-y", "upgrade"])
     
-    def info(self, package: str) -> tuple[bool, str]:
+    def info(self, package: str) -> Tuple[bool, str]:
         return self._run_cmd(["yum", "info", package])
     
-    def clean(self) -> tuple[bool, str]:
+    def clean(self) -> Tuple[bool, str]:
         return self._run_cmd(["yum", "clean", "all"])

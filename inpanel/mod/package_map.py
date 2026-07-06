@@ -7,6 +7,8 @@
 # The full license can be found in 'LICENSE'.
 '''Module for Package Name Mapping'''
 
+from typing import List, Tuple, Dict
+
 PACKAGE_MAP = {
     "nginx": {
         "rhel": "nginx",
@@ -279,7 +281,7 @@ PACKAGE_MAP = {
 }
 
 
-def resolve_package_names(pm, base_names: list[str]) -> list[str]:
+def resolve_package_names(pm, base_names: List[str]) -> List[str]:
     """根据包管理器类型解析实际包名"""
     os_type = pm.get_os_type()
     resolved = []
@@ -305,7 +307,7 @@ def is_installed(pm, package: str) -> bool:
     return False
 
 
-def install_if_not_exists(pm, packages: list[str]) -> tuple[bool, str]:
+def install_if_not_exists(pm, packages: List[str]) -> Tuple[bool, str]:
     """只安装未安装的包"""
     resolved = resolve_package_names(pm, packages)
     to_install = []
@@ -317,7 +319,7 @@ def install_if_not_exists(pm, packages: list[str]) -> tuple[bool, str]:
     return pm.install(to_install)
 
 
-def parse_search_output(output: str) -> list[dict]:
+def parse_search_output(output: str) -> List[Dict]:
     """解析搜索命令输出，返回包列表"""
     packages = []
     lines = output.split('\n')
@@ -332,7 +334,7 @@ def parse_search_output(output: str) -> list[dict]:
     return packages
 
 
-def parse_list_installed_output(output: str) -> list[dict]:
+def parse_list_installed_output(output: str) -> List[Dict]:
     """解析已安装包列表输出"""
     packages = []
     lines = output.split('\n')

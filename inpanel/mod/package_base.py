@@ -9,6 +9,7 @@
 
 import subprocess
 from abc import ABC, abstractmethod
+from typing import List, Tuple
 
 from .system import (
     get_os_family,
@@ -28,7 +29,7 @@ class PackageManager(ABC):
         pass
     
     @abstractmethod
-    def install(self, packages: list[str], assume_yes: bool = True) -> tuple[bool, str]:
+    def install(self, packages: List[str], assume_yes: bool = True) -> Tuple[bool, str]:
         """
         安装包
         :param packages: 包名列表（内部统一用小写）
@@ -38,20 +39,20 @@ class PackageManager(ABC):
         pass
     
     @abstractmethod
-    def remove(self, packages: list[str], assume_yes: bool = True) -> tuple[bool, str]:
+    def remove(self, packages: List[str], assume_yes: bool = True) -> Tuple[bool, str]:
         """卸载包"""
         pass
     
     @abstractmethod
-    def refresh(self) -> tuple[bool, str]:
+    def refresh(self) -> Tuple[bool, str]:
         """更新包缓存（apt update / yum makecache / dnf makecache）"""
         pass
     
-    def search(self, pattern: str) -> tuple[bool, str]:
+    def search(self, pattern: str) -> Tuple[bool, str]:
         """搜索包"""
         return (False, "Not implemented")
     
-    def list_installed(self) -> tuple[bool, str]:
+    def list_installed(self) -> Tuple[bool, str]:
         """列出已安装包"""
         return (False, "Not implemented")
     
@@ -60,7 +61,7 @@ class PackageManager(ABC):
         return get_os_family()
     
     @staticmethod
-    def _run_cmd(cmd: list[str]) -> tuple[bool, str]:
+    def _run_cmd(cmd: List[str]) -> Tuple[bool, str]:
         """执行 shell 命令并返回结果"""
         try:
             result = subprocess.run(

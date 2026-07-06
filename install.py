@@ -89,7 +89,7 @@ class Install(object):
             elif opt_name in ('-m', '--mode'):
                 self.install_mode = arg_value
             elif opt_name in ('-v', '--version'):
-                print('v1.2.27')
+                print('v1.2.0')
                 sys.exit(0)
             elif opt_name in ('--help'):
                 print('Usage: install.py [OPTIONS...]')

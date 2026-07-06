@@ -11,7 +11,31 @@ import os
 from pathlib import Path
 from platform import mac_ver, platform, uname, win32_ver
 
-__version__ = '1.2.27'
+pyproject_path = Path(__file__).parent.parent / 'pyproject.toml'
+if pyproject_path.exists():
+    with open(pyproject_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            if line.startswith('version ='):
+                __version__ = line.split('=')[1].strip().strip('"').strip("'")
+                break
+        else:
+            __version__ = '1.2.0'
+else:
+    try:
+        from importlib.metadata import version, PackageNotFoundError
+        try:
+            __version__ = version('InPanel')
+        except PackageNotFoundError:
+            __version__ = '1.2.0'
+    except ImportError:
+        try:
+            from pkg_resources import get_distribution, DistributionNotFound
+            try:
+                __version__ = get_distribution('InPanel').version
+            except DistributionNotFound:
+                __version__ = '1.2.0'
+        except ImportError:
+            __version__ = '1.2.0'
 __author__ = 'Jackson Dou'
 __license__ = 'BSD'
 

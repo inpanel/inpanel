@@ -111,14 +111,14 @@ def cron_list(level='normal', user=None):
         for line in f:
             line = line.strip()
             line_user = ''
-            if re.findall("^\d|^\*|^\-", line):
+            if re.findall(r"^\d|^\*|^\-", line):
                 if level == 'normal':
-                    text = re.split('\s+', line, 5)
+                    text = re.split(r'\s+', line, 5)
                     command = text[5]
                     line_user = user
                 elif level == 'system':
                     # this user's list
-                    text = re.split('\s+', line, 6)
+                    text = re.split(r'\s+', line, 6)
                     if user and user != text[5]:
                         continue
                     else:
@@ -178,13 +178,13 @@ def cron_mod(user, id, minute, hour, day, month, weekday, command, level, currli
     i, j = 0, 0
     for line in lines:
         j += 1
-        if re.findall("^\d|^\*|^\-", line):
+        if re.findall(r"^\d|^\*|^\-", line):
             if level == 'normal':
                 i += 1
             elif level == 'system':
                 # if currlist is this user's list
                 if currlist and currlist == user:
-                    text = re.split('\s+', line, 6)
+                    text = re.split(r'\s+', line, 6)
                     if user == text[5]:
                         i += 1
                 else:
@@ -213,12 +213,12 @@ def cron_del(user, id, level, currlist=''):
     i, j = 0, 0
     for line in lines:
         j += 1
-        if re.findall("^\d|^\*|^\-", line):
+        if re.findall(r"^\d|^\*|^\-", line):
             if level == 'normal':
                 i += 1
             elif level == 'system':
                 if currlist and currlist == user:
-                    text = re.split('\s+', line, 6)
+                    text = re.split(r'\s+', line, 6)
                     if user == text[5]:
                         i += 1
                 else:

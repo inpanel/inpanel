@@ -7,6 +7,8 @@
 # The full license can be found in 'LICENSE'.
 '''Module for Package Manager Integration'''
 
+from typing import Optional
+
 from .package_base import PackageManager
 from .package_yum import YumPM
 from .package_dnf import DnfPM
@@ -22,7 +24,7 @@ from .package_map import (
 )
 
 
-def get_package_manager() -> PackageManager | None:
+def get_package_manager() -> Optional[PackageManager]:
     """工厂函数：根据系统返回对应的包管理器实例"""
     managers = [DnfPM(), YumPM(), AptPM()]
     for mgr in managers:

@@ -139,7 +139,7 @@ def _sql(child, sql, returnresult=True, includefields=True):
 def _escape(string):
     """Escape a string.
     """
-    return re.escape(string).replace('\_', '_').replace('\%', '%')
+    return re.escape(string).replace(r'\_', '_').replace(r'\%', '%')
 
 def fupdatepwd(pwd):
     """Force update password of root.

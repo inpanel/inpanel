@@ -7,7 +7,7 @@
 # The full license can be found in 'LICENSE'.
 '''Module for Firewall Manager Integration'''
 
-from typing import Dict
+from typing import Dict, Optional
 
 from .firewall_base import FirewallManager
 from .firewall_firewalld import FirewalldPM
@@ -16,7 +16,7 @@ from .firewall_ufw import UfwPM
 from .firewall_macos import MacosFirewallPM
 
 
-def get_firewall_manager() -> FirewallManager | None:
+def get_firewall_manager() -> Optional[FirewallManager]:
     """工厂函数：根据系统返回对应的防火墙管理器实例"""
     managers = [FirewalldPM(), UfwPM(), IptablesPM(), MacosFirewallPM()]
     for mgr in managers:
