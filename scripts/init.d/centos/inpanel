@@ -1,0 +1,105 @@
+#!/bin/bash
+#
+# Copyright (c) 2017-2026 Jackson Dou
+# All rights reserved.
+#
+# InPanel is distributed under the terms of The New BSD License.
+# The full license can be found in 'LICENSE'.
+#
+# InPanel control script for CentOS.
+# chkconfig: 2345 99 01
+# description: InPanel Control Panel
+
+NAME='inpanel'
+DAEMON='/usr/bin/inpanel'
+LOCKFILE='/var/lock/subsys/inpanel'
+
+# Source function library.
+if [ -f /etc/rc.d/init.d/functions ];then
+   . /etc/rc.d/init.d/functions
+else
+   echo 'not found file /etc/rc.d/init.d/functions'
+   exit 1
+fi
+
+# Source networking configuration.
+if [ -f /etc/sysconfig/network ];then
+   . /etc/sysconfig/network
+fi
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+start() {
+    echo -n $"Starting InPanel: "
+    $DAEMON start
+    retval=$?
+    [ $retval -eq 0 ] && touch $LOCKFILE
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping InPanel: "
+    $DAEMON stop
+    retval=$?
+    [ $retval -eq 0 ] && rm -f $LOCKFILE
+    return $retval
+}
+
+restart() {
+    $DAEMON restart
+    retval=$?
+    return $retval
+}
+
+reload() {
+    $DAEMON reload
+    retval=$?
+    return $retval
+}
+
+rh_status() {
+    $DAEMON status
+}
+
+show_help() {
+    echo "Usage: $NAME {start|stop|status|restart|reload|config}"
+    exit 2
+}
+
+if [ $# -lt 1 ]; then
+    show_help
+fi
+
+case "$1" in
+    start)
+        $DAEMON status >/dev/null 2>&1 && exit 0
+        start
+        ;;
+    stop)
+        $DAEMON status >/dev/null 2>&1 || exit 0
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    reload)
+        reload
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        $DAEMON status >/dev/null 2>&1 || exit 7
+        restart
+        ;;
+    config)
+        shift
+        $DAEMON config "$@"
+        ;;
+    *)
+        show_help
+        ;;
+esac
+
+exit $?

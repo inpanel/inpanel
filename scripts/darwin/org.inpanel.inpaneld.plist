@@ -3,14 +3,14 @@
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>org.inpanel.inpaneld</string>
+        <string>org.inpanel.inpanel</string>
 
         <key>WorkingDirectory</key>
-        <string>/usr/local/inpanel</string>
+        <string>/usr/bin/inpanel</string>
 
         <key>ProgramArguments</key>
         <array>
-            <string>/usr/local/inpanel/server.py</string>
+            <string>/usr/bin/inpanel/inpanel</string>
         </array>
 
         <key>StandardOutPath</key>

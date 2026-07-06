@@ -1,0 +1,266 @@
+<div navbar ng-init="currentItem='utils.firewall'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>防火墙管理</h3>
+    </div>
+
+    <div class="tabbable" ng-init="load()">
+        <div ng-show="loading"><div waiting></div></div>
+        
+        <div ng-hide="loading">
+            <div ng-show="firewall.type == 'unknown'" class="alert alert-danger">
+                <strong>错误：</strong>未检测到支持的防火墙类型！
+            </div>
+            
+            <div ng-hide="firewall.type == 'unknown'">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4>防火墙状态</h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>防火墙类型：</label>
+                                    <span class="label label-info">{{firewall.type | uppercase}}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>运行状态：</label>
+                                    <span ng-class="firewall.running && 'label label-success' || 'label label-danger'">
+                                        {{firewall.running && '运行中' || '已停止'}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>详细信息：</label>
+                                    <span class="text-muted">{{firewall.status}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-success" ng-click="firewall_start()" ng-disabled="firewall.running">
+                                <i class="glyphicon glyphicon-play"></i> 启动
+                            </button>
+                            <button class="btn btn-danger" ng-click="firewall_stop()" ng-disabled="!firewall.running">
+                                <i class="glyphicon glyphicon-stop"></i> 停止
+                            </button>
+                            <button class="btn btn-warning" ng-click="firewall_restart()">
+                                <i class="glyphicon glyphicon-refresh"></i> 重启
+                            </button>
+                            <button class="btn btn-default" ng-click="firewall_enable()" ng-disabled="firewall.running">
+                                <i class="glyphicon glyphicon-ok-circle"></i> 开机自启
+                            </button>
+                            <button class="btn btn-default" ng-click="firewall_disable()">
+                                <i class="glyphicon glyphicon-remove-circle"></i> 关闭自启
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4>规则列表</h4>
+                        <div class="pull-right">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-default" title="刷新规则" ng-click="load_rules()">
+                                    <i class="glyphicon glyphicon-refresh"></i>
+                                </button>
+                                <button class="btn btn-default" title="添加端口规则" ng-click="add_port_rule_confirm()">
+                                    <i class="glyphicon glyphicon-plus"></i> 添加端口
+                                </button>
+                                <button class="btn btn-default" title="添加IP规则" ng-click="add_ip_rule_confirm()">
+                                    <i class="glyphicon glyphicon-plus"></i> 添加IP
+                                </button>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-hover table-bordered table-condensed">
+                            <thead>
+                                <tr>
+                                    <th style="width:60px;">序号</th>
+                                    <th style="width:80px;">类型</th>
+                                    <th style="width:100px;">端口/协议</th>
+                                    <th style="width:150px;">IP地址</th>
+                                    <th style="width:80px;">动作</th>
+                                    <th style="width:100px;">区域</th>
+                                    <th>描述</th>
+                                    <th style="width:120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="(index, rule) in firewall.rules">
+                                    <td class="text-right">{{index+1}}</td>
+                                    <td>
+                                        <span ng-class="rule.type == 'port' && 'label label-primary' || (rule.type == 'ip' && 'label label-warning' || 'label label-info')">
+                                            {{rule.type == 'port' && '端口' || (rule.type == 'ip' && 'IP' || '服务')}}
+                                        </span>
+                                    <td>{{rule.port && (rule.port + '/' + rule.protocol) || '-'}}</td>
+                                    <td>{{rule.ip || '-'}}</td>
+                                    <td>
+                                        <span ng-class="rule.action == 'allow' && 'label label-success' || 'label label-danger'">
+                                            {{rule.action == 'allow' && '允许' || '拒绝'}}
+                                        </span>
+                                    </td>
+                                    <td>{{rule.zone || '-'}}</td>
+                                    <td>{{rule.description}}</td>
+                                    <td>
+                                        <button class="btn btn-default btn-xs" ng-click="remove_port_rule_confirm(rule)" ng-show="rule.type == 'port'">
+                                            删除端口
+                                        </button>
+                                        <button class="btn btn-default btn-xs" ng-click="remove_ip_rule_confirm(rule)" ng-show="rule.type == 'ip'">
+                                            删除IP
+                                        </button>
+                                        <button class="btn btn-default btn-xs" ng-click="remove_app_rule_confirm(rule)" ng-show="rule.type == 'app'">
+                                            删除应用
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr ng-show="firewall.rules.length == 0">
+                                    <td colspan="8" class="text-center text-muted">暂无规则</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="firewall-del-app" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">删除应用规则</h3>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除应用规则 <strong>{{del_app.app_path}}</strong> 吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-danger" onclick="$('#firewall-del-app').modal('hide')" ng-click="remove_app_rule()">确认删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="firewall-add-port" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">添加端口规则</h3>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">端口号：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="number" ng-model="add_port.port" placeholder="如: 80" min="1" max="65535">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">协议：</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" ng-model="add_port.protocol">
+                                <option value="tcp">TCP</option>
+                                <option value="udp">UDP</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline" ng-show="firewall.type == 'firewalld'">
+                        <label class="col-sm-3 control-label">区域：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="add_port.zone" placeholder="如: public">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#firewall-add-port').modal('hide')" ng-click="add_port_rule()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="firewall-add-ip" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">添加IP规则</h3>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">IP地址：</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" type="text" ng-model="add_ip.ip" placeholder="如: 192.168.1.100">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">动作：</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" ng-model="add_ip.action_type">
+                                <option value="allow">允许</option>
+                                <option value="deny">拒绝</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#firewall-add-ip').modal('hide')" ng-click="add_ip_rule()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="firewall-del-port" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">删除端口规则</h3>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除端口规则 <strong>{{del_port.port}}/{{del_port.protocol}}</strong> 吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-danger" onclick="$('#firewall-del-port').modal('hide')" ng-click="remove_port_rule()">确认删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="firewall-del-ip" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">删除IP规则</h3>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除IP规则 <strong>{{del_ip.ip}}</strong> 吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-danger" onclick="$('#firewall-del-ip').modal('hide')" ng-click="remove_ip_rule()">确认删除</button>
+            </div>
+        </div>
+    </div>
+</div>

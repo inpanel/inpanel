@@ -1466,7 +1466,7 @@ var UtilsRepositoryCtrl = [
         };
         $scope.load_yum = function (init) {
             if (!init && !$scope.loading.yum) {
-                return; // Prevent duplicate requests
+                return;
             }
             $scope.loading.yum = true;
             $scope.repos_yum = [];
@@ -1479,11 +1479,15 @@ var UtilsRepositoryCtrl = [
         };
         $scope.load_apt = function (init) {
             if (!init && !$scope.loading.apt) {
-                return; // Prevent duplicate requests
+                return;
             }
             $scope.loading.apt = true;
             $scope.repos_apt = [];
+<<<<<<<< HEAD:public/js/controllers/utils.js
             Request.get('/api/repos/yum/list', function (res) {
+========
+            Request.get('/api/repos/apt/list', function (res) {
+>>>>>>>> 1.2.1:inpanel/public/js/controllers/utils.js
                 $scope.loading.apt = false;
                 if (res && res.code == 0) {
                     $scope.repos_apt = res.data;
@@ -1492,11 +1496,15 @@ var UtilsRepositoryCtrl = [
         };
         $scope.load_pacman = function (init) {
             if (!init && !$scope.loading.pacman) {
-                return; // Prevent duplicate requests
+                return;
             }
             $scope.loading.pacman = true;
             $scope.repos_pacman = [];
+<<<<<<<< HEAD:public/js/controllers/utils.js
             Request.get('/api/repos/yum/list', function (res) {
+========
+            Request.get('/api/repos/pacman/list', function (res) {
+>>>>>>>> 1.2.1:inpanel/public/js/controllers/utils.js
                 $scope.loading.pacman = false;
                 if (res && res.code == 0) {
                     $scope.repos_pacman = res.data;
@@ -1505,11 +1513,15 @@ var UtilsRepositoryCtrl = [
         };
         $scope.load_dnf = function (init) {
             if (!init && !$scope.loading.dnf) {
-                return; // Prevent duplicate requests
+                return;
             }
             $scope.loading.dnf = true;
             $scope.repos_dnf = [];
+<<<<<<<< HEAD:public/js/controllers/utils.js
             Request.get('/api/repos/yum/list', function (res) {
+========
+            Request.get('/api/repos/dnf/list', function (res) {
+>>>>>>>> 1.2.1:inpanel/public/js/controllers/utils.js
                 $scope.loading.dnf = false;
                 if (res && res.code == 0) {
                     $scope.repos_dnf = res.data;
@@ -1518,11 +1530,15 @@ var UtilsRepositoryCtrl = [
         };
         $scope.load_zypper = function (init) {
             if (!init && !$scope.loading.zypper) {
-                return; // Prevent duplicate requests
+                return;
             }
             $scope.loading.zypper = true;
             $scope.repos_zypper = [];
+<<<<<<<< HEAD:public/js/controllers/utils.js
             Request.get('/api/repos/yum/list', function (res) {
+========
+            Request.get('/api/repos/zypper/list', function (res) {
+>>>>>>>> 1.2.1:inpanel/public/js/controllers/utils.js
                 $scope.loading.zypper = false;
                 if (res && res.code == 0) {
                     $scope.repos_zypper = res.data;
@@ -1549,6 +1565,25 @@ var UtilsRepositoryCtrl = [
             });
         };
 
+        $scope.yum_mod_confirm = function(i) {
+            var repo = $scope.repos_yum[i];
+            Request.get('/api/repos/yum/item', {repo: repo}, function(res) {
+                if (res && res.code == 0) {
+                    var data = res.data;
+                    var id = Object.keys(data)[0];
+                    $scope.currepo = {
+                        'serverid': id,
+                        'name': data[id].name || '',
+                        'enabled': data[id].enabled || 1,
+                        'baseurl': data[id].baseurl || '',
+                        'gpgcheck': data[id].gpgcheck || 0,
+                        'repo': repo
+                    };
+                    $('#yum-add-confirm').modal();
+                }
+            });
+        };
+
         $scope.yum_del_confirm = function(i) {
             $scope.delrepo = $scope.repos_yum[i];
             $('#yum-del-confirm').modal();
@@ -1559,6 +1594,100 @@ var UtilsRepositoryCtrl = [
             }, function(data) {
                 if (data.code == 0) {
                     $scope.load_yum(true);
+                }
+            });
+        };
+
+        $scope.dnf_add_confirm = function() {
+            $scope.curdnf = {
+                'serverid': '',
+                'name': '',
+                'enabled': 1,
+                'baseurl': '',
+                'gpgcheck': 0,
+                'repo': ''
+            };
+            $('#dnf-add-confirm').modal();
+        };
+        $scope.dnf_add = function() {
+            Request.post('/api/repos/dnf/add', $scope.curdnf, function(data) {
+                if (data.code == 0) {
+                    $scope.load_dnf(true);
+                }
+            });
+        };
+
+        $scope.dnf_mod_confirm = function(i) {
+            var repo = $scope.repos_dnf[i];
+            Request.get('/api/repos/dnf/item', {repo: repo}, function(res) {
+                if (res && res.code == 0) {
+                    var data = res.data;
+                    var id = Object.keys(data)[0];
+                    $scope.curdnf = {
+                        'serverid': id,
+                        'name': data[id].name || '',
+                        'enabled': data[id].enabled || 1,
+                        'baseurl': data[id].baseurl || '',
+                        'gpgcheck': data[id].gpgcheck || 0,
+                        'repo': repo
+                    };
+                    $('#dnf-add-confirm').modal();
+                }
+            });
+        };
+
+        $scope.dnf_del_confirm = function(i) {
+            $scope.deldnf = $scope.repos_dnf[i];
+            $('#dnf-del-confirm').modal();
+        };
+        $scope.dnf_del = function() {
+            Request.post('/api/repos/dnf/del', {
+                repo: $scope.deldnf
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.load_dnf(true);
+                }
+            });
+        };
+
+        $scope.apt_add_confirm = function() {
+            $scope.curapt = {
+                'source': '',
+                'content': ''
+            };
+            $('#apt-add-confirm').modal();
+        };
+        $scope.apt_add = function() {
+            Request.post('/api/repos/apt/add', $scope.curapt, function(data) {
+                if (data.code == 0) {
+                    $scope.load_apt(true);
+                }
+            });
+        };
+
+        $scope.apt_mod_confirm = function(i) {
+            var source = $scope.repos_apt[i];
+            Request.get('/api/repos/apt/item', {source: source}, function(res) {
+                if (res && res.code == 0) {
+                    $scope.curapt = {
+                        'source': source,
+                        'content': res.data.content || ''
+                    };
+                    $('#apt-add-confirm').modal();
+                }
+            });
+        };
+
+        $scope.apt_del_confirm = function(i) {
+            $scope.delapt = $scope.repos_apt[i];
+            $('#apt-del-confirm').modal();
+        };
+        $scope.apt_del = function() {
+            Request.post('/api/repos/apt/del', {
+                source: $scope.delapt
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.load_apt(true);
                 }
             });
         };
@@ -2042,24 +2171,33 @@ var UtilsFirewallCtrl = [
         var module = 'utils.firewall';
         Module.init(module, '防火墙');
         $scope.loaded = false;
-        // $scope.action = '';
-        var section = Module.getSection();
-        var enabled_sections = ['iptables', 'firewalld', 'ufw'];
-        Module.initSection(enabled_sections[0]);
         $scope.loading = false;
+        
+        $scope.firewall = {
+            type: 'unknown',
+            status: '',
+            running: false,
+            rules: []
+        };
 
         $scope.load = function () {
             $scope.loaded = true;
-            $scope.tab_sec(section);
+            $scope.load_status();
+            $scope.load_rules();
         };
 
-        $scope.tab_sec = function (section) {
-            var init = Module.getSection() != section
-            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
-            $scope.sec(section);
-            Module.setSection(section);
-            $scope['load_' + section](init);
+        $scope.load_status = function() {
+            $scope.loading = true;
+            Request.get('/api/firewall/status', function(res) {
+                $scope.loading = false;
+                if (res && res.code == 0) {
+                    $scope.firewall.type = res.data.type;
+                    $scope.firewall.status = res.data.status;
+                    $scope.firewall.running = res.data.running;
+                }
+            });
         };
+<<<<<<<< HEAD:public/js/controllers/utils.js
         
         // $scope.tlist = function() {
         //     $scope.fileloading = true;
@@ -2119,6 +2257,141 @@ var UtilsFirewallCtrl = [
                 //     $scope.loading = false;
                 // }, 1000, module);
             }
+========
+
+        $scope.load_rules = function() {
+            $scope.loading = true;
+            Request.get('/api/firewall/list_rules', function(res) {
+                $scope.loading = false;
+                if (res && res.code == 0) {
+                    $scope.firewall.type = res.data.type;
+                    $scope.firewall.rules = res.data.rules || [];
+                }
+            });
+        };
+
+        $scope.firewall_start = function() {
+            Request.post('/api/firewall/start', {}, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_status();
+                    $scope.load_rules();
+                }
+            });
+        };
+
+        $scope.firewall_stop = function() {
+            Request.post('/api/firewall/stop', {}, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_status();
+                    $scope.load_rules();
+                }
+            });
+        };
+
+        $scope.firewall_restart = function() {
+            Request.post('/api/firewall/restart', {}, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_status();
+                    $scope.load_rules();
+                }
+            });
+        };
+
+        $scope.firewall_enable = function() {
+            Request.post('/api/firewall/enable', {}, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_status();
+                }
+            });
+        };
+
+        $scope.firewall_disable = function() {
+            Request.post('/api/firewall/disable', {}, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_status();
+                }
+            });
+        };
+
+        $scope.add_port_rule_confirm = function() {
+            $scope.add_port = {
+                'port': '',
+                'protocol': 'tcp',
+                'zone': ''
+            };
+            $('#firewall-add-port').modal();
+        };
+
+        $scope.add_port_rule = function() {
+            Request.post('/api/firewall/add_port_rule', $scope.add_port, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_rules();
+                }
+            });
+        };
+
+        $scope.remove_port_rule_confirm = function(rule) {
+            $scope.del_port = {
+                'port': rule.port,
+                'protocol': rule.protocol,
+                'zone': rule.zone
+            };
+            $('#firewall-del-port').modal();
+        };
+
+        $scope.remove_port_rule = function() {
+            Request.post('/api/firewall/remove_port_rule', $scope.del_port, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_rules();
+                }
+            });
+        };
+
+        $scope.add_ip_rule_confirm = function() {
+            $scope.add_ip = {
+                'ip': '',
+                'action_type': 'allow'
+            };
+            $('#firewall-add-ip').modal();
+        };
+
+        $scope.add_ip_rule = function() {
+            Request.post('/api/firewall/add_ip_rule', $scope.add_ip, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_rules();
+                }
+            });
+        };
+
+        $scope.remove_ip_rule_confirm = function(rule) {
+            $scope.del_ip = {
+                'ip': rule.ip
+            };
+            $('#firewall-del-ip').modal();
+        };
+
+        $scope.remove_ip_rule = function() {
+            Request.post('/api/firewall/remove_ip_rule', $scope.del_ip, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_rules();
+                }
+            });
+        };
+
+        $scope.remove_app_rule_confirm = function(rule) {
+            $scope.del_app = {
+                'app_path': rule.app_path
+            };
+            $('#firewall-del-app').modal();
+        };
+
+        $scope.remove_app_rule = function() {
+            Request.post('/api/firewall/remove_app_rule', $scope.del_app, function(res) {
+                if (res && res.code == 0) {
+                    $scope.load_rules();
+                }
+            });
+>>>>>>>> 1.2.1:inpanel/public/js/controllers/utils.js
         };
     }
 ];

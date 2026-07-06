@@ -1,0 +1,20 @@
+<div id="{{id}}" style="position:fixed;left:0;bottom:0;width:100%;z-index:100">
+    <div class="container">
+        <div class="alert alert-danger" style="display:none;margin-bottom:3px" ng-show="$rootScope.showErrorMsg">
+            <button ng-click="$rootScope.showErrorMsg=false" type="button" class="close">&times;</button>
+            <span ng-bind-html-unsafe="$rootScope.errorMessage"></span>
+        </div>
+        <div class="alert alert-success" style="display:none;margin-bottom:3px" ng-show="$rootScope.showSuccessMsg">
+            <button ng-click="$rootScope.showSuccessMsg=false" type="button" class="close">&times;</button>
+            <span ng-bind-html-unsafe="$rootScope.successMessage"></span>
+        </div>
+        <div class="alert alert-warning" style="display:none;margin-bottom:3px" ng-show="$rootScope.showWarningMsg">
+            <button ng-click="$rootScope.showWarningMsg=false" type="button" class="close">&times;</button>
+            <span ng-bind-html-unsafe="$rootScope.warningMessage"></span>
+        </div>
+        <div class="alert alert-info" style="display:none;margin-bottom:3px" ng-show="$rootScope.showInfoMsg">
+            <button ng-click="$rootScope.showInfoMsg=false" type="button" class="close">&times;</button>
+            <span ng-bind-html-unsafe="$rootScope.infoMessage"></span>
+        </div>
+    </div>
+</div>

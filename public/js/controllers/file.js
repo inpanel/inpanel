@@ -37,6 +37,7 @@ var FileCtrl = [
         };
 
         var set_history_path = function(p) {
+<<<<<<<< HEAD:public/js/controllers/file.js
             if ($scope.path_history.length == 0) {
                 $scope.path_history.unshift(p);
             } else {
@@ -65,6 +66,25 @@ var FileCtrl = [
                     $scope.path_history = [];
                 }
             }
+========
+            Request.post('/api/operation/file', {
+                'action': 'add_history',
+                'path': p
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.path_history = data.data;
+                }
+            }, false, true);
+        };
+        var get_history_path = function() {
+            Request.post('/api/operation/file', {
+                'action': 'history'
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.path_history = data.data;
+                }
+            }, false, true);
+>>>>>>>> 1.2.1:inpanel/public/js/controllers/file.js
         };
 
         $scope.loaded = false;

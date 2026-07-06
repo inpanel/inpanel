@@ -25,7 +25,11 @@
                                 <li><a ng-click="listdir('/var/www')">站点目录 /var/www</a></li>
                                 <li><a ng-click="listdir('/etc')">配置目录 /etc</a></li>
                                 <li><a ng-click="listdir('/etc/nginx')">Nginx配置 /etc/nginx</a></li>
+<<<<<<<< HEAD:public/partials/file/file.html
                                 <li><a ng-click="listdir('/usr/local/inpanel')">InPanel目录 /usr/local/inpanel</a></li>
+========
+                                <li><a ng-click="listdir('/etc/inpanel')">InPanel配置 /etc/inpanel</a></li>
+>>>>>>>> 1.2.1:inpanel/public/partials/file/file.html
                                 <li role="separator" class="divider"></li>
                                 <li class="dropdown-header"><span class="glyphicon glyphicon-time"></span> 浏览历史（最大30条）</li>
                                 <li ng-repeat="path in path_history" ng-show="path_history.length > 0">

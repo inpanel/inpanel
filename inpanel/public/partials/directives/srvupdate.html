@@ -1,0 +1,30 @@
+<div class="well" style="display:none" ng-show="$scope.installed&&!$scope.checking">
+    <div ng-show="!updating">
+        <p>在此检测并查找可用的新版本并升级。</p>
+    </div>
+    <div ng-show="updating" ng-bind-html-unsafe="updateMsg"></div>
+    <p ng-show="!updating">
+        <button class="btn btn-default btn-sm" style="margin-top:10px" ng-click="startUpdate()">检测新版本</button>
+    </p>
+    <table class="table table-condensed" style="margin-top:20px;display:none" ng-show="showVerList&&pkgs.length>0">
+        <thead>
+            <tr>
+                <th>版本</th>
+                <th style="width:70px">大小</th>
+                <th style="width:70px">软件源</th>
+                <th style="width:90px">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="pkg in pkgs">
+                <td>{{pkg.name}} v{{pkg.version}}-{{pkg.release}}</td>
+                <td>{{pkg.size}}</td>
+                <td>{{'已安装'|iftrue:pkg.repo=='installed'}}{{pkg.repo|iftrue:pkg.repo!='installed'}}</td>
+                <td>
+                    <button class="btn btn-default btn-xs" ng-show="pkg.repo!='installed'"
+                        ng-click="update(pkg.repo, pkg.name, pkg.version, pkg.release)">升级到此版本</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,6 +1,6 @@
 [program:inpanel]
 directory=/usr/local/inpanel/
-command=/usr/local/inpanel/server.py
+command=/usr/local/inpanel/inpanel
 autostart=true
 autorestart=true
 startsecs=10

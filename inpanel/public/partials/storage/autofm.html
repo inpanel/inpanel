@@ -1,0 +1,103 @@
+<div navbar ng-init="currentItem='utils.autofm'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>自动格式化挂载</h3>
+    </div>
+
+    <div style="display:none" ng-show="diskcount==0">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">没有检测到未挂载的存储设备</div>
+            </div>
+            <div class="panel-body">
+                <p>您可以点击磁盘管理按钮，查看所有存储设备。</p>
+                <p>
+                    <a class="btn btn-default" href="#/utils">取消返回</a>
+                    <a class="btn btn-default" href="#/storage">磁盘管理</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:none" ng-init="loadDiskinfo()" ng-show="diskcount > 0">
+        <h5>未挂载的设备列表</h5>
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <th>设备名称</td>
+                    <th style="width:100px">存储空间</th>
+                    <th style="width:200px">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="partition in diskinfo['partitions'] | filter:{'is_hw':true, 'is_pv':false, 'partcount':0, 'mount':''}">
+                    <td>{{ partition['name'] }}</td>
+                    <td>{{ partition['size'] }}</td>
+                    <td>
+                        <button class="btn btn-default btn-xs" ng-disabled="waiting" ng-click="confirm(partition['name'])">格式化并挂载</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="confirm" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">自动格式化并挂载 {{devname}} </h3>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" onsubmit="return false">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">文件系统格式：</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" ng-model="fstype" ng-options="fs for fs in supportfs"></select>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-3 control-label">将 {{devname}} 挂载到：</label>
+                        <div class="col-sm-9">
+                            <div class="input-group">
+                                <input type="text" class="form-control" ng-model="mountpoint" ng-disabled="processing">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" ng-click="selectmountpoint()" title="选择挂载点">
+                                        <i class="glyphicon glyphicon-folder-open"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <label>建议直接使用默认挂载点</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+                <button class="btn btn-primary" onclick="$('#confirm').modal('hide')" ng-disabled="!fstype||!mountpoint" ng-click="autofm()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="selector" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">{{selector_title}}</h3>
+            </div>
+            <div class="modal-body">
+                <div selector></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

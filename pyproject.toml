@@ -1,0 +1,57 @@
+[project]
+name = "InPanel"
+version = "1.2.1"
+description = "InPanel - A Web-based Linux Server Management Tool"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "Jackson Dou", email = "jksdou@qq.com"}]
+maintainers = [{name = "Jackson Dou", email = "jksdou@qq.com"}]
+keywords = ["server", "management", "admin", "panel", "linux"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: AsyncIO",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: System :: Systems Administration",
+]
+requires-python = ">=3.6"
+dependencies = [
+    "tornado>=6.0",
+    "psutil>=5.6",
+    "pexpect>=4.6",
+    "cryptography>=2.8",
+]
+
+[project.scripts]
+inpanel = "inpanel.app:main"
+
+[project.urls]
+"Homepage" = "https://inpanel.org/"
+"Repository" = "https://github.com/inpanel/inpanel"
+"Documentation" = "https://inpanel.org/"
+"Issues" = "https://github.com/inpanel/inpanel/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["inpanel*"]
+
+[tool.setuptools.package-data]
+inpanel = [
+    "public/**/*",
+    "templates/**/*",
+    "plugins/**/*",
+    "data/**/*",
+]
+

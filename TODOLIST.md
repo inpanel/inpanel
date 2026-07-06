@@ -9,39 +9,39 @@
 
 **任务**
 
-- [x] 优化：前端界面及 JS、Bootstrap、jQuery 等
-- [ ] 优化：前端使用 VueJS 重写 or 升级 AngularJS
+- [x] ~~优化：前端界面及 JS、Bootstrap、jQuery 等~~
+- [ ] 优化：前端使用 VueJS 重写（其他方案：升级 AngularJS）
 - [x] 优化：网站程序快速安装
 - [x] 优化：在线版本升级
-- [ ] 兼容：Python 2.x、3.x
+- [x] 调整：支持 Python3，移除 Python2 的支持（~~兼容：Python 2.x、3.x~~）
 - [x] 新增：修改主机名
 - [ ] 新增：Apache 服务配置
 - [x] 新增：Apache 站点列表/添加/删除
 - [ ] 新增：Apache 站点修改
 - [ ] 新增：FTP 管理
-- [ ] 新增：DNS 管理
-- [ ] 新增：防火墙配置
+- [x] 新增：DNS 管理
+- [x] 新增：防火墙配置（支持 iptables/firewalld/ufw）
 - [ ] 新增：备份管理
 - [x] 新增：定时任务 Cron 配置设置
 - [x] 新增：定时任务 Cron 作业：列表/添加/修改/删除
 - [x] 新增：进程监控列表
-- [ ] 新增：进程查看详情
+- [x] 新增：进程查看详情
 - [x] 新增：进程停止操作
 - [ ] 新增：日志管理
 - [ ] 新增：服务器迁移
 - [x] 新增：文件迁移至 FTP
 - [ ] 新增：服务器镜像
-- [ ] 新增：快速签发 Let's Encrypt 证书
-- [ ] 新增：快速安装 Shadowsocks Server 及管理
+- [x] 新增：快速签发 Let's Encrypt 证书（acme 插件）
+- [x] 新增：快速安装 Shadowsocks Server 及管理（shadowsocks-libev 插件）
 - [x] 新增：接口站点完善
 - [ ] 新增：使用文档站点
 - [ ] 新增：移动客户端
 - [ ] 新增：交流社区网站
-- [ ] 新增：发布程序包
-- [ ] 新增：安装软件时，对依赖包处理和安装
-- [ ] 新增：卸载软件时，对依赖包的处理
+- [x] 新增：发布程序包（RPM/DEB 包，支持 yum/dnf/apt/pip 一键安装）
+- [x] 新增：安装软件时，对依赖包处理和安装
+- [x] 新增：卸载软件时，对依赖包的处理
 - [ ] 新增：远程服务器的管理，整合 ECSMate 的部分功能
-- [x] 支持：CentOS 7(RHEL 7)
-- [ ] 支持：主流发行版: Ubuntu/openSUSE/Debian/Arch/Slackware/FreeBSD
+- [x] 支持：CentOS/RHEL 7/8/9
+- [x] 支持：主流发行版: Ubuntu 20.04/22.04/24.04、Debian 10/11/12
+- [ ] 支持：其他发行版: openSUSE/Arch/Slackware/FreeBSD
 - [ ] 支持：软件自定义安装
-

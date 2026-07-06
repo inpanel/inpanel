@@ -1,0 +1,82 @@
+#!/bin/bash
+#
+# Copyright (c) 2022-2026 Jackson Dou
+# All rights reserved.
+#
+# InPanel is distributed under the terms of The New BSD License.
+# The full license can be found in 'LICENSE'.
+#
+# InPanel control script for Ubuntu.
+#
+### BEGIN INIT INFO
+# Provides:          inpanel
+# Required-Start:    $network $local_fs $syslog $remote_fs
+# Required-Stop:     $network $local_fs $syslog $remote_fs
+# Should-Start:      $named
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: InPanel Control Panel
+# Description:       A web-based Linux server management tool
+### END INIT INFO
+
+NAME='inpanel'
+DESC='InPanel Control Panel'
+DAEMON='/usr/bin/inpanel'
+PIDFILE='/var/run/inpanel.pid'
+
+# Source LSB function library.
+if [ -f /lib/lsb/init-functions ];then
+   . /lib/lsb/init-functions
+else
+   echo 'not found file /lib/lsb/init-functions'
+   exit 1
+fi
+
+show_help() {
+    echo "Usage: $NAME {start|stop|status|restart|reload|config}"
+    exit 2
+}
+
+if [ $# -lt 1 ]; then
+    show_help
+fi
+
+case "$1" in
+    start)
+        log_daemon_msg "Starting $DESC" "$NAME"
+        $DAEMON start
+        retval=$?
+        log_end_msg $retval
+        ;;
+    stop)
+        log_daemon_msg "Stopping $DESC" "$NAME"
+        $DAEMON stop
+        retval=$?
+        log_end_msg $retval
+        ;;
+    restart|force-reload)
+        log_daemon_msg "Restarting $DESC" "$NAME"
+        $DAEMON restart
+        retval=$?
+        log_end_msg $retval
+        ;;
+    reload)
+        log_daemon_msg "Reloading $DESC" "$NAME"
+        $DAEMON reload
+        retval=$?
+        log_end_msg $retval
+        ;;
+    status)
+        $DAEMON status
+        ;;
+    config)
+        shift
+        $DAEMON config "$@"
+        ;;
+    *)
+        show_help
+        ;;
+esac
+
+exit $?

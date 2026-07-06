@@ -1,0 +1,277 @@
+<div navbar ng-init="currentItem='site.apache'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none;">
+    <div class="module-header">
+        <h3>{{module_header}}</h3>
+    </div>
+
+    <div class="alert alert-danger" ng-show="!gen_by_inpanel" style="display:none;">
+        <p>该站点的配置不是使用 InPanel 生成的，继续配置有可能导致部分配置丢失。</p>
+        <p>建议使用 InPanel 为该站点新建一个配置，并将原配置迁移过来。</p>
+        <p>如要手工编辑原始配置文件内容，请<a href="#/service/apache?s=configfile">点击这里</a>。</p>
+    </div>
+
+    <div class="tabbable" ng-init="load()">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='basic'"><a href="#basic" ng-click="sec('basic')" data-toggle="tab">基本设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='directory'"><a href="#directory" ng-click="sec('directory')" data-toggle="tab">目录设置</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='server-alias'"><a href="#server-alias" ng-click="sec('server-alias')" data-toggle="tab">绑定域名</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='advanced'"><a href="#advanced" ng-click="sec('advanced')" data-toggle="tab">高级设置</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='basic'" id="basic">
+                <div class="form-horizontal form-horizontal-small">
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">监听地址</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.ip" type="text" placeholder="默认监听所有可用IP">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">监听端口</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control" ng-model="setting.port" type="text" placeholder="监听端口">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">端口 <span class="caret"></span></button>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='80'">80</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='81'">81</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='443'">443</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='8080'">8080</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='8899'">8899</a></li>
+                                        <li><a href="javascript:void(0);" ng-click="setting.port='9090'">9090</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">网站域名</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.servername" type="text" placeholder="网站域名">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">站点目录</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control" ng-model="setting.documentroot" type="text" placeholder="网站存放目录">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-default" ng-click="select_document_root()" title="选择文件夹"><i class="glyphicon glyphicon-folder-open"></i></button>
+                                </div>
+                            </div>
+                            <label class="checkbox-inline"><input ng-model="setting.autocreate" type="checkbox">目录不存在时，自动创建目录</label><br>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">默认首页</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.directoryindex" type="text" placeholder="首页默认访问文件">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">错误日志</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.errorlog" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">CustomLog</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.customlog" type="text">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='directory'" id="directory">
+                <p>
+                    <button class="btn btn-default" ng-click="add_directory($index)" ng-show="setting.directory.length==0" style="display:none">
+                        <i class="glyphicon glyphicon-plus"></i> 添加目录
+                    </button>
+                </p>
+                <ul class="nav nav-tabs" ng-show="setting.directory.length>0" style="display:none;">
+                    <li ng-repeat="drct in setting.directory" ng-class="'active'|iftrue:$index==curdir_index" ng-click="setdir_index($index)">
+                        <a href="#drct_{{$index}}" data-toggle="tab">{{drct.path}}</a>
+                    </li>
+                    <li class="pull-right">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-default" ng-click="add_directory()"><i class="glyphicon glyphicon-plus"></i></button>
+                            <button type="button" class="btn btn-default" ng-click="del_directory(curdir_index)"><i class="glyphicon glyphicon-minus"></i></button>
+                        </div>
+                    </li>
+                </ul>
+                <div class="tab-content" ng-show="setting.directory.length>0" style="display:none;">
+                    <div class="tab-pane" ng-repeat="drct in setting.directory" ng-class="'active'|iftrue:$index==curdir_index" id="drct_{{$index}}">
+                        <div class="form-horizontal form-horizontal-small">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">目录路径</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="drct.path" ng-change="drct_change(drct)" type="text" placeholder="URL路径">
+                                    <label class="checkbox-inline"><input ng-model="drct.autocreate" type="checkbox">目录不存在时，自动创建目录</label><br>
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label">列表展示</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" ng-model="drct.indexes">
+                                        <option value="">默认全局设置</option>
+                                        <option value="+">允许显示目录列表</option>
+                                        <option value="-">禁止显示目录列表</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label">符号链接</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" ng-model="drct.followsymlinks">
+                                        <option value="">默认全局设置</option>
+                                        <option value="+">允许访问链接文件</option>
+                                        <option value="-">禁止访问链接文件</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label">CGI 程序</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" ng-model="drct.execcgi">
+                                        <option value="">默认全局设置</option>
+                                        <option value="+">允许执行 CGI 程序</option>
+                                        <option value="-">禁止执行 CGI 程序</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">白名单</label>
+                                <div class="col-sm-10">
+                                    <label class="checkbox-inline"><input ng-model="drct.allow_enable" type="checkbox">启用白名单</label>
+                                    <div class="form-inline" ng-show="drct.allow_enable" style="margin-top:10px;display:none">
+                                        <textarea class="form-control" ng-model="drct.allow" style="height:100px;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">黑名单</label>
+                                <div class="col-sm-10">
+                                    <label class="checkbox-inline"><input ng-model="drct.deny_enable" type="checkbox">启用黑名单</label>
+                                    <div class="form-inline" ng-show="drct.deny_enable" style="margin-top:10px;display:none">
+                                        <textarea class="form-control" ng-model="drct.deny" style="height:100px;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='server-alias'" id="server-alias">
+                <p>
+                    <button class="btn btn-default" ng-click="add_server_alias($index)" ng-show="setting.serveralias.length==0" style="display:none">
+                        <i class="glyphicon glyphicon-plus"></i> 添加域名
+                    </button>
+                </p>
+                <div class="form-group form-inline" ng-repeat="alias in setting.serveralias">
+                    <div class="input-group">
+                        <input class="form-control" ng-model="alias.name" type="text" placeholder="请输入域名">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" title="删除这个别名" ng-click="del_server_alias($index)"><i class="glyphicon glyphicon-minus"></i></button>
+                            <button class="btn btn-default" title="增加一个别名" ng-click="add_server_alias()"><i class="glyphicon glyphicon-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='advanced'" id="advanced">
+                <div class="form-horizontal form-horizontal-small">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">管理员</label>
+                        <div class="col-sm-10">
+                            <input class="form-control" ng-model="setting.serveradmin" type="text" placeholder="管理员邮箱或地址">
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">下载限制</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control" ng-model="setting.limit_rate" type="text" placeholder="不限制">
+                                <span class="input-group-addon">KB / S</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label class="col-sm-2 control-label">连接限制</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input class="form-control" ng-model="setting.limit_conn" type="text" placeholder="不限制">
+                                <span class="input-group-addon">个 / IP</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">SSL证书</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input ng-model="setting.ssl_crt" type="text" class="form-control" placeholder="SSL证书文件">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-default" ng-click="selectsslcrt()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">SSL密钥</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input ng-model="setting.ssl_key" type="text" class="form-control" placeholder="SSL密钥文件">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-default" ng-click="selectsslkey()" title="选择文件"><i class="glyphicon glyphicon-file"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">重定向</label>
+                        <div class="col-sm-10">
+                            <label class="checkbox-inline"><input ng-model="setting.rewrite_enable" type="checkbox">启用全局 Rewrite</label>
+                            <div class="form-inline" ng-show="setting.rewrite_enable" style="margin-top:10px;display:none">
+                                <select class="form-control" ng-model="rewrite_template">
+                                    <option value="">常用 Rewrite 规则</option>
+                                    <option value="301_1">301跳转，保留原路径</option>
+                                    <option value="301_2">301跳转，不保留原路径</option>
+                                    <option value="302_1">302跳转，保留原路径</option>
+                                    <option value="302_2">302跳转，不保留原路径</option>
+                                </select><br>
+                                <textarea class="form-control" ng-model="setting.rewrite_rules" style="width:400px;height:100px;margin-top:15px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <p>
+            <button class="btn btn-primary" ng-click="submit()">提交</button>
+            <button class="btn btn-success" ng-click="submit('active')">生效</button>
+            <button class="btn btn-warning" ng-show="action=='edit'" ng-click="restore()">重置</button>
+            <a class="btn btn-default" href="#/site?s=apache">取消</a>
+        </p>
+    </div>
+</div>
+
+<div id="selector" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">{{selector_title}}</h3>
+            </div>
+            <div class="modal-body">
+                <div selector></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">取消</button>
+            </div>
+        </div>
+    </div>
+</div>

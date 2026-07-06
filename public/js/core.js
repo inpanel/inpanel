@@ -108,8 +108,12 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
     $rootScope.$proxyroot = location_path;
 }]);
 // inpanel.value('version', {
+<<<<<<<< HEAD:public/js/core.js
 //     'version': '1.1.1',
 //     'build': '26',
+========
+//     'version': '1.1.27',
+>>>>>>>> 1.2.1:inpanel/public/js/core.js
 //     'releasetime': releasetime,
 //     'changelog': 'http://inpanel.org/changelog.html'
 // });

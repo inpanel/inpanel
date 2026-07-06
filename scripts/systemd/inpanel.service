@@ -1,17 +1,17 @@
 [Unit]
-Description = InPanel
+Description = InPanel Control Panel
+After = network.target
 
 [Service]
 Type = simple
 User = root
 Group = root
-Type = simple
+ExecStart = /usr/bin/inpanel run
+ExecStop = /usr/bin/inpanel stop
+ExecReload = /usr/bin/inpanel reload
 PIDFile = /var/run/inpanel.pid
-# WorkingDirectory = /usr/local/inpanel
-# ExecStartPre =
-ExecStart = /usr/bin/python /usr/local/inpanel/server.py
-# ExecReload =
-# ExecStop =
+Restart = always
+RestartSec = 5
 StartLimitInterval = 30min
 
 [Install]

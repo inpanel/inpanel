@@ -3,8 +3,10 @@
 .idea
 *.pyc
 *.iml
-test/
+*.bak
 dist/
 build/
-todo/
-*config.ini
+test/
+inpanel/data/*
+inpanel.egg-info
+*.egg-info

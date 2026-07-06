@@ -137,8 +137,12 @@ var MainCtrl = [
                 } else if (data.code == 0) {
                     var v = data.data;
                     if (
+<<<<<<<< HEAD:public/js/controllers/controllers.js
                         parseFloat(v.version) > parseFloat($scope.version.version) ||
                         (parseFloat(v.version) == parseFloat($scope.version.version) && parseInt(v.build) > parseInt($scope.version.build))
+========
+                        !!v && parseFloat(v.version) > parseFloat($scope.version.version)
+>>>>>>>> 1.2.1:inpanel/public/js/controllers/controllers.js
                     ) {
                         $scope.detectVer = false;
                         $scope.hasNewver = true;
@@ -297,7 +301,6 @@ var SettingCtrl = [
         $scope.version = {};
         $scope.newVersion = '';
         $scope.newReleasetime = '';
-        $scope.newBuild = '';
         $scope.showUpdateBtn = false;
         $scope.showRestartBtn = true;
         $scope.loaded = true;
@@ -407,19 +410,22 @@ var SettingCtrl = [
                 } else if (data.code == 0) {
                     var v = data.data;
                     if (
+<<<<<<<< HEAD:public/js/controllers/controllers.js
                         parseFloat(v.version.split('.').join('')) > parseFloat($scope.version.version.split('.').join('')) ||
                         (v.version == $scope.version.version && parseInt(v.build) > parseInt($scope.version.build))
+========
+                        !!v && parseFloat(v.version.split('.').join('')) > parseFloat($scope.version.version.split('.').join(''))
+>>>>>>>> 1.2.1:inpanel/public/js/controllers/controllers.js
                     ) {
                         $scope.upverMessage = '<table class="table table-hover table-bordered">' +
                             '<thead><tr><th colspan="2">有可用的新版本</th></tr></thead>' +
-                            '<tbody><tr><td style="width: 200px;">版本信息：</td><td>v' + v.version + ' b' + v.build + '</td></tr>' +
+                            '<tbody><tr><td style="width: 200px;">版本信息：</td><td>v' + v.version + '</td></tr>' +
                             '<tr><td>发布时间：</td><td>' + v.releasetime + '</td></tr>' +
                             '<tr><td>变更记录：</td><td><a href="' + v.changelog + '" target="_blank">' +
                             '查看版本变更记录</a></td></tr></tbody></table>';
                         $scope.updateBtnText = '开始在线升级';
                         $scope.showUpdateBtn = true;
                         $scope.newVersion = v.version;
-                        $scope.newBuild = v.build;
                         $scope.newReleasetime = v.releasetime;
                     } else {
                         $scope.upverMessage = '当前已是最新版本！';
@@ -538,7 +544,6 @@ var SettingCtrl = [
         $scope.forceUpdateStatic = function () {
             // 前端静态资源重新加载
             $scope.version['version'] = $scope.newVersion;
-            $scope.version['build'] = $scope.newBuild;
             $scope.version['releasetime'] = $scope.newReleasetime;
             releasetime = $scope.newReleasetime;
             _v = new Date($scope.newReleasetime.replace(/-/g, '/')).getTime() / 1000;

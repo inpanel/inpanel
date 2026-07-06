@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+
+case "$1" in
+    remove)
+        if [ -d /etc/systemd/system ]; then
+            systemctl stop inpanel
+            systemctl disable inpanel
+        else
+            /etc/init.d/inpanel stop
+            update-rc.d inpanel remove
+        fi
+        ;;
+
+    upgrade|deconfigure)
+        ;;
+
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
