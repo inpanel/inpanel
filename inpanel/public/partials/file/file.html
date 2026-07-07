@@ -19,19 +19,20 @@
                             <button class="btn btn-default btn-sm" type="submit" title="刷新"><span class="glyphicon glyphicon-refresh"></span></button>
                             <button class="btn btn-default btn-sm" type="submit" title="打开"><span class="glyphicon glyphicon-menu-right"></span></button>
                             <button class="btn btn-default btn-sm dropdown-toggle" type="button" title="快捷操作" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></button>
-                            <ul class="dropdown-menu dropdown-menu-right" style="max-height: 500px; overflow-x: auto;">
+                            <ul class="dropdown-menu dropdown-menu-right file-dropdown" style="max-height: 500px; max-width: 400px; overflow-x: hidden;">
                                 <li class="dropdown-header"><span class="glyphicon glyphicon-star"></span> 常用目录</li>
-                                <li><a ng-click="listdir('/home')">用户目录 /home</a></li>
-                                <li><a ng-click="listdir('/var/www')">站点目录 /var/www</a></li>
-                                <li><a ng-click="listdir('/etc')">配置目录 /etc</a></li>
-                                <li><a ng-click="listdir('/etc/nginx')">Nginx配置 /etc/nginx</a></li>
-                                <li><a ng-click="listdir('/etc/inpanel')">InPanel配置 /etc/inpanel</a></li>
+                                <li ng-repeat="bookmark in bookmarks" class="bookmark-paths">
+                                    <a ng-click="goToPath(bookmark.path, bookmark.type)" title="{{bookmark.path}}" class="remove-bookmark-path">{{bookmark.desc}} {{bookmark.path}}</a>
+                                    <a ng-click="removeBookmark(bookmark.path)" title="取消常用目录" class="remove-bookmark-btn" ng-show="bookmarks.length > 0">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </a>
+                                </li>
                                 <li role="separator" class="divider"></li>
                                 <li class="dropdown-header"><span class="glyphicon glyphicon-time"></span> 浏览历史（最大30条）</li>
                                 <li ng-repeat="path in path_history" ng-show="path_history.length > 0">
-                                    <a ng-click="listdir(path)">{{$index+1}}. {{path}}</a>
-                                </li>
-                                <li ng-show="path_history.length < 1"><a ng-click="listdir(lastpath)">1. {{lastpath}}</a></li>
+                                <a ng-click="listdir(path)" title="{{path}}">{{$index+1}}. {{path}}</a>
+                            </li>
+                            <li ng-show="path_history.length < 1"><a ng-click="listdir(lastpath)" title="{{lastpath}}">1. {{lastpath}}</a></li>
                             </ul>
                         </div>
                     </div>
@@ -85,7 +86,7 @@
                         <th class="text-center" style="width:140px; min-width:140px;">修改时间</th>
                         <th class="text-center" style="width:150px; min-width:150px;">操作</th>
                         <th class="text-center" style="width:70px;">压缩</th>
-                        <th class="text-center" style="width:80px;">其它</th>
+                        <th class="text-center" style="width:90px;">其它</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -126,6 +127,7 @@
                             <div ng-show="item.isdir||(item.islnk&&item.link_isdir)">
                                 <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动同步（即将推出）"><i class="glyphicon glyphicon-repeat"></i></button>
                                 <button class="btn btn-default btn-xs" ng-disabled="true" title="设置自动备份（即将推出）"><i class="glyphicon glyphicon-cloud-upload"></i></button>
+                                <button class="btn btn-default btn-xs" ng-click="addBookmark(curpath, item.name, 'dir')" title="添加到常用目录"><i class="glyphicon glyphicon-star"></i></button>
                             </div>
                             <div ng-show="item.isreg||(item.islnk&&item.link_isreg)">
                                 <a class="btn btn-default btn-xs" href="/api/file/download/{{item.uri}}" title="下载">
@@ -134,6 +136,7 @@
                                 <a class="btn btn-default btn-xs" href="/page/file/preview/{{item.uri}}" ng-show="item.is_image && !item.isdir" title="预览" target="_blank">
                                     <i class="glyphicon glyphicon-eye-open"></i>
                                 </a>
+                                <button class="btn btn-default btn-xs" ng-click="addBookmark(curpath, item.name, 'file')" title="添加到常用目录"><i class="glyphicon glyphicon-star"></i></button>
                             </div>
                         </td>
                     </tr>

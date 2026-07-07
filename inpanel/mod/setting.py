@@ -18,7 +18,7 @@ import tornado.httpclient
 import tornado.escape
 from ..base import app_api
 from .. import utils
-from .config import update_info_config
+from .config import upgrade_config
 from . import server
 
 
@@ -63,7 +63,7 @@ async def handle_get(context, section):
 
     elif section == 'upver':
         force = context.get_argument('force', '')
-        update_info = update_info_config()
+        update_info = upgrade_config()
         lastcheck = update_info.get('update', 'lastcheck')
         lastcheck = 0 if lastcheck == '' else int(lastcheck)
 

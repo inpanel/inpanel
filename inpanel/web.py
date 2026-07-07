@@ -62,7 +62,7 @@ class RequestHandler(tornado.web.RequestHandler):
         """Parse JSON data to argument list.
         """
         self.config = config.load_config()
-        self.runlogs = config.runlogs_config()
+        self.lastfile = config.lastfile_config()
 
         content_type = self.request.headers.get("Content-Type", "")
         if content_type.startswith("application/json"):

@@ -110,7 +110,7 @@ span.CodeMirror-matchhighlight {
 }
 
 .shell-form {
-    height: auto!important;
+    height: auto !important;
     min-height: 200px;
     padding: 4px;
     background-color: #333;
@@ -120,6 +120,7 @@ span.CodeMirror-matchhighlight {
     font-size: 1em;
     word-break: break-all;
 }
+
 .shell-form span {
     display: block;
     font-family: monospace;
@@ -135,4 +136,35 @@ span.CodeMirror-matchhighlight {
     color: #fff;
     font-family: monospace;
     font-size: 1em;
+}
+
+.file-dropdown li a {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.bookmark-paths {
+    display: flex;
+    justify-content: space-between;
+    padding-right: 10px;
+}
+
+.bookmark-paths .remove-bookmark-path {
+    flex: 1;
+    width: 80%;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bookmark-paths .remove-bookmark-btn {
+    width: 20px;
+    display: inline-block;
+    text-align: right;
+    padding: 3px;
+    cursor: pointer;
+    color: #d9534f;
 }

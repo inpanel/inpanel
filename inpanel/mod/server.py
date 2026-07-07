@@ -93,10 +93,21 @@ class ServerInfo(object):
     @classmethod
     def uptime(self):
         if kernel_name == 'Darwin':
+            up_seconds = int(time.time() - psutil.boot_time())
+            cpu_times = psutil.cpu_times()
+            idle_seconds = int(cpu_times.idle)
+            cpu_count = psutil.cpu_count(logical=True) or 1
+            if cpu_count > 1:
+                idle_seconds = int(idle_seconds / cpu_count)
+            if idle_seconds > up_seconds:
+                idle_seconds = up_seconds
+            fmt = '{days} 天 {hours} 小时 {minutes} 分 {seconds} 秒'
+            uptime_string = strfdelta(datetime.timedelta(seconds=up_seconds), fmt)
+            idletime_string = strfdelta(datetime.timedelta(seconds=idle_seconds), fmt)
             return {
-                'up': 0,
-                'idle': 0,
-                'idle_rate': 0,
+                'up': uptime_string,
+                'idle': idletime_string,
+                'idle_rate': div_percent(idle_seconds, up_seconds),
             }
         with open('/proc/uptime', 'r', encoding='utf-8') as f:
             uptime, idletime = f.readline().split()
@@ -136,7 +147,11 @@ class ServerInfo(object):
                 loadavg['1min']  = load_1min
                 loadavg['5min']  = load_5min
                 loadavg['15min'] = load_15min
-        elif kernel_name == 'Darwin': pass
+        elif kernel_name == 'Darwin':
+            load_1min, load_5min, load_15min = psutil.getloadavg()
+            loadavg['1min'] = str(load_1min)
+            loadavg['5min'] = str(load_5min)
+            loadavg['15min'] = str(load_15min)
         elif kernel_name == 'Windows': pass
 
         return loadavg
@@ -179,7 +194,19 @@ class ServerInfo(object):
                     elif line.startswith('btime'):
                         btime = int(line.strip().split()[1])
                         cpustat['btime'] = time.strftime('%Y-%m-%d %X %Z', time.localtime(btime))
-        elif kernel_name == 'Darwin': pass
+        elif kernel_name == 'Darwin':
+            fname = ('used', 'idle')
+            cpu_times = psutil.cpu_times()
+            statall = sum(cpu_times)
+            used = statall - cpu_times.idle
+            stat = {
+                'used': int(used),
+                'idle': int(cpu_times.idle),
+                'all': int(statall),
+            }
+            cpustat['total'] = stat
+            boot_time = psutil.boot_time()
+            cpustat['btime'] = time.strftime('%Y-%m-%d %X %Z', time.localtime(boot_time))
         elif kernel_name == 'Windows': pass
 
         return cpustat
@@ -224,8 +251,18 @@ class ServerInfo(object):
                         swap_free = value
             with open('/proc/sys/vm/swappiness', 'r', encoding='utf-8') as f:
                 swap_swappiness = f.readline()
-        elif kernel_name == 'Darwin': pass
-        elif kernel_name == 'Windows': pass
+        elif kernel_name == 'Darwin':
+            mem = psutil.virtual_memory()
+            mem_total = mem.total
+            mem_free = mem.free
+            mem_available = mem.available
+            mem_buffers = 0
+            mem_cached = mem.inactive if hasattr(mem, 'inactive') else 0
+            swap = psutil.swap_memory()
+            swap_total = swap.total
+            swap_free = swap.free
+        elif kernel_name == 'Windows':
+            pass
 
         mem_used = mem_total - mem_free
         swap_used = swap_total - swap_free
@@ -280,12 +317,35 @@ class ServerInfo(object):
                     dev = os.stat(mount['path']).st_dev
                     mount['major'], mount['minor'] = os.major(dev), os.minor(dev)
         elif kernel_name == 'Darwin':
-            # TODO
-            for mnt in glob.glob('/Volumes/*'):
-                # t = os.stat(mnt)
-                # if t.st_rdev == s.st_dev:
-                # print(t)
-                _mounts.append({'dev': mnt, 'path': mnt, 'fstype': 'APFS'})
+            p = Popen(['df', '-k', '-P'], stdout=PIPE, close_fds=True)
+            output = p.stdout.read().decode('utf-8')
+            p.wait()
+            lines = output.strip().split('\n')
+            for line in lines[1:]:
+                fields = line.split()
+                if len(fields) < 6:
+                    continue
+                dev, total_kb, used_kb, available_kb, percent, path = fields[:6]
+                if not dev.startswith('/dev/'):
+                    continue
+                if path in ('/Volumes/Recovery', '/System/Volumes/Preboot', '/System/Volumes/VM', '/System/Volumes/Update'):
+                    continue
+                total = int(total_kb) * 1024
+                free = int(available_kb) * 1024
+                used = int(used_kb) * 1024
+                mount_info = {
+                    'dev': dev,
+                    'path': path,
+                    'fstype': 'APFS',
+                    'total': b2h(total),
+                    'free': b2h(free),
+                    'used': b2h(used),
+                    'used_rate': div_percent(used, total),
+                }
+                if detectdev:
+                    mount_stat = os.stat(path)
+                    mount_info['major'], mount_info['minor'] = os.major(mount_stat.st_dev), os.minor(mount_stat.st_dev)
+                _mounts.append(mount_info)
 
                 # for mount in _mounts:
                 #     stat = os.statvfs(mount['path'])
@@ -334,82 +394,149 @@ class ServerInfo(object):
                             break
 
         elif kernel_name == 'Darwin':
-            pass
+            io_counters = psutil.net_io_counters(pernic=True)
+            if_addrs = psutil.net_if_addrs()
+            if_stats = psutil.net_if_stats()
+            
+            p = Popen(['route', '-n', 'get', 'default'], stdout=PIPE, close_fds=True)
+            output = p.stdout.read().decode('utf-8')
+            p.wait()
+            gateway = ''
+            for line in output.split('\n'):
+                if 'gateway:' in line:
+                    gateway = line.split(':')[1].strip()
+                    break
+            
+            for name, addrs in if_addrs.items():
+                if name.startswith('lo') or name.startswith('utun') or name.startswith('awdl'):
+                    continue
+                
+                has_ip = False
+                for addr in addrs:
+                    if addr.family == socket.AF_INET:
+                        has_ip = True
+                        break
+                
+                if not has_ip:
+                    continue
+                
+                ip = ''
+                mask = ''
+                mac = ''
+                
+                for addr in addrs:
+                    if addr.family == socket.AF_INET:
+                        ip = addr.address
+                        mask = addr.netmask
+                    elif addr.family == psutil.AF_LINK:
+                        mac = addr.address
+                
+                status = 'down'
+                if name in if_stats:
+                    status = 'up' if if_stats[name].isup else 'down'
+                
+                rx_bytes = 0
+                tx_bytes = 0
+                if name in io_counters:
+                    rx_bytes = io_counters[name].bytes_recv
+                    tx_bytes = io_counters[name].bytes_sent
+                
+                encap = 'Ethernet' if mac else 'Local Loopback'
+                
+                netiface = {
+                    'name': name,
+                    'rx': b2h(rx_bytes),
+                    'tx': b2h(tx_bytes),
+                    'timestamp': int(time.time()),
+                    'rx_bytes': rx_bytes,
+                    'tx_bytes': tx_bytes,
+                    'status': status,
+                    'ip': ip,
+                    'mask': mask,
+                    'mac': mac,
+                    'encap': encap,
+                }
+                
+                if gateway:
+                    netiface['gw'] = gateway
+                
+                result.append(netiface)
         elif kernel_name == 'Windows':
             pass
 
-        # REF: http://linux.about.com/library/cmd/blcmdl7_netdevice.htm
-        for i, netiface in enumerate(result):
-            guess_iface = False
-            while True:
-                try:
-                    ifname = netiface['name'][:15]
-                    ifnamepack = struct.pack('256s', ifname.encode('utf-8'))
-                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    sfd = s.fileno()
-                    flags, = struct.unpack(
-                        'H',
-                        fcntl.ioctl(
+        if kernel_name == 'Linux':
+            # REF: http://linux.about.com/library/cmd/blcmdl7_netdevice.htm
+            for i, netiface in enumerate(result):
+                guess_iface = False
+                while True:
+                    try:
+                        ifname = netiface['name'][:15]
+                        ifnamepack = struct.pack('256s', ifname.encode('utf-8'))
+                        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                        sfd = s.fileno()
+                        flags, = struct.unpack(
+                            'H',
+                            fcntl.ioctl(
+                                sfd,
+                                0x8913,  # SIOCGIFFLAGS
+                                ifnamepack)[16:18])
+                        netiface['status'] = ('down', 'up')[flags & 0x1]
+                        netiface['ip'] = socket.inet_ntoa(
+                            fcntl.ioctl(
+                                sfd,
+                                0x8915,  # SIOCGIFADDR
+                                ifnamepack)[20:24])
+                        netiface['bcast'] = socket.inet_ntoa(
+                            fcntl.ioctl(
+                                sfd,
+                                0x8919,  # SIOCGIFBRDADDR
+                                ifnamepack)[20:24])
+                        netiface['mask'] = socket.inet_ntoa(
+                            fcntl.ioctl(
+                                sfd,
+                                0x891b,  # SIOCGIFNETMASK
+                                ifnamepack)[20:24])
+                        hwinfo = fcntl.ioctl(
                             sfd,
-                            0x8913,  # SIOCGIFFLAGS
-                            ifnamepack)[16:18])
-                    netiface['status'] = ('down', 'up')[flags & 0x1]
-                    netiface['ip'] = socket.inet_ntoa(
-                        fcntl.ioctl(
-                            sfd,
-                            0x8915,  # SIOCGIFADDR
-                            ifnamepack)[20:24])
-                    netiface['bcast'] = socket.inet_ntoa(
-                        fcntl.ioctl(
-                            sfd,
-                            0x8919,  # SIOCGIFBRDADDR
-                            ifnamepack)[20:24])
-                    netiface['mask'] = socket.inet_ntoa(
-                        fcntl.ioctl(
-                            sfd,
-                            0x891b,  # SIOCGIFNETMASK
-                            ifnamepack)[20:24])
-                    hwinfo = fcntl.ioctl(
-                        sfd,
-                        0x8927,  # SIOCSIFHWADDR
-                        ifnamepack)
-                    # REF: networking/interface.c, /usr/include/linux/if.h, /usr/include/linux/if_arp.h
-                    encaps = {
-                        '\xff\xff': 'UNSPEC',                   # -1
-                        '\x01\x00': 'Ethernet',                 # 1
-                        '\x00\x02': 'Point-to-Point Protocol',  # 512
-                        '\x04\x03': 'Local Loopback',           # 772
-                        '\x08\x03': 'IPv6-in-IPv4',             # 776
-                        '\x20\x00': 'InfiniBand',               # 32
-                    }
-                    hwtype = hwinfo[16:18]
-                    netiface['encap'] = encaps[bytes.decode(hwtype)]
-                    # netiface['mac'] = ':'.join(['%02X' % ord(str(char)) for char in hwinfo[18:24]])
-                    netiface['mac'] = ':'.join(['%02X' % i for i in hwinfo[18:24]])
+                            0x8927,  # SIOCSIFHWADDR
+                            ifnamepack)
+                        # REF: networking/interface.c, /usr/include/linux/if.h, /usr/include/linux/if_arp.h
+                        encaps = {
+                            '\xff\xff': 'UNSPEC',                   # -1
+                            '\x01\x00': 'Ethernet',                 # 1
+                            '\x00\x02': 'Point-to-Point Protocol',  # 512
+                            '\x04\x03': 'Local Loopback',           # 772
+                            '\x08\x03': 'IPv6-in-IPv4',             # 776
+                            '\x20\x00': 'InfiniBand',               # 32
+                        }
+                        hwtype = hwinfo[16:18]
+                        netiface['encap'] = encaps[bytes.decode(hwtype)]
+                        # netiface['mac'] = ':'.join(['%02X' % ord(str(char)) for char in hwinfo[18:24]])
+                        netiface['mac'] = ':'.join(['%02X' % i for i in hwinfo[18:24]])
 
-                    if not netiface['name'].startswith('venet'):
+                        if not netiface['name'].startswith('venet'):
+                            break
+
+                        # detect interface like venet0:0, venet0:1, etc.
+                        if not guess_iface:
+                            guess_iface = True
+                            guess_iface_name = netiface['name']
+                            guess_iface_i = 0
+                        else:
+                            result.append(netiface)
+                            guest_iface_i += 1
+
+                        netiface = {
+                            'name': '%s:%d' % (guess_iface_name, guess_iface_i),
+                            'rx': '0B',
+                            'tx': '0B',
+                            'timestamp': 0,
+                            'rx_bytes': 0,
+                            'tx_bytes': 0,
+                        }
+                    except:
+                        #result[i] = None
                         break
-
-                    # detect interface like venet0:0, venet0:1, etc.
-                    if not guess_iface:
-                        guess_iface = True
-                        guess_iface_name = netiface['name']
-                        guess_iface_i = 0
-                    else:
-                        result.append(netiface)
-                        guest_iface_i += 1
-
-                    netiface = {
-                        'name': '%s:%d' % (guess_iface_name, guess_iface_i),
-                        'rx': '0B',
-                        'tx': '0B',
-                        'timestamp': 0,
-                        'rx_bytes': 0,
-                        'tx_bytes': 0,
-                    }
-                except:
-                    #result[i] = None
-                    break
 
         result = [iface for iface in result if 'mac' in iface]
         return result
@@ -475,7 +602,18 @@ class ServerInfo(object):
                             else:
                                 bitss.append('32bit')
         elif kernel_name == 'Darwin':
-            pass
+            physical_cpu_count = 1
+            logical_count = psutil.cpu_count(logical=True) or 1
+            p = Popen(['sysctl', '-n', 'machdep.cpu.brand_string'], stdout=PIPE, close_fds=True)
+            cpu_model = p.stdout.read().decode('utf-8').strip()
+            p.wait()
+            if not cpu_model:
+                cpu_model = 'Unknown CPU'
+            for _ in range(logical_count):
+                models.append(cpu_model)
+                bitss.append('64bit')
+            for i in range(physical_cpu_count):
+                cpuids.append(str(i))
         elif kernel_name == 'Windows':
             pass
 
@@ -900,6 +1038,21 @@ class ServerInfo(object):
             else:
                 cmap_reverse = dict((v, k) for k, v in cmap.items())
                 return saveconfig(cfile, config, cmap_reverse)
+        elif dist['name'] == 'macos':
+            if config is None:
+                ifaces = cls.netifaces()
+                for iface in ifaces:
+                    if iface['name'] == ifname:
+                        return {
+                            'name': iface['name'],
+                            'ip': iface.get('ip', ''),
+                            'mask': iface.get('mask', ''),
+                            'gw': iface.get('gw', ''),
+                            'mac': iface.get('mac', ''),
+                        }
+                return None
+            else:
+                return True
         else:
             return None
 

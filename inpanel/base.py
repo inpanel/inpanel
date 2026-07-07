@@ -62,45 +62,48 @@ app_api = {
 
 if hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
     run_type = 'binary'
-    root_path    = sys._MEIPASS
-    execfile     = '/usr/bin/inpanel'
-    config_path  = '/etc/inpanel/'
-    config_file  = '/etc/inpanel/config.ini'
-    runlogs_path = '/etc/inpanel/runlogs.ini'
-    update_info_path = '/etc/inpanel/update_info.ini'
-    history_path = '/etc/inpanel/history.txt'
-    logging_path = '/var/log/inpanel/'
-    logfile      = '/var/log/inpanel/main.log'
-    logerror     = '/var/log/inpanel/error.log'
-    pidfile      = '/var/run/inpanel.pid'
+    root_path     = sys._MEIPASS
+    execfile      = '/usr/bin/inpanel'
+    config_path   = '/etc/inpanel/'
+    config_file   = '/etc/inpanel/config.ini'
+    lastfile_path = '/etc/inpanel/lastfile.ini'
+    bookmarks_path = '/etc/inpanel/bookmarks.ini'
+    upgrade_path  = '/etc/inpanel/upgrade.ini'
+    history_path  = '/etc/inpanel/history.txt'
+    logging_path  = '/var/log/inpanel/'
+    logfile       = '/var/log/inpanel/main.log'
+    logerror      = '/var/log/inpanel/error.log'
+    pidfile       = '/var/run/inpanel.pid'
 else:
     package_dir = Path(__file__).parent.resolve()
     if package_dir.parts[-2] == 'site-packages' or 'dist-packages' in str(package_dir):
         run_type = 'system'
-        root_path    = str(package_dir)
-        execfile     = '/usr/bin/inpanel'
-        config_path  = '/etc/inpanel/'
-        config_file  = '/etc/inpanel/config.ini'
-        runlogs_path = '/etc/inpanel/runlogs.ini'
-        update_info_path = '/etc/inpanel/update_info.ini'
-        history_path = '/etc/inpanel/history.txt'
-        logging_path = '/var/log/inpanel/'
-        logfile      = '/var/log/inpanel/main.log'
-        logerror     = '/var/log/inpanel/error.log'
-        pidfile      = '/var/run/inpanel.pid'
+        root_path     = str(package_dir)
+        execfile      = '/usr/bin/inpanel'
+        config_path   = '/etc/inpanel/'
+        config_file   = '/etc/inpanel/config.ini'
+        lastfile_path = '/etc/inpanel/lastfile.ini'
+        bookmarks_path = '/etc/inpanel/bookmarks.ini'
+        upgrade_path  = '/etc/inpanel/upgrade.ini'
+        history_path  = '/etc/inpanel/history.txt'
+        logging_path  = '/var/log/inpanel/'
+        logfile       = '/var/log/inpanel/main.log'
+        logerror      = '/var/log/inpanel/error.log'
+        pidfile       = '/var/run/inpanel.pid'
     else:
         run_type = 'source'
-        root_path    = str(Path(__file__).parent.resolve())
-        execfile     = str(Path(root_path) / 'app.py')
-        config_path  = str(Path(root_path) / 'data')
-        config_file  = str(Path(root_path) / 'data' / 'config.ini')
-        runlogs_path = str(Path(root_path) / 'data' / 'runlogs.ini')
-        update_info_path = str(Path(root_path) / 'data' / 'update_info.ini')
-        history_path = str(Path(root_path) / 'data' / 'history.txt')
-        logging_path = str(Path(root_path) / 'data')
-        logfile      = str(Path(root_path) / 'data' / 'main.log')
-        logerror     = str(Path(root_path) / 'data' / 'error.log')
-        pidfile      = str(Path(root_path) / 'data' / 'inpanel.pid')
+        root_path     = str(Path(__file__).parent.resolve())
+        execfile      = str(Path(root_path) / 'app.py')
+        config_path   = str(Path(root_path) / 'data')
+        config_file   = str(Path(root_path) / 'data' / 'config.ini')
+        lastfile_path = str(Path(root_path) / 'data' / 'lastfile.ini')
+        bookmarks_path = str(Path(root_path) / 'data' / 'bookmarks.ini')
+        upgrade_path  = str(Path(root_path) / 'data' / 'upgrade.ini')
+        history_path  = str(Path(root_path) / 'data' / 'history.txt')
+        logging_path  = str(Path(root_path) / 'data')
+        logfile       = str(Path(root_path) / 'data' / 'main.log')
+        logerror      = str(Path(root_path) / 'data' / 'error.log')
+        pidfile       = str(Path(root_path) / 'data' / 'inpanel.pid')
 
 
 kernel_name, hostname, kernel_release, kernel_version, machine, processor = uname()
@@ -189,7 +192,7 @@ __all__ = [
     'run_type', 'config_file', 'root_path', 'COMMENTFLAG', 'GENBY', 'execfile',
     'releasetime', 'version_info', 'server_info', 'os_name', 'os_title',
     'os_version', 'os_versint', 'os_platform', 'kernel_name', 'kernel_release',
-    'kernel_version', 'hostname', 'machine', 'runlogs_path', 'update_info_path',
+    'kernel_version', 'hostname', 'machine', 'lastfile_path', 'bookmarks_path', 'upgrade_path',
     'history_path', 'logfile', 'logerror', 'pidfile', 'processor'
 ]
 

@@ -19,6 +19,7 @@ var FileCtrl = [
         };
         $scope.confirm = $scope.cancel = function() {};
         $scope.path_history = [];
+        $scope.bookmarks = [];
 
         var parse_path = function() {
             // parse dir to array
@@ -55,10 +56,58 @@ var FileCtrl = [
                 }
             }, false, true);
         };
+        var get_bookmarks = function() {
+            Request.post('/api/operation/file', {
+                'action': 'bookmarks'
+            }, function(data) {
+                if (data.code == 0) {
+                    $scope.bookmarks = data.data;
+                }
+            }, false, true);
+        };
+
+        $scope.addBookmark = function(curpath, name, item_type) {
+            console.log('addBookmark', curpath, name, item_type);
+            var path = curpath === '/' ? '/' + name : curpath + '/' + name;
+            Request.post('/api/operation/file', {
+                'action': 'add_bookmark',
+                'path': path,
+                'type': item_type,
+                'desc': name
+            }, function(data) {
+                if (data.code == 0) {
+                    get_bookmarks();
+                }
+            }, false, true);
+        };
+
+        $scope.removeBookmark = function(path) {
+            Request.post('/api/operation/file', {
+                'action': 'remove_bookmark',
+                'path': path
+            }, function(data) {
+                if (data.code == 0) {
+                    get_bookmarks();
+                }
+            }, false, true);
+        };
+
+        $scope.goToPath = function(path, item_type) {
+            if (item_type === 'file') {
+                var parts = path.split('/');
+                parts.pop();
+                var parent = parts.join('/');
+                if (!parent) parent = '/';
+                $scope.listdir(parent);
+            } else {
+                $scope.listdir(path);
+            }
+        };
 
         $scope.loaded = false;
         $scope.load = function() {
             get_history_path();
+            get_bookmarks();
             if (route_path || route_file) { // load the specified path and file
                 $scope.loaded = true;
                 remember_path = false;

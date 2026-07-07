@@ -17,7 +17,7 @@ from pathlib import Path
 from pwd import getpwnam, getpwuid
 from time import time
 from uuid import uuid4
-from ..base import kernel_name
+from ..base import kernel_name, history_path, os_name
 
 try:
     import imghdr
@@ -40,18 +40,125 @@ charsets = ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5', 'euc-jp', 'euc-kr',
             'iso-8859-2', 'shift_jis')
 
 
+def safe_shelve_open(filename, flag='c'):
+    try:
+        return shelve.open(filename, flag)
+    except Exception:
+        from dbm import error as dbm_error
+        try:
+            Path(filename).unlink(missing_ok=True)
+            db_files = Path(filename).parent.glob(filename + '.*')
+            for f in db_files:
+                f.unlink(missing_ok=True)
+        except:
+            pass
+        return shelve.open(filename, 'n')
+
+
+def get_default_bookmarks():
+    '''Return system-specific default bookmarks'''
+    bookmarks = []
+    if kernel_name == 'Darwin':
+        bookmarks = [
+            {'type': 'dir', 'path': '/Users', 'desc': '用户目录'},
+            {'type': 'dir', 'path': '/Applications', 'desc': '应用程序目录'},
+            {'type': 'dir', 'path': '/etc', 'desc': '系统配置目录'},
+            {'type': 'dir', 'path': '/usr/local/etc', 'desc': '本地配置目录'},
+            {'type': 'dir', 'path': '/etc/inpanel', 'desc': 'InPanel配置'},
+        ]
+    elif kernel_name == 'Linux':
+        bookmarks = [
+            {'type': 'dir', 'path': '/home', 'desc': '用户目录'},
+            {'type': 'dir', 'path': '/var/www', 'desc': '站点目录'},
+            {'type': 'dir', 'path': '/etc', 'desc': '配置目录'},
+            {'type': 'dir', 'path': '/etc/nginx', 'desc': 'Nginx配置'},
+            {'type': 'dir', 'path': '/etc/inpanel', 'desc': 'InPanel配置'},
+        ]
+    else:
+        bookmarks = [
+            {'type': 'dir', 'path': str(Path.home()), 'desc': '用户目录'},
+            {'type': 'dir', 'path': '/etc', 'desc': '配置目录'},
+            {'type': 'dir', 'path': '/etc/inpanel', 'desc': 'InPanel配置'},
+        ]
+    return bookmarks
+
+
 def web_handler(context):
     '''handler for web server'''
     action = context.get_argument('action', '')
 
     if action == 'last':
-        lastdir = context.runlogs.get('file', 'lastdir')
-        lastfile = context.runlogs.get('file', 'lastfile')
+        lastdir = context.lastfile.get('file', 'lastdir')
+        lastfile = context.lastfile.get('file', 'lastfile')
         context.write({'code': 0, 'msg': '', 'data': {'lastdir': lastdir, 'lastfile': lastfile}})
 
+    elif action == 'bookmarks':
+        from .config import bookmarks_config
+        bookmarks_cfg = bookmarks_config()
+        sections = bookmarks_cfg.get_section_list()
+        if sections:
+            bookmarks = []
+            for section in sections:
+                bookmarks.append({
+                    'type': bookmarks_cfg.get(section, 'type', 'dir'),
+                    'path': section,
+                    'desc': bookmarks_cfg.get(section, 'desc', ''),
+                })
+            context.write({'code': 0, 'msg': '', 'data': bookmarks})
+        else:
+            context.write({'code': 0, 'msg': '', 'data': get_default_bookmarks()})
+
+    elif action == 'save_bookmarks':
+        from .config import bookmarks_config
+        bookmarks = context.get_argument('bookmarks', '')
+        try:
+            import json
+            bookmarks = json.loads(bookmarks)
+            bookmarks_cfg = bookmarks_config()
+            for section in bookmarks_cfg.get_section_list():
+                bookmarks_cfg.remove_section(section)
+            for item in bookmarks:
+                bookmarks_cfg.addsection(item['path'], {
+                    'type': item.get('type', 'dir'),
+                    'desc': item.get('desc', ''),
+                })
+            context.write({'code': 0, 'msg': '常用目录保存成功！'})
+        except:
+            context.write({'code': -1, 'msg': '常用目录保存失败！'})
+
+    elif action == 'add_bookmark':
+        from .config import bookmarks_config
+        path = context.get_argument('path', '')
+        desc = context.get_argument('desc', '')
+        item_type = context.get_argument('type', 'dir')
+        if not path:
+            context.write({'code': -1, 'msg': '路径不能为空！'})
+            return
+        try:
+            bookmarks_cfg = bookmarks_config()
+            bookmarks_cfg.addsection(path, {
+                'type': item_type,
+                'desc': desc if desc else path.split('/')[-1] if path != '/' else '根目录',
+            })
+            context.write({'code': 0, 'msg': '已添加到常用目录！'})
+        except:
+            context.write({'code': -1, 'msg': '添加常用目录失败！'})
+
+    elif action == 'remove_bookmark':
+        from .config import bookmarks_config
+        path = context.get_argument('path', '')
+        if not path:
+            context.write({'code': -1, 'msg': '路径不能为空！'})
+            return
+        try:
+            bookmarks_cfg = bookmarks_config()
+            bookmarks_cfg.remove_section(path)
+            bookmarks_cfg.update()
+            context.write({'code': 0, 'msg': '已从常用目录移除！'})
+        except:
+            context.write({'code': -1, 'msg': '移除常用目录失败！'})
+
     elif action == 'history':
-        from ..base import history_path
-        from pathlib import Path
         paths = []
         if Path(history_path).exists():
             with open(history_path, 'r', encoding='utf-8') as f:
@@ -63,9 +170,6 @@ def web_handler(context):
         if not path:
             context.write({'code': -1, 'msg': '路径不能为空！'})
             return
-        
-        from ..base import history_path
-        from pathlib import Path
         
         paths = []
         if Path(history_path).exists():
@@ -95,7 +199,7 @@ def web_handler(context):
             context.write({'code': -1, 'msg': f'目录 {path} 不存在！'})
         else:
             if remember == 'on':
-                context.runlogs.set('file', 'lastdir', path)
+                context.lastfile.set('file', 'lastdir', path)
             context.write({'code': 0, 'msg': '成功获取文件列表！', 'data': items})
 
     elif action == 'getitem':
@@ -118,7 +222,7 @@ def web_handler(context):
         #     context.write({'code': -1, 'msg': f'读取 {path} 失败！无法识别文件类型 ！'})
         else:
             if remember == 'on':
-                context.runlogs.set('file', 'lastfile', path)
+                context.lastfile.set('file', 'lastfile', path)
             charset, content = decode(path)
             if not charset:
                 context.write({'code': -1, 'msg': '不可识别的文件编码 ！'})
@@ -133,7 +237,7 @@ def web_handler(context):
             context.write({'code': 0, 'msg': '成功读取文件内容 ！', 'data': data})
 
     elif action == 'fclose':
-        context.runlogs.set('file', 'lastfile', '')
+        context.lastfile.set('file', 'lastfile', '')
         context.write({'code': 0, 'msg': ''})
 
     elif action == 'fwrite':
@@ -232,13 +336,13 @@ def web_handler(context):
         if len(paths) == 1:
             path = paths[0]
             if delete(path):
-                context.write({'code': 0, 'msg': f'已将 {path} 移入回收站 ！'})
+                context.write({'code': 0, 'msg': f'已将 {path} 移入回收站'})
             else:
-                context.write({'code': -1, 'msg': f'将 {path} 移入回收站失败 ！'})
+                context.write({'code': -1, 'msg': f'将 {path} 移入回收站失败'})
         else:
             for path in paths:
                 if not delete(path):
-                    context.write({'code': -1, 'msg': f'将 {path} 移入回收站失败 ！'})
+                    context.write({'code': -1, 'msg': f'将 {path} 移入回收站失败'})
                     return
             context.write({'code': 0, 'msg': '批量移入回收站成功！'})
 
@@ -524,11 +628,10 @@ def delete(path):
     try:
         uuid = str(uuid4())
         filename = Path(path).name
-        db = shelve.open(str(Path(trashpath) / '.fileinfo'), 'c')
-        db[uuid] = '\t'.join([filename, path, str(int(time()))])
+        with safe_shelve_open(str(Path(trashpath) / '.fileinfo'), 'c') as db:
+            db[uuid] = '\t'.join([filename, path, str(int(time()))])
 
         os.rename(path, str(Path(trashpath) / uuid))
-        # deal with the .filename.bak
         dname = str(Path(path).parent)
         bakfilepath = str(Path(dname) / ('.%s.bak' % filename))
         if Path(bakfilepath).exists():
@@ -536,8 +639,6 @@ def delete(path):
         return True
     except:
         return False
-    finally:
-        db.close()
 
 
 def _getmounts():
@@ -561,7 +662,7 @@ def _inittrash(mounts=None):
         if not Path(trashpath).exists():
             Path(trashpath).mkdir(parents=True, exist_ok=True)
             metafile = str(Path(trashpath) / '.fileinfo')
-            shelve.open(metafile, 'c').close()
+            safe_shelve_open(metafile, 'c').close()
 
 
 def trashs():
@@ -578,7 +679,7 @@ def tlist():
     items = []
     for mount in mounts:
         trashfile = str(Path(mount) / '.deleted_files' / '.fileinfo')
-        with shelve.open(trashfile, 'c') as db:
+        with safe_shelve_open(trashfile, 'c') as db:
             for uuid, info in db.items():
                 fields = info.split('\t')
                 item = {
@@ -600,12 +701,10 @@ def tlist():
 
 
 def titem(mount, uuid):
-    # _inittrash()
     try:
         trashpath = str(Path(mount) / '.deleted_files')
-        db = shelve.open(str(Path(trashpath) / '.fileinfo'), 'c')
-        info = db[uuid]
-        db.close()
+        with safe_shelve_open(str(Path(trashpath) / '.fileinfo'), 'c') as db:
+            info = db[uuid]
         fields = info.split('\t')
         info = {
             'uuid': uuid,
@@ -621,26 +720,21 @@ def titem(mount, uuid):
 
 
 def trestore(mount, uuid):
-    # _inittrash()
     try:
         info = titem(mount, uuid)
         trashpath = str(Path(mount) / '.deleted_files')
         os.rename(str(Path(trashpath) / uuid), info['path'])
-        db = shelve.open(str(Path(trashpath) / '.fileinfo'), 'c')
-        del db[uuid]
-        db.close()
+        with safe_shelve_open(str(Path(trashpath) / '.fileinfo'), 'c') as db:
+            del db[uuid]
         return True
     except:
         return False
 
 
 def tdelete(mount, uuid):
-    # the real file or directory should be deleted external
-    # _inittrash()
     try:
-        db = shelve.open(str(Path(mount) / '.deleted_files' / '.fileinfo'), 'c')
-        del db[uuid]
-        db.close()
+        with safe_shelve_open(str(Path(mount) / '.deleted_files' / '.fileinfo'), 'c') as db:
+            del db[uuid]
         return True
     except:
         return False

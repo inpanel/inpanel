@@ -11,7 +11,7 @@
 from configparser import RawConfigParser
 from pathlib import Path
 
-from ..base import config_file, runlogs_path, update_info_path, config_path, run_type
+from ..base import config_file, lastfile_path, bookmarks_path, upgrade_path, config_path, run_type
 from ..lib.filelock import FileLock
 
 
@@ -56,9 +56,9 @@ def load_config(inifile=None, configs=None):
 
     return Config(config_file if inifile is None else inifile, default_configs)
 
-def runlogs_config():
-    # to recode running data logs
-    return load_config(runlogs_path, {
+def lastfile_config():
+    # to record last accessed file and directory
+    return load_config(lastfile_path, {
         'file': {
             'lastdir': str(Path.home()), # user Home path
             'lastfile': '',
@@ -66,9 +66,14 @@ def runlogs_config():
     })
 
 
-def update_info_config():
-    # to record version update information separately from config
-    return load_config(update_info_path, {
+def bookmarks_config():
+    # to record user customized bookmarks
+    return load_config(bookmarks_path, {})
+
+
+def upgrade_config():
+    # to record version upgrade information separately from config
+    return load_config(upgrade_path, {
         'update': {
             'lastcheck': '0',
             'updateinfo': '',
@@ -130,11 +135,11 @@ class Config(object):
     def remove_option(self, section, option):
         return self.cfg.remove_option(section, option)
 
-    def get(self, section, option):
+    def get(self, section, option, default=None):
         if self.cfg.has_option(section, option):
             return self.cfg.get(section, option)
         else:
-            return None
+            return default
 
     def getboolean(self, section, option):
         return self.cfg.getboolean(section, option)
@@ -341,7 +346,7 @@ def writeconfig(filepath, readfunc, writefunc, **params):
     return True
 
 
-__all__ = ['load_config', 'runlogs_config', 'update_info_config', 'Config', 'raw_loadconfig', 'raw_saveconfig', 'loadconfig', 'saveconfig', 'readconfig', 'writeconfig']
+__all__ = ['load_config', 'lastfile_config', 'bookmarks_config', 'upgrade_config', 'Config', 'raw_loadconfig', 'raw_saveconfig', 'loadconfig', 'saveconfig', 'readconfig', 'writeconfig']
 
 if __name__ == '__main__':
     import json

@@ -79,19 +79,19 @@
                                         <td style="width:130px">1 分钟进程数：</td>
                                         <td style="width:30px" class="text-right">{{ info['server.loadavg']['1min'] }}</td>
                                         <td style="width:20px"></td>
-                                        <td style="width:80px" ng-bind-html-unsafe="info['server.loadavg']['1min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']"></td>
+                                        <td style="width:80px" ng-bind-html-unsafe="info['server.loadavg']['1min'] | loadavg.overload:info['server.cpuinfo']['core_count']"></td>
                                     </tr>
                                     <tr>
                                         <td>5 分钟进程数：</td>
                                         <td class="text-right">{{ info['server.loadavg']['5min'] }}</td>
                                         <td></td>
-                                        <td ng-bind-html-unsafe="info['server.loadavg']['5min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']">
+                                        <td ng-bind-html-unsafe="info['server.loadavg']['5min'] | loadavg.overload:info['server.cpuinfo']['core_count']">
                                     </tr>
                                     <tr>
                                         <td>15 分钟进程数：</td>
                                         <td class="text-right">{{ info['server.loadavg']['15min'] }}</td>
                                         <td></td>
-                                        <td ng-bind-html-unsafe="info['server.loadavg']['15min'] | loadavg.overload:info['server.cpuinfo']['cpu_count']">
+                                        <td ng-bind-html-unsafe="info['server.loadavg']['15min'] | loadavg.overload:info['server.cpuinfo']['core_count']">
                                     </tr>
                                 </table>
                             </td>

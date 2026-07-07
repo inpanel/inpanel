@@ -12,6 +12,7 @@
 import getpass
 import os
 import platform
+import re
 from pathlib import Path
 import shlex
 import socket
@@ -145,7 +146,6 @@ class Install(object):
                     dist_id = 'centos'
                 elif 'red hat' in content or 'rhel' in content:
                     dist_id = 'rhel'
-                import re
                 match = re.search(r'(\d+\.?\d*)', content)
                 if match:
                     version = match.group(1)

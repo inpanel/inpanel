@@ -7,6 +7,7 @@
 # The full license can be found in 'LICENSE'.
 '''Module for macOS Firewall Management'''
 
+import re
 import shutil
 from typing import Tuple, List, Dict
 
@@ -170,7 +171,6 @@ class MacosFirewallPM(FirewallManager):
                 if 'total number of apps' in line:
                     continue
                 
-                import re
                 app_match = re.match(r'\d+\s*:\s*(/.+)', line)
                 if app_match:
                     current_app_path = app_match.group(1).strip()
@@ -189,7 +189,6 @@ class MacosFirewallPM(FirewallManager):
                     pass
             
             if pf_section and line:
-                import re
                 port_match = re.search(r'port\s+(\d+)', line)
                 proto_match = re.search(r'proto\s+(\w+)', line)
                 ip_match = re.search(r'from\s+(\d+\.\d+\.\d+\.\d+)', line)
