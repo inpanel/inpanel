@@ -22,15 +22,34 @@ from pathlib import Path
 from shlex import quote
 from uuid import uuid4
 
-from . import aliyuncs
-from .mod import disk
-from .mod import ftp
-from .mod import yum
 from .mod import login
 from .mod import query
-from .mod import firewall
-from .mod.task import TaskManager
 from . import mod
+
+
+def _get_aliyuncs():
+    from . import aliyuncs
+    return aliyuncs
+
+
+def _get_disk():
+    from .mod import disk
+    return disk
+
+
+def _get_yum():
+    from .mod import yum
+    return yum
+
+
+def _get_firewall():
+    from .mod import firewall
+    return firewall
+
+
+def _get_task_manager():
+    from .mod.task import TaskManager
+    return TaskManager
 import tornado
 import tornado.escape
 import tornado.httpclient
@@ -512,7 +531,7 @@ class OperationHandler(RequestHandler):
 
         size = self.get_argument('size', '')
         unit = self.get_argument('unit', '')
-        self.write(disk.handle_fdisk(action, devname, size, unit))
+        self.write(_get_disk().handle_fdisk(action, devname, size, unit))
 
     def service(self):
         mod.service.web_handler(self)
@@ -790,7 +809,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = aliyuncs.ECS(access_key_id, access_key_secret)
+            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
             result, data, reqid = await mod.shell.async_task(srv.DescribeRegions)
             if not result:
                 self.write({'code': -1, 'msg': '地域列表加载失败！（%s）' % data['Message']})
@@ -815,7 +834,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = aliyuncs.ECS(access_key_id, access_key_secret)
+            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
             result, data, reqid = await mod.shell.async_task(srv.DescribeZones, RegionCode=region_code)
             if not result:
                 self.write({'code': -1, 'msg': '可用区列表加载失败！（%s）' % data['Message']})
@@ -842,7 +861,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = aliyuncs.ECS(access_key_id, access_key_secret)
+            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
             result, data, reqid = await mod.shell.async_task(srv.DescribeInstances, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
             if not result:
                 self.write({'code': -1, 'msg': '云服务器列表加载失败！（%s）' % data['Message']})
@@ -874,7 +893,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = aliyuncs.ECS(access_key_id, access_key_secret)
+            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
             result, data, reqid = await mod.shell.async_task(srv.DescribeImages, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
             if not result:
                 self.write({'code': -1, 'msg': '系统镜像列表加载失败！（%s）' % data['Message']})
@@ -904,7 +923,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = aliyuncs.ECS(access_key_id, access_key_secret)
+            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
             result, data, reqid = await mod.shell.async_task(srv.DescribeDisks, InstanceName=instance_name)
             if not result:
                 self.write({'code': -1, 'msg': '磁盘列表加载失败！（%s）' % data['Message']})
@@ -930,7 +949,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = aliyuncs.ECS(access_key_id, access_key_secret)
+            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
             result, data, reqid = await mod.shell.async_task(srv.DescribeSnapshots, InstanceName=instance_name, DiskCode=disk_code)
             if not result:
                 self.write({'code': -1, 'msg': '磁盘快照列表加载失败！（%s）' % data['Message']})
@@ -997,7 +1016,7 @@ class ECSHandler(RequestHandler):
 
             opstr = {'startinstance': '启动', 'stopinstance': '停止', 'rebootinstance': '重启', 'resetinstance': '重置'}
 
-            srv = aliyuncs.ECS(access_key_id, access_key_secret)
+            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
             if section == 'startinstance':
                 result, data, reqid = await mod.shell.async_task(srv.StartInstance, instance_name)
             elif section == 'stopinstance':
@@ -1035,7 +1054,7 @@ class ECSHandler(RequestHandler):
 
             opstr = {'createsnapshot': '创建', 'deletesnapshot': '删除', 'cancelsnapshot': '取消', 'rollbacksnapshot': '回滚'}
 
-            srv = aliyuncs.ECS(access_key_id, access_key_secret)
+            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
             if section == 'createsnapshot':
                 result, data, reqid = await mod.shell.async_task(srv.CreateSnapshot, InstanceName=instance_name, DiskCode=disk_code)
             elif section == 'deletesnapshot':
@@ -1173,7 +1192,7 @@ class RepoYumHandler(RequestHandler):
             self.write({'code': -1, 'msg': '演示模式不允许设置 YUM ！'})
             return
         if sec == 'list':
-            items = yum.get_list()
+            items = _get_yum().get_list()
             if items is None:
                 self.write({'code': -1, 'msg': '获取配置失败！'})
             else:
@@ -1184,7 +1203,7 @@ class RepoYumHandler(RequestHandler):
             if repo == None:
                 self.write({'code': -1, 'msg': '配置文件不能为空！'})
                 return
-            data = yum.get_item(repo)
+            data = _get_yum().get_item(repo)
             if data is None:
                 self.write({'code': -1, 'msg': '配置文件不存在！'})
             else:
@@ -1228,18 +1247,18 @@ class RepoYumHandler(RequestHandler):
                 }
             }
             if sec == 'edit':
-                if not yum.item_exists(repo):
+                if not _get_yum().item_exists(repo):
                     self.write({'code': -1, 'msg': '配置文件不存在！'})
                     return
-                if yum.set_item(repo, data) is True:
+                if _get_yum().set_item(repo, data) is True:
                     self.write({'code': 0, 'msg': '配置修改成功！'})
                 else:
                     self.write({'code': -1, 'msg': '配置修改失败！'})
             else:
-                if yum.item_exists(repo):
+                if _get_yum().item_exists(repo):
                     self.write({'code': -1, 'msg': '配置文件已存在！'})
                     return
-                if yum.add_item(repo, data) is True:
+                if _get_yum().add_item(repo, data) is True:
                     self.write({'code': 0, 'msg': '配置添加成功！'})
                 else:
                     self.write({'code': -1, 'msg': '配置添加失败！'})
@@ -1249,10 +1268,10 @@ class RepoYumHandler(RequestHandler):
             if repo is None:
                 self.write({'code': -1, 'msg': '配置文件不能为空！'})
                 return
-            if not yum.item_exists(repo):
+            if not _get_yum().item_exists(repo):
                 self.write({'code': -1, 'msg': '配置文件不存在！'})
                 return
-            if yum.del_item(repo) is True:
+            if _get_yum().del_item(repo) is True:
                 self.write({'code': 0, 'msg': '配置文件已移入回收站！'})
             else:
                 self.write({'code': -1, 'msg': '删除失败！'})
@@ -1344,7 +1363,7 @@ class FirewallHandler(RequestHandler):
             return
         
         context = {'action': action}
-        result = mod.firewall.web_handler(context)
+        result = _get_firewall().web_handler(context)
         self.write(result)
     
     def post(self, action):
@@ -1362,7 +1381,7 @@ class FirewallHandler(RequestHandler):
             'action_type': self.get_argument('action_type', 'allow')
         }
         
-        result = mod.firewall.web_handler(context)
+        result = _get_firewall().web_handler(context)
         self.write(result)
 
 
@@ -1370,7 +1389,7 @@ class BackendHandler(RequestHandler):
     """Backend process manager
     """
     def initialize(self):
-        self.task_manager = TaskManager(self.settings, self.config)
+        self.task_manager = _get_task_manager()(self.settings, self.config)
 
     def get(self, jobname):
         """Get the status of the new process
@@ -1453,15 +1472,15 @@ class BackendHandler(RequestHandler):
             repo = self.get_argument('repo', '*')
             option = self.get_argument('option', '')
             if option == 'update':
-                if not pkg in [v for k,vv in yum.yum_pkg_alias.items() for v in vv]:
+                if not pkg in [v for k,vv in _get_yum().yum_pkg_alias.items() for v in vv]:
                     self.write({'code': -1, 'msg': '未支持的软件包！'})
                     return
             else:
                 option = 'install'
-                if not pkg in yum.yum_pkg_alias:
+                if not pkg in _get_yum().yum_pkg_alias:
                     self.write({'code': -1, 'msg': '未支持的软件包！'})
                     return
-                if repo not in yum.yum_repolist + ('installed', '*'):
+                if repo not in _get_yum().yum_repolist + ('installed', '*'):
                     self.write({'code': -1, 'msg': '未知的软件源 %s！' % repo})
                     return
             self.task_manager._call(partial(self.task_manager.yum_info, pkg, repo, option))
@@ -1477,14 +1496,14 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许此类操作！'})
                     return
 
-            if not pkg in yum.yum_pkg_relatives:
+            if not pkg in _get_yum().yum_pkg_relatives:
                 self.write({'code': -1, 'msg': '软件包不存在！'})
                 return
-            if ext and not ext in yum.yum_pkg_relatives[pkg]:
+            if ext and not ext in _get_yum().yum_pkg_relatives[pkg]:
                 self.write({'code': -1, 'msg': '扩展不存在！'})
                 return
             if jobname == 'yum_install':
-                if repo not in yum.yum_repolist:
+                if repo not in _get_yum().yum_repolist:
                     self.write({'code': -1, 'msg': '未知的软件源 %s！' % repo})
                     return
                 handler = self.task_manager.yum_install
@@ -1495,7 +1514,7 @@ class BackendHandler(RequestHandler):
             self.task_manager._call(partial(handler, repo, pkg, version, release, ext))
         elif jobname == 'yum_ext_info':
             pkg = self.get_argument('pkg', '')
-            if not pkg in yum.yum_pkg_relatives:
+            if not pkg in _get_yum().yum_pkg_relatives:
                 self.write({'code': -1, 'msg': '软件包不存在！'})
                 return
             self.task_manager._call(partial(self.task_manager.yum_ext_info, pkg))

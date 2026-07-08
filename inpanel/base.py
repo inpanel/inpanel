@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-'''The InPanel Base Information'''
+#
 # Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
+'''The InPanel Base Information'''
 
 import sys
 import os
@@ -60,50 +61,53 @@ app_api = {
     'download_package' : 'https://api.inpanel.org/?s=site_packages&a=download'
 }
 
+execfile       = '/usr/bin/inpanel'
+config_path    = '/etc/inpanel/'
+config_file    = '/etc/inpanel/config.ini'
+lastfile_path  = '/etc/inpanel/lastfile.ini'
+bookmarks_path = '/etc/inpanel/bookmarks.ini'
+upgrade_path   = '/etc/inpanel/upgrade.ini'
+history_path   = '/etc/inpanel/history.txt'
+logging_path   = '/var/log/inpanel/'
+logfile        = '/var/log/inpanel/main.log'
+logerror       = '/var/log/inpanel/error.log'
+pidfile        = '/var/run/inpanel.pid'
+install_type   = 'unknown'
+
+
+import shutil
+
 if hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
     run_type = 'binary'
     root_path     = sys._MEIPASS
-    execfile      = '/usr/bin/inpanel'
-    config_path   = '/etc/inpanel/'
-    config_file   = '/etc/inpanel/config.ini'
-    lastfile_path = '/etc/inpanel/lastfile.ini'
-    bookmarks_path = '/etc/inpanel/bookmarks.ini'
-    upgrade_path  = '/etc/inpanel/upgrade.ini'
-    history_path  = '/etc/inpanel/history.txt'
-    logging_path  = '/var/log/inpanel/'
-    logfile       = '/var/log/inpanel/main.log'
-    logerror      = '/var/log/inpanel/error.log'
-    pidfile       = '/var/run/inpanel.pid'
 else:
     package_dir = Path(__file__).parent.resolve()
     if package_dir.parts[-2] == 'site-packages' or 'dist-packages' in str(package_dir):
         run_type = 'system'
         root_path     = str(package_dir)
-        execfile      = '/usr/bin/inpanel'
-        config_path   = '/etc/inpanel/'
-        config_file   = '/etc/inpanel/config.ini'
-        lastfile_path = '/etc/inpanel/lastfile.ini'
-        bookmarks_path = '/etc/inpanel/bookmarks.ini'
-        upgrade_path  = '/etc/inpanel/upgrade.ini'
-        history_path  = '/etc/inpanel/history.txt'
-        logging_path  = '/var/log/inpanel/'
-        logfile       = '/var/log/inpanel/main.log'
-        logerror      = '/var/log/inpanel/error.log'
-        pidfile       = '/var/run/inpanel.pid'
+        pkg_str = str(package_dir)
+        if '/dist-packages/' in pkg_str:
+            install_type = 'apt'
+        elif '/site-packages/' in pkg_str:
+            from .mod.system import get_os_family
+            if '/usr/lib/python3/site-packages/' in pkg_str and get_os_family() == 'rhel':
+                install_type = 'dnf' if shutil.which('dnf') else 'yum'
+            else:
+                install_type = 'pip'
     else:
         run_type = 'source'
-        root_path     = str(Path(__file__).parent.resolve())
-        execfile      = str(Path(root_path) / 'app.py')
-        config_path   = str(Path(root_path) / 'data')
-        config_file   = str(Path(root_path) / 'data' / 'config.ini')
-        lastfile_path = str(Path(root_path) / 'data' / 'lastfile.ini')
+        root_path      = str(Path(__file__).parent.resolve())
+        execfile       = str(Path(root_path) / 'app.py')
+        config_path    = str(Path(root_path) / 'data')
+        config_file    = str(Path(root_path) / 'data' / 'config.ini')
+        lastfile_path  = str(Path(root_path) / 'data' / 'lastfile.ini')
         bookmarks_path = str(Path(root_path) / 'data' / 'bookmarks.ini')
-        upgrade_path  = str(Path(root_path) / 'data' / 'upgrade.ini')
-        history_path  = str(Path(root_path) / 'data' / 'history.txt')
-        logging_path  = str(Path(root_path) / 'data')
-        logfile       = str(Path(root_path) / 'data' / 'main.log')
-        logerror      = str(Path(root_path) / 'data' / 'error.log')
-        pidfile       = str(Path(root_path) / 'data' / 'inpanel.pid')
+        upgrade_path   = str(Path(root_path) / 'data' / 'upgrade.ini')
+        history_path   = str(Path(root_path) / 'data' / 'history.txt')
+        logging_path   = str(Path(root_path) / 'data')
+        logfile        = str(Path(root_path) / 'data' / 'main.log')
+        logerror       = str(Path(root_path) / 'data' / 'error.log')
+        pidfile        = str(Path(root_path) / 'data' / 'inpanel.pid')
 
 
 kernel_name, hostname, kernel_release, kernel_version, machine, processor = uname()
@@ -189,7 +193,7 @@ server_info = {
 
 __all__ = [
     '__version__', 'DEBUG', 'app_api', 'app_name', 'config_path',
-    'run_type', 'config_file', 'root_path', 'COMMENTFLAG', 'GENBY', 'execfile',
+    'run_type', 'install_type', 'config_file', 'root_path', 'COMMENTFLAG', 'GENBY', 'execfile',
     'releasetime', 'version_info', 'server_info', 'os_name', 'os_title',
     'os_version', 'os_versint', 'os_platform', 'kernel_name', 'kernel_release',
     'kernel_version', 'hostname', 'machine', 'lastfile_path', 'bookmarks_path', 'upgrade_path',

@@ -26,7 +26,7 @@ import time
 from xml.dom.minidom import parseString
 
 from ..base import (
-    hostname, kernel_name, os_name, os_title, os_versint, server_info,
+    hostname, kernel_name, os_name, os_title, os_versint, server_info, install_type,
     run_type, version_info, config_file, root_path, pidfile, logfile, logerror, execfile
 )
 from .. import utils
@@ -950,6 +950,18 @@ class ServerInfo(object):
         else:
             run_mode = '未知模式'
         
+        install_mode = ''
+        if run_type == 'system' and install_type != 'unknown':
+            install_names = {
+                'pip': 'pip',
+                'apt': 'apt',
+                'yum': 'yum',
+                'dnf': 'dnf',
+                'pacman': 'pacman',
+                'zypper': 'zypper',
+            }
+            install_mode = install_names.get(install_type, install_type)
+        
         return {
             'pid': pid,
             'start_time': start_time_str,
@@ -959,6 +971,7 @@ class ServerInfo(object):
             'mem_vms': mem_vms,
             'cpu_percent': str(cpu_percent) + '%' if isinstance(cpu_percent, (int, float)) else cpu_percent,
             'run_mode': run_mode,
+            'install_mode': install_mode,
             'run_command': cmdline,
             'bind_addr': bind_addr,
             'access_url': access_url,

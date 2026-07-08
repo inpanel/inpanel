@@ -465,7 +465,12 @@
                         </tr>
                         <tr>
                             <td>运行方式：</td>
-                            <td>{{ info['server.panelinfo']['run_mode'] }}</td>
+                            <td>
+                                {{ info['server.panelinfo']['run_mode'] }}
+                                <span ng-if="info['server.panelinfo']['install_mode'] != ''" class="label label-info">
+                                    {{ info['server.panelinfo']['install_mode'] }}
+                                </span>
+                            </td>
                         </tr>
                         <tr>
                             <td>进程ID：</td>
