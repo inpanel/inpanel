@@ -1,3 +1,35 @@
+## InPanel v1.2.2 (2026-07-08)
+
+**版本更新:**
+
+- 发布 InPanel v1.2.2
+
+**功能改进:**
+
+- 新增常用目录功能：点击 star 图标添加到常用目录，点击 remove 图标取消
+- 常用目录支持文件和目录类型，文件点击时自动打开所在目录
+- 将 runlogs.ini 重命名为 lastfile.ini，记录最后操作的文件和目录
+- 将 update_info.ini 重命名为 upgrade.ini，统一升级配置文件命名
+- 修复下拉菜单宽度被超长路径撑宽的问题，添加文本截断处理
+
+**项目结构优化:**
+
+- 删除根目录下的 public/ 文件夹，前端资源已统一移至 inpanel/public/
+- 删除冗余的 README-zh.md 文件，中文文档统一使用 README.md
+
+**打包配置优化:**
+
+- 新增 MANIFEST.in，排除 test/tests 文件夹在构建时被包含
+- 在 pyproject.toml 中添加 exclude 参数，排除 test* 包
+- 删除根目录下冗余的 templates/ 文件夹，模板已统一移至 inpanel/templates/
+- 将 inpanel.spec 重命名为 rpmbuild.spec，避免与 PyInstaller 的 spec 文件混淆
+- 删除 PyInstaller 构建脚本 build.sh 和相关依赖
+- 移除 requirements.txt 中的 pyinstaller 依赖
+
+**Bug 修复:**
+
+- 登录页：更新重置密码命令格式
+
 ## InPanel v1.2.1 (2026-07-07)
 
 **版本更新:**
