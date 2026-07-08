@@ -470,7 +470,7 @@ class UtilsTimeHandler(RequestHandler):
     """
     def get(self, sec, region=None):
         self.authed()
-        result = server.ServerInfo.handle_time_get(sec, region)
+        result = server.ServerInfo.handle_time_get(sec, region, self.config)
         if result is not None:
             self.write(result)
 
