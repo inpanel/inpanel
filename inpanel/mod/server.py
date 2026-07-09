@@ -982,6 +982,8 @@ class ServerInfo(object):
             'pid_file': pidfile,
             'log_file': logfile,
             'error_log_file': logerror,
+            'plugins_path': os.path.join(root_path, 'data', 'plugins') if run_type == 'source' else '/var/lib/inpanel/plugins',
+            'plugins_config_file': os.path.join(root_path, 'data', 'plugins.json'),
             'exec_file': execfile,
         }
 

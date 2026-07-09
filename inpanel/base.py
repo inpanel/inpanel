@@ -62,6 +62,7 @@ app_api = {
 }
 
 execfile       = '/usr/bin/inpanel'
+data_path      = '/var/lib/inpanel/'
 config_path    = '/etc/inpanel/'
 config_file    = '/etc/inpanel/config.ini'
 lastfile_path  = '/etc/inpanel/lastfile.ini'
@@ -78,13 +79,13 @@ install_type   = 'unknown'
 import shutil
 
 if hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
-    run_type = 'binary'
-    root_path     = sys._MEIPASS
+    run_type  = 'binary'
+    root_path = sys._MEIPASS
 else:
     package_dir = Path(__file__).parent.resolve()
     if package_dir.parts[-2] == 'site-packages' or 'dist-packages' in str(package_dir):
-        run_type = 'system'
-        root_path     = str(package_dir)
+        run_type  = 'system'
+        root_path = str(package_dir)
         pkg_str = str(package_dir)
         if '/dist-packages/' in pkg_str:
             install_type = 'apt'
@@ -98,6 +99,7 @@ else:
         run_type = 'source'
         root_path      = str(Path(__file__).parent.resolve())
         execfile       = str(Path(root_path) / 'app.py')
+        data_path      = str(Path(root_path) / 'data')
         config_path    = str(Path(root_path) / 'data')
         config_file    = str(Path(root_path) / 'data' / 'config.ini')
         lastfile_path  = str(Path(root_path) / 'data' / 'lastfile.ini')
@@ -192,7 +194,7 @@ server_info = {
 }
 
 __all__ = [
-    '__version__', 'DEBUG', 'app_api', 'app_name', 'config_path',
+    '__version__', 'DEBUG', 'app_api', 'app_name', 'config_path', 'data_path', 
     'run_type', 'install_type', 'config_file', 'root_path', 'COMMENTFLAG', 'GENBY', 'execfile',
     'releasetime', 'version_info', 'server_info', 'os_name', 'os_title',
     'os_version', 'os_versint', 'os_platform', 'kernel_name', 'kernel_release',

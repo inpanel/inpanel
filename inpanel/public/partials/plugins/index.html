@@ -3,51 +3,46 @@
 
 <div id="main" ng-show="loaded" style="display:none">
     <div class="module-header">
-        <h3>应用管理</h3>
+        <h3>插件管理</h3>
     </div>
 
     <div ng-init="load()">
         <table class="table table-hover table-condensed">
             <thead>
                 <tr>
-                    <th colspan="4">应用程序</th>
+                    <th style="width:150px">插件名称</th>
+                    <th style="width:80px">状态</th>
+                    <th style="width:350px">描述</th>
+                    <th style="width:120px">作者</th>
+                    <th style="width:80px">操作</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td style="width:120px;">ACME</td>
-                    <td style="width:60px;"><span class="label label-success">已安装</span></td>
-                    <td style="width:380px;" class="muted">使用 ACME 协议 申请和管理 Let’s Encrypt 证书</td>
-                    <td style="width:100px;">
-                        <a class="btn btn-default btn-sm" href="#/plugins/acme" disabled>正在开发</a>
+                <tr ng-repeat="plugin in plugins">
+                    <td>
+                        <a href="#/plugins/{{plugin.id}}">{{plugin.name}}</a>
+                        <span class="muted">v{{plugin.version}}</span>
+                    </td>
+                    <td>
+                        <span ng-class="'label label-success' | iftrue:plugin.enabled" ng-class="'label label-default' | iftrue:!plugin.enabled">
+                            <span ng-show="plugin.enabled">已启用</span>
+                            <span ng-show="!plugin.enabled">已禁用</span>
+                        </span>
+                    </td>
+                    <td class="muted">{{plugin.description}}</td>
+                    <td class="muted">{{plugin.author}}</td>
+                    <td>
+                        <button class="btn btn-xs btn-default" ng-click="togglePlugin(plugin)">
+                            <span ng-show="plugin.enabled">禁用</span>
+                            <span ng-show="!plugin.enabled">启用</span>
+                        </button>
+                        <button class="btn btn-xs btn-danger" ng-click="uninstallPlugin(plugin)">
+                            卸载
+                        </button>
                     </td>
                 </tr>
-                <tr>
-                    <td>Shadowsocks</td>
-                    <td><span class="label label-default">已停止</span></td>
-                    <td class="muted">libev 版 - 内存占用小（600k左右），低 CPU 消耗</td>
-                    <td>
-                        <a class="btn btn-default btn-sm" role="button" href="#/plugins/shadowsocks" disabled>正在开发</a>
-                        <!-- <div srvminiop ng-init="name='Shadowsocks-libev';service='shadowsocks-libev';urlname='shadowsocks-libev'"></div> -->
-                    </td>
-                </tr>
-                <tr>
-                    <td>Shadowsocks</td>
-                    <td><span class="label label-default">已停止</span></td>
-                    <td class="muted">Shadowsocks Python 版</td>
-                    <td>
-                        <a class="btn btn-default btn-sm" role="button" href="#/plugins/shadowsocks" disabled>正在开发</a>
-                        <!-- <div srvminiop ng-init="name='Shadowsocks';service='shadowsocks';urlname='shadowsocks'"></div> -->
-                    </td>
-                </tr>
-                <tr>
-                    <td>ShadowsocksR</td>
-                    <td><span class="label label-info">未安装</span></td>
-                    <td class="muted">ShadowsocksR</td>
-                    <td>
-                        <a class="btn btn-default btn-sm" role="button" href="#/plugins/shadowsocks" disabled>正在开发</a>
-                        <!-- <div srvminiop ng-init="name='ShadowsocksR';service='shadowsocks';urlname='shadowsocks'"></div> -->
-                    </td>
+                <tr ng-show="plugins.length == 0">
+                    <td colspan="5" class="text-center muted">暂无已安装插件</td>
                 </tr>
             </tbody>
         </table>

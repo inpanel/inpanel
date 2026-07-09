@@ -1928,3 +1928,87 @@ class SSLTLSHandler(RequestHandler):
             if action == 'add_domain_keys':
                 self.write({'code': 0, 'msg': u'创建测试私钥成功！(正在测试的功能)'})
 
+
+class PluginStaticFileHandler(StaticFileHandler):
+    '''Static file handler for plugins with authentication check.'''
+    
+    def initialize(self, path, default_filename=None):
+        super().initialize(path, default_filename)
+    
+    async def get(self, path, include_body=True):
+        self.authed()
+        path_parts = path.split('/')
+        if len(path_parts) >= 2:
+            plugin_name = path_parts[0]
+            rest = '/'.join(path_parts[1:])
+            path = f'{plugin_name}/pages/{rest}'
+        await super().get(path, include_body)
+        # try:
+        #     await super().get(path, include_body)
+        # except tornado.web.HTTPError as e:
+        #     if e.status_code == 404:
+        #         self.set_status(404)
+        #         # self.write({'code': 404, 'msg': f'插件静态资源不存在: {path}'})
+        #         self.write(f'插件静态资源不存在: {path}')
+        #     else:
+        #         raise
+
+
+class PluginHandler(RequestHandler):
+    '''Handler for plugin management API.'''
+    
+    def _get_plugin_manager(self):
+        '''Get plugin manager instance.'''
+        if not hasattr(self.application, 'plugin_manager'):
+            from .mod.plugins import PluginManager
+            self.application.plugin_manager = PluginManager(self.application)
+            self.application.plugin_manager.load_plugins()
+        return self.application.plugin_manager
+    
+    def get(self, action=None):
+        self.authed()
+        
+        pm = self._get_plugin_manager()
+        
+        if action == 'list':
+            self.write({'code': 0, 'data': pm.get_plugins_list()})
+        elif action == 'info':
+            plugin_id = self.get_argument('id', '')
+            self.write(pm.get_plugin_info(plugin_id))
+        elif action == 'config':
+            plugin_id = self.get_argument('id', '')
+            self.write(pm.get_plugin_config(plugin_id))
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
+    
+    def post(self, action=None):
+        self.authed()
+        
+        pm = self._get_plugin_manager()
+        
+        if action == 'install':
+            url = self.get_argument('url', '')
+            version = self.get_argument('version', None)
+            self.write(pm.install_plugin(url, version))
+        elif action == 'uninstall':
+            plugin_id = self.get_argument('id', '')
+            self.write(pm.uninstall_plugin(plugin_id))
+        elif action == 'toggle':
+            try:
+                data = loads(self.request.body) if self.request.body else {}
+                plugin_id = data.get('id', '')
+                enable = data.get('enable', True)
+            except:
+                plugin_id = self.get_argument('id', '')
+                enable = self.get_argument('enable', 'true').lower() == 'true'
+            self.write(pm.toggle_plugin(plugin_id, enable))
+        elif action == 'config':
+            plugin_id = self.get_argument('id', '')
+            config_data = {}
+            for key in self.request.arguments:
+                if key != 'id':
+                    config_data[key] = self.get_argument(key, '')
+            self.write(pm.save_plugin_config(plugin_id, config_data))
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
+

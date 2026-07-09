@@ -1,0 +1,25 @@
+<div navbar ng-init="currentItem='plugins'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>插件配置</h3>
+    </div>
+
+    <div ng-init="load()">
+        <form class="form-horizontal" ng-submit="saveConfig()">
+            <div class="control-group" ng-repeat="(key, field) in configSchema">
+                <label class="control-label">{{field.label || key}}</label>
+                <div class="controls">
+                    <input type="text" ng-model="pluginConfig[key]" placeholder="{{field.default || ''}}" ng-required="field.required">
+                </div>
+            </div>
+            <div ng-show="Object.keys(configSchema).length === 0" class="alert alert-info">
+                该插件暂无配置项
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">保存配置</button>
+            </div>
+        </form>
+    </div>
+</div>

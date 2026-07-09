@@ -1,0 +1,23 @@
+<div navbar ng-init="currentItem='plugins'"></div>
+<div ng-show="!loaded"><div loading></div></div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>插件信息</h3>
+    </div>
+
+    <div ng-init="load()">
+        <table class="table table-hover table-bordered">
+            <tr><td>名称</td><td>{{pluginInfo.name}}</td></tr>
+            <tr><td>版本</td><td>{{pluginInfo.version}}</td></tr>
+            <tr><td>描述</td><td>{{pluginInfo.description}}</td></tr>
+            <tr><td>作者</td><td>{{pluginInfo.author}}</td></tr>
+            <tr><td>邮箱</td><td>{{pluginInfo.email}}</td></tr>
+            <tr><td>链接</td><td><a href="{{pluginInfo.link}}" target="_blank">{{pluginInfo.link}}</a></td></tr>
+            <tr><td>许可证</td><td>{{pluginInfo.license}}</td></tr>
+            <tr><td>分类</td><td>{{pluginInfo.category}}</td></tr>
+            <tr><td>权限</td><td>{{pluginInfo.permissions.join(', ') || '无'}}</td></tr>
+            <tr><td>兼容版本</td><td>{{pluginInfo.compatible.join(', ') || '未知'}}</td></tr>
+        </table>
+    </div>
+</div>
