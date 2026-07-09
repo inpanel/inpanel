@@ -467,7 +467,7 @@
                             <td>运行方式：</td>
                             <td>
                                 {{ info['server.panelinfo']['run_mode'] }}
-                                <span ng-if="info['server.panelinfo']['install_mode'] != ''" class="label label-info">
+                                <span ng-show="info['server.panelinfo']['install_mode']" class="label label-info" style="display:none">
                                     {{ info['server.panelinfo']['install_mode'] }}
                                 </span>
                             </td>

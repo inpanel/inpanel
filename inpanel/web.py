@@ -27,29 +27,19 @@ from .mod import query
 from . import mod
 
 
-def _get_aliyuncs():
-    from . import aliyuncs
-    return aliyuncs
-
-
-def _get_disk():
-    from .mod import disk
-    return disk
-
-
-def _get_yum():
-    from .mod import yum
-    return yum
-
-
-def _get_firewall():
-    from .mod import firewall
-    return firewall
+def _get_mod(name):
+    """延迟导入 mod 子模块，避免启动时因环境不兼容而崩溃"""
+    m = getattr(mod, name, None)
+    if m is None:
+        m = __import__('inpanel.mod.' + name, fromlist=[name])
+        setattr(mod, name, m)
+    return m
 
 
 def _get_task_manager():
     from .mod.task import TaskManager
     return TaskManager
+
 import tornado
 import tornado.escape
 import tornado.httpclient
@@ -531,49 +521,52 @@ class OperationHandler(RequestHandler):
 
         size = self.get_argument('size', '')
         unit = self.get_argument('unit', '')
-        self.write(_get_disk().handle_fdisk(action, devname, size, unit))
+        self.write(_get_mod('disk').handle_fdisk(action, devname, size, unit))
 
     def service(self):
-        mod.service.web_handler(self)
+        _get_mod('service').web_handler(self)
 
     def user(self):
-        mod.user.web_handler(self)
+        _get_mod('user').web_handler(self)
 
     def file(self):
-        mod.file.web_handler(self)
+        _get_mod('file').web_handler(self)
 
     def apache(self):
-        mod.httpd.web_handler(self)
+        _get_mod('httpd').web_handler(self)
 
     def nginx(self):
-        mod.nginx.web_handler(self)
+        _get_mod('nginx').web_handler(self)
 
     def mysql(self):
-        mod.mysql.web_handler(self)
+        _get_mod('mysql').web_handler(self)
 
     def php(self):
-        mod.php.web_handler(self)
+        _get_mod('php').web_handler(self)
 
     def ssh(self):
-        mod.ssh.web_handler(self)
+        _get_mod('ssh').web_handler(self)
 
     def cron(self):
-        mod.cron.web_handler(self)
+        _get_mod('cron').web_handler(self)
 
     def vsftpd(self):
-        mod.vsftpd.web_handler(self)
+        _get_mod('vsftpd').web_handler(self)
 
     def named(self):
-        mod.named.web_handler(self)
+        _get_mod('named').web_handler(self)
 
     def lighttpd(self):
-        mod.lighttpd.web_handler(self)
+        _get_mod('lighttpd').web_handler(self)
 
     def proftpd(self):
-        mod.proftpd.web_handler(self)
+        _get_mod('proftpd').web_handler(self)
 
     def pureftpd(self):
-        mod.pureftpd.web_handler(self)
+        _get_mod('pureftpd').web_handler(self)
+
+    def docker(self):
+        _get_mod('docker').web_handler(self)
 
     def shell(self):
         if self.config.get('runtime', 'mode') == 'demo':
@@ -583,7 +576,7 @@ class OperationHandler(RequestHandler):
         cmd = self.get_argument('cmd', '')
         cwd = self.get_argument('cwd', '')
         if action == 'exec_command':
-            self.write({'code': 0, 'msg': '命令已发送', 'data': mod.shell.exec_command(cmd, cwd)})
+            self.write({'code': 0, 'msg': '命令已发送', 'data': _get_mod('shell').exec_command(cmd, cwd)})
 
 class PageHandler(RequestHandler):
     """Return single page.
@@ -608,7 +601,7 @@ class PageHandler(RequestHandler):
             if self.request.query.startswith('=PHP'):
                 self.redirect('http://www.mod.php.net/index.php?%s' % self.request.query)
             else:
-                self.write(mod.php.phpinfo())
+                self.write(_get_mod('php').phpinfo())
 
 
 class BackupHandler(RequestHandler):
@@ -809,8 +802,8 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
-            result, data, reqid = await mod.shell.async_task(srv.DescribeRegions)
+            srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
+            result, data, reqid = await _get_mod('shell').async_task(srv.DescribeRegions)
             if not result:
                 self.write({'code': -1, 'msg': '地域列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -834,8 +827,8 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
-            result, data, reqid = await mod.shell.async_task(srv.DescribeZones, RegionCode=region_code)
+            srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
+            result, data, reqid = await _get_mod('shell').async_task(srv.DescribeZones, RegionCode=region_code)
             if not result:
                 self.write({'code': -1, 'msg': '可用区列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -861,8 +854,8 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
-            result, data, reqid = await mod.shell.async_task(srv.DescribeInstances, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
+            srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
+            result, data, reqid = await _get_mod('shell').async_task(srv.DescribeInstances, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
             if not result:
                 self.write({'code': -1, 'msg': '云服务器列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -893,8 +886,8 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
-            result, data, reqid = await mod.shell.async_task(srv.DescribeImages, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
+            srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
+            result, data, reqid = await _get_mod('shell').async_task(srv.DescribeImages, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
             if not result:
                 self.write({'code': -1, 'msg': '系统镜像列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -923,8 +916,8 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
-            result, data, reqid = await mod.shell.async_task(srv.DescribeDisks, InstanceName=instance_name)
+            srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
+            result, data, reqid = await _get_mod('shell').async_task(srv.DescribeDisks, InstanceName=instance_name)
             if not result:
                 self.write({'code': -1, 'msg': '磁盘列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -949,8 +942,8 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
-            result, data, reqid = await mod.shell.async_task(srv.DescribeSnapshots, InstanceName=instance_name, DiskCode=disk_code)
+            srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
+            result, data, reqid = await _get_mod('shell').async_task(srv.DescribeSnapshots, InstanceName=instance_name, DiskCode=disk_code)
             if not result:
                 self.write({'code': -1, 'msg': '磁盘快照列表加载失败！（%s）' % data['Message']})
                 self.finish()
@@ -1016,15 +1009,15 @@ class ECSHandler(RequestHandler):
 
             opstr = {'startinstance': '启动', 'stopinstance': '停止', 'rebootinstance': '重启', 'resetinstance': '重置'}
 
-            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
+            srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
             if section == 'startinstance':
-                result, data, reqid = await mod.shell.async_task(srv.StartInstance, instance_name)
+                result, data, reqid = await _get_mod('shell').async_task(srv.StartInstance, instance_name)
             elif section == 'stopinstance':
-                result, data, reqid = await mod.shell.async_task(srv.StopInstance, instance_name, ForceStop=force)
+                result, data, reqid = await _get_mod('shell').async_task(srv.StopInstance, instance_name, ForceStop=force)
             elif section == 'rebootinstance':
-                result, data, reqid = await mod.shell.async_task(srv.RebootInstance, instance_name, ForceStop=force)
+                result, data, reqid = await _get_mod('shell').async_task(srv.RebootInstance, instance_name, ForceStop=force)
             elif section == 'resetinstance':
-                result, data, reqid = await mod.shell.async_task(srv.ResetInstance, instance_name, ImageCode=image_code)
+                result, data, reqid = await _get_mod('shell').async_task(srv.ResetInstance, instance_name, ImageCode=image_code)
             if not result:
                 self.write({'code': -1, 'msg': '云服务器 %s %s失败！（%s）' % (instance_name, opstr[section], data['Message'])})
                 self.finish()
@@ -1054,15 +1047,15 @@ class ECSHandler(RequestHandler):
 
             opstr = {'createsnapshot': '创建', 'deletesnapshot': '删除', 'cancelsnapshot': '取消', 'rollbacksnapshot': '回滚'}
 
-            srv = _get_aliyuncs().ECS(access_key_id, access_key_secret)
+            srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
             if section == 'createsnapshot':
-                result, data, reqid = await mod.shell.async_task(srv.CreateSnapshot, InstanceName=instance_name, DiskCode=disk_code)
+                result, data, reqid = await _get_mod('shell').async_task(srv.CreateSnapshot, InstanceName=instance_name, DiskCode=disk_code)
             elif section == 'deletesnapshot':
-                result, data, reqid = await mod.shell.async_task(srv.DeleteSnapshot, InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
+                result, data, reqid = await _get_mod('shell').async_task(srv.DeleteSnapshot, InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
             elif section == 'cancelsnapshot':
-                result, data, reqid = await mod.shell.async_task(srv.CancelSnapshotRequest, InstanceName=instance_name, SnapshotCode=snapshot_code)
+                result, data, reqid = await _get_mod('shell').async_task(srv.CancelSnapshotRequest, InstanceName=instance_name, SnapshotCode=snapshot_code)
             elif section == 'rollbacksnapshot':
-                result, data, reqid = await mod.shell.async_task(srv.RollbackSnapshot, InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
+                result, data, reqid = await _get_mod('shell').async_task(srv.RollbackSnapshot, InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
             if not result:
                 self.write({'code': -1, 'msg': '快照%s失败！（%s）' % (opstr[section], data['Message'])})
                 self.finish()
@@ -1188,26 +1181,20 @@ class RepoYumHandler(RequestHandler):
     """
     def get(self, sec, repo=None):
         self.authed()
+        from .mod import yum
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 YUM ！'})
             return
-        if sec == 'list':
-            items = _get_yum().get_list()
-            if items is None:
-                self.write({'code': -1, 'msg': '获取配置失败！'})
-            else:
-                self.write({'code': 0, 'msg': '', 'data': items})
-        elif sec == 'item':
+        if sec in ('list', 'item', 'overview', 'refresh', 'search', 'install'):
             if repo is None:
-                repo = self.get_argument('repo', None)
-            if repo == None:
-                self.write({'code': -1, 'msg': '配置文件不能为空！'})
-                return
-            data = _get_yum().get_item(repo)
-            if data is None:
-                self.write({'code': -1, 'msg': '配置文件不存在！'})
-            else:
-                self.write({'code': 0, 'msg': '', 'data': data})
+                repo = self.get_argument('repo', '') or self.get_argument('name', '')
+            context = {
+                'action': sec,
+                'repo': repo,
+                'name': repo,
+                'keyword': self.get_argument('keyword', '')
+            }
+            self.write(yum.web_handler(context))
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
@@ -1247,18 +1234,18 @@ class RepoYumHandler(RequestHandler):
                 }
             }
             if sec == 'edit':
-                if not _get_yum().item_exists(repo):
+                if not _get_mod('yum').item_exists(repo):
                     self.write({'code': -1, 'msg': '配置文件不存在！'})
                     return
-                if _get_yum().set_item(repo, data) is True:
+                if _get_mod('yum').set_item(repo, data) is True:
                     self.write({'code': 0, 'msg': '配置修改成功！'})
                 else:
                     self.write({'code': -1, 'msg': '配置修改失败！'})
             else:
-                if _get_yum().item_exists(repo):
+                if _get_mod('yum').item_exists(repo):
                     self.write({'code': -1, 'msg': '配置文件已存在！'})
                     return
-                if _get_yum().add_item(repo, data) is True:
+                if _get_mod('yum').add_item(repo, data) is True:
                     self.write({'code': 0, 'msg': '配置添加成功！'})
                 else:
                     self.write({'code': -1, 'msg': '配置添加失败！'})
@@ -1268,10 +1255,10 @@ class RepoYumHandler(RequestHandler):
             if repo is None:
                 self.write({'code': -1, 'msg': '配置文件不能为空！'})
                 return
-            if not _get_yum().item_exists(repo):
+            if not _get_mod('yum').item_exists(repo):
                 self.write({'code': -1, 'msg': '配置文件不存在！'})
                 return
-            if _get_yum().del_item(repo) is True:
+            if _get_mod('yum').del_item(repo) is True:
                 self.write({'code': 0, 'msg': '配置文件已移入回收站！'})
             else:
                 self.write({'code': -1, 'msg': '删除失败！'})
@@ -1284,22 +1271,26 @@ class RepoDnfHandler(RequestHandler):
     """
     def get(self, sec, repo=None):
         self.authed()
+        from .mod import dnf
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 DNF ！'})
             return
-        if sec == 'list':
-            result = mod.dnf.web_handler({'action': 'list'})
-            self.write(result)
-        elif sec == 'item':
+        if sec in ('list', 'item', 'overview', 'refresh', 'search', 'install'):
             if repo is None:
-                repo = self.get_argument('repo', None)
-            result = mod.dnf.web_handler({'action': 'item', 'repo': repo})
-            self.write(result)
+                repo = self.get_argument('repo', '') or self.get_argument('name', '')
+            context = {
+                'action': sec,
+                'repo': repo,
+                'name': repo,
+                'keyword': self.get_argument('keyword', '')
+            }
+            self.write(dnf.web_handler(context))
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
     def post(self, sec, repo=None):
         self.authed()
+        from .mod import dnf
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 DNF ！'})
             return
@@ -1314,7 +1305,7 @@ class RepoDnfHandler(RequestHandler):
             'gpgcheck': self.get_argument('gpgcheck', False)
         }
         
-        result = mod.dnf.web_handler(context)
+        result = dnf.web_handler(context)
         self.write(result)
 
 
@@ -1323,22 +1314,26 @@ class RepoAptHandler(RequestHandler):
     """
     def get(self, sec, source=None):
         self.authed()
+        from .mod import apt
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 APT ！'})
             return
-        if sec == 'list':
-            result = mod.apt.web_handler({'action': 'list'})
-            self.write(result)
-        elif sec == 'item':
+        if sec in ('list', 'item', 'overview', 'refresh', 'search', 'install'):
             if source is None:
-                source = self.get_argument('source', None)
-            result = mod.apt.web_handler({'action': 'item', 'source': source})
-            self.write(result)
+                source = self.get_argument('source', '') or self.get_argument('name', '')
+            context = {
+                'action': sec,
+                'source': source,
+                'name': source,
+                'keyword': self.get_argument('keyword', '')
+            }
+            self.write(apt.web_handler(context))
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
     def post(self, sec, source=None):
         self.authed()
+        from .mod import apt
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 APT ！'})
             return
@@ -1350,8 +1345,113 @@ class RepoAptHandler(RequestHandler):
             'sources': self.get_argument('sources', [])
         }
         
-        result = mod.apt.web_handler(context)
+        result = apt.web_handler(context)
         self.write(result)
+
+
+class RepoBrewHandler(RequestHandler):
+    """Handler for Homebrew Repository Request."""
+    def get(self, sec, name=None):
+        self.authed()
+        from .mod import brew
+        if sec in ('overview', 'list', 'item', 'services', 'search', 'install', 'refresh'):
+            if name is None:
+                name = self.get_argument('name', '') or self.get_argument('repo', '')
+            context = {
+                'action': sec,
+                'name': name,
+                'repo': name,
+                'keyword': self.get_argument('keyword', '')
+            }
+            self.write(brew.web_handler(context))
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
+
+    def post(self, sec, name=None):
+        self.authed()
+        from .mod import brew
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': '演示模式不允许设置 Homebrew ！'})
+            return
+        if sec == 'service':
+            op = self.get_argument('op', '')
+            self.write(brew.web_handler({'action': 'service', 'op': op}))
+        elif sec == 'install':
+            if name is None:
+                name = self.get_argument('name', '') or self.get_argument('pkg', '')
+            self.write(brew.web_handler({'action': 'install', 'name': name}))
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
+
+
+class RepoPipHandler(RequestHandler):
+    """Handler for pip Repository Request."""
+    def get(self, sec, name=None):
+        self.authed()
+        from .mod import pip
+        if sec in ('overview', 'list', 'item', 'search', 'install', 'refresh'):
+            if name is None:
+                name = self.get_argument('name', '') or self.get_argument('repo', '')
+            context = {
+                'action': sec,
+                'name': name,
+                'repo': name,
+                'keyword': self.get_argument('keyword', '')
+            }
+            self.write(pip.web_handler(context))
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
+
+    def post(self, sec, name=None):
+        self.authed()
+        from .mod import pip
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': '演示模式不允许设置 pip ！'})
+            return
+        if sec == 'install':
+            if name is None:
+                name = self.get_argument('name', '') or self.get_argument('pkg', '')
+            self.write(pip.web_handler({'action': 'install', 'name': name}))
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
+
+
+class RepoSupportedHandler(RequestHandler):
+    """Handler for supported package managers."""
+    def get(self):
+        self.authed()
+        from .mod import system as sysmod
+        family = sysmod.get_os_family()
+        supported = {
+            'brew': False,
+            'pip': False,
+            'yum': False,
+            'dnf': False,
+            'apt': False,
+        }
+        if family == 'darwin':
+            supported['brew'] = True
+            supported['pip'] = True
+        elif family == 'rhel':
+            supported['yum'] = True
+            supported['dnf'] = True
+            supported['pip'] = True
+        elif family == 'debian':
+            supported['apt'] = True
+            supported['pip'] = True
+        else:
+            # fallback: detect by command availability
+            from shutil import which
+            supported['brew'] = which('brew') is not None
+            supported['pip'] = which('pip') is not None or which('pip3') is not None
+            supported['yum'] = which('yum') is not None
+            supported['dnf'] = which('dnf') is not None
+            supported['apt'] = which('apt') is not None
+        # ensure pip available across systems
+        if not supported['pip']:
+            from shutil import which
+            supported['pip'] = which('pip') is not None or which('pip3') is not None
+        self.write({'code': 0, 'msg': '', 'data': {'family': family, 'supported': supported}})
 
 
 class FirewallHandler(RequestHandler):
@@ -1363,7 +1463,7 @@ class FirewallHandler(RequestHandler):
             return
         
         context = {'action': action}
-        result = _get_firewall().web_handler(context)
+        result = _get_mod('firewall').web_handler(context)
         self.write(result)
     
     def post(self, action):
@@ -1381,7 +1481,7 @@ class FirewallHandler(RequestHandler):
             'action_type': self.get_argument('action_type', 'allow')
         }
         
-        result = _get_firewall().web_handler(context)
+        result = _get_mod('firewall').web_handler(context)
         self.write(result)
 
 
@@ -1426,7 +1526,7 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许此类操作！'})
                     return
 
-            if service not in mod.service.Service.service_items:
+            if service not in _get_mod('service').Service.service_items:
                 self.write({'code': -1, 'msg': '未支持的服务！'})
                 return
             if not name: name = service
@@ -1472,15 +1572,15 @@ class BackendHandler(RequestHandler):
             repo = self.get_argument('repo', '*')
             option = self.get_argument('option', '')
             if option == 'update':
-                if not pkg in [v for k,vv in _get_yum().yum_pkg_alias.items() for v in vv]:
+                if not pkg in [v for k,vv in _get_mod('yum').yum_pkg_alias.items() for v in vv]:
                     self.write({'code': -1, 'msg': '未支持的软件包！'})
                     return
             else:
                 option = 'install'
-                if not pkg in _get_yum().yum_pkg_alias:
+                if not pkg in _get_mod('yum').yum_pkg_alias:
                     self.write({'code': -1, 'msg': '未支持的软件包！'})
                     return
-                if repo not in _get_yum().yum_repolist + ('installed', '*'):
+                if repo not in _get_mod('yum').yum_repolist + ('installed', '*'):
                     self.write({'code': -1, 'msg': '未知的软件源 %s！' % repo})
                     return
             self.task_manager._call(partial(self.task_manager.yum_info, pkg, repo, option))
@@ -1496,14 +1596,14 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许此类操作！'})
                     return
 
-            if not pkg in _get_yum().yum_pkg_relatives:
+            if not pkg in _get_mod('yum').yum_pkg_relatives:
                 self.write({'code': -1, 'msg': '软件包不存在！'})
                 return
-            if ext and not ext in _get_yum().yum_pkg_relatives[pkg]:
+            if ext and not ext in _get_mod('yum').yum_pkg_relatives[pkg]:
                 self.write({'code': -1, 'msg': '扩展不存在！'})
                 return
             if jobname == 'yum_install':
-                if repo not in _get_yum().yum_repolist:
+                if repo not in _get_mod('yum').yum_repolist:
                     self.write({'code': -1, 'msg': '未知的软件源 %s！' % repo})
                     return
                 handler = self.task_manager.yum_install
@@ -1514,7 +1614,7 @@ class BackendHandler(RequestHandler):
             self.task_manager._call(partial(handler, repo, pkg, version, release, ext))
         elif jobname == 'yum_ext_info':
             pkg = self.get_argument('pkg', '')
-            if not pkg in _get_yum().yum_pkg_relatives:
+            if not pkg in _get_mod('yum').yum_pkg_relatives:
                 self.write({'code': -1, 'msg': '软件包不存在！'})
                 return
             self.task_manager._call(partial(self.task_manager.yum_ext_info, pkg))
@@ -1722,7 +1822,7 @@ class BackendHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '用户不存在！'})
                 return
             user, host = username.split('@', 1)
-            user, host = mod.user.strip(), host.strip()
+            user, host = user.strip(), host.strip()
             if user == 'root' and host != '%':
                 self.write({'code': -1, 'msg': '该用户不允许删除！'})
                 return

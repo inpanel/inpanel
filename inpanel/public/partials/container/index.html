@@ -1,0 +1,348 @@
+<div navbar ng-init="currentItem='container'"></div>
+<div ng-hide="loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-init="load()" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>Docker 容器管理</h3>
+    </div>
+
+    <div class="tabbable">
+        <ul class="nav nav-tabs">
+            <li ng-class="'active' | iftrue:activeTabName=='overview'"><a href="#overview" ng-click="tab_sec('overview')" data-toggle="tab">概览</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='containers'"><a href="#containers" ng-click="tab_sec('containers')" data-toggle="tab">容器管理</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='images'"><a href="#images" ng-click="tab_sec('images')" data-toggle="tab">镜像管理</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='repo'"><a href="#repo" ng-click="tab_sec('repo')" data-toggle="tab">镜像仓库</a></li>
+            <li ng-class="'active' | iftrue:activeTabName=='networks'"><a href="#networks" ng-click="tab_sec('networks')" data-toggle="tab">网络管理</a></li>
+        </ul>
+        <div class="tab-content">
+
+            <!-- 概览页 -->
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='overview'" id="overview">
+                <div ng-show="overviewLoading">
+                    <div waiting ng-init="waitingText='正在加载 Docker 信息，请稍候...'"></div>
+                </div>
+
+                <div ng-show="!overviewLoading && overview">
+                    <div class="panel panel-info" ng-show="!overview.installed">
+                        <div class="panel-heading">
+                            <div class="panel-title">未检测到 Docker</div>
+                        </div>
+                        <div class="panel-body">
+                            <p>检测到系统中未安装 Docker。</p>
+                            <p>请先安装 Docker 服务再继续操作。</p>
+                        </div>
+                    </div>
+
+                    <div ng-show="overview.installed">
+                        <div class="row">
+                            <div class="col-md-6 col-xs-12">
+                                <table class="table table-hover table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2">Docker 信息</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="width:150px;">Docker 版本</td>
+                                            <td>{{overview.version}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>服务状态</td>
+                                            <td>
+                                                <span class="label label-success" ng-show="overview.running">运行中</span>
+                                                <span class="label label-danger" ng-show="!overview.running">已停止</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>服务控制</td>
+                                            <td>
+                                                <button class="btn btn-success btn-xs" ng-click="dockerService('start')" ng-disabled="overview.running || processing">
+                                                    <i class="glyphicon glyphicon-play"></i> 启动
+                                                </button>
+                                                <button class="btn btn-warning btn-xs" ng-click="dockerService('stop')" ng-disabled="!overview.running || processing">
+                                                    <i class="glyphicon glyphicon-stop"></i> 停止
+                                                </button>
+                                                <button class="btn btn-primary btn-xs" ng-click="dockerService('restart')" ng-disabled="!overview.running || processing">
+                                                    <i class="glyphicon glyphicon-refresh"></i> 重启
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6 col-xs-12">
+                                <table class="table table-hover table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2">资源统计</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="width:150px;">容器总数</td>
+                                            <td>{{overview.containers}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>运行中的容器</td>
+                                            <td>{{overview.running_containers}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>镜像数量</td>
+                                            <td>{{overview.images}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>网络数量</td>
+                                            <td>{{overview.networks}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>数据卷数量</td>
+                                            <td>{{overview.volumes}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 容器管理页 -->
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='containers'" id="containers">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-list-alt"></i>
+                            <span> 容器列表</span>
+                            <div class="pull-right">
+                                <label class="checkbox-inline" style="margin-right:10px;">
+                                    <input type="checkbox" ng-model="showAllContainers" ng-change="loadContainers()"> 显示已停止的容器
+                                </label>
+                                <button class="btn btn-default btn-xs" ng-click="loadContainers()">
+                                    <i class="glyphicon glyphicon-refresh"></i> 刷新
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-show="containersLoading">
+                        <div waiting ng-init="waitingText='正在加载容器列表，请稍候...'"></div>
+                    </div>
+                    <table class="table table-hover table-bordered table-condensed" ng-show="!containersLoading">
+                        <thead>
+                            <tr>
+                                <th style="width:20px" class="text-right">#</th>
+                                <th>容器名称</th>
+                                <th>容器ID</th>
+                                <th>镜像</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th class="text-right">CPU</th>
+                                <th class="text-right">内存</th>
+                                <th style="width:160px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="c in containers">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{c.Names}}</td>
+                                <td title="{{c.ID}}">{{c.ID | limitTo:12}}</td>
+                                <td>{{c.Image}}</td>
+                                <td>
+                                    <span class="label label-success" ng-show="c.Status && c.Status.indexOf('Up') == 0">{{c.Status}}</span>
+                                    <span class="label label-danger" ng-show="c.Status && c.Status.indexOf('Up') != 0">{{c.Status}}</span>
+                                </td>
+                                <td>{{c.CreatedAt}}</td>
+                                <td class="text-right">{{c.stats.CPUPerc || '-'}}</td>
+                                <td class="text-right">{{c.stats.MemUsage || '-'}}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-success btn-xs" ng-click="containerControl(c.ID, 'start')" ng-show="c.Status && c.Status.indexOf('Up') != 0" ng-disabled="processing">
+                                            <i class="glyphicon glyphicon-play"></i> 启动
+                                        </button>
+                                        <button class="btn btn-warning btn-xs" ng-click="containerControl(c.ID, 'stop')" ng-show="c.Status && c.Status.indexOf('Up') == 0" ng-disabled="processing">
+                                            <i class="glyphicon glyphicon-stop"></i> 停止
+                                        </button>
+                                        <button class="btn btn-primary btn-xs" ng-click="containerControl(c.ID, 'restart')" ng-disabled="processing">
+                                            <i class="glyphicon glyphicon-refresh"></i> 重启
+                                        </button>
+                                        <button class="btn btn-danger btn-xs" ng-click="containerControl(c.ID, 'remove')" ng-disabled="processing">
+                                            <i class="glyphicon glyphicon-trash"></i> 删除
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr ng-show="containers.length == 0">
+                                <td colspan="9" class="text-center text-muted">暂无容器</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 镜像管理页 -->
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='images'" id="images">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-list-alt"></i>
+                            <span> 本地镜像列表</span>
+                            <div class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="loadImages()">
+                                    <i class="glyphicon glyphicon-refresh"></i> 刷新
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-show="imagesLoading">
+                        <div waiting ng-init="waitingText='正在加载镜像列表，请稍候...'"></div>
+                    </div>
+                    <table class="table table-hover table-bordered table-condensed" ng-show="!imagesLoading">
+                        <thead>
+                            <tr>
+                                <th style="width:20px" class="text-right">#</th>
+                                <th>镜像名称</th>
+                                <th>镜像ID</th>
+                                <th class="text-right">大小</th>
+                                <th>创建时间</th>
+                                <th style="width:80px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="img in images">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{img.Repository}}:{{img.Tag}}</td>
+                                <td title="{{img.ID}}">{{img.ID | limitTo:12}}</td>
+                                <td class="text-right">{{img.Size}}</td>
+                                <td>{{img.CreatedAt}}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-xs" ng-click="removeImage(img.ID)" ng-disabled="processing">
+                                        <i class="glyphicon glyphicon-trash"></i> 删除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr ng-show="images.length == 0">
+                                <td colspan="6" class="text-center text-muted">暂无镜像</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 镜像仓库页 -->
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='repo'" id="repo">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-search"></i>
+                            <span> 镜像仓库搜索</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-inline" onsubmit="return false" method="get" action="/">
+                            <div class="form-group">
+                                <input class="form-control" type="text" ng-model="searchKeyword" placeholder="输入镜像名称，如 nginx" autocomplete="off">
+                            </div>
+                            <button class="btn btn-primary" ng-click="searchImages()" ng-disabled="searching || processing">
+                                <i class="glyphicon glyphicon-search"></i> 搜索
+                            </button>
+                        </form>
+                    </div>
+                    <div ng-show="searching">
+                        <div waiting ng-init="waitingText='正在搜索镜像，请稍候...'"></div>
+                    </div>
+                    <table class="table table-hover table-bordered table-condensed" ng-show="!searching && searchResults.length > 0">
+                        <thead>
+                            <tr>
+                                <th style="width:20px" class="text-right">#</th>
+                                <th>镜像名称</th>
+                                <th>描述</th>
+                                <th class="text-right">Stars</th>
+                                <th class="text-center">官方</th>
+                                <th class="text-center">自动</th>
+                                <th style="width:80px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="img in searchResults">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{img.Name}}</td>
+                                <td class="muted">{{img.Description}}</td>
+                                <td class="text-right">{{img.StarCount}}</td>
+                                <td class="text-center">
+                                    <span class="label label-primary" ng-show="img.IsOfficial == 'true' || img.IsOfficial == true">官方</span>
+                                    <span ng-show="img.IsOfficial != 'true' && img.IsOfficial != true">-</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="label label-default" ng-show="img.IsAutomated == 'true' || img.IsAutomated == true">自动</span>
+                                    <span ng-show="img.IsAutomated != 'true' && img.IsAutomated != true">-</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-success btn-xs" ng-click="pullImage(img.Name)" ng-disabled="pulling || processing">
+                                        <i class="glyphicon glyphicon-download"></i> 下载
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="panel-body text-center text-muted" ng-show="!searching && searchResults.length == 0">
+                        请输入关键词搜索 Docker Hub 上的镜像
+                    </div>
+                </div>
+            </div>
+
+            <!-- 网络管理页 -->
+            <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='networks'" id="networks">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-list-alt"></i>
+                            <span> 网络列表</span>
+                            <div class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="loadNetworks()">
+                                    <i class="glyphicon glyphicon-refresh"></i> 刷新
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-show="networksLoading">
+                        <div waiting ng-init="waitingText='正在加载网络列表，请稍候...'"></div>
+                    </div>
+                    <table class="table table-hover table-bordered table-condensed" ng-show="!networksLoading">
+                        <thead>
+                            <tr>
+                                <th style="width:20px" class="text-right">#</th>
+                                <th>网络名称</th>
+                                <th>网络ID</th>
+                                <th>驱动</th>
+                                <th>作用域</th>
+                                <th>创建时间</th>
+                                <th style="width:80px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="net in networks">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{net.Name}}</td>
+                                <td title="{{net.ID}}">{{net.ID | limitTo:12}}</td>
+                                <td>{{net.Driver}}</td>
+                                <td>{{net.Scope}}</td>
+                                <td>{{net.CreatedAt}}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-xs" ng-click="removeNetwork(net.ID)" ng-disabled="processing" ng-show="net.Name != 'bridge' && net.Name != 'host' && net.Name != 'none'">
+                                        <i class="glyphicon glyphicon-trash"></i> 删除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr ng-show="networks.length == 0">
+                                <td colspan="7" class="text-center text-muted">暂无网络</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
