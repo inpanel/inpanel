@@ -26,8 +26,8 @@ import time
 from xml.dom.minidom import parseString
 
 from ..base import (
-    hostname, kernel_name, os_name, os_title, os_versint, server_info,
-    run_type, version_info, config_file, root_path, pidfile, logfile, logerror, execfile
+    hostname, kernel_name, os_name, os_title, os_versint, server_info, install_type,
+    run_type, version_info, config_file, root_path, config_path, data_path, logging_path, pidfile, logfile, logerror, execfile
 )
 from .. import utils
 from ..utils import b2h
@@ -950,6 +950,18 @@ class ServerInfo(object):
         else:
             run_mode = '未知模式'
         
+        install_mode = ''
+        if run_type == 'system' and install_type != 'unknown':
+            install_names = {
+                'pip': 'pip',
+                'apt': 'apt',
+                'yum': 'yum',
+                'dnf': 'dnf',
+                'pacman': 'pacman',
+                'zypper': 'zypper',
+            }
+            install_mode = install_names.get(install_type, install_type)
+        
         return {
             'pid': pid,
             'start_time': start_time_str,
@@ -959,6 +971,7 @@ class ServerInfo(object):
             'mem_vms': mem_vms,
             'cpu_percent': str(cpu_percent) + '%' if isinstance(cpu_percent, (int, float)) else cpu_percent,
             'run_mode': run_mode,
+            'install_mode': install_mode,
             'run_command': cmdline,
             'bind_addr': bind_addr,
             'access_url': access_url,
@@ -969,6 +982,9 @@ class ServerInfo(object):
             'pid_file': pidfile,
             'log_file': logfile,
             'error_log_file': logerror,
+            'plugins_path': os.path.join(data_path, 'plugins'),
+            'plugins_config_file': os.path.join(config_path, 'plugins.json'),
+            'plugins_log_file': os.path.join(logging_path, 'plugins.log'),
             'exec_file': execfile,
         }
 
@@ -1196,13 +1212,14 @@ class ServerInfo(object):
 
         # firstly read from config file
         timezone = ''
-        if not config.has_section('time'):
-            config.add_section('time')
+        if config is not None:
+            if not config.has_section('time'):
+                config.add_section('time')
 
-        if config.has_option('time', 'timezone'):
-            timezone = config.get('time', 'timezone')
-            if timezone:
-                return timezone
+            if config.has_option('time', 'timezone'):
+                timezone = config.get('time', 'timezone')
+                if timezone:
+                    return timezone
 
         # or else check the system config file
         dist = cls.dist()
@@ -1250,29 +1267,15 @@ class ServerInfo(object):
 
         # write timezone setting to config file
         return config.set('time', 'timezone', timezone)
-class ServerTool(object):
-    @classmethod
-    def supportfs(self):
-        """Return a list of file system that system support.
-        """
-        support_list = []
-        for fstype in ('ext2', 'ext3', 'ext4', 'xfs', 'jfs', 'reiserfs',
-                       'btrfs'):
-            if Path('/sbin/mkfs.%s' % fstype).exists():
-                support_list.append(fstype)
-        support_list.append('swap')
-        return support_list
-
-
-
 
     @classmethod
-    def handle_time_get(cls, sec, region=None):
+    def handle_time_get(cls, sec, region=None, config=None):
         """Handle time-related GET requests.
         
         Args:
             sec: section ('datetime', 'timezone', or 'timezone_list')
             region: optional region for timezone list
+            config: config object
         
         Returns:
             dict with requested data
@@ -1280,7 +1283,7 @@ class ServerTool(object):
         if sec == 'datetime':
             return cls.datetime(asstruct=True)
         elif sec == 'timezone':
-            return {'timezone': cls.get_timezone(cls.config)}
+            return {'timezone': cls.get_timezone(config)}
         elif sec == 'timezone_list':
             if region is None:
                 return {'regions': cls.get_timezone_regions()}
@@ -1306,6 +1309,19 @@ class ServerTool(object):
             else:
                 return {'code': -1, 'msg': '时区设置保存失败！'}
         return None
+
+class ServerTool(object):
+    @classmethod
+    def supportfs(self):
+        """Return a list of file system that system support.
+        """
+        support_list = []
+        for fstype in ('ext2', 'ext3', 'ext4', 'xfs', 'jfs', 'reiserfs',
+                       'btrfs'):
+            if Path('/sbin/mkfs.%s' % fstype).exists():
+                support_list.append(fstype)
+        support_list.append('swap')
+        return support_list
 
 if __name__ == '__main__':
     print('')

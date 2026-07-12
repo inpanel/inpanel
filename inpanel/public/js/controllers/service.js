@@ -751,6 +751,486 @@ var ServiceMinIOCtrl = [
         };
     }
 ];
+var ServicePHP56Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.php56';
+        Module.init(module, 'PHP 5.6');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.php56-php-fpm', function (res) {
+                var info = res['service.php56-php-fpm'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServicePHP74Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.php74';
+        Module.init(module, 'PHP 7.4');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.php74-php-fpm', function (res) {
+                var info = res['service.php74-php-fpm'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServicePHP80Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.php80';
+        Module.init(module, 'PHP 8.0');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.php80-php-fpm', function (res) {
+                var info = res['service.php80-php-fpm'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServicePHP81Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.php81';
+        Module.init(module, 'PHP 8.1');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.php81-php-fpm', function (res) {
+                var info = res['service.php81-php-fpm'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServicePHP82Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.php82';
+        Module.init(module, 'PHP 8.2');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.php82-php-fpm', function (res) {
+                var info = res['service.php82-php-fpm'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServicePHP83Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.php83';
+        Module.init(module, 'PHP 8.3');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.php83-php-fpm', function (res) {
+                var info = res['service.php83-php-fpm'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServicePHP84Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.php84';
+        Module.init(module, 'PHP 8.4');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.php84-php-fpm', function (res) {
+                var info = res['service.php84-php-fpm'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceJava8Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.java8';
+        Module.init(module, 'Java 8');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.java8', function (res) {
+                var info = res['service.java8'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceJava11Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.java11';
+        Module.init(module, 'Java 11');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.java11', function (res) {
+                var info = res['service.java11'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceJava17Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.java17';
+        Module.init(module, 'Java 17');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.java17', function (res) {
+                var info = res['service.java17'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceJava21Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.java21';
+        Module.init(module, 'Java 21');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.java21', function (res) {
+                var info = res['service.java21'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceNodeJS18Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.nodejs18';
+        Module.init(module, 'Node.js 18');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.nodejs18', function (res) {
+                var info = res['service.nodejs18'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceNodeJS20Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.nodejs20';
+        Module.init(module, 'Node.js 20');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.nodejs20', function (res) {
+                var info = res['service.nodejs20'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceNodeJS22Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.nodejs22';
+        Module.init(module, 'Node.js 22');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.nodejs22', function (res) {
+                var info = res['service.nodejs22'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceNodeJS24Ctrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.nodejs24';
+        Module.init(module, 'Node.js 24');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.nodejs24', function (res) {
+                var info = res['service.nodejs24'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
 var ServicePHPCtrl = [
     '$scope', '$routeParams', 'Module', 'Request',
     function ($scope, $routeParams, Module, Request) {
@@ -1041,6 +1521,108 @@ var ServiceIPTablesCtrl = [
             $scope.checking = true;
             Request.get('/api/query/service.iptables', function (res) {
                 var info = res['service.iptables'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceFirewalldCtrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.firewalld';
+        Module.init(module, 'Firewalld');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.firewalld', function (res) {
+                var info = res['service.firewalld'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceUfwCtrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.ufw';
+        Module.init(module, 'UFW');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.ufw', function (res) {
+                var info = res['service.ufw'];
+                if (info) {
+                    $scope.installed = true;
+                    $scope.autostart = info.autostart;
+                    $scope.status = info.status;
+                    if ($scope.checkVersion) $scope.checkVersion();
+                } else {
+                    $scope.installed = false;
+                }
+                $scope.loaded = true;
+                $scope.waiting = false;
+                $scope.checking = false;
+            });
+        };
+    }
+];
+
+var ServiceFail2banCtrl = [
+    '$scope', '$routeParams', 'Module', 'Request',
+    function ($scope, $routeParams, Module, Request) {
+        var module = 'service.fail2ban';
+        Module.init(module, 'Fail2Ban');
+        Module.initSection('base');
+        $scope.scope = $scope;
+        $scope.info = null;
+        $scope.loaded = false;
+
+        $scope.installed = false;
+        $scope.waiting = true;
+        $scope.checking = false;
+
+        $scope.checkInstalled = function () {
+            $scope.checking = true;
+            Request.get('/api/query/service.fail2ban', function (res) {
+                var info = res['service.fail2ban'];
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;

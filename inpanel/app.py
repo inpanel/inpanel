@@ -20,7 +20,7 @@ import logging
 from tornado import httpserver, ioloop
 
 from . import web
-from .base import pidfile, logfile, logerror, config_file, config_path, logging_path, run_type, DEBUG, root_path
+from .base import pidfile, logfile, logerror, config_file, config_path, logging_path, run_type, DEBUG, root_path, data_path
 from .mod.process import remove_pid_file, save_pid_file, WebRequestProcess
 from .mod.config import load_config
 from .utils import make_cookie_secret
@@ -355,11 +355,11 @@ def run_server():
         'autoreload'    : DEBUG,
         'cookie_secret' : 'debug' if DEBUG else make_cookie_secret(),
         'root_path'     : root_path,
-        'data_path'     : config_path,
+        'data_path'     : data_path,
         'index_path'    : str(Path(root_path) / 'templates' / 'index.html'),
         'template_path' : str(Path(root_path) / 'templates'),
         'static_path'   : str(Path(root_path) / 'public'),
-        'plugins_path'  : str(Path(root_path) / 'plugins'),
+        'plugins_path'  : str(Path(data_path) / 'plugins'),
         'xsrf_cookies'  : True,
         'gzip'          : True
     }
@@ -377,18 +377,23 @@ def run_server():
         (r'/api/repos/yum/(.+?)(?:/(.+))?', web.RepoYumHandler),
         (r'/api/repos/dnf/(.+?)(?:/(.+))?', web.RepoDnfHandler),
         (r'/api/repos/apt/(.+?)(?:/(.+))?', web.RepoAptHandler),
+        (r'/api/repos/brew/(.+?)(?:/(.+))?', web.RepoBrewHandler),
+        (r'/api/repos/pip/(.+?)(?:/(.+))?', web.RepoPipHandler),
+        (r'/api/repos/supported/?', web.RepoSupportedHandler),
         (r'/api/firewall/(.+)', web.FirewallHandler),
         (r'/api/setting/(.+)', web.SettingHandler),
         (r'/api/operation/(.+)', web.OperationHandler),
-        (r'/page/file/preview/(.+)', web.FilePreviewHandler),
-        (r'/page/(.+)/(.+)', web.PageHandler),
         (r'/api/backend/(.+)', web.BackendHandler),
         (r'/api/sitepackage/(.+)', web.SitePackageHandler),
         (r'/api/client/(.+)', web.ClientHandler),
-        (r'/api/plugins/(.*)', web.StaticFileHandler, { 'path': settings['plugins_path']}),
+        (r'/api/plugins', web.PluginHandler),
+        (r'/api/plugins/(list|info|config|install|uninstall|toggle)', web.PluginHandler),
         (r'/api/file/download/(.+)', web.FileDownloadHandler, { 'path': '/' }),
         (r'/api/file/upload', web.FileUploadHandler),
         (r'/api/version', web.VersionHandler),
+        (r'/page/plugins/(.*)', web.PluginStaticFileHandler, { 'path': settings['plugins_path']}),
+        (r'/page/file/preview/(.+)', web.FilePreviewHandler),
+        (r'/page/(.+)/(.+)', web.PageHandler),
         (r'/((?:css|js|js.min|lib|partials|images|favicon\.ico|robots\.txt)(?:\/.*)?)', web.StaticFileHandler, { 'path': settings['static_path'] }),
         (r'/', web.IndexHandler),
         (r'/($)', web.StaticFileHandler, { 'path': settings['index_path'] }),

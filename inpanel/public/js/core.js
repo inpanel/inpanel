@@ -29,9 +29,27 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/service/mongodb', _r('service/mongodb', ServiceMongoDBCtrl)).
     when('/service/minio', _r('service/minio', ServiceMinIOCtrl)).
     when('/service/php', _r('service/php', ServicePHPCtrl)).
+    when('/service/php56', _r('service/php56', ServicePHP56Ctrl)).
+    when('/service/php74', _r('service/php74', ServicePHP74Ctrl)).
+    when('/service/php80', _r('service/php80', ServicePHP80Ctrl)).
+    when('/service/php81', _r('service/php81', ServicePHP81Ctrl)).
+    when('/service/php82', _r('service/php82', ServicePHP82Ctrl)).
+    when('/service/php83', _r('service/php83', ServicePHP83Ctrl)).
+    when('/service/php84', _r('service/php84', ServicePHP84Ctrl)).
+    when('/service/java8', _r('service/java8', ServiceJava8Ctrl)).
+    when('/service/java11', _r('service/java11', ServiceJava11Ctrl)).
+    when('/service/java17', _r('service/java17', ServiceJava17Ctrl)).
+    when('/service/java21', _r('service/java21', ServiceJava21Ctrl)).
+    when('/service/nodejs18', _r('service/nodejs18', ServiceNodeJS18Ctrl)).
+    when('/service/nodejs20', _r('service/nodejs20', ServiceNodeJS20Ctrl)).
+    when('/service/nodejs22', _r('service/nodejs22', ServiceNodeJS22Ctrl)).
+    when('/service/nodejs24', _r('service/nodejs24', ServiceNodeJS24Ctrl)).
     when('/service/sendmail', _r('service/sendmail', ServiceSendmailCtrl)).
     when('/service/ssh', _r('service/ssh', ServiceSSHCtrl)).
     when('/service/iptables', _r('service/iptables', ServiceIPTablesCtrl)).
+    when('/service/firewalld', _r('service/firewalld', ServiceFirewalldCtrl)).
+    when('/service/ufw', _r('service/ufw', ServiceUfwCtrl)).
+    when('/service/fail2ban', _r('service/fail2ban', ServiceFail2banCtrl)).
     when('/service/cron', _r('service/cron', ServiceCronCtrl)).
     when('/service/ntp', _r('service/ntp', ServiceNTPCtrl)).
     when('/service/named', _r('service/named', ServiceNamedCtrl)).
@@ -48,6 +66,7 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/database/mysql/db/edit/:section', _r('database/mysql/dbedit', DatabaseMySQLEditDBCtrl)).
     when('/database/mysql/user/new', _r('database/mysql/usernew', DatabaseMySQLNewUserCtrl)).
     when('/database/mysql/user/edit/:section', _r('database/mysql/useredit', DatabaseMySQLEditUserCtrl)).
+    when('/container', _r('container/index', ContainerCtrl)).
     when('/ftp', _r('ftp', FtpCtrl)).
     when('/utils', _r('utils/index', UtilsCtrl)).
     when('/utils/user', _r('utils/user', UtilsUserCtrl)).
@@ -72,7 +91,9 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/setting', _r('setting', SettingCtrl)).
     when('/secure', _r('secure', SecureCtrl)).
     when('/plugins', _r('plugins/index', PluginsHome)).
-    when('/plugins/:section', _r('plugins/plugins', PluginsCtrl)).
+    when('/plugins/:name', _r('plugins/detail', PluginDetailCtrl)).
+    when('/plugins/:name/config', _r('plugins/config', PluginConfigCtrl)).
+    when('/plugins/:name/info', _r('plugins/info', PluginInfoCtrl)).
     when('/log', _r('log', LogCtrl)).
     when('/logout', _r('logout', LogoutCtrl)).
     when('/sorry', _r('sorry', SorryCtrl)).

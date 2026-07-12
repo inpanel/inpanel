@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Jackson Dou <jksdou@qq.com>
 Build-Depends: debhelper (>= 10), python3-all, python3-setuptools
 Standards-Version: 3.9.6
-Homepage: https://inpanel.org/
+Homepage: https://inpanel.org
 
 Package: inpanel
 Architecture: all

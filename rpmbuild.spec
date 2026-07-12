@@ -9,7 +9,7 @@ Version: %{pyproject_version}
 Release: %{release}
 Summary: %{summary}
 License: BSD
-URL: https://inpanel.org/
+URL: https://inpanel.org
 Group: System/Administration
 BuildArch: %{arch}
 BuildRequires: python3-devel python3-setuptools python3-wheel

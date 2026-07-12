@@ -225,27 +225,156 @@ def get_repo_elastic(stack_version):
     return cmds
 
 
+import shutil
+import time
+from subprocess import getstatusoutput
+
+
+def is_installed():
+    '''check if apt is installed'''
+    return shutil.which('apt') is not None
+
+
+def get_version():
+    '''get apt version'''
+    if not is_installed():
+        return ''
+    status, output = getstatusoutput('apt --version')
+    if status != 0:
+        return ''
+    return output.strip().split('\n')[0]
+
+
+def get_status():
+    '''get apt status'''
+    status = {
+        'installed': is_installed(),
+        'version': '',
+        'running': False,
+        'config_path': sources_list_d_path,
+    }
+    if status['installed']:
+        status['version'] = get_version()
+        status['running'] = True
+    return status
+
+
+def refresh_cache():
+    '''apt update'''
+    if not is_installed():
+        return {'code': -1, 'msg': 'apt 未安装！'}
+    status, output = getstatusoutput('apt update 2>&1')
+    if status == 0:
+        return {'code': 0, 'msg': 'apt 索引已更新！'}
+    return {'code': -1, 'msg': 'apt 索引更新失败：%s' % output}
+
+
+def _source_full_path(source):
+    '''get full path of a source'''
+    if source == 'sources.list':
+        return sources_list_path
+    elif source.startswith('sources.list.d/'):
+        filename = source[len('sources.list.d/'):]
+        return str(Path(sources_list_d_path) / filename)
+    else:
+        return str(Path(sources_list_d_path) / source)
+
+
+def get_repo_list():
+    '''get structured source list with name/path/created'''
+    if base.kernel_name != 'Linux':
+        return None
+    items = get_list() or []
+    repos = []
+    for item in items:
+        full = _source_full_path(item)
+        created = ''
+        try:
+            created = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(Path(full).stat().st_ctime))
+        except Exception:
+            pass
+        repos.append({'name': item, 'path': full, 'created': created})
+    return repos
+
+
+def get_repo_detail(source):
+    '''get source detail with package list'''
+    if not source:
+        return None
+    data = get_item(source)
+    if data is None:
+        return None
+    full = _source_full_path(source)
+    created = ''
+    try:
+        created = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(Path(full).stat().st_ctime))
+    except Exception:
+        pass
+    # apt 无法精确按源列出包，这里列出系统已安装包作为参考
+    packages = []
+    st, out = getstatusoutput('dpkg -l 2>/dev/null')
+    if st == 0 and out:
+        for line in out.split('\n'):
+            if line.startswith('ii '):
+                parts = line.split()
+                if len(parts) >= 3:
+                    packages.append({'name': parts[1], 'version': parts[2]})
+    return {'name': source, 'path': full, 'created': created, 'content': data.get('content', ''), 'packages': packages}
+
+
+def search_repos(keyword):
+    '''search source files by name'''
+    if not keyword:
+        return []
+    items = get_repo_list() or []
+    kw = keyword.lower()
+    return [r for r in items if kw in r['name'].lower()]
+
+
+def install_package(name):
+    '''install package via apt'''
+    if not name:
+        return {'code': -1, 'msg': '软件名称不能为空！'}
+    if not is_installed():
+        return {'code': -1, 'msg': 'apt 未安装！'}
+    status, output = getstatusoutput('apt install -y %s 2>&1' % name)
+    if status == 0:
+        return {'code': 0, 'msg': '软件 %s 安装成功！' % name, 'data': output}
+    return {'code': -1, 'msg': '软件 %s 安装失败：%s' % (name, output)}
+
+
 def web_handler(context):
     '''Handle web requests for APT repository management'''
     action = context.get('action', '')
-    source = context.get('source', '')
-    
-    if action == 'list':
-        items = get_list()
+    source = context.get('source', '') or context.get('name', '')
+
+    if action == 'overview':
+        return {'code': 0, 'msg': '', 'data': get_status()}
+    elif action == 'refresh':
+        return refresh_cache()
+    elif action == 'list':
+        items = get_repo_list()
         if items is None:
             return {'code': -1, 'msg': '获取配置失败！'}
         else:
             return {'code': 0, 'msg': '', 'data': items}
-    
+
     elif action == 'item':
         if not source:
             return {'code': -1, 'msg': '配置文件不能为空！'}
-        data = get_item(source)
+        data = get_repo_detail(source)
         if data is None:
             return {'code': -1, 'msg': '配置文件不存在！'}
         else:
             return {'code': 0, 'msg': '', 'data': data}
-    
+
+    elif action == 'search':
+        keyword = context.get('keyword', '')
+        return {'code': 0, 'msg': '', 'data': search_repos(keyword)}
+
+    elif action == 'install':
+        return install_package(source)
+
     elif action == 'add':
         if not source:
             return {'code': -1, 'msg': '配置文件不能为空！'}

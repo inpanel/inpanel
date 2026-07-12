@@ -1,3 +1,60 @@
+## InPanel v1.2.3 (2026-07-12)
+
+**版本更新:**
+
+- 发布 InPanel v1.2.3
+
+**插件系统重构:**
+
+- 新增插件基类（`inpanel/plugin.py`），定义插件接口和生命周期管理
+- 新增插件管理模块（`inpanel/mod/plugins.py`），支持插件列表、安装、配置、启用/禁用
+- 新增插件前端页面：config.html、detail.html、info.html
+- 重构 plugins.js 控制器，实现全新插件管理界面
+- 重构 plugins/index.html 列表页面，增强插件管理功能
+- 删除旧版 plugins.html 文件
+- 在 web.py 中新增插件管理 API 接口
+- 更新 app.py 和 base.py，集成插件系统
+- 补充插件切换和卸载操作的日志记录
+
+**包管理增强:**
+
+- 新增 macOS brew 包管理模块（`inpanel/mod/brew.py`）
+- 新增 Python pip 包管理模块（`inpanel/mod/pip.py`）
+- 在 web.py 中新增 RepoBrewHandler 和 RepoPipHandler 处理 brew/pip API
+- 新增 RepoSupportedHandler，根据操作系统自动检测支持的包管理器
+- 优化 yum/dnf/apt 包管理模块
+
+**Docker 容器管理:**
+
+- 新增 Docker 容器管理模块（`inpanel/mod/docker.py`）
+- 支持容器列表、启动/停止/重启/删除操作
+- 支持容器日志查看
+- 支持容器镜像管理
+
+**多语言版本管理:**
+
+- 支持 Java 版本管理
+- 支持 Node.js 版本管理
+- 支持 PHP 版本管理
+
+**安装与系统兼容:**
+
+- 新增安装类型检测（pip/RPM/DEB），重构模块实例化方式
+- 补充时间设置模块中当前时间和时区数据，兼容 macOS 系统
+
+**打包配置优化:**
+
+- 更新 debian/control 依赖配置
+- 修正 rpmbuild.spec 中 URL 格式
+- 更新 .gitignore，忽略 *.code-workspace 文件
+
+**Bug 修复:**
+
+- 修复插件管理界面状态刷新问题
+- 修复插件详情页按钮样式和文本显示
+- 修复插件列表页空状态表格列数不匹配
+- 修复导航菜单链接指向
+
 ## InPanel v1.2.2 (2026-07-08)
 
 **版本更新:**

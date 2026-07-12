@@ -1,6 +1,6 @@
 [project]
 name = "InPanel"
-version = "1.2.2"
+version = "1.2.3"
 description = "InPanel - A Web-based Linux Server Management Tool"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -38,9 +38,9 @@ dependencies = [
 inpanel = "inpanel.app:main"
 
 [project.urls]
-"Homepage" = "https://inpanel.org/"
+"Homepage" = "https://inpanel.org"
 "Repository" = "https://github.com/inpanel/inpanel"
-"Documentation" = "https://inpanel.org/"
+"Documentation" = "https://inpanel.org"
 "Issues" = "https://github.com/inpanel/inpanel/issues"
 
 [tool.setuptools.packages.find]

@@ -1434,244 +1434,149 @@ var UtilsRepositoryCtrl = [
         var module = 'utils.repository';
         Module.init(module, '软件仓库');
         $scope.loaded = false;
-        $scope.action = '';
-        var section = Module.getSection();
-        var enabled_sections = ['yum', 'apt', 'pacman', 'dnf', 'zypper'];
-        Module.initSection(enabled_sections[0]);
-        $scope.loading = {
-            yum: true,
-            apt: true,
-            pacman: true,
-            dnf: true,
-            zypper: true
-        };
-        $scope.supported = {
-            yum: true,
-            apt: false,
-            pacman: false,
-            dnf: false,
-            zypper: false
-        };
+        $scope.activeTabName = '';
+        $scope.pmList = [];
+        $scope.supported = {};
+        $scope.loading = {};
+        $scope.loadingDetail = {};
+        $scope.overview = {};
+        $scope.repos = {};
+        $scope.detail = {};
+        $scope.searchKeyword = {};
+        $scope.installPkg = {};
+        $scope.installing = {};
+
         $scope.load = function () {
-            $scope.loaded = true;
-            $scope.tab_sec(section);
+            Request.get('/api/repos/supported', function (res) {
+                if (res && res.code == 0) {
+                    $scope.supported = res.data.supported || {};
+                    var order = ['brew', 'yum', 'dnf', 'apt', 'pip'];
+                    $scope.pmList = [];
+                    angular.forEach(order, function(pm) {
+                        if ($scope.supported[pm]) {
+                            $scope.pmList.push(pm);
+                        }
+                    });
+                    var section = Module.getSection();
+                    if (!section || $scope.pmList.indexOf(section) < 0) {
+                        section = $scope.pmList[0] || 'yum';
+                    }
+                    angular.forEach($scope.pmList, function(pm) {
+                        $scope.loading[pm] = false;
+                        $scope.loadingDetail[pm] = false;
+                        $scope.repos[pm] = [];
+                        $scope.installing[pm] = false;
+                        $scope.installPkg[pm] = '';
+                        $scope.searchKeyword[pm] = '';
+                    });
+                    $scope.loaded = true;
+                    $scope.tab_sec(section);
+                } else {
+                    $scope.loaded = true;
+                }
+            }, null, true);
         };
 
         $scope.tab_sec = function (section) {
-            var init = Module.getSection() != section
-            section = (section && enabled_sections.indexOf(section) > -1) ? section : enabled_sections[0];
-            $scope.sec(section);
+            section = (section && $scope.pmList.indexOf(section) > -1) ? section : $scope.pmList[0];
+            if (!section) return;
+            $scope.activeTabName = section;
             Module.setSection(section);
-            $scope['load_' + section](init);
+            if (!$scope.overview[section]) {
+                $scope.load_overview(section);
+            }
+            if (!$scope.repos[section] || $scope.repos[section].length === 0) {
+                $scope.load_list(section, true);
+            }
         };
-        $scope.load_yum = function (init) {
-            if (!init && !$scope.loading.yum) {
+
+        $scope.load_overview = function(pm) {
+            Request.get('/api/repos/' + pm + '/overview', function (res) {
+                if (res && res.code == 0) {
+                    $scope.overview[pm] = res.data;
+                }
+            }, null, true);
+        };
+
+        $scope.load_list = function(pm, force) {
+            if (!force && !$scope.loading[pm] && $scope.repos[pm] && $scope.repos[pm].length > 0) {
                 return;
             }
-            $scope.loading.yum = true;
-            $scope.repos_yum = [];
-            Request.get('/api/repos/yum/list', function (res) {
-                $scope.loading.yum = false;
+            $scope.loading[pm] = true;
+            $scope.repos[pm] = [];
+            $scope.searchKeyword[pm] = '';
+            Request.get('/api/repos/' + pm + '/list', function (res) {
+                $scope.loading[pm] = false;
                 if (res && res.code == 0) {
-                    $scope.repos_yum = res.data;
+                    $scope.repos[pm] = res.data || [];
                 }
-            });
+            }, null, true);
         };
-        $scope.load_apt = function (init) {
-            if (!init && !$scope.loading.apt) {
+
+        $scope.search_repos = function(pm) {
+            var kw = ($scope.searchKeyword[pm] || '').trim();
+            if (!kw) {
+                $scope.load_list(pm, true);
                 return;
             }
-            $scope.loading.apt = true;
-            $scope.repos_apt = [];
-            Request.get('/api/repos/apt/list', function (res) {
-                $scope.loading.apt = false;
+            $scope.loading[pm] = true;
+            Request.get('/api/repos/' + pm + '/search?keyword=' + encodeURIComponent(kw), function (res) {
+                $scope.loading[pm] = false;
                 if (res && res.code == 0) {
-                    $scope.repos_apt = res.data;
+                    $scope.repos[pm] = res.data || [];
+                }
+            }, null, true);
+        };
+
+        $scope.show_detail = function(pm, name) {
+            $scope.loadingDetail[pm] = true;
+            Request.get('/api/repos/' + pm + '/item?name=' + encodeURIComponent(name), function (res) {
+                $scope.loadingDetail[pm] = false;
+                if (res && res.code == 0) {
+                    $scope.detail[pm] = res.data;
+                    if (!$scope.detail[pm].name) {
+                        $scope.detail[pm].name = name;
+                    }
+                }
+            }, null, true);
+        };
+
+        $scope.refresh = function(pm) {
+            $scope.loading[pm] = true;
+            Request.get('/api/repos/' + pm + '/refresh', function (res) {
+                $scope.loading[pm] = false;
+                if (res && res.code == 0) {
+                    $scope.load_list(pm, true);
                 }
             });
         };
-        $scope.load_pacman = function (init) {
-            if (!init && !$scope.loading.pacman) {
+
+        $scope.service_control = function(pm, op) {
+            Request.post('/api/repos/' + pm + '/service', { op: op }, function(data) {
+                if (data.code == 0) {
+                    $scope.load_overview(pm);
+                }
+            });
+        };
+
+        $scope.install_pkg = function(pm, pkgName) {
+            var name = pkgName || $scope.installPkg[pm];
+            if (!name || !name.trim()) {
+                Message.setError('软件名称不能为空！');
                 return;
             }
-            $scope.loading.pacman = true;
-            $scope.repos_pacman = [];
-            Request.get('/api/repos/pacman/list', function (res) {
-                $scope.loading.pacman = false;
-                if (res && res.code == 0) {
-                    $scope.repos_pacman = res.data;
-                }
-            });
-        };
-        $scope.load_dnf = function (init) {
-            if (!init && !$scope.loading.dnf) {
+            name = name.trim();
+            if (!confirm('确定要安装软件 ' + name + ' 吗？')) {
                 return;
             }
-            $scope.loading.dnf = true;
-            $scope.repos_dnf = [];
-            Request.get('/api/repos/dnf/list', function (res) {
-                $scope.loading.dnf = false;
-                if (res && res.code == 0) {
-                    $scope.repos_dnf = res.data;
-                }
-            });
-        };
-        $scope.load_zypper = function (init) {
-            if (!init && !$scope.loading.zypper) {
-                return;
-            }
-            $scope.loading.zypper = true;
-            $scope.repos_zypper = [];
-            Request.get('/api/repos/zypper/list', function (res) {
-                $scope.loading.zypper = false;
-                if (res && res.code == 0) {
-                    $scope.repos_zypper = res.data;
-                }
-            });
-        };
-
-        $scope.yum_add_confirm = function() {
-            $scope.currepo = {
-                'serverid': '',
-                'name': '',
-                'enabled': 1,
-                'baseurl': '',
-                'gpgcheck': 0,
-                'repo': ''
-            };
-            $('#yum-add-confirm').modal();
-        };
-        $scope.yum_add = function() {
-            Request.post('/api/repos/yum/add', $scope.currepo, function(data) {
+            $scope.installing[pm] = true;
+            Request.post('/api/repos/' + pm + '/install', { name: name, pkg: name }, function(data) {
+                $scope.installing[pm] = false;
                 if (data.code == 0) {
-                    $scope.load_yum(true);
-                }
-            });
-        };
-
-        $scope.yum_mod_confirm = function(i) {
-            var repo = $scope.repos_yum[i];
-            Request.get('/api/repos/yum/item', {repo: repo}, function(res) {
-                if (res && res.code == 0) {
-                    var data = res.data;
-                    var id = Object.keys(data)[0];
-                    $scope.currepo = {
-                        'serverid': id,
-                        'name': data[id].name || '',
-                        'enabled': data[id].enabled || 1,
-                        'baseurl': data[id].baseurl || '',
-                        'gpgcheck': data[id].gpgcheck || 0,
-                        'repo': repo
-                    };
-                    $('#yum-add-confirm').modal();
-                }
-            });
-        };
-
-        $scope.yum_del_confirm = function(i) {
-            $scope.delrepo = $scope.repos_yum[i];
-            $('#yum-del-confirm').modal();
-        };
-        $scope.yum_del = function() {
-            Request.post('/api/repos/yum/del', {
-                repo: $scope.delrepo
-            }, function(data) {
-                if (data.code == 0) {
-                    $scope.load_yum(true);
-                }
-            });
-        };
-
-        $scope.dnf_add_confirm = function() {
-            $scope.curdnf = {
-                'serverid': '',
-                'name': '',
-                'enabled': 1,
-                'baseurl': '',
-                'gpgcheck': 0,
-                'repo': ''
-            };
-            $('#dnf-add-confirm').modal();
-        };
-        $scope.dnf_add = function() {
-            Request.post('/api/repos/dnf/add', $scope.curdnf, function(data) {
-                if (data.code == 0) {
-                    $scope.load_dnf(true);
-                }
-            });
-        };
-
-        $scope.dnf_mod_confirm = function(i) {
-            var repo = $scope.repos_dnf[i];
-            Request.get('/api/repos/dnf/item', {repo: repo}, function(res) {
-                if (res && res.code == 0) {
-                    var data = res.data;
-                    var id = Object.keys(data)[0];
-                    $scope.curdnf = {
-                        'serverid': id,
-                        'name': data[id].name || '',
-                        'enabled': data[id].enabled || 1,
-                        'baseurl': data[id].baseurl || '',
-                        'gpgcheck': data[id].gpgcheck || 0,
-                        'repo': repo
-                    };
-                    $('#dnf-add-confirm').modal();
-                }
-            });
-        };
-
-        $scope.dnf_del_confirm = function(i) {
-            $scope.deldnf = $scope.repos_dnf[i];
-            $('#dnf-del-confirm').modal();
-        };
-        $scope.dnf_del = function() {
-            Request.post('/api/repos/dnf/del', {
-                repo: $scope.deldnf
-            }, function(data) {
-                if (data.code == 0) {
-                    $scope.load_dnf(true);
-                }
-            });
-        };
-
-        $scope.apt_add_confirm = function() {
-            $scope.curapt = {
-                'source': '',
-                'content': ''
-            };
-            $('#apt-add-confirm').modal();
-        };
-        $scope.apt_add = function() {
-            Request.post('/api/repos/apt/add', $scope.curapt, function(data) {
-                if (data.code == 0) {
-                    $scope.load_apt(true);
-                }
-            });
-        };
-
-        $scope.apt_mod_confirm = function(i) {
-            var source = $scope.repos_apt[i];
-            Request.get('/api/repos/apt/item', {source: source}, function(res) {
-                if (res && res.code == 0) {
-                    $scope.curapt = {
-                        'source': source,
-                        'content': res.data.content || ''
-                    };
-                    $('#apt-add-confirm').modal();
-                }
-            });
-        };
-
-        $scope.apt_del_confirm = function(i) {
-            $scope.delapt = $scope.repos_apt[i];
-            $('#apt-del-confirm').modal();
-        };
-        $scope.apt_del = function() {
-            Request.post('/api/repos/apt/del', {
-                source: $scope.delapt
-            }, function(data) {
-                if (data.code == 0) {
-                    $scope.load_apt(true);
+                    $scope.installPkg[pm] = '';
+                    if ($scope.detail[pm]) {
+                        $scope.show_detail(pm, $scope.detail[pm].name);
+                    }
                 }
             });
         };
