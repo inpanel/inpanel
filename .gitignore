@@ -10,3 +10,4 @@ test/
 inpanel/data/*
 inpanel.egg-info
 *.egg-info
+*.code-workspace

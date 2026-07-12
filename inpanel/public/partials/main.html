@@ -512,12 +512,12 @@
                             <td>{{ info['server.panelinfo']['root_path'] }}</td>
                         </tr>
                         <tr>
-                            <td>配置文件：</td>
-                            <td>{{ info['server.panelinfo']['config_file'] }}</td>
-                        </tr>
-                        <tr>
                             <td>执行文件：</td>
                             <td>{{ info['server.panelinfo']['exec_file'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>配置文件：</td>
+                            <td>{{ info['server.panelinfo']['config_file'] }}</td>
                         </tr>
                         <tr>
                             <td>PID文件：</td>
@@ -538,6 +538,10 @@
                         <tr>
                             <td>插件配置文件：</td>
                             <td>{{ info['server.panelinfo']['plugins_config_file'] }}</td>
+                        </tr>
+                        <tr>
+                            <td>插件日志文件：</td>
+                            <td>{{ info['server.panelinfo']['plugins_log_file'] }}</td>
                         </tr>
                     </tbody>
                 </table>

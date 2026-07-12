@@ -38,9 +38,9 @@ dependencies = [
 inpanel = "inpanel.app:main"
 
 [project.urls]
-"Homepage" = "https://inpanel.org/"
+"Homepage" = "https://inpanel.org"
 "Repository" = "https://github.com/inpanel/inpanel"
-"Documentation" = "https://inpanel.org/"
+"Documentation" = "https://inpanel.org"
 "Issues" = "https://github.com/inpanel/inpanel/issues"
 
 [tool.setuptools.packages.find]

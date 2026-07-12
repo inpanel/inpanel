@@ -11,6 +11,7 @@
             <thead>
                 <tr>
                     <th style="width:150px">插件名称</th>
+                    <th style="width:80px">版本</th>
                     <th style="width:80px">状态</th>
                     <th style="width:350px">描述</th>
                     <th style="width:120px">作者</th>
@@ -21,8 +22,8 @@
                 <tr ng-repeat="plugin in plugins">
                     <td>
                         <a href="#/plugins/{{plugin.id}}">{{plugin.name}}</a>
-                        <span class="muted">v{{plugin.version}}</span>
                     </td>
+                    <td class="muted">v{{plugin.version}}</td>
                     <td>
                         <span ng-class="'label label-success' | iftrue:plugin.enabled" ng-class="'label label-default' | iftrue:!plugin.enabled">
                             <span ng-show="plugin.enabled">已启用</span>
@@ -42,7 +43,7 @@
                     </td>
                 </tr>
                 <tr ng-show="plugins.length == 0">
-                    <td colspan="5" class="text-center muted">暂无已安装插件</td>
+                    <td colspan="6" class="text-center muted">暂无已安装插件</td>
                 </tr>
             </tbody>
         </table>

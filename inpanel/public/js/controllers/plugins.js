@@ -57,6 +57,7 @@ var PluginDetailCtrl = [
         $scope.pluginConfig = {};
         $scope.activeTab = 'home';
         $scope.loadedScripts = [];
+        $scope.currentPluginId = '';
 
         $scope.load = function () {
             $scope.loaded = true;
@@ -85,12 +86,20 @@ var PluginDetailCtrl = [
         };
 
         $scope.refreshPlugin = function () {
-            $scope.loadPluginInfo();
-            $scope.loadPluginConfig();
-            $scope.loadPluginAssets();
+            if ($scope.activeTab === 'home') {
+                $scope.loadPluginAssets();
+            } else if ($scope.activeTab === 'config') {
+                $scope.loadPluginConfig();
+            } else if ($scope.activeTab === 'info') {
+                $scope.loadPluginInfo();
+            }
         };
 
         $scope.loadPluginAssets = function() {
+            if ($scope.currentPluginId === pluginId) {
+                return;
+            }
+            
             $scope.unloadPluginAssets();
             
             var scriptUrl = '/page/plugins/' + pluginId + '/script.js?' + Date.now();
@@ -105,9 +114,14 @@ var PluginDetailCtrl = [
             };
             document.body.appendChild(script);
             $scope.loadedScripts.push(script);
+            $scope.currentPluginId = pluginId;
         };
 
         $scope.unloadPluginAssets = function() {
+            if (window.pluginCleanup && typeof window.pluginCleanup === 'function') {
+                window.pluginCleanup();
+            }
+            
             for (var i = 0; i < $scope.loadedScripts.length; i++) {
                 var script = $scope.loadedScripts[i];
                 if (script.parentNode) {
@@ -115,7 +129,12 @@ var PluginDetailCtrl = [
                 }
             }
             $scope.loadedScripts = [];
+            $scope.currentPluginId = '';
         };
+
+        $scope.$on('$destroy', function() {
+            $scope.unloadPluginAssets();
+        });
 
         $scope.saveConfig = function () {
             var data = { id: pluginId };

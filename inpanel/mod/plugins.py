@@ -15,6 +15,7 @@ import zipfile
 import shutil
 import tempfile
 import importlib
+import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from urllib.request import urlopen
@@ -37,16 +38,46 @@ class PluginManager:
         self.plugins: Dict[str, Any] = {}
         self.loaded = False
         
-        from ..base import config_path, run_type, root_path, data_path
+        from ..base import config_path, run_type, root_path, data_path, logging_path
         self.config_path = config_path
         self.run_type = run_type
         self.root_path = root_path
         self.data_path = data_path
+        self.logging_path = logging_path
         
         self.plugins_base_path = Path(data_path) / 'plugins'
         
         self.status_file = Path(config_path) / 'plugins.json'
         self.plugin_status: Dict[str, Dict[str, Any]] = self._load_status()
+        
+        self._init_plugin_logger()
+    
+    def _init_plugin_logger(self) -> None:
+        '''Initialize plugin logger.'''
+        plugin_log_file = Path(self.logging_path) / 'plugins.log'
+        
+        self.plugin_logger = logging.getLogger('plugin_manager')
+        self.plugin_logger.setLevel(logging.INFO)
+        
+        if not self.plugin_logger.handlers:
+            handler = logging.FileHandler(str(plugin_log_file), encoding='utf-8')
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.plugin_logger.addHandler(handler)
+    
+    def _log(self, level: str, message: str) -> None:
+        '''Log a message.
+        
+        Args:
+            level: Log level (info, error, warning)
+            message: The message to log
+        '''
+        if level == 'error':
+            self.plugin_logger.error(message)
+        elif level == 'warning':
+            self.plugin_logger.warning(message)
+        else:
+            self.plugin_logger.info(message)
     
     def _load_status(self) -> Dict[str, Dict[str, Any]]:
         '''Load plugin status from status file.'''
@@ -80,8 +111,7 @@ class PluginManager:
             try:
                 self._load_plugin(str(item))
             except Exception as e:
-                import logging
-                logging.error(f'Failed to load plugin {item.name}: {e}')
+                self._log('error', f'Failed to load plugin {item.name}: {e}')
         
         self.loaded = True
     
@@ -114,9 +144,11 @@ class PluginManager:
             try:
                 plugin_instance.enable()
                 self._register_plugin_routes(plugin_instance)
+                self._log('info', f'Plugin {plugin_id} loaded and enabled')
             except Exception as e:
-                import logging
-                logging.error(f'Failed to enable plugin {plugin_id}: {e}')
+                self._log('error', f'Failed to enable plugin {plugin_id}: {e}')
+        else:
+            self._log('info', f'Plugin {plugin_id} loaded (disabled)')
     
     def _register_plugin_routes(self, plugin) -> None:
         '''Register routes for an enabled plugin.
@@ -203,6 +235,7 @@ class PluginManager:
                 
                 info_path = plugin_path / 'info.json'
                 if not info_path.exists():
+                    self._log('error', f'Plugin missing info.json: {plugin_dir}')
                     return {
                         'code': -1,
                         'message': '插件缺少 info.json 文件'
@@ -215,6 +248,7 @@ class PluginManager:
                 target_path = self.plugins_base_path / plugin_id
                 
                 if target_path.exists():
+                    self._log('warning', f'Plugin already exists: {plugin_id}')
                     return {
                         'code': -1,
                         'message': f'插件 {plugin_id} 已存在'
@@ -239,6 +273,8 @@ class PluginManager:
                         }
                         self._save_status()
                         
+                        self._log('info', f'Plugin installed: {plugin_id} v{info.get("version", "1.0.0")}')
+                        
                         return {
                             'code': 0,
                             'message': '安装成功',
@@ -250,6 +286,7 @@ class PluginManager:
                         }
                     else:
                         shutil.rmtree(target_path)
+                        self._log('error', f'Plugin installation failed: {plugin_id}')
                         return {
                             'code': -1,
                             'message': '插件安装失败'
@@ -258,6 +295,7 @@ class PluginManager:
                     sys.path.remove(target_path)
         
         except Exception as e:
+            self._log('error', f'Plugin installation error: {e}')
             return {
                 'code': -1,
                 'message': f'安装失败: {str(e)}'
@@ -274,6 +312,7 @@ class PluginManager:
         '''
         plugin = self.plugins.get(plugin_id)
         if not plugin:
+            self._log('warning', f'Plugin not found for uninstall: {plugin_id}')
             return {
                 'code': -1,
                 'message': f'插件 {plugin_id} 不存在'
@@ -291,11 +330,14 @@ class PluginManager:
                 del self.plugin_status[plugin_id]
             self._save_status()
             
+            self._log('info', f'Plugin uninstalled: {plugin_id}')
+            
             return {
                 'code': 0,
                 'message': '卸载成功'
             }
         except Exception as e:
+            self._log('error', f'Plugin uninstall error: {plugin_id} - {e}')
             return {
                 'code': -1,
                 'message': f'卸载失败: {str(e)}'
@@ -313,6 +355,7 @@ class PluginManager:
         '''
         plugin = self.plugins.get(plugin_id)
         if not plugin:
+            self._log('warning', f'Plugin not found for toggle: {plugin_id}')
             return {
                 'code': -1,
                 'message': f'插件 {plugin_id} 不存在'
@@ -328,12 +371,16 @@ class PluginManager:
                     self.plugin_status[plugin_id]['enabled'] = True
                     self._register_plugin_routes(plugin)
                     self._save_status()
+                    
+                    self._log('info', f'Plugin enabled: {plugin_id}')
+                    
                     return {
                         'code': 0,
                         'message': '启用成功',
                         'data': {'enabled': True}
                     }
                 else:
+                    self._log('error', f'Plugin enable failed: {plugin_id}')
                     return {
                         'code': -1,
                         'message': '启用失败'
@@ -346,17 +393,22 @@ class PluginManager:
                         self.plugin_status[plugin_id] = {}
                     self.plugin_status[plugin_id]['enabled'] = False
                     self._save_status()
+                    
+                    self._log('info', f'Plugin disabled: {plugin_id}')
+                    
                     return {
                         'code': 0,
                         'message': '禁用成功',
                         'data': {'enabled': False}
                     }
                 else:
+                    self._log('error', f'Plugin disable failed: {plugin_id}')
                     return {
                         'code': -1,
                         'message': '禁用失败'
                     }
         except Exception as e:
+            self._log('error', f'Plugin toggle error: {plugin_id} - {e}')
             return {
                 'code': -1,
                 'message': f'操作失败: {str(e)}'
@@ -402,11 +454,13 @@ class PluginManager:
         
         try:
             plugin.save_config(config)
+            self._log('info', f'Plugin config saved: {plugin_id}')
             return {
                 'code': 0,
                 'message': '配置保存成功'
             }
         except Exception as e:
+            self._log('error', f'Plugin config save error: {plugin_id} - {e}')
             return {
                 'code': -1,
                 'message': f'保存失败: {str(e)}'
@@ -449,3 +503,23 @@ class PluginManager:
             if plugin.enabled:
                 routes.extend(plugin.get_routes())
         return routes
+    
+    def get_plugin_logs(self, limit: int = 50) -> List[str]:
+        '''Get recent plugin logs.
+        
+        Args:
+            limit: Maximum number of log entries to return
+        
+        Returns:
+            List of log entries.
+        '''
+        log_file = Path(self.logging_path) / 'plugins.log'
+        if not log_file.exists():
+            return []
+        
+        try:
+            with open(log_file, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            return lines[-limit:]
+        except:
+            return []

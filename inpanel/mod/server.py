@@ -27,7 +27,7 @@ from xml.dom.minidom import parseString
 
 from ..base import (
     hostname, kernel_name, os_name, os_title, os_versint, server_info, install_type,
-    run_type, version_info, config_file, root_path, pidfile, logfile, logerror, execfile
+    run_type, version_info, config_file, root_path, config_path, data_path, logging_path, pidfile, logfile, logerror, execfile
 )
 from .. import utils
 from ..utils import b2h
@@ -982,8 +982,9 @@ class ServerInfo(object):
             'pid_file': pidfile,
             'log_file': logfile,
             'error_log_file': logerror,
-            'plugins_path': os.path.join(root_path, 'data', 'plugins') if run_type == 'source' else '/var/lib/inpanel/plugins',
-            'plugins_config_file': os.path.join(root_path, 'data', 'plugins.json'),
+            'plugins_path': os.path.join(data_path, 'plugins'),
+            'plugins_config_file': os.path.join(config_path, 'plugins.json'),
+            'plugins_log_file': os.path.join(logging_path, 'plugins.log'),
             'exec_file': execfile,
         }
 
