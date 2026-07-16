@@ -5,12 +5,18 @@
 #
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for pip (Python Package Installer) Management'''
+'''PIP（Python 包安装器）管理模块
 
+pip 只有单一 index-url，没有多仓库概念。此处管理的是"镜像源 URL"的切换。'''
+
+import json
 import os
 import re
+import time
 from pathlib import Path
 from subprocess import getstatusoutput
+
+from ..base import config_path
 
 
 def _pip_cmd():
@@ -93,32 +99,124 @@ def _config_file():
     return ''
 
 
-def get_repo_list():
-    """获取 pip 配置的软件源列表"""
+from ..templates.sources import load_pip
+
+_cfg = load_pip()
+
+_PIP_BUILTIN_MIRRORS = _cfg['pip_builtin_mirrors']
+
+
+def _get_pip_sources_file():
+    """获取 pip 源配置文件的路径"""
+    return os.path.join(config_path, 'sources_pip.json')
+
+
+def _load_sources_config():
+    """加载 sources_pip.json 配置文件。
+
+    如果配置文件不存在，用内置镜像源初始化并写入。
+    返回源列表（list of dict），每个 dict 包含 name、url、builtin。
+    """
+    filepath = _get_pip_sources_file()
+    if os.path.isfile(filepath):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if isinstance(data, list) and len(data) > 0:
+                return data
+        except (json.JSONDecodeError, IOError):
+            pass
+
+    # 配置文件不存在或损坏，用内置源初始化
+    sources = [{'name': m['name'], 'url': m['url'], 'builtin': m.get('builtin', True)} for m in _PIP_BUILTIN_MIRRORS]
+    _save_sources_config(sources)
+    return sources
+
+
+def _save_sources_config(sources):
+    """保存 pip 源配置到 sources_pip.json"""
+    filepath = _get_pip_sources_file()
+    conf_dir = os.path.dirname(filepath)
+    if not os.path.isdir(conf_dir):
+        try:
+            os.makedirs(conf_dir, exist_ok=True)
+        except OSError:
+            pass
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(sources, f, ensure_ascii=False, indent=2)
+    except IOError:
+        pass
+
+
+def _get_active_url():
+    """获取当前激活的 pip index-url（通过 pip config list 检测）"""
     config = _parse_config()
-    repos = []
-    # index-url / extra-index-url
-    index_url = config.get('global.index-url', config.get('index-url', ''))
-    if index_url:
-        repos.append({'name': 'index-url', 'path': index_url, 'created': ''})
-    extra = config.get('global.extra-index-url', config.get('extra-index-url', ''))
-    if extra:
-        for url in extra.split():
-            repos.append({'name': 'extra-index-url', 'path': url, 'created': ''})
-    if not repos:
-        # 默认 PyPI
-        repos.append({'name': 'index-url', 'path': 'https://pypi.org/simple', 'created': ''})
-    # 配置文件信息
+    return config.get('global.index-url', config.get('index-url', '')).rstrip('/')
+
+
+def get_repo_list():
+    """获取 pip 软件源列表。
+
+    从 sources_pip.json 读取所有已注册的源，结合当前系统 pip 配置
+    检测哪个源是激活状态：
+    - 配置文件中已注册的源：标记 status='active' 或 'inactive'
+    - 当前系统启用的源如果不在配置文件中，只在列表显示但不写入配置文件
+    """
+    sources = _load_sources_config()
+    active_url = _get_active_url()
     cfg = _config_file()
+    created = ''
     if cfg and Path(cfg).exists():
         try:
-            import time
             created = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(Path(cfg).stat().st_ctime))
         except Exception:
             created = ''
-        for r in repos:
-            r['config_file'] = cfg
-            r['created'] = created
+
+    repos = []
+    active_in_file = False
+
+    # 先放当前激活的源（如果它在配置文件中）
+    for s in sources:
+        if s['url'].rstrip('/') == active_url:
+            repos.append({
+                'name': s['name'],
+                'path': s['url'],
+                'url': s['url'],
+                'status': 'active',
+                'builtin': s.get('builtin', False),
+                'config_file': cfg or '-',
+                'created': created,
+            })
+            active_in_file = True
+            break
+
+    # 如果当前激活的源不在配置文件中（如用户手动改过 pip config），
+    # 也展示在列表第一位，但不写入配置文件
+    if not active_in_file and active_url:
+        repos.append({
+            'name': '当前源（未注册）',
+            'path': active_url,
+            'url': active_url,
+            'status': 'active',
+            'builtin': False,
+            'config_file': cfg or '-',
+            'created': created,
+        })
+
+    # 放其余未激活的源（从配置文件）
+    for s in sources:
+        if s['url'].rstrip('/') != active_url:
+            repos.append({
+                'name': s['name'],
+                'path': s['url'],
+                'url': s['url'],
+                'status': 'inactive',
+                'builtin': s.get('builtin', False),
+                'config_file': '-',
+                'created': '-',
+            })
+
     return repos
 
 
@@ -178,30 +276,98 @@ def refresh_cache():
     return {'code': 0, 'msg': 'pip 无需更新索引'}
 
 
-def web_handler(context):
+def web_handler(context, action):
     """Handle web requests for pip management"""
-    action = context.get('action', '')
-    name = context.get('name', '') or context.get('repo', '')
+    name = context.get_argument('name', '') or context.get_argument('repo', '')
 
     if action == 'overview':
-        return {'code': 0, 'msg': '', 'data': get_status()}
+        context.write({'code': 0, 'msg': '', 'data': get_status()})
     elif action == 'list':
-        return {'code': 0, 'msg': '', 'data': get_repo_list()}
+        context.write({'code': 0, 'msg': '', 'data': get_repo_list()})
     elif action == 'item':
         if not name:
-            return {'code': -1, 'msg': '软件库名称不能为空！'}
-        data = get_repo_detail(name)
-        if data is None:
-            return {'code': -1, 'msg': '软件库不存在！'}
-        return {'code': 0, 'msg': '', 'data': data}
+            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+        else:
+            data = get_repo_detail(name)
+            if data is None:
+                context.write({'code': -1, 'msg': '镜像源不存在！'})
+            else:
+                context.write({'code': 0, 'msg': '', 'data': data})
     elif action == 'search':
-        keyword = context.get('keyword', '')
-        return {'code': 0, 'msg': '', 'data': search_repos(keyword)}
+        keyword = context.get_argument('keyword', '')
+        context.write({'code': 0, 'msg': '', 'data': search_repos(keyword)})
     elif action == 'install':
         if not name:
-            return {'code': -1, 'msg': '软件名称不能为空！'}
-        return install_package(name)
+            context.write({'code': -1, 'msg': '软件名称不能为空！'})
+        else:
+            context.write(install_package(name))
     elif action == 'refresh':
-        return refresh_cache()
+        context.write(refresh_cache())
+    elif action == 'add':
+        url = context.get_argument('url', '').strip()
+        source_name = context.get_argument('name', '').strip()
+        if not url:
+            context.write({'code': -1, 'msg': '镜像地址不能为空！'})
+            return
+        if not source_name:
+            source_name = url
+
+        # 只持久化写入配置文件，不立即启用
+        sources = _load_sources_config()
+        normalized_url = url.rstrip('/')
+        for s in sources:
+            if s['url'].rstrip('/') == normalized_url:
+                context.write({'code': -1, 'msg': '该镜像地址已存在！'})
+                return
+        sources.append({'name': source_name, 'url': url, 'builtin': False})
+        _save_sources_config(sources)
+
+        context.write({'code': 0, 'msg': 'pip 镜像源已添加：%s' % url})
+
+    elif action == 'enable':
+        url = context.get_argument('url', '').strip()
+        source_name = context.get_argument('name', '') or context.get_argument('repo', '')
+        if not url and not source_name:
+            context.write({'code': -1, 'msg': '镜像地址或名称不能为空！'})
+            return
+
+        # 如果传了名称，从配置文件中查找 url
+        if not url and source_name:
+            sources = _load_sources_config()
+            for s in sources:
+                if s['name'] == source_name:
+                    url = s['url']
+                    break
+        if not url:
+            context.write({'code': -1, 'msg': '未找到该镜像源的地址！'})
+            return
+
+        # 用 pip config 设置当前激活源
+        status, output = _run('config set global.index-url %s' % url)
+        if status != 0:
+            context.write({'code': -1, 'msg': '切换 pip 镜像源失败：%s' % output})
+            return
+
+        context.write({'code': 0, 'msg': 'pip 镜像源已切换至：%s' % (source_name or url)})
+
+    elif action == 'del':
+        if not name:
+            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            return
+        sources = _load_sources_config()
+        found = None
+        for s in sources:
+            if s['name'] == name:
+                found = s
+                break
+        if found is None:
+            context.write({'code': -1, 'msg': '镜像源不存在！'})
+            return
+        if found.get('builtin'):
+            context.write({'code': -1, 'msg': '内置镜像源不可删除！'})
+            return
+        sources = [s for s in sources if s['name'] != name]
+        _save_sources_config(sources)
+        context.write({'code': 0, 'msg': '镜像源「%s」已删除' % name})
     else:
-        return {'code': -1, 'msg': '未定义的操作！'}
+        context.write({'code': -1, 'msg': '未定义的操作！'})

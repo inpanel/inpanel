@@ -7,7 +7,7 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for ssh Management'''
+'''SSH 管理模块'''
 
 import os
 import re

@@ -5,15 +5,14 @@
 #
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for System Detection and Information'''
+'''系统检测与信息模块'''
 
 import os
 import shutil
 from platform import mac_ver, platform, uname, win32_ver
-from typing import Dict, Optional, Tuple
 
 
-def get_os_release() -> Dict[str, str]:
+def get_os_release():
     """读取 /etc/os-release 文件，返回系统信息字典"""
     info = {}
     try:
@@ -36,7 +35,7 @@ OS_PRETTY_NAME = _os_release.get("PRETTY_NAME", "")
 OS_NAME = _os_release.get("NAME", "")
 
 
-def get_os_family() -> str:
+def get_os_family():
     """获取操作系统家族：rhel 或 debian 或 darwin 或 windows"""
     if OS_ID in ("almalinux", "rocky", "centos", "rhel", "fedora", "ol", "scientific", "centos-stream"):
         return "rhel"
@@ -55,17 +54,17 @@ def get_os_family() -> str:
     return "unknown"
 
 
-def get_os_id() -> str:
+def get_os_id():
     """获取操作系统 ID"""
     return OS_ID
 
 
-def get_os_version() -> str:
+def get_os_version():
     """获取操作系统版本号（完整）"""
     return OS_VERSION_ID
 
 
-def get_os_version_major() -> int:
+def get_os_version_major():
     """获取操作系统主版本号（整数）"""
     if OS_VERSION_ID:
         try:
@@ -75,7 +74,7 @@ def get_os_version_major() -> int:
     return 0
 
 
-def get_os_version_full() -> Tuple[int, int]:
+def get_os_version_full():
     """获取操作系统版本号（主版本，次版本）"""
     major = 0
     minor = 0
@@ -90,7 +89,7 @@ def get_os_version_full() -> Tuple[int, int]:
     return (major, minor)
 
 
-def get_os_title() -> str:
+def get_os_title():
     """获取操作系统全称"""
     if OS_PRETTY_NAME:
         return OS_PRETTY_NAME
@@ -108,7 +107,7 @@ def get_os_title() -> str:
     return "Unknown"
 
 
-def get_os_name() -> str:
+def get_os_name():
     """获取操作系统发行名称"""
     if OS_ID:
         return OS_ID.capitalize()
@@ -120,27 +119,27 @@ def get_os_name() -> str:
     return "Unknown"
 
 
-def is_rhel_family() -> bool:
+def is_rhel_family():
     """是否为 RHEL 家族系统"""
     return get_os_family() == "rhel"
 
 
-def is_debian_family() -> bool:
+def is_debian_family():
     """是否为 Debian 家族系统"""
     return get_os_family() == "debian"
 
 
-def is_darwin() -> bool:
+def is_darwin():
     """是否为 macOS 系统"""
     return get_os_family() == "darwin"
 
 
-def is_windows() -> bool:
+def is_windows():
     """是否为 Windows 系统"""
     return get_os_family() == "windows"
 
 
-def compare_version(version_str: str) -> int:
+def compare_version(version_str):
     """
     比较当前系统版本与指定版本
     返回值: -1 (小于), 0 (等于), 1 (大于)
@@ -165,7 +164,7 @@ def compare_version(version_str: str) -> int:
         return 0
 
 
-def has_package_manager() -> bool:
+def has_package_manager():
     """检查系统是否有包管理器"""
     return any([
         shutil.which("yum"),
@@ -176,7 +175,7 @@ def has_package_manager() -> bool:
     ])
 
 
-def get_system_info() -> Dict[str, str]:
+def get_system_info():
     """返回完整的系统信息字典"""
     kernel_name, hostname, kernel_release, kernel_version, machine, processor = uname()
     return {

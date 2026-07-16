@@ -75,7 +75,7 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/utils/time', _r('utils/time', UtilsTimeCtrl)).
     when('/utils/cron', _r('utils/cron', UtilsCronCtrl)).
     when('/utils/ssl', _r('utils/ssl', UtilsSSLCtrl)).
-    when('/utils/repository', _r('utils/repository', UtilsRepositoryCtrl)).
+    when('/utils/sources', _r('utils/sources', UtilsSourceCtrl)).
     when('/utils/shell', _r('utils/shell', UtilsShellCtrl)).
     when('/utils/firewall', _r('utils/firewall', UtilsFirewallCtrl)).
     when('/storage', _r('storage/index', StorageCtrl)).
@@ -108,7 +108,10 @@ inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $locati
 
     $rootScope.virt = '?';
     $rootScope.checkVirt = function (callback) {
-        if ($rootScope.virt != '?') return;
+        if ($rootScope.virt != '?') {
+            if (callback) callback.call();
+            return;
+        }
         Request.get('/api/query/server.virt', function (data) {
             $rootScope.virt = data['server.virt'];
             if (callback) callback.call();

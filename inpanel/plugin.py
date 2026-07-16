@@ -6,18 +6,17 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Plugin Framework for InPanel.'''
+'''InPanel 插件框架'''
 
 import os
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Type, Any, Callable
 
 
-_hooks: Dict[str, List[Callable]] = {}
+_hooks = {}
 
 
-def hook(name: str) -> Callable:
+def hook(name):
     '''Decorator to register an event hook.
     
     Example:
@@ -25,7 +24,7 @@ def hook(name: str) -> Callable:
         def on_service_start(service_name):
             pass
     '''
-    def decorator(func: Callable) -> Callable:
+    def decorator(func):
         if name not in _hooks:
             _hooks[name] = []
         _hooks[name].append(func)
@@ -33,7 +32,7 @@ def hook(name: str) -> Callable:
     return decorator
 
 
-def trigger_hook(name: str, **kwargs) -> None:
+def trigger_hook(name, **kwargs):
     '''Trigger all hooks registered for the given event name.
     
     Args:
@@ -61,7 +60,7 @@ class PluginBase:
         config: Plugin configuration
     '''
     
-    def __init__(self, app: Any, plugin_dir: str) -> None:
+    def __init__(self, app, plugin_dir):
         '''Initialize plugin.
         
         Args:
@@ -75,7 +74,7 @@ class PluginBase:
         self.config = self._load_config()
         self.enabled = False
     
-    def _load_info(self) -> Dict[str, Any]:
+    def _load_info(self):
         '''Load plugin metadata from info.json.'''
         info_path = Path(self.plugin_dir) / 'info.json'
         if info_path.exists():
@@ -83,7 +82,7 @@ class PluginBase:
                 return json.load(f)
         return {}
     
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self):
         '''Load plugin configuration.
         
         Configuration is loaded with priority:
@@ -111,7 +110,7 @@ class PluginBase:
         
         return config
     
-    def install(self) -> bool:
+    def install(self):
         '''Install the plugin.
         
         Called when the plugin is first installed.
@@ -125,7 +124,7 @@ class PluginBase:
         '''
         return True
     
-    def uninstall(self) -> bool:
+    def uninstall(self):
         '''Uninstall the plugin.
         
         Called when the plugin is uninstalled.
@@ -138,7 +137,7 @@ class PluginBase:
         '''
         return True
     
-    def enable(self) -> bool:
+    def enable(self):
         '''Enable the plugin.
         
         Called when the plugin is enabled.
@@ -153,7 +152,7 @@ class PluginBase:
         self.enabled = True
         return True
     
-    def disable(self) -> bool:
+    def disable(self):
         '''Disable the plugin.
         
         Called when the plugin is disabled.
@@ -167,7 +166,7 @@ class PluginBase:
         self.enabled = False
         return True
     
-    def get_routes(self) -> List[tuple]:
+    def get_routes(self):
         '''Return custom API routes (Tornado Handler list).
         
         Returns:
@@ -175,7 +174,7 @@ class PluginBase:
         '''
         return []
     
-    def get_menu(self) -> Optional[Dict[str, str]]:
+    def get_menu(self):
         '''Return menu item configuration.
         
         Returns:
@@ -183,7 +182,7 @@ class PluginBase:
         '''
         return None
     
-    def save_config(self, config: Dict[str, Any]) -> None:
+    def save_config(self, config):
         '''Save plugin configuration.
         
         Args:
@@ -195,7 +194,7 @@ class PluginBase:
         with open(user_config_path, 'w', encoding='utf-8') as f:
             json.dump(self.config, f, ensure_ascii=False, indent=2)
     
-    def get_config_schema(self) -> Dict[str, Any]:
+    def get_config_schema(self):
         '''Return configuration schema for form generation.
         
         Returns:

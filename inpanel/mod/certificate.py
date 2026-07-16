@@ -14,7 +14,7 @@ from subprocess import PIPE, Popen
 
 from . import file
 import os
-from ..acme import ACME
+from .acme import ACME
 
 
 class Certificate():

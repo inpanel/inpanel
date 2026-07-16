@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for named configuration management."""
+"""DNS 域名解析配置管理模块"""
 
 
 def web_handler(context):

@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Plugin Management Module for InPanel.'''
+'''InPanel 插件管理模块'''
 
 import os
 import sys
@@ -17,7 +17,6 @@ import tempfile
 import importlib
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Any
 from urllib.request import urlopen
 
 
@@ -28,14 +27,14 @@ class PluginManager:
     and configuration management.
     '''
     
-    def __init__(self, app: Any) -> None:
+    def __init__(self, app):
         '''Initialize plugin manager.
         
         Args:
             app: The InPanel application instance
         '''
         self.app = app
-        self.plugins: Dict[str, Any] = {}
+        self.plugins = {}
         self.loaded = False
         
         from ..base import config_path, run_type, root_path, data_path, logging_path
@@ -48,11 +47,11 @@ class PluginManager:
         self.plugins_base_path = Path(data_path) / 'plugins'
         
         self.status_file = Path(config_path) / 'plugins.json'
-        self.plugin_status: Dict[str, Dict[str, Any]] = self._load_status()
+        self.plugin_status = self._load_status()
         
         self._init_plugin_logger()
     
-    def _init_plugin_logger(self) -> None:
+    def _init_plugin_logger(self):
         '''Initialize plugin logger.'''
         plugin_log_file = Path(self.logging_path) / 'plugins.log'
         
@@ -65,7 +64,7 @@ class PluginManager:
             handler.setFormatter(formatter)
             self.plugin_logger.addHandler(handler)
     
-    def _log(self, level: str, message: str) -> None:
+    def _log(self, level, message):
         '''Log a message.
         
         Args:
@@ -79,7 +78,7 @@ class PluginManager:
         else:
             self.plugin_logger.info(message)
     
-    def _load_status(self) -> Dict[str, Dict[str, Any]]:
+    def _load_status(self):
         '''Load plugin status from status file.'''
         if self.status_file.exists():
             try:
@@ -89,12 +88,12 @@ class PluginManager:
                 pass
         return {}
     
-    def _save_status(self) -> None:
+    def _save_status(self):
         '''Save plugin status to status file.'''
         with open(self.status_file, 'w', encoding='utf-8') as f:
             json.dump(self.plugin_status, f, ensure_ascii=False, indent=2)
     
-    def load_plugins(self) -> None:
+    def load_plugins(self):
         '''Load all installed plugins.'''
         if not self.plugins_base_path.exists():
             self.plugins_base_path.mkdir(parents=True, exist_ok=True)
@@ -115,7 +114,7 @@ class PluginManager:
         
         self.loaded = True
     
-    def _load_plugin(self, plugin_dir: str) -> None:
+    def _load_plugin(self, plugin_dir):
         '''Load a single plugin.
         
         Args:
@@ -150,7 +149,7 @@ class PluginManager:
         else:
             self._log('info', f'Plugin {plugin_id} loaded (disabled)')
     
-    def _register_plugin_routes(self, plugin) -> None:
+    def _register_plugin_routes(self, plugin):
         '''Register routes for an enabled plugin.
         
         Args:
@@ -165,7 +164,7 @@ class PluginManager:
                 pattern, handler, kwargs = route
             self.app.add_handlers(r'.*$', [(pattern, handler, kwargs or {})])
     
-    def get_plugin(self, plugin_id: str) -> Optional[Any]:
+    def get_plugin(self, plugin_id):
         '''Get a plugin instance by ID.
         
         Args:
@@ -176,7 +175,7 @@ class PluginManager:
         '''
         return self.plugins.get(plugin_id)
     
-    def get_plugins_list(self) -> List[Dict[str, Any]]:
+    def get_plugins_list(self):
         '''Get list of all plugins with their metadata.
         
         Returns:
@@ -200,7 +199,7 @@ class PluginManager:
             })
         return result
     
-    def install_plugin(self, url: str, version: Optional[str] = None) -> Dict[str, Any]:
+    def install_plugin(self, url, version = None):
         '''Install a plugin from URL.
         
         Args:
@@ -301,7 +300,7 @@ class PluginManager:
                 'message': f'安装失败: {str(e)}'
             }
     
-    def uninstall_plugin(self, plugin_id: str) -> Dict[str, Any]:
+    def uninstall_plugin(self, plugin_id):
         '''Uninstall a plugin.
         
         Args:
@@ -343,7 +342,7 @@ class PluginManager:
                 'message': f'卸载失败: {str(e)}'
             }
     
-    def toggle_plugin(self, plugin_id: str, enable: bool) -> Dict[str, Any]:
+    def toggle_plugin(self, plugin_id, enable):
         '''Enable or disable a plugin.
         
         Args:
@@ -414,7 +413,7 @@ class PluginManager:
                 'message': f'操作失败: {str(e)}'
             }
     
-    def get_plugin_config(self, plugin_id: str) -> Dict[str, Any]:
+    def get_plugin_config(self, plugin_id):
         '''Get plugin configuration.
         
         Args:
@@ -435,7 +434,7 @@ class PluginManager:
             'data': plugin.config
         }
     
-    def save_plugin_config(self, plugin_id: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    def save_plugin_config(self, plugin_id, config):
         '''Save plugin configuration.
         
         Args:
@@ -466,7 +465,7 @@ class PluginManager:
                 'message': f'保存失败: {str(e)}'
             }
     
-    def get_plugin_info(self, plugin_id: str) -> Dict[str, Any]:
+    def get_plugin_info(self, plugin_id):
         '''Get plugin metadata (info.json).
         
         Args:
@@ -487,12 +486,12 @@ class PluginManager:
             'data': plugin.info
         }
     
-    def _get_current_time(self) -> str:
+    def _get_current_time(self):
         '''Get current time in ISO format.'''
         from datetime import datetime
         return datetime.now().isoformat()
     
-    def get_plugin_routes(self) -> List[tuple]:
+    def get_plugin_routes(self):
         '''Get all routes from enabled plugins.
         
         Returns:
@@ -504,7 +503,7 @@ class PluginManager:
                 routes.extend(plugin.get_routes())
         return routes
     
-    def get_plugin_logs(self, limit: int = 50) -> List[str]:
+    def get_plugin_logs(self, limit = 50):
         '''Get recent plugin logs.
         
         Args:

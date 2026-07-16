@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for InPanel operations for remote server.'''
+'''InPanel 远程服务器操作模块'''
 
 
 import base64
@@ -17,7 +17,7 @@ from .lib import pxssh
 
 
 def inpanel_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, inpanel_ip=None, inpanel_port=None):
-    '''Install InPanel on a remote server.'''
+    '''在远程服务器上安装 InPanel。'''
     try:
         s = pxssh.pxssh()
         s.login(ssh_ip, ssh_user, ssh_password, port=ssh_port)
@@ -27,7 +27,7 @@ def inpanel_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, in
         s.prompt()
         s.sendline('python install.py')
         s.expect('INSTALL COMPLETED!')
-        s.sendcontrol('c')  # don't set username and password
+        s.sendcontrol('c')  # 不设置用户名和密码
         s.prompt()
         s.sendline('rm -f install.py')
         s.prompt()
@@ -53,7 +53,7 @@ def inpanel_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, in
 
 
 def inpanel_uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
-    '''Uninstall InPanel on a remote server.'''
+    '''在远程服务器上卸载 InPanel。'''
     try:
         s = pxssh.pxssh()
         s.login(ssh_ip, ssh_user, ssh_password, port=ssh_port)
@@ -68,7 +68,7 @@ def inpanel_uninstall(ssh_ip, ssh_port, ssh_user, ssh_password):
 
 
 def inpanel_config(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, accesskeyenable=None, username=None, password=None, loginlock=None, inpanel_ip=None, inpanel_port=None):
-    '''Update config on remote server.'''
+    '''更新远程服务器上的配置。'''
     try:
         s = pxssh.pxssh()
         s.login(ssh_ip, ssh_user, ssh_password, port=ssh_port)

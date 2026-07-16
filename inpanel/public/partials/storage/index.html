@@ -12,6 +12,15 @@
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='local'"><a href="#local" ng-click="tab_sec('local')" data-toggle="tab">本地磁盘</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='remote'"><a href="#remote" ng-click="tab_sec('remote')" data-toggle="tab">网络磁盘</a></li>
+            <li class="pull-right">
+                <div ng-show="activeTabName=='local'" class="btn-group btn-group-sm">
+                    <button class="btn btn-default " title="刷新磁盘列表" ng-click="get_diskinfo()" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
+                </div>
+                <div ng-show="activeTabName=='remote'" class="btn-group btn-group-sm">
+                    <button class="btn btn-default" title="刷新磁盘列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
+                    <a class="btn btn-default" href="#/storage/remote/new" title="添加网络磁盘" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></a>
+                </div>
+            </li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='local'" id="local">
@@ -19,11 +28,10 @@
                     在 Virtuozzo/OpenVZ 虚拟化平台下无法使用磁盘分区功能
                 </div>
                 <div style="display:none;" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
+                    <div>
+                        <h5>物理分区管理</h5>
+                    </div>
                     <div style="display:none" ng-show="diskinfo['count'] > 0">
-                        <div>
-                            <h5 class="pull-left">物理分区管理</h5>
-                            <button class="btn btn-default btn-sm pull-right" title="刷新磁盘列表" ng-click="get_diskinfo()" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
-                        </div>
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover table-condensed">
                                 <tbody ng-repeat="partition in diskinfo['partitions']">
@@ -95,13 +103,7 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='remote'" id="remote">
-                <div>
-                    <h5 class="pull-left">网络磁盘(开发中)</h5>
-                    <div class="btn-group btn-group-sm pull-right">
-                        <button class="btn btn-default" title="刷新磁盘列表" ng-disabled="!loaded"><i class="glyphicon glyphicon-refresh"></i></button>
-                        <a class="btn btn-default" href="#/storage/remote/new" title="添加网络磁盘" ng-disabled="!loaded"><i class="glyphicon glyphicon-plus"></i></a>
-                    </div>
-                </div>
+                <h5>网络磁盘(开发中)</h5>
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered table-condensed">
                         <thead>

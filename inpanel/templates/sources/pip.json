@@ -1,0 +1,12 @@
+{
+  "pip_builtin_mirrors": [
+    {"name": "PyPI 官方源", "url": "https://pypi.org/simple/", "builtin": true},
+    {"name": "阿里云 PyPI", "url": "https://mirrors.aliyun.com/pypi/simple/", "builtin": true},
+    {"name": "清华大学 PyPI", "url": "https://pypi.tuna.tsinghua.edu.cn/simple/", "builtin": true},
+    {"name": "中科大 PyPI", "url": "https://pypi.mirrors.ustc.edu.cn/simple/", "builtin": true},
+    {"name": "豆瓣 PyPI", "url": "https://pypi.doubanio.com/simple/", "builtin": true},
+    {"name": "腾讯云 PyPI", "url": "https://mirrors.cloud.tencent.com/pypi/simple/", "builtin": true},
+    {"name": "华为云 PyPI", "url": "https://repo.huaweicloud.com/repository/pypi/simple/", "builtin": true},
+    {"name": "网易 PyPI", "url": "https://mirrors.163.com/pypi/simple/", "builtin": true}
+  ]
+}

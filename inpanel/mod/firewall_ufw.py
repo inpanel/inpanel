@@ -5,10 +5,9 @@
 #
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for UFW (Uncomplicated Firewall) Management'''
+'''UFW（简易防火墙）管理模块'''
 
 import shutil
-from typing import Tuple, List, Dict
 
 from .firewall_base import FirewallManager
 from .system import is_debian_family
@@ -17,58 +16,58 @@ from .system import is_debian_family
 class UfwPM(FirewallManager):
     """Debian 9-13 / Ubuntu 18.04+ / Linux Mint：ufw"""
     
-    def detect(self) -> bool:
+    def detect(self):
         if not shutil.which("ufw"):
             return False
         return is_debian_family()
     
-    def status(self) -> Tuple[bool, str]:
+    def status(self):
         return self._run_cmd(["ufw", "status", "verbose"])
     
-    def enable(self) -> Tuple[bool, str]:
+    def enable(self):
         return self._run_cmd(["ufw", "enable"])
     
-    def disable(self) -> Tuple[bool, str]:
+    def disable(self):
         return self._run_cmd(["ufw", "disable"])
     
-    def start(self) -> Tuple[bool, str]:
+    def start(self):
         return self._run_cmd(["ufw", "enable"])
     
-    def stop(self) -> Tuple[bool, str]:
+    def stop(self):
         return self._run_cmd(["ufw", "disable"])
     
-    def restart(self) -> Tuple[bool, str]:
+    def restart(self):
         return self._run_cmd(["ufw", "reload"])
     
-    def add_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def add_rule(self, port, protocol = 'tcp', zone = ''):
         return self._run_cmd(["ufw", "allow", f"{port}/{protocol}"])
     
-    def remove_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def remove_rule(self, port, protocol = 'tcp', zone = ''):
         return self._run_cmd(["ufw", "delete", "allow", f"{port}/{protocol}"])
     
-    def add_ip_rule(self, ip: str, action: str = 'allow') -> Tuple[bool, str]:
+    def add_ip_rule(self, ip, action = 'allow'):
         if action == 'allow':
             return self._run_cmd(["ufw", "allow", "from", ip])
         else:
             return self._run_cmd(["ufw", "deny", "from", ip])
     
-    def remove_ip_rule(self, ip: str) -> Tuple[bool, str]:
+    def remove_ip_rule(self, ip):
         success1, output1 = self._run_cmd(["ufw", "delete", "allow", "from", ip])
         if not success1:
             success2, output2 = self._run_cmd(["ufw", "delete", "deny", "from", ip])
             return (success2, output2)
         return (success1, output1)
     
-    def list_rules(self) -> Tuple[bool, str]:
+    def list_rules(self):
         return self._run_cmd(["ufw", "status"])
     
-    def list_zones(self) -> Tuple[bool, List[str]]:
+    def list_zones(self):
         return (False, [])
     
-    def get_default_zone(self) -> Tuple[bool, str]:
+    def get_default_zone(self):
         return (False, "Not supported")
     
-    def parse_rules(self) -> List[Dict]:
+    def parse_rules(self):
         rules = []
         success, output = self._run_cmd(["ufw", "status", "numbered"])
         if not success:

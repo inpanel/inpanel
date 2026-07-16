@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for PHP operations.'''
+'''PHP 操作模块'''
 
 import os
 import subprocess

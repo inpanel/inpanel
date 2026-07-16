@@ -1,0 +1,224 @@
+{
+  "apt_sources": {
+    "debian": {
+      "10": {
+        "buster": {
+          "main": "deb http://deb.debian.org/debian/ buster main",
+          "contrib": "deb http://deb.debian.org/debian/ buster contrib",
+          "non-free": "deb http://deb.debian.org/debian/ buster non-free",
+          "updates": "deb http://deb.debian.org/debian/ buster-updates main contrib non-free",
+          "security": "deb http://security.debian.org/debian-security buster/updates main contrib non-free"
+        }
+      },
+      "11": {
+        "bullseye": {
+          "main": "deb http://deb.debian.org/debian/ bullseye main",
+          "contrib": "deb http://deb.debian.org/debian/ bullseye contrib",
+          "non-free": "deb http://deb.debian.org/debian/ bullseye non-free",
+          "non-free-firmware": "deb http://deb.debian.org/debian/ bullseye non-free-firmware",
+          "updates": "deb http://deb.debian.org/debian/ bullseye-updates main contrib non-free non-free-firmware",
+          "security": "deb http://security.debian.org/debian-security bullseye-security main contrib non-free non-free-firmware"
+        }
+      },
+      "12": {
+        "bookworm": {
+          "main": "deb http://deb.debian.org/debian/ bookworm main",
+          "contrib": "deb http://deb.debian.org/debian/ bookworm contrib",
+          "non-free": "deb http://deb.debian.org/debian/ bookworm non-free",
+          "non-free-firmware": "deb http://deb.debian.org/debian/ bookworm non-free-firmware",
+          "updates": "deb http://deb.debian.org/debian/ bookworm-updates main contrib non-free non-free-firmware",
+          "security": "deb http://security.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware",
+          "backports": "deb http://deb.debian.org/debian/ bookworm-backports main contrib non-free non-free-firmware"
+        }
+      },
+      "13": {
+        "trixie": {
+          "main": "deb http://deb.debian.org/debian/ trixie main",
+          "contrib": "deb http://deb.debian.org/debian/ trixie contrib",
+          "non-free": "deb http://deb.debian.org/debian/ trixie non-free",
+          "non-free-firmware": "deb http://deb.debian.org/debian/ trixie non-free-firmware",
+          "updates": "deb http://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware",
+          "security": "deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware",
+          "backports": "deb http://deb.debian.org/debian/ trixie-backports main contrib non-free non-free-firmware"
+        }
+      }
+    },
+    "ubuntu": {
+      "18.04": {
+        "bionic": {
+          "main": "deb http://archive.ubuntu.com/ubuntu/ bionic main restricted",
+          "universe": "deb http://archive.ubuntu.com/ubuntu/ bionic universe",
+          "multiverse": "deb http://archive.ubuntu.com/ubuntu/ bionic multiverse",
+          "updates": "deb http://archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse",
+          "security": "deb http://security.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse",
+          "backports": "deb http://archive.ubuntu.com/ubuntu/ bionic-backports main restricted universe multiverse"
+        }
+      },
+      "20.04": {
+        "focal": {
+          "main": "deb http://archive.ubuntu.com/ubuntu/ focal main restricted",
+          "universe": "deb http://archive.ubuntu.com/ubuntu/ focal universe",
+          "multiverse": "deb http://archive.ubuntu.com/ubuntu/ focal multiverse",
+          "updates": "deb http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse",
+          "security": "deb http://security.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse",
+          "backports": "deb http://archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse"
+        }
+      },
+      "22.04": {
+        "jammy": {
+          "main": "deb http://archive.ubuntu.com/ubuntu/ jammy main restricted",
+          "universe": "deb http://archive.ubuntu.com/ubuntu/ jammy universe",
+          "multiverse": "deb http://archive.ubuntu.com/ubuntu/ jammy multiverse",
+          "updates": "deb http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse",
+          "security": "deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse",
+          "backports": "deb http://archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse"
+        }
+      },
+      "24.04": {
+        "noble": {
+          "main": "deb http://archive.ubuntu.com/ubuntu/ noble main restricted",
+          "universe": "deb http://archive.ubuntu.com/ubuntu/ noble universe",
+          "multiverse": "deb http://archive.ubuntu.com/ubuntu/ noble multiverse",
+          "updates": "deb http://archive.ubuntu.com/ubuntu/ noble-updates main restricted universe multiverse",
+          "security": "deb http://security.ubuntu.com/ubuntu/ noble-security main restricted universe multiverse",
+          "backports": "deb http://archive.ubuntu.com/ubuntu/ noble-backports main restricted universe multiverse"
+        }
+      }
+    }
+  },
+  "apt_mirrors": {
+    "aliyun": {
+      "debian": "deb http://mirrors.aliyun.com/debian/ $release main contrib non-free non-free-firmware",
+      "debian-updates": "deb http://mirrors.aliyun.com/debian/ $release-updates main contrib non-free non-free-firmware",
+      "debian-security": "deb http://mirrors.aliyun.com/debian-security/ $release-security main contrib non-free non-free-firmware",
+      "debian-backports": "deb http://mirrors.aliyun.com/debian/ $release-backports main contrib non-free non-free-firmware",
+      "ubuntu": "deb http://mirrors.aliyun.com/ubuntu/ $codename main restricted universe multiverse",
+      "ubuntu-updates": "deb http://mirrors.aliyun.com/ubuntu/ $codename-updates main restricted universe multiverse",
+      "ubuntu-security": "deb http://mirrors.aliyun.com/ubuntu/ $codename-security main restricted universe multiverse",
+      "ubuntu-backports": "deb http://mirrors.aliyun.com/ubuntu/ $codename-backports main restricted universe multiverse"
+    },
+    "ustc": {
+      "debian": "deb https://mirrors.ustc.edu.cn/debian/ $release main contrib non-free non-free-firmware",
+      "debian-updates": "deb https://mirrors.ustc.edu.cn/debian/ $release-updates main contrib non-free non-free-firmware",
+      "debian-security": "deb https://mirrors.ustc.edu.cn/debian-security/ $release-security main contrib non-free non-free-firmware",
+      "debian-backports": "deb https://mirrors.ustc.edu.cn/debian/ $release-backports main contrib non-free non-free-firmware",
+      "ubuntu": "deb https://mirrors.ustc.edu.cn/ubuntu/ $codename main restricted universe multiverse",
+      "ubuntu-updates": "deb https://mirrors.ustc.edu.cn/ubuntu/ $codename-updates main restricted universe multiverse",
+      "ubuntu-security": "deb https://mirrors.ustc.edu.cn/ubuntu/ $codename-security main restricted universe multiverse",
+      "ubuntu-backports": "deb https://mirrors.ustc.edu.cn/ubuntu/ $codename-backports main restricted universe multiverse"
+    },
+    "tsinghua": {
+      "debian": "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ $release main contrib non-free non-free-firmware",
+      "debian-updates": "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ $release-updates main contrib non-free non-free-firmware",
+      "debian-security": "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security/ $release-security main contrib non-free non-free-firmware",
+      "debian-backports": "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ $release-backports main contrib non-free non-free-firmware",
+      "ubuntu": "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ $codename main restricted universe multiverse",
+      "ubuntu-updates": "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ $codename-updates main restricted universe multiverse",
+      "ubuntu-security": "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ $codename-security main restricted universe multiverse",
+      "ubuntu-backports": "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ $codename-backports main restricted universe multiverse"
+    }
+  },
+  "apt_pkg_alias": {
+    "nginx": ["nginx", "nginx-full", "nginx-light", "nginx-extras"],
+    "tomcat": ["tomcat9", "tomcat10"],
+    "apache": ["apache2"],
+    "lighttpd": ["lighttpd"],
+    "vsftpd": ["vsftpd"],
+    "mysql": ["mysql-server", "mariadb-server", "default-mysql-server"],
+    "mariadb": ["mariadb-server"],
+    "redis": ["redis-server"],
+    "memcache": ["memcached"],
+    "mongodb": ["mongodb-org"],
+    "php": ["php", "php8.1", "php8.2", "php8.3"],
+    "sendmail": ["sendmail"],
+    "ssh": ["openssh-server"],
+    "iptables": ["iptables"],
+    "cron": ["cron"],
+    "ntp": ["chrony"],
+    "bind": ["bind9"],
+    "docker": ["docker-ce"],
+    "pureftpd": ["pure-ftpd"],
+    "proftpd": ["proftpd-basic"],
+    "GeoIP": ["geoip-database"],
+    "mono": ["mono-devel"],
+    "ntfs-3g": ["ntfs-3g"],
+    "davfs2": ["davfs2"],
+    "nfs": ["nfs-kernel-server"],
+    "cifs": ["cifs-utils"],
+    "samba": ["samba"]
+  },
+  "apt_pkg_relatives": {
+    "nginx": {
+      "nginx": {"default": true, "base": true},
+      "nginx-full": {"default": false, "isext": true},
+      "nginx-light": {"default": false, "isext": true},
+      "nginx-extras": {"default": false, "isext": true},
+      "nginx-core": {"default": true, "base": true}
+    },
+    "apache2": {
+      "apache2": {"default": true, "base": true},
+      "apache2-dev": {"default": false, "isext": true},
+      "libapache2-mod-ssl": {"default": true, "isext": true},
+      "apache2-utils": {"default": false, "isext": true}
+    },
+    "mariadb-server": {
+      "mariadb-server": {"default": true, "base": true},
+      "mariadb-client": {"default": true, "base": true},
+      "mariadb-common": {"default": true, "base": true}
+    },
+    "redis-server": {
+      "redis-server": {"default": true, "base": true},
+      "redis-tools": {"default": false, "isext": true}
+    },
+    "memcached": {
+      "memcached": {"default": true, "base": true},
+      "libmemcached-tools": {"default": false, "isext": true}
+    },
+    "php": {
+      "php": {"default": true, "base": true},
+      "php-cli": {"default": true},
+      "php-common": {"default": true, "base": true},
+      "php-fpm": {"default": true},
+      "php-gd": {"default": true, "isext": true},
+      "php-mbstring": {"default": true, "isext": true},
+      "php-mysql": {"default": true, "isext": true},
+      "php-pdo": {"default": true},
+      "php-soap": {"default": false, "isext": true},
+      "php-xml": {"default": true, "isext": true},
+      "php-zip": {"default": false, "isext": true},
+      "php-dev": {"default": false, "isext": true}
+    },
+    "php8.2": {
+      "php8.2": {"default": true, "base": true},
+      "php8.2-cli": {"default": true},
+      "php8.2-common": {"default": true, "base": true},
+      "php8.2-fpm": {"default": true},
+      "php8.2-gd": {"default": true, "isext": true},
+      "php8.2-mbstring": {"default": true, "isext": true},
+      "php8.2-mysql": {"default": true, "isext": true},
+      "php8.2-pdo": {"default": true},
+      "php8.2-soap": {"default": false, "isext": true},
+      "php8.2-xml": {"default": true, "isext": true},
+      "php8.2-zip": {"default": false, "isext": true},
+      "php8.2-dev": {"default": false, "isext": true}
+    },
+    "docker-ce": {
+      "docker-ce": {"default": true, "base": true},
+      "docker-ce-cli": {"default": true, "base": true},
+      "containerd.io": {"default": true, "base": true},
+      "docker-compose-plugin": {"default": false, "isext": true}
+    }
+  },
+  "apt_builtin_mirrors": [
+    {"name": "Debian 官方源", "url": "http://deb.debian.org/debian/", "builtin": true},
+    {"name": "阿里云 Debian", "url": "https://mirrors.aliyun.com/debian/", "builtin": true},
+    {"name": "清华大学 Debian", "url": "https://mirrors.tuna.tsinghua.edu.cn/debian/", "builtin": true},
+    {"name": "中科大 Debian", "url": "https://mirrors.ustc.edu.cn/debian/", "builtin": true},
+    {"name": "华为云 Debian", "url": "https://repo.huaweicloud.com/debian/", "builtin": true},
+    {"name": "腾讯云 Debian", "url": "https://mirrors.cloud.tencent.com/debian/", "builtin": true},
+    {"name": "Ubuntu 官方源", "url": "http://archive.ubuntu.com/ubuntu/", "builtin": true},
+    {"name": "阿里云 Ubuntu", "url": "https://mirrors.aliyun.com/ubuntu/", "builtin": true},
+    {"name": "清华大学 Ubuntu", "url": "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/", "builtin": true},
+    {"name": "中科大 Ubuntu", "url": "https://mirrors.ustc.edu.cn/ubuntu/", "builtin": true}
+  ]
+}

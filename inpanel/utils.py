@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Package for Utils.'''
+'''工具函数模块'''
 
 import base64
 import random
@@ -18,7 +18,7 @@ import uuid
 
 
 def randstr(length=32):
-    """Generate a fixed-length random string.
+    """生成指定长度的随机字符串
     """
     # table = range(0x30, 0x3a) + range(0x41, 0x5b) + range(0x61, 0x7b)
     # pop = [chr(i) for i in table]
@@ -30,12 +30,12 @@ def make_cookie_secret():
 
 
 def is_valid_ip(ip):
-    '''Validates IP addresses.'''
+    '''校验 IP 地址是否有效'''
     return is_valid_ipv4(ip) or is_valid_ipv6(ip)
 
 
 def is_valid_ipv4(ip):
-    '''Validates IPv4 addresses.'''
+    '''校验 IPv4 地址是否有效'''
     if not ip or ip == '':
         return False
     try:
@@ -46,7 +46,7 @@ def is_valid_ipv4(ip):
 
 
 def is_valid_ipv6(ip):
-    '''Validates IPv6 addresses.'''
+    '''校验 IPv6 地址是否有效'''
     if not ip or ip == '':
         return False
     try:
@@ -57,13 +57,13 @@ def is_valid_ipv6(ip):
 
 
 def is_valid_netmask(mask):
-    """Validates IPv4 sub-network mask.
+    """校验 IPv4 子网掩码是否有效
     """
     return mask in map(lambda x: ipv4_cidr_to_netmask(x), range(0, 33))
 
 
 def ipv4_cidr_to_netmask(bits):
-    """Convert CIDR bits to netmask """
+    """将 CIDR 位数转换为子网掩码"""
     netmask = ''
     for i in range(4):
         if i:
@@ -78,7 +78,7 @@ def ipv4_cidr_to_netmask(bits):
 
 
 def b2h(n):
-    # bypes to human
+    # 字节数转人类可读格式
     # http://code.activestate.com/recipes/578019
     # >>> b2h(10000)
     # '9.8K'
@@ -100,7 +100,7 @@ def ftime(secs):
 
 
 def is_valid_domain(name, allow_localname=True):
-    '''Validates domain name.'''
+    '''校验域名是否有效'''
     if not name or name == '':
         return False
     name = name.lower()
@@ -112,25 +112,24 @@ def is_valid_domain(name, allow_localname=True):
 
 
 def is_url(url):
-    '''Check that the URL is in the correct format'''
+    '''检查 URL 格式是否正确'''
     return re.match('[a-z]+://.+', url) and True or False
 
 
 def version_get(v1, v2):
-    """Check if version v1 is great or equal then version v2.
-    """
+    """检查版本 v1 是否大于等于版本 v2"""
     return [int(i) for i in v1.split('.') if i.isdigit()] > [int(i) for i in v2.split('.') if i.isdigit()]
 
 
 def valid_filename(filename):
-    """Check if a filename is validate.
+    """检查文件名是否合法
     """
     valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
     return not any([c for c in filename if c not in valid_chars])
 
 
 def callbackable(func):
-    """Make a function callbackable.
+    """使函数支持回调
     """
     def wrapper(*args, **kwds):
         callback = kwds['callback']
@@ -145,7 +144,7 @@ def callbackable(func):
 
 
 def loadconfig(cfgfile, delimiter, detail=False):
-    """Read config file and parse config item to dict.
+    """读取配置文件并将配置项解析为字典
     """
     #if not cfgfile: cfgfile = SSHCFG
 
@@ -156,7 +155,7 @@ def loadconfig(cfgfile, delimiter, detail=False):
             if not line or line.startswith('# '):
                 continue
 
-            # detect if it's commented
+            # 检测该行是否被注释
             if line.startswith('#'):
                 line = line.strip('#')
                 commented = True
@@ -197,7 +196,7 @@ def loadconfig(cfgfile, delimiter, detail=False):
 
 
 def cfg_get(cfgfile, item, delimiter, detail=False, config=None):
-    """Get value of a config item.
+    """获取配置项的值
     """
     if not config:
         config = loadconfig(cfgfile, delimiter, detail=detail)
@@ -208,22 +207,22 @@ def cfg_get(cfgfile, item, delimiter, detail=False, config=None):
 
 
 def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
-    """Set value of a config item.
+    """设置配置项的值
     """
     #cfgfile = SSHCFG
     v = cfg_get(cfgfile, item, delimiter, detail=True, config=config)
     if delimiter == r'\s+':
         delimiter = ' '
     if v:
-        # detect if value change
+        # 检测值是否有变化
         if v['commented'] == commented and v['value'] == value:
             return True
 
-        # empty value should be commented
+        # 空值应被注释掉
         if value == '':
             commented = True
 
-        # replace item in line
+        # 替换行中的配置项
         lines = []
         with open(v['file'], encoding='utf-8') as f:
             for line_i, line in enumerate(f):
@@ -231,21 +230,21 @@ def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
                     if not v['commented']:
                         if commented:
                             if v['count'] > 1:
-                                # delete this line, just ignore it
+                                # 删除该行，直接忽略
                                 pass
                             else:
-                                # comment this line
+                                # 注释该行
                                 lines.append('#%s%s%s\n' %
                                              (item, delimiter, value))
                         else:
                             lines.append('%s%s%s\n' % (item, delimiter, value))
                     else:
                         if commented:
-                            # do not allow change comment value
+                            # 不允许更改已注释的值
                             lines.append(line)
                             pass
                         else:
-                            # append a new line after comment line
+                            # 在注释行后追加新行
                             lines.append(line)
                             lines.append('%s%s%s\n' % (item, delimiter, value))
                 else:
@@ -253,7 +252,7 @@ def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
         with open(v['file'], 'w', encoding='utf-8') as f:
             f.write(''.join(lines))
     else:
-        # append to the end of file
+        # 追加到文件末尾
         with open(cfgfile, 'a', encoding='utf-8') as f:
             f.write('\n%s%s%s\n' % (item, delimiter, value))
 
@@ -276,7 +275,7 @@ def cfg_set_array(cfgfile, configs_array, delimiter):
 
 
 def gen_accesskey():
-    """Generate a access key.
+    """生成访问密钥
     """
     keys = [chr(int(random.random()*256)) for i in range(0, 32)]
     return base64.b64encode(''.join(keys))

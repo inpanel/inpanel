@@ -1,3 +1,31 @@
+## InPanel v1.2.4 (2026-07-17)
+
+**版本更新：**
+
+- 发布 InPanel v1.2.4
+
+**代码注释中文化：**
+
+- 全部模块的 docstring 和行内注释从英文翻译为中文（涵盖 55 个模块）
+
+**项目结构优化：**
+
+- 将 acme.py、aliyuncs.py、remote.py 从 inpanel/ 迁移至 inpanel/mod/
+- 将 file/preview.html、index.html 从 templates/ 迁移至 public/templates/
+- 删除顶层已废弃的 apt.py、dnf.py、yum.py
+
+**软件源管理重构：**
+
+- 新增软件源 JSON 模板系统（templates/sources/，含 apt/brew/dnf/docker/pip/yum 等 8 个配置文件）
+- 新增 Docker 镜像源管理模块（docker_source.py），支持镜像源增删改查与切换
+- 重构 apt/brew/dnf/yum/pip 模块，统一源管理 API
+- 新增统一的 sources.html 前端页面，替换旧 repository.html
+
+**其他：**
+
+- 移除 plugin.py 中不必要的 typing 导入，提升低版本 Python 兼容性
+- 修复 config.py 密码 HMAC 计算逻辑
+
 ## InPanel v1.2.3 (2026-07-12)
 
 **版本更新:**

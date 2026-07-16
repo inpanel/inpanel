@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+'''InPanel 配置管理命令行工具'''
+
 import sys
 import logging
 from pathlib import Path
@@ -115,7 +117,8 @@ Examples:
             from hmac import new as hmac_new
             from .utils import randstr
             key = md5(randstr().encode('utf-8')).hexdigest()
-            pwd = hmac_new(key.encode('utf-8'), value.encode('utf-8'), md5).hexdigest()
+            md5_password = md5(value.encode('utf-8')).hexdigest()
+            pwd = hmac_new(key.encode('utf-8'), md5_password.encode('utf-8'), md5).hexdigest()
             value = '%s:%s' % (pwd, key)
             logger.info(f'Password hash generated, key length: {len(key)}, hash length: {len(pwd)}')
         

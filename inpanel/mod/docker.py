@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for Docker Management."""
+"""Docker 容器管理模块"""
 
 import json
 from subprocess import getstatusoutput
