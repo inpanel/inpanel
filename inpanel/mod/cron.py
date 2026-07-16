@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for Cron Jobs Management."""
+"""定时任务管理模块"""
 
 from pathlib import Path
 import re

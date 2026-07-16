@@ -1,0 +1,474 @@
+[
+  {
+    "id": "remi-php",
+    "name": "Remi PHP 仓库",
+    "description": "提供 PHP 5.6 / 7.0 / 7.1 / 7.2 / 7.3 / 7.4 / 8.0 / 8.1 / 8.2 / 8.3 / 8.4 多个版本，可共存",
+    "category": "PHP",
+    "platform": ["rhel"],
+    "repo_url": "https://rpms.remirepo.net/enterprise/remi-release-{el}.rpm",
+    "repo_file": "remi.repo",
+    "packages": ["php", "php-fpm", "php-cli", "php-mysqlnd", "php-mbstring", "php-xml", "php-gd", "php-curl", "php-zip", "php-intl"],
+    "module_name": "remi",
+    "multi_version": true,
+    "note": "安装后使用 dnf module enable php:{version} 切换版本"
+  },
+  {
+    "id": "remi-php-safe",
+    "name": "Remi PHP Safe 仓库",
+    "description": "Remi Safe 仓库提供不覆盖系统包的 PHP 版本，适合多版本共存",
+    "category": "PHP",
+    "platform": ["rhel"],
+    "repo_url": "https://rpms.remirepo.net/enterprise/remi-release-{el}.rpm",
+    "repo_file": "remi-safe.repo",
+    "packages": ["php", "php-fpm", "php-cli"],
+    "module_name": "remi-safe",
+    "multi_version": true
+  },
+  {
+    "id": "sury-php",
+    "name": "SURY PHP 仓库 (Debian/Ubuntu)",
+    "description": "Ondřej Surý 维护的 PHP 5.6 ~ 8.4 多版本共存仓库，每个版本独立包名（如 php8.2-fpm）",
+    "category": "PHP",
+    "platform": ["debian"],
+    "repo_url": "https://packages.sury.org/php/",
+    "repo_file": "php.list",
+    "packages": ["php8.2", "php8.2-fpm", "php8.2-cli", "php8.2-mysql", "php8.2-mbstring", "php8.2-xml", "php8.2-gd", "php8.2-curl", "php8.2-zip", "php8.2-intl", "php8.3", "php8.3-fpm", "php8.3-cli", "php8.3-mysql", "php8.3-mbstring", "php8.3-xml", "php8.3-gd", "php8.3-curl", "php8.3-zip", "php8.3-intl", "php8.4", "php8.4-fpm", "php8.4-cli", "php8.4-mysql", "php8.4-mbstring", "php8.4-xml", "php8.4-gd", "php8.4-curl", "php8.4-zip", "php8.4-intl"],
+    "multi_version": true,
+    "note": "安装命令: add-apt-repository ppa:ondrej/php"
+  },
+  {
+    "id": "nginx-official",
+    "name": "Nginx 官方仓库",
+    "description": "Nginx 官方提供的最新稳定版和主线版本，比系统自带版本更新",
+    "category": "Web Server",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://nginx.org/packages/centos/{el}/$basearch/",
+      "repo_file": "nginx.repo",
+      "gpgkey": "https://nginx.org/keys/nginx_signing.key"
+    },
+    "debian": {
+      "repo_url": "http://nginx.org/packages/mainline/debian/",
+      "repo_file": "nginx.list",
+      "gpgkey": "https://nginx.org/keys/nginx_signing.key",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/mainline/debian/ $(lsb_release -sc) nginx"
+    },
+    "packages": ["nginx"],
+    "multi_version": false
+  },
+  {
+    "id": "nginx-stable",
+    "name": "Nginx 稳定版仓库",
+    "description": "Nginx 官方稳定版，适合生产环境",
+    "category": "Web Server",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://nginx.org/packages/centos/{el}/$basearch/",
+      "repo_file": "nginx-stable.repo",
+      "gpgkey": "https://nginx.org/keys/nginx_signing.key"
+    },
+    "debian": {
+      "repo_url": "http://nginx.org/packages/debian/",
+      "repo_file": "nginx-stable.list",
+      "gpgkey": "https://nginx.org/keys/nginx_signing.key",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian/ $(lsb_release -sc) nginx"
+    },
+    "packages": ["nginx"],
+    "multi_version": false
+  },
+  {
+    "id": "openresty",
+    "name": "OpenResty 仓库",
+    "description": "基于 Nginx + LuaJIT 的高性能 Web 平台，内置 Lua 脚本支持",
+    "category": "Web Server",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://openresty.org/package/centos/$releasever/$basearch/",
+      "repo_file": "openresty.repo"
+    },
+    "debian": {
+      "repo_url": "https://openresty.org/package/debian/",
+      "repo_file": "openresty.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/openresty.gpg] https://openresty.org/package/debian/ $(lsb_release -sc) openresty"
+    },
+    "packages": ["openresty"],
+    "multi_version": false
+  },
+  {
+    "id": "apache-ius",
+    "name": "IUS Apache httpd 仓库 (RHEL)",
+    "description": "IUS 社区提供较新版本的 Apache httpd，可与系统版共存",
+    "category": "Web Server",
+    "platform": ["rhel"],
+    "repo_url": "https://repo.ius.io/ius-release-el{el}.rpm",
+    "repo_file": "ius.repo",
+    "packages": ["httpd24u", "httpd24u-mod_ssl", "httpd24u-mod_php"],
+    "multi_version": false
+  },
+  {
+    "id": "mysql-official",
+    "name": "MySQL 官方仓库",
+    "description": "Oracle MySQL 官方仓库，支持 5.7 / 8.0 / 8.4 / 9.0 版本",
+    "category": "Database",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://repo.mysql.com/mysql80-community-release-el{el}.rpm",
+      "repo_file": "mysql-community.repo"
+    },
+    "debian": {
+      "repo_url": "https://repo.mysql.com/",
+      "repo_file": "mysql.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/mysql.gpg] https://repo.mysql.com/apt/debian/ $(lsb_release -sc) mysql-8.0"
+    },
+    "packages": ["mysql-server", "mysql-client"],
+    "multi_version": false,
+    "note": "与 MariaDB 冲突，只能二选一"
+  },
+  {
+    "id": "mariadb-official",
+    "name": "MariaDB 官方仓库",
+    "description": "MariaDB 官方仓库，支持 10.5 / 10.6 / 10.11 / 11.4 LTS 版本",
+    "category": "Database",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://downloads.mariadb.com/MariaDB/mariadb_repo_setup",
+      "repo_file": "mariadb.repo"
+    },
+    "debian": {
+      "repo_url": "https://ftp.osuosl.org/pub/mariadb/repo/",
+      "repo_file": "mariadb.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/mariadb-keyring.pgp] https://ftp.osuosl.org/pub/mariadb/repo/{version}/debian $(lsb_release -sc) main"
+    },
+    "packages": ["mariadb-server", "mariadb-client"],
+    "multi_version": false,
+    "note": "与 MySQL 冲突，只能二选一"
+  },
+  {
+    "id": "postgresql-official",
+    "name": "PostgreSQL 官方仓库",
+    "description": "PostgreSQL 官方仓库，支持 12 / 13 / 14 / 15 / 16 / 17 多个大版本",
+    "category": "Database",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://download.postgresql.org/pub/repos/yum/reporpms/EL-{el}-x86_64/pgdg-redhat-repo-latest.noarch.rpm",
+      "repo_file": "pgdg.repo"
+    },
+    "debian": {
+      "repo_url": "https://apt.postgresql.org/pub/repos/apt/",
+      "repo_file": "pgdg.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/postgresql.gpg] https://apt.postgresql.org/pub/repos/apt/ $(lsb_release -sc)-pgdg main"
+    },
+    "packages": ["postgresql-16", "postgresql-16-server"],
+    "multi_version": true,
+    "note": "多版本可同时安装，运行在不同端口"
+  },
+  {
+    "id": "redis-remi",
+    "name": "Remi Redis 仓库 (RHEL)",
+    "description": "Remi 仓库提供的 Redis 最新版本",
+    "category": "Cache",
+    "platform": ["rhel"],
+    "repo_url": "https://rpms.remirepo.net/enterprise/remi-release-{el}.rpm",
+    "repo_file": "remi.repo",
+    "packages": ["redis"],
+    "multi_version": false
+  },
+  {
+    "id": "redis-official-deb",
+    "name": "Redis 官方仓库 (Debian/Ubuntu)",
+    "description": "Redis 官方 APT 仓库，提供最新稳定版",
+    "category": "Cache",
+    "platform": ["debian"],
+    "repo_url": "https://packages.redis.io/deb/",
+    "repo_file": "redis.list",
+    "repo_line": "deb [signed-by=/usr/share/keyrings/redis.gpg] https://packages.redis.io/deb/ $(lsb_release -sc) main",
+    "packages": ["redis", "redis-server"],
+    "multi_version": false
+  },
+  {
+    "id": "nodesource",
+    "name": "NodeSource Node.js 仓库",
+    "description": "Node.js 官方推荐的第三方仓库，支持 18 / 20 / 22 / 24 LTS 版本",
+    "category": "Runtime",
+    "platform": ["debian"],
+    "repo_url": "https://deb.nodesource.com/",
+    "repo_file": "nodesource.list",
+    "repo_line": "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_{version}.x $(lsb_release -sc) main",
+    "packages": ["nodejs"],
+    "multi_version": false,
+    "note": "使用 setup_{version}.x 脚本一键安装"
+  },
+  {
+    "id": "nodesource-rhel",
+    "name": "NodeSource Node.js 仓库 (RHEL)",
+    "description": "Node.js 官方推荐的 RHEL 仓库，支持 18 / 20 / 22 / 24 LTS 版本",
+    "category": "Runtime",
+    "platform": ["rhel"],
+    "repo_url": "https://rpm.nodesource.com/setup_{version}.x",
+    "repo_file": "nodesource.repo",
+    "packages": ["nodejs"],
+    "multi_version": false
+  },
+  {
+    "id": "docker-ce",
+    "name": "Docker CE 官方仓库",
+    "description": "Docker 社区版官方仓库，提供最新稳定版",
+    "category": "Container",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://download.docker.com/linux/centos/docker-ce.repo",
+      "repo_file": "docker-ce.repo"
+    },
+    "debian": {
+      "repo_url": "https://download.docker.com/linux/debian/",
+      "repo_file": "docker.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/docker.gpg] https://download.docker.com/linux/debian/ $(lsb_release -sc) stable"
+    },
+    "packages": ["docker-ce", "docker-ce-cli", "containerd.io"],
+    "multi_version": false
+  },
+  {
+    "id": "mongodb-official",
+    "name": "MongoDB 官方仓库",
+    "description": "MongoDB 官方仓库，支持 6.0 / 7.0 / 8.0 版本",
+    "category": "Database",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/7.0/x86_64/",
+      "repo_file": "mongodb-org.repo"
+    },
+    "debian": {
+      "repo_url": "https://repo.mongodb.org/apt/debian/",
+      "repo_file": "mongodb-org.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/mongodb.gpg] https://repo.mongodb.org/apt/debian/ $(lsb_release -sc)/mongodb-org/7.0 main"
+    },
+    "packages": ["mongodb-org", "mongodb-org-server"],
+    "multi_version": false
+  },
+  {
+    "id": "elastic-elasticsearch",
+    "name": "Elastic Stack 仓库",
+    "description": "Elastic 官方仓库，包含 Elasticsearch / Logstash / Kibana / Filebeat",
+    "category": "Log & Search",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://artifacts.elastic.co/packages/8.x/yum/",
+      "repo_file": "elastic.repo"
+    },
+    "debian": {
+      "repo_url": "https://artifacts.elastic.co/packages/8.x/apt/",
+      "repo_file": "elastic.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt/ stable main"
+    },
+    "packages": ["elasticsearch", "kibana", "logstash"],
+    "multi_version": false
+  },
+  {
+    "id": "epel-release",
+    "name": "EPEL (Extra Packages for Enterprise Linux)",
+    "description": "Fedora 社区为 RHEL 系提供的额外软件包，包含很多系统源没有的软件",
+    "category": "Base",
+    "platform": ["rhel"],
+    "repo_url": "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{el}.noarch.rpm",
+    "repo_file": "epel.repo",
+    "packages": ["htop", "ncdu", "certbot", "fail2ban", "nginx"],
+    "multi_version": false,
+    "note": "许多第三方仓库依赖 EPEL，建议先安装"
+  },
+  {
+    "id": "ius-release",
+    "name": "IUS (Inline with Upstream Stable)",
+    "description": "提供较新版本的软件包，使用独立包名（如 php74u），与系统包共存",
+    "category": "Base",
+    "platform": ["rhel"],
+    "repo_url": "https://repo.ius.io/ius-release-el{el}.rpm",
+    "repo_file": "ius.repo",
+    "packages": ["php74u", "php80u", "python3.11", "git236"],
+    "multi_version": true,
+    "note": "依赖 EPEL，包名带 u 后缀以区分系统版本"
+  },
+  {
+    "id": "varnish-cache",
+    "name": "Varnish Cache 仓库",
+    "description": "Varnish HTTP 缓存加速器官方仓库",
+    "category": "Web Server",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://packagecloud.io/varnishcache/varnish70/el/{el}/$basearch/",
+      "repo_file": "varnish.repo"
+    },
+    "debian": {
+      "repo_url": "https://packagecloud.io/varnishcache/varnish70/debian/",
+      "repo_file": "varnish.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/varnish.gpg] https://packagecloud.io/varnishcache/varnish70/debian/ $(lsb_release -sc) main"
+    },
+    "packages": ["varnish"],
+    "multi_version": false
+  },
+  {
+    "id": "golang-official",
+    "name": "Golang 官方仓库",
+    "description": "Go 语言官方二进制发行版（通过包管理器安装）",
+    "category": "Runtime",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://go.dev/dl/",
+      "repo_file": "",
+      "packages": ["golang"]
+    },
+    "debian": {
+      "repo_url": "https://go.dev/dl/",
+      "repo_file": "",
+      "repo_line": "",
+      "packages": ["golang"]
+    },
+    "multi_version": false,
+    "note": "推荐使用 gvm 或直接下载二进制管理多版本"
+  },
+  {
+    "id": "hashicorp",
+    "name": "HashiCorp 仓库",
+    "description": "提供 Terraform / Vault / Consul / Nomad / Packer 等基础设施工具",
+    "category": "Tools",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://rpm.releases.hashicorp.com/RHEL/$releasever/$basearch/stable",
+      "repo_file": "hashicorp.repo"
+    },
+    "debian": {
+      "repo_url": "https://apt.releases.hashicorp.com/",
+      "repo_file": "hashicorp.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/hashicorp.gpg] https://apt.releases.hashicorp.com/ $(lsb_release -sc) main"
+    },
+    "packages": ["terraform", "vault", "consul", "nomad"],
+    "multi_version": false
+  },
+  {
+    "id": "gitlab-ce",
+    "name": "GitLab CE 仓库",
+    "description": "GitLab 社区版官方仓库",
+    "category": "DevOps",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://packages.gitlab.com/gitlab/gitlab-ce/el/{el}/$basearch/",
+      "repo_file": "gitlab-ce.repo"
+    },
+    "debian": {
+      "repo_url": "https://packages.gitlab.com/gitlab/gitlab-ce/debian/",
+      "repo_file": "gitlab-ce.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/gitlab.gpg] https://packages.gitlab.com/gitlab/gitlab-ce/debian/ $(lsb_release -sc) main"
+    },
+    "packages": ["gitlab-ce"],
+    "multi_version": false
+  },
+  {
+    "id": "jenkins",
+    "name": "Jenkins LTS 仓库",
+    "description": "Jenkins 长期支持版官方仓库",
+    "category": "DevOps",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://pkg.jenkins.io/redhat-stable/",
+      "repo_file": "jenkins.repo"
+    },
+    "debian": {
+      "repo_url": "https://pkg.jenkins.io/debian-stable/",
+      "repo_file": "jenkins.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable/ binary/"
+    },
+    "packages": ["jenkins"],
+    "multi_version": false
+  },
+  {
+    "id": "grafana",
+    "name": "Grafana 官方仓库",
+    "description": "Grafana 监控可视化平台官方仓库",
+    "category": "Monitor",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://rpm.grafana.com/",
+      "repo_file": "grafana.repo"
+    },
+    "debian": {
+      "repo_url": "https://apt.grafana.com/",
+      "repo_file": "grafana.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/grafana.gpg] https://apt.grafana.com/ stable main"
+    },
+    "packages": ["grafana", "grafana-enterprise"],
+    "multi_version": false
+  },
+  {
+    "id": "influxdb",
+    "name": "InfluxData 仓库",
+    "description": "InfluxDB 时序数据库 / Telegraf 采集器 官方仓库",
+    "category": "Monitor",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://repos.influxdata.com/rhel/$releasever/$basearch/stable/",
+      "repo_file": "influxdb.repo"
+    },
+    "debian": {
+      "repo_url": "https://repos.influxdata.com/debian/",
+      "repo_file": "influxdb.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/influxdb.gpg] https://repos.influxdata.com/debian/ $(lsb_release -sc) stable"
+    },
+    "packages": ["influxdb2", "telegraf"],
+    "multi_version": false
+  },
+  {
+    "id": "memcached-official",
+    "name": "Memcached (系统源)",
+    "description": "Memcached 通常系统自带，此模板用于安装和确认",
+    "category": "Cache",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "",
+      "repo_file": "",
+      "packages": ["memcached"]
+    },
+    "debian": {
+      "repo_url": "",
+      "repo_file": "",
+      "packages": ["memcached"]
+    },
+    "multi_version": false,
+    "note": "使用系统默认源安装"
+  },
+  {
+    "id": "tomcat-official",
+    "name": "Apache Tomcat (系统源)",
+    "description": "Tomcat Java Servlet 容器，使用系统默认源安装",
+    "category": "Runtime",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "",
+      "repo_file": "",
+      "packages": ["tomcat", "tomcat-webapps", "tomcat-admin-webapps"]
+    },
+    "debian": {
+      "repo_url": "",
+      "repo_file": "",
+      "packages": ["tomcat10", "tomcat10-webapps", "tomcat10-admin"]
+    },
+    "multi_version": false
+  },
+  {
+    "id": "rabbitmq",
+    "name": "RabbitMQ 官方仓库",
+    "description": "RabbitMQ 消息队列官方仓库，依赖 Erlang",
+    "category": "Message Queue",
+    "platform": ["rhel", "debian"],
+    "rhel": {
+      "repo_url": "https://packagecloud.io/rabbitmq/rabbitmq-server/el/{el}/$basearch/",
+      "repo_file": "rabbitmq.repo"
+    },
+    "debian": {
+      "repo_url": "https://packagecloud.io/rabbitmq/rabbitmq-server/debian/",
+      "repo_file": "rabbitmq.list",
+      "repo_line": "deb [signed-by=/usr/share/keyrings/rabbitmq.gpg] https://packagecloud.io/rabbitmq/rabbitmq-server/debian/ $(lsb_release -sc) main"
+    },
+    "packages": ["rabbitmq-server"],
+    "multi_version": false,
+    "note": "需先安装 Erlang"
+  }
+]

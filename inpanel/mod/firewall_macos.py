@@ -5,11 +5,10 @@
 #
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for macOS Firewall Management'''
+'''macOS 防火墙管理模块'''
 
 import re
 import shutil
-from typing import Tuple, List, Dict
 
 from .firewall_base import FirewallManager
 from .system import get_os_family
@@ -21,11 +20,11 @@ class MacosFirewallPM(FirewallManager):
     SOCKETFILTERFW = '/usr/libexec/ApplicationFirewall/socketfilterfw'
     PFCTL = '/sbin/pfctl'
     
-    def detect(self) -> bool:
+    def detect(self):
         """检测当前系统是否为 macOS"""
         return get_os_family() == 'darwin'
     
-    def status(self) -> Tuple[bool, str]:
+    def status(self):
         """获取防火墙状态"""
         if shutil.which(self.SOCKETFILTERFW):
             success, output = self._run_cmd([self.SOCKETFILTERFW, '--getglobalstate'])
@@ -36,7 +35,7 @@ class MacosFirewallPM(FirewallManager):
                     return (True, '已停止')
         return (False, '未知')
     
-    def enable(self) -> Tuple[bool, str]:
+    def enable(self):
         """启用防火墙（开机自启）"""
         if shutil.which(self.SOCKETFILTERFW):
             success, output = self._run_cmd(['sudo', self.SOCKETFILTERFW, '--setglobalstate', 'on'])
@@ -44,7 +43,7 @@ class MacosFirewallPM(FirewallManager):
                 return (True, '防火墙已启用')
         return (False, '无法启用防火墙')
     
-    def disable(self) -> Tuple[bool, str]:
+    def disable(self):
         """禁用防火墙（关闭开机自启）"""
         if shutil.which(self.SOCKETFILTERFW):
             success, output = self._run_cmd(['sudo', self.SOCKETFILTERFW, '--setglobalstate', 'off'])
@@ -52,20 +51,20 @@ class MacosFirewallPM(FirewallManager):
                 return (True, '防火墙已禁用')
         return (False, '无法禁用防火墙')
     
-    def start(self) -> Tuple[bool, str]:
+    def start(self):
         """启动防火墙服务"""
         return self.enable()
     
-    def stop(self) -> Tuple[bool, str]:
+    def stop(self):
         """停止防火墙服务"""
         return self.disable()
     
-    def restart(self) -> Tuple[bool, str]:
+    def restart(self):
         """重启防火墙服务"""
         self.disable()
         return self.enable()
     
-    def add_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def add_rule(self, port, protocol = 'tcp', zone = ''):
         """添加端口规则 - macOS 使用 pf"""
         if shutil.which(self.PFCTL):
             rule = f'pass in proto {protocol} from any to any port {port}'
@@ -76,7 +75,7 @@ class MacosFirewallPM(FirewallManager):
                     return (True, f'已添加端口规则: {port}/{protocol}')
         return (False, '无法添加端口规则')
     
-    def remove_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def remove_rule(self, port, protocol = 'tcp', zone = ''):
         """移除端口规则"""
         if shutil.which(self.PFCTL):
             success, output = self._run_cmd(['sudo', self.PFCTL, '-t', 'InPanel', '-T', 'delete', f'pass in proto {protocol} from any to any port {port}'])
@@ -84,7 +83,7 @@ class MacosFirewallPM(FirewallManager):
                 return (True, f'已移除端口规则: {port}/{protocol}')
         return (False, '无法移除端口规则')
     
-    def add_ip_rule(self, ip: str, action: str = 'allow') -> Tuple[bool, str]:
+    def add_ip_rule(self, ip, action = 'allow'):
         """添加IP规则"""
         if shutil.which(self.PFCTL):
             if action == 'allow':
@@ -96,7 +95,7 @@ class MacosFirewallPM(FirewallManager):
                 return (True, f'已添加IP规则: {action} {ip}')
         return (False, '无法添加IP规则')
     
-    def remove_ip_rule(self, ip: str) -> Tuple[bool, str]:
+    def remove_ip_rule(self, ip):
         """移除IP规则"""
         if shutil.which(self.PFCTL):
             success, output = self._run_cmd(['sudo', self.PFCTL, '-t', 'InPanel', '-T', 'delete', f'pass in from {ip} to any'])
@@ -106,7 +105,7 @@ class MacosFirewallPM(FirewallManager):
                 return (True, f'已移除IP规则: {ip}')
         return (False, '无法移除IP规则')
     
-    def remove_app_rule(self, app_path: str) -> Tuple[bool, str]:
+    def remove_app_rule(self, app_path):
         """移除应用规则"""
         if shutil.which(self.SOCKETFILTERFW):
             success, output = self._run_cmd(['sudo', self.SOCKETFILTERFW, '--remove', app_path])
@@ -114,7 +113,7 @@ class MacosFirewallPM(FirewallManager):
                 return (True, f'已移除应用规则: {app_path}')
         return (False, '无法移除应用规则')
     
-    def list_rules(self) -> Tuple[bool, str]:
+    def list_rules(self):
         """列出所有规则"""
         rules = []
         
@@ -132,15 +131,15 @@ class MacosFirewallPM(FirewallManager):
         
         return (True, '\n'.join(rules) if rules else '无规则')
     
-    def list_zones(self) -> Tuple[bool, List[str]]:
+    def list_zones(self):
         """macOS 不使用区域概念"""
         return (True, [])
     
-    def get_default_zone(self) -> Tuple[bool, str]:
+    def get_default_zone(self):
         """macOS 不使用区域概念"""
         return (True, '')
     
-    def parse_rules(self) -> List[Dict]:
+    def parse_rules(self):
         """解析规则列表为结构化数据"""
         rules = []
         success, output = self.list_rules()

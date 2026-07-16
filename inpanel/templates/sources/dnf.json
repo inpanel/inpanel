@@ -1,0 +1,204 @@
+{
+  "dnf_reporpms": {
+    "base": {
+      "8": {
+        "x86_64": [
+          "https://mirrors.aliyun.com/centos/8/BaseOS/x86_64/os/Packages/centos-release-8-5.2111.el8.x86_64.rpm",
+          "https://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/centos-release-8-5.2111.el8.x86_64.rpm"
+        ]
+      },
+      "9": {
+        "x86_64": [
+          "https://mirrors.aliyun.com/centos/9-stream/BaseOS/x86_64/os/Packages/centos-release-stream-9.0-2.el9.noarch.rpm",
+          "https://mirror.centos.org/centos/9-stream/BaseOS/x86_64/os/Packages/centos-release-stream-9.0-2.el9.noarch.rpm"
+        ]
+      }
+    },
+    "epel": {
+      "8": {
+        "x86_64": ["https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"]
+      },
+      "9": {
+        "x86_64": ["https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"]
+      },
+      "10": {
+        "x86_64": ["https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm"]
+      }
+    },
+    "remi": {
+      "8": {
+        "x86_64": ["https://rpms.remirepo.net/enterprise/remi-release-8.rpm"]
+      },
+      "9": {
+        "x86_64": ["https://rpms.remirepo.net/enterprise/remi-release-9.rpm"]
+      },
+      "10": {
+        "x86_64": ["https://rpms.remirepo.net/enterprise/remi-release-10.rpm"]
+      }
+    },
+    "powertools": {
+      "8": {
+        "x86_64": []
+      }
+    },
+    "crb": {
+      "9": {
+        "x86_64": []
+      },
+      "10": {
+        "x86_64": []
+      }
+    },
+    "mariadb": {
+      "8": {
+        "x86_64": ["https://yum.mariadb.org/10.6/centos8-amd64/rpms/MariaDB-release-10.6-1.el8.noarch.rpm"]
+      },
+      "9": {
+        "x86_64": ["https://yum.mariadb.org/10.6/centos9-amd64/rpms/MariaDB-release-10.6-1.el9.noarch.rpm"]
+      },
+      "10": {
+        "x86_64": ["https://yum.mariadb.org/10.6/rhel10-amd64/rpms/MariaDB-release-10.6-1.el10.noarch.rpm"]
+      }
+    },
+    "nginx": {
+      "8": {
+        "x86_64": ["http://nginx.org/packages/centos/8/noarch/RPMS/nginx-release-centos-8-0.el8.ngx.noarch.rpm"]
+      },
+      "9": {
+        "x86_64": ["http://nginx.org/packages/centos/9/noarch/RPMS/nginx-release-centos-9-0.el9.ngx.noarch.rpm"]
+      },
+      "10": {
+        "x86_64": ["http://nginx.org/packages/centos/10/noarch/RPMS/nginx-release-centos-10-0.el10.ngx.noarch.rpm"]
+      }
+    },
+    "nodejs": {
+      "8": {
+        "x86_64": ["https://rpm.nodesource.com/pub_18.x/el/8/x86_64/nodesource-release-el8-1.noarch.rpm"]
+      },
+      "9": {
+        "x86_64": ["https://rpm.nodesource.com/pub_18.x/el/9/x86_64/nodesource-release-el9-1.noarch.rpm"]
+      },
+      "10": {
+        "x86_64": ["https://rpm.nodesource.com/pub_18.x/el/10/x86_64/nodesource-release-el10-1.noarch.rpm"]
+      }
+    }
+  },
+  "dnf_repoinstallcmds": {
+    "ius": "curl https://setup.ius.io | sh",
+    "elastic": "rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch && echo \"[elasticsearch]\\nname=Elasticsearch repository for 8.x packages\\nbaseurl=https://artifacts.elastic.co/packages/8.x/yum\\ngpgcheck=1\\ngpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch\\nenabled=0\\nautorefresh=1\\ntype=rpm-md\" > /etc/yum.repos.d/elasticsearch.repo"
+  },
+  "dnf_repostr": {
+    "mariadb": {
+      "x86_64": "[mariadb]\nname=MariaDB\nbaseurl=http://yum.mariadb.org/10.6/rhel$releasever-amd64\ngpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB\ngpgcheck=1"
+    },
+    "nginx-stable": {
+      "x86_64": "[nginx-stable]\nname=nginx stable repo\nbaseurl=http://nginx.org/packages/centos/$releasever/$basearch/\ngpgcheck=1\nenabled=1\ngpgkey=https://nginx.org/keys/nginx_signing.key\nmodule_hotfixes=true"
+    },
+    "nginx-mainline": {
+      "x86_64": "[nginx-mainline]\nname=nginx mainline repo\nbaseurl=http://nginx.org/packages/mainline/centos/$releasever/$basearch/\ngpgcheck=1\nenabled=0\ngpgkey=https://nginx.org/keys/nginx_signing.key\nmodule_hotfixes=true"
+    },
+    "zabbix": {
+      "x86_64": "[zabbix]\nname=Zabbix Official Repository - $basearch\nbaseurl=https://repo.zabbix.com/zabbix/6.4/rhel/$releasever/$basearch/\ngpgcheck=1\ngpgkey=https://repo.zabbix.com/zabbix-official-repo.key\nenabled=1"
+    }
+  },
+  "dnf_pkg_alias": {
+    "nginx": ["nginx", "nginx-stable"],
+    "tomcat": ["tomcat"],
+    "apache": ["httpd"],
+    "lighttpd": ["lighttpd"],
+    "vsftpd": ["vsftpd"],
+    "mysql": ["mysql-community-server"],
+    "mariadb": ["mariadb-server"],
+    "redis": ["redis"],
+    "memcache": ["memcached"],
+    "mongodb": ["mongodb-server"],
+    "php": ["php", "php80", "php81", "php82", "php83"],
+    "sendmail": ["sendmail"],
+    "ssh": ["openssh-server", "openssh-clients"],
+    "iptables": ["iptables"],
+    "cron": ["crond"],
+    "ntp": ["chrony"],
+    "bind": ["bind"],
+    "docker": ["docker-ce"],
+    "pureftpd": ["pure-ftpd"],
+    "proftpd": ["proftpd"],
+    "GeoIP": ["GeoIP"],
+    "mono": ["mono-core"],
+    "ntfs-3g": ["ntfs-3g"],
+    "davfs2": ["davfs2"],
+    "nfs": ["nfs-utils"],
+    "cifs": ["cifs-utils"],
+    "samba": ["samba"]
+  },
+  "dnf_pkg_relatives": {
+    "nginx": {
+      "nginx": {"default": true, "base": true},
+      "nginx-mod-http-geoip": {"default": false, "isext": true},
+      "nginx-mod-http-image-filter": {"default": false, "isext": true},
+      "nginx-mod-http-perl": {"default": false, "isext": true},
+      "nginx-mod-http-xslt-filter": {"default": false, "isext": true},
+      "nginx-mod-mail": {"default": false, "isext": true},
+      "nginx-mod-stream": {"default": false, "isext": true},
+      "nginx-module-njs": {"default": false, "isext": true}
+    },
+    "httpd": {
+      "httpd": {"default": true, "base": true},
+      "httpd-devel": {"default": false, "isext": true},
+      "httpd-tools": {"default": false, "isext": true},
+      "mod_ssl": {"default": true, "isext": true}
+    },
+    "mariadb-server": {
+      "mariadb-server": {"default": true, "base": true},
+      "mariadb": {"default": true, "base": true},
+      "mariadb-common": {"default": true, "base": true},
+      "mariadb-compat": {"default": true, "base": true}
+    },
+    "redis": {
+      "redis": {"default": true, "base": true}
+    },
+    "memcached": {
+      "memcached": {"default": true, "base": true}
+    },
+    "php": {
+      "php": {"default": true, "base": true},
+      "php-cli": {"default": true},
+      "php-common": {"default": true, "base": true},
+      "php-fpm": {"default": true},
+      "php-gd": {"default": true, "isext": true},
+      "php-mbstring": {"default": true, "isext": true},
+      "php-mysqlnd": {"default": true, "isext": true},
+      "php-pdo": {"default": true},
+      "php-soap": {"default": false, "isext": true},
+      "php-xml": {"default": true, "isext": true},
+      "php-zip": {"default": false, "isext": true},
+      "php-devel": {"default": false, "isext": true}
+    },
+    "php82": {
+      "php82": {"default": true, "base": true},
+      "php82-cli": {"default": true},
+      "php82-common": {"default": true, "base": true},
+      "php82-fpm": {"default": true},
+      "php82-gd": {"default": true, "isext": true},
+      "php82-mbstring": {"default": true, "isext": true},
+      "php82-mysqlnd": {"default": true, "isext": true},
+      "php82-pdo": {"default": true},
+      "php82-soap": {"default": false, "isext": true},
+      "php82-xml": {"default": true, "isext": true},
+      "php82-zip": {"default": false, "isext": true},
+      "php82-devel": {"default": false, "isext": true}
+    },
+    "docker-ce": {
+      "docker-ce": {"default": true, "base": true},
+      "docker-ce-cli": {"default": true, "base": true},
+      "containerd.io": {"default": true, "base": true}
+    }
+  },
+  "dnf_builtin_mirrors": [
+    {"name": "CentOS 官方源", "url": "http://mirror.centos.org/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "阿里云 CentOS", "url": "https://mirrors.aliyun.com/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "清华大学 CentOS", "url": "https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "中科大 CentOS", "url": "https://mirrors.ustc.edu.cn/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "华为云 CentOS", "url": "https://repo.huaweicloud.com/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "腾讯云 CentOS", "url": "https://mirrors.cloud.tencent.com/centos/$releasever/os/$basearch/", "builtin": true}
+  ]
+}

@@ -1,0 +1,690 @@
+{
+  "yum_repolist": ["base", "updates", "epel", "CentALT", "ius", "atomic", "10gen", "mariadb"],
+  "yum_reporpms": {
+    "base": {
+      "5": {
+        "x86_64": [
+          "http://mirror.neu.edu.cn/centos/5/os/x86_64/CentOS/centos-release-notes-5.11-0.x86_64.rpm",
+          "http://mirror.neu.edu.cn/centos/5/os/x86_64/CentOS/centos-release-5-11.el5.centos.x86_64.rpm"
+        ],
+        "i386": [
+          "http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-notes-5.11-0.i386.rpm",
+          "http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-5-11.el5.centos.i386.rpm"
+        ],
+        "i686": [
+          "http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-notes-5.11-0.i386.rpm",
+          "http://mirror.neu.edu.cn/centos/5/os/i386/CentOS/centos-release-5-11.el5.centos.i386.rpm"
+        ]
+      },
+      "6": {
+        "x86_64": [
+          "https://mirrors.aliyun.com/centos/6/os/x86_64/Packages/centos-release-6-10.el6.centos.12.3.x86_64.rpm"
+        ],
+        "i386": [
+          "https://mirrors.aliyun.com/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm"
+        ],
+        "i686": [
+          "https://mirrors.aliyun.com/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm"
+        ]
+      },
+      "7": {
+        "x86_64": [
+          "http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm",
+          "http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm"
+        ]
+      },
+      "8": {
+        "x86_64": [
+          "http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm",
+          "http://mirrors.aliyun.com/centos/7/os/x86_64/Packages/centos-release-7-9.2009.0.el7.centos.x86_64.rpm"
+        ]
+      }
+    },
+    "updates": {
+      "7": {
+        "x86_64": [
+          "http://mirror.centos.org/centos/7/updates/x86_64/Packages/centos-release-7-9.2009.1.el7.centos.x86_64.rpm"
+        ]
+      }
+    },
+    "epel": {
+      "5": {
+        "x86_64": ["http://centos.ustc.edu.cn/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm"],
+        "i386": ["http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm"],
+        "i686": ["http://centos.ustc.edu.cn/epel/6/i386/Packages/e/epel-release-6-8.noarch.rpm"]
+      },
+      "6": {
+        "x86_64": ["https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm"],
+        "i386": ["https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm"],
+        "i686": ["https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm"]
+      },
+      "7": {
+        "x86_64": ["https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"]
+      },
+      "8": {
+        "x86_64": ["https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"]
+      }
+    },
+    "CentALT": {
+      "5": {
+        "x86_64": [
+          "http://mirror.neu.edu.cn/CentALT/5/x86_64/centalt-release-5-3.noarch.rpm"
+        ],
+        "i386": [
+          "http://mirror.neu.edu.cn/CentALT/5/i386/centalt-release-5-3.noarch.rpm"
+        ],
+        "i686": [
+          "http://mirror.neu.edu.cn/CentALT/5/i386/centalt-release-5-3.noarch.rpm"
+        ]
+      },
+      "6": {
+        "x86_64": [
+          "http://mirror.neu.edu.cn/CentALT/6/x86_64/centalt-release-6-1.noarch.rpm",
+          "http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-10.el6.centos.12.3.x86_64.rpm"
+        ],
+        "i386": [
+          "http://mirror.neu.edu.cn/CentALT/6/i386/centalt-release-6-1.noarch.rpm",
+          "http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm"
+        ],
+        "i686": [
+          "http://mirror.neu.edu.cn/CentALT/6/i386/centalt-release-6-1.noarch.rpm",
+          "http://mirror.centos.org/centos/6/os/i386/Packages/centos-release-6-10.el6.centos.12.3.i686.rpm"
+        ]
+      }
+    },
+    "ius": {
+      "5": {
+        "x86_64": ["https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/x86_64/ius-release-1.0-15.ius.centos5.noarch.rpm"],
+        "i386": ["https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/i386/ius-release-1.0-15.ius.centos5.noarch.rpm"],
+        "i686": ["https://dl.iuscommunity.org/pub/ius/archive/CentOS/5/i386/ius-release-1.0-15.ius.centos5.noarch.rpm"]
+      },
+      "6": {
+        "x86_64": ["https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-15.ius.centos6.noarch.rpm"],
+        "i386": ["https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm"],
+        "i686": ["https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/i386/ius-release-1.0-15.ius.el6.noarch.rpm"]
+      },
+      "7": {
+        "x86_64": ["https://repo.ius.io/ius-release-el7.rpm"]
+      }
+    }
+  },
+  "yum_repoinstallcmds": {
+    "atomic": "wget -q -O - http://www.atomicorp.com/installers/atomic | sed '/check_input \"Do you agree to these terms?/d' | sh",
+    "ius": "wget -q -O -  https://setup.ius.io | sh"
+  },
+  "yum_repostr": {
+    "10gen": {
+      "x86_64": "[10gen]\nname=10gen Repository\nbaseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/\ngpgcheck=0\nenabled=1",
+      "i686": "[10gen]\nname=10gen Repository\nbaseurl=http://downloads-distro.mongodb.org/repo/redhat/os/i686/\ngpgcheck=0\nenabled=1"
+    },
+    "mariadb": {
+      "x86_64": "# MariaDB 10.3 CentOS repository list - created 2018-11-06 02:58 UTC\n# http://downloads.mariadb.org/mariadb/repositories\n[mariadb]\nname=MariaDB\nbaseurl=http://yum.mariadb.org/10.3/centos6-amd64\ngpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB\ngpgcheck=1",
+      "i686": "# MariaDB 10.3 CentOS repository list - created 2018-11-06 02:58 UTC\n# http://downloads.mariadb.org/mariadb/repositories\n[mariadb]\nname=MariaDB\nbaseurl=http://yum.mariadb.org/10.3/centos6-x86\ngpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB\ngpgcheck=1"
+    }
+  },
+  "yum_pkg_alias": {
+    "nginx": ["nginx", "nginx-stable"],
+    "tomcat": ["tomcat", "tomcat6"],
+    "apache": ["httpd", "httpd24u"],
+    "lighttpd": ["lighttpd"],
+    "vsftpd": ["vsftpd"],
+    "mysql": ["mysql-server", "mysql55-server", "mysql56u-server", "mysql57u-server"],
+    "mariadb": ["MariaDB-server"],
+    "redis": ["redis"],
+    "memcache": ["memcached"],
+    "mongodb": ["mongodb-server", "mongo-10gen-server", "mongo18-10gen-server", "mongo20-10gen-server"],
+    "php": ["php-fpm", "php53u-fpm", "php54-fpm", "php56u-fpm", "php70u-fpm", "php71u-fpm"],
+    "sendmail": ["sendmail"],
+    "ssh": ["openssh-server", "openssh-clients", "openssh-ldap", "openssh-askpass"],
+    "iptables": ["iptables"],
+    "cron": ["cronie", "vixie-cron"],
+    "ntp": ["ntp"],
+    "ntpdate": ["ntpdate"],
+    "bind": ["bind"],
+    "docker": ["docker"],
+    "pureftpd": ["pure-ftpd"],
+    "proftpd": ["proftpd"],
+    "GeoIP": ["GeoIP"],
+    "mono": ["mono"],
+    "ntfs-3g": ["ntfs-3g"],
+    "ntfsprogs": ["ntfsprogs"],
+    "davfs2": ["davfs2"],
+    "nfs": ["nfs"],
+    "cifs": ["cifs"],
+    "samba": ["samba", "samba4"]
+  },
+  "yum_pkg_relatives": {
+    "nginx": {
+      "nginx": {"default": true, "base": true},
+      "nginx-mod-http-geoip": {"default": false, "isext": true},
+      "nginx-mod-http-image-filter": {"default": false, "isext": true},
+      "nginx-mod-http-perl": {"default": false, "isext": true},
+      "nginx-mod-http-xslt-filter": {"default": false, "isext": true},
+      "nginx-mod-mail": {"default": false, "isext": true},
+      "nginx-mod-stream": {"default": false, "isext": true},
+      "nginx-module-geoip": {"default": false, "isext": true},
+      "nginx-module-image-filter": {"default": false, "isext": true},
+      "nginx-module-modsecurity": {"default": false, "isext": true},
+      "nginx-module-njs": {"default": false, "isext": true},
+      "nginx-module-perl": {"default": false, "isext": true},
+      "nginx-module-xslt": {"default": false, "isext": true},
+      "php56u-fpm-nginx": {"default": false, "isext": true},
+      "php70u-fpm-nginx": {"default": false, "isext": true},
+      "php71u-fpm-nginx": {"default": false, "isext": true}
+    },
+    "nginx-stable": {
+      "nginx-stable": {"default": true, "base": true}
+    },
+    "httpd": {
+      "httpd": {"default": true, "base": true},
+      "httpd-devel": {"default": false, "isext": true},
+      "httpd-itk": {"default": false, "isext": true},
+      "httpd-tools": {"default": false, "isext": true}
+    },
+    "httpd24u": {
+      "httpd24u": {"default": true, "base": true},
+      "httpd24u-devel": {"default": false, "isext": true},
+      "httpd24u-debuginfo": {"default": false, "isext": true},
+      "httpd24u-mod_ldap": {"default": false, "isext": true},
+      "httpd24u-mod_proxy_html": {"default": false, "isext": true},
+      "httpd24u-mod_security2": {"default": false, "isext": true},
+      "httpd24u-mod_security2-mlogc": {"default": false, "isext": true},
+      "httpd24u-mod_session": {"default": false, "isext": true},
+      "httpd24u-mod_ssl": {"default": false, "isext": true},
+      "httpd24u-mod_xsendfile": {"default": false, "isext": true},
+      "httpd24u-tools": {"default": false, "isext": true}
+    },
+    "lighttpd": {
+      "lighttpd": {"default": true, "base": true},
+      "lighttpd-fastcgi": {"default": false, "isext": true},
+      "lighttpd-mod_authn_gssapi": {"default": false, "isext": true},
+      "lighttpd-mod_authn_mysql": {"default": false, "isext": true},
+      "lighttpd-mod_geoip": {"default": false, "isext": true},
+      "lighttpd-mod_mysql_vhost": {"default": false, "isext": true}
+    },
+    "tomcat": {
+      "tomcat": {"default": true, "base": true},
+      "tomcat-admin-webapps": {"default": true, "base": true},
+      "tomcat-docs-webapp": {"default": false, "isext": true},
+      "tomcat-el": {"default": false, "isext": true},
+      "tomcat-javadoc": {"default": false, "isext": true},
+      "tomcat-jsp": {"default": false, "isext": true},
+      "tomcat-jsvc": {"default": false, "isext": true},
+      "tomcat-lib": {"default": false, "isext": true},
+      "tomcat-servlet": {"default": false, "isext": true},
+      "tomcat-webapps": {"default": true, "base": true},
+      "tomcatjss": {"default": false, "isext": true}
+    },
+    "tomcat6": {
+      "tomcat6": {"default": true, "base": true},
+      "tomcat6-admin-webapps": {"default": true, "base": true},
+      "tomcat6-docs-webapp": {"default": false, "isext": true},
+      "tomcat6-el": {"default": false, "isext": true},
+      "tomcat6-javadoc": {"default": false, "isext": true},
+      "tomcat6-jsp": {"default": false, "isext": true},
+      "tomcat6-lib": {"default": false, "isext": true},
+      "tomcat6-servlet": {"default": false, "isext": true},
+      "tomcat6-webapps": {"default": true, "base": true},
+      "tomcatjss": {"default": false, "isext": true}
+    },
+    "vsftpd": {
+      "vsftpd": {"default": true, "base": true}
+    },
+    "pure-ftpd": {
+      "pure-ftpd": {"default": true, "base": true},
+      "pure-ftpd-selinux": {"default": false, "isext": true},
+      "postgresql-libs": {"default": true, "depends": true},
+      "usermode": {"default": true, "depends": true}
+    },
+    "proftpd": {
+      "proftpd": {"default": true, "base": true},
+      "proftpd-ldap": {"default": false, "isext": true},
+      "proftpd-mysql": {"default": false, "isext": true},
+      "proftpd-postgresql": {"default": false, "isext": true},
+      "proftpd-utils": {"default": false, "isext": true}
+    },
+    "GeoIP": {
+      "GeoIP": {"default": true, "base": true},
+      "GeoIP-GeoLite-data": {"default": true, "isext": true},
+      "GeoIP-GeoLite-data-extra": {"default": false, "isext": true},
+      "GeoIP-devel": {"default": false, "isext": true}
+    },
+    "mysql-server": {
+      "mysql-server": {"default": true, "base": true},
+      "mysql": {"default": true, "base": true}
+    },
+    "mysql55-server": {
+      "mysql55-server": {"default": true, "base": true},
+      "mysql55": {"default": true, "base": true}
+    },
+    "mysql56u-server": {
+      "mysql56u-server": {"default": true, "base": true},
+      "mysql56u": {"default": true, "base": true}
+    },
+    "mysql57u-server": {
+      "mysql57u-server": {"default": true, "base": true},
+      "mysql57u": {"default": true, "base": true}
+    },
+    "MariaDB-server": {
+      "MariaDB-server": {"default": true, "base": true},
+      "MariaDB-client": {"default": true, "base": true},
+      "MariaDB-common": {"default": true, "base": true},
+      "MariaDB-compat": {"default": true, "base": true},
+      "MariaDB-connect-engine": {"default": true, "base": true},
+      "MariaDB-devel": {"default": true, "base": true},
+      "MariaDB-gssapi-server": {"default": true, "base": true},
+      "MariaDB-oqgraph-engine": {"default": true, "base": true},
+      "MariaDB-shared": {"default": true, "base": true}
+    },
+    "redis": {
+      "redis": {"default": true, "base": true}
+    },
+    "memcached": {
+      "memcached": {"default": true, "base": true}
+    },
+    "mongodb-server": {
+      "mongodb-server": {"default": true, "base": true},
+      "mongodb": {"default": true, "base": true},
+      "libmongodb": {"default": true, "base": true}
+    },
+    "mongo-10gen-server": {
+      "mongo-10gen-server": {"default": true, "base": true},
+      "mongo-10gen": {"default": true, "base": true}
+    },
+    "mongo18-10gen-server": {
+      "mongo18-10gen-server": {"default": true, "base": true},
+      "mongo18-10gen": {"default": true, "base": true}
+    },
+    "mongo20-10gen-server": {
+      "mongo20-10gen-server": {"default": true, "base": true},
+      "mongo20-10gen": {"default": true, "base": true}
+    },
+    "php-fpm": {
+      "php": {"default": true, "base": true, "conflicts": ["php53u", "php54", "php56u", "php70u", "php71u"]},
+      "php-bcmath": {"default": true, "isext": true},
+      "php-cli": {"default": true},
+      "php-common": {"default": true, "base": true},
+      "php-dba": {"default": false, "isext": true},
+      "php-devel": {"default": false, "isext": true},
+      "php-eaccelerator": {"default": false, "isext": true},
+      "php-fpm": {"default": true},
+      "php-gd": {"default": true, "isext": true},
+      "php-imap": {"default": false, "isext": true},
+      "php-interbase": {"default": false, "isext": true},
+      "php-intl": {"default": false, "isext": true},
+      "php-ioncube": {"default": false, "isext": true},
+      "php-ldap": {"default": false, "isext": true},
+      "php-magickwand": {"default": false, "isext": true},
+      "php-mbstring": {"default": true, "isext": true},
+      "php-mcrypt": {"default": true, "isext": true},
+      "php-mssql": {"default": false, "isext": true},
+      "php-mysql": {"default": true, "isext": true, "conflicts": ["php-mysqlnd"]},
+      "php-mysqlnd": {"default": false, "isext": true, "conflicts": ["php-mysql"]},
+      "php-odbc": {"default": false, "isext": true},
+      "php-pdo": {"default": true, "isext": true},
+      "php-pear": {"default": false},
+      "php-pecl-amqp": {"default": false, "isext": true},
+      "php-pecl-apc": {"default": false, "isext": true},
+      "php-pecl-geoip": {"default": false, "isext": true},
+      "php-pecl-gmagick": {"default": false, "isext": true},
+      "php-pecl-imagick": {"default": false, "isext": true},
+      "php-pecl-lzf": {"default": false, "isext": true},
+      "php-pecl-mailparse": {"default": false, "isext": true},
+      "php-pecl-memcache": {"default": false, "isext": true},
+      "php-pecl-memcached": {"default": false, "isext": true},
+      "php-pecl-mongo": {"default": false, "isext": true},
+      "php-pecl-ncurses": {"default": false, "isext": true},
+      "php-pecl-oauth": {"default": false, "isext": true},
+      "php-pecl-radius": {"default": false, "isext": true},
+      "php-pecl-rrd": {"default": false, "isext": true},
+      "php-pecl-sphinx": {"default": false, "isext": true},
+      "php-pecl-ssh2": {"default": false, "isext": true},
+      "php-pecl-xdebug": {"default": false, "isext": true},
+      "php-pecl-xhprof": {"default": false, "isext": true},
+      "php-pgsql": {"default": false, "isext": true},
+      "php-process": {"default": false, "isext": true},
+      "php-pspell": {"default": false, "isext": true},
+      "php-recode": {"default": false, "isext": true},
+      "php-snmp": {"default": false, "isext": true},
+      "php-soap": {"default": true, "isext": true},
+      "php-suhosin": {"default": false, "isext": true},
+      "php-xml": {"default": true, "isext": true},
+      "php-xmlrpc": {"default": false, "isext": true},
+      "php-zipstream": {"default": false, "isext": true},
+      "php-zmq": {"default": false, "isext": true},
+      "php-zts": {"default": false, "isext": true},
+      "php-zend-guard-loader": {"default": false, "isext": true}
+    },
+    "php53u-fpm": {
+      "php53u": {"default": true, "base": true, "conflicts": ["php", "php54"]},
+      "php53u-bcmath": {"default": true, "isext": true},
+      "php53u-cli": {"default": true},
+      "php53u-common": {"default": true, "base": true},
+      "php53u-dba": {"default": false, "isext": true},
+      "php53u-devel": {"default": false, "isext": true},
+      "php53u-eaccelerator": {"default": false, "isext": true},
+      "php53u-fpm": {"default": true},
+      "php53u-gd": {"default": true, "isext": true},
+      "php53u-imap": {"default": false, "isext": true},
+      "php53u-interbase": {"default": false, "isext": true},
+      "php53u-intl": {"default": false, "isext": true},
+      "php53u-ioncube-loader": {"default": false, "isext": true},
+      "php53u-ldap": {"default": false, "isext": true},
+      "php53u-mbstring": {"default": true, "isext": true},
+      "php53u-mcrypt": {"default": true, "isext": true},
+      "php53u-mssql": {"default": false, "isext": true},
+      "php53u-mysql": {"default": true, "isext": true},
+      "php53u-odbc": {"default": false, "isext": true},
+      "php53u-pdo": {"default": true, "isext": true},
+      "php53u-pear": {"default": false},
+      "php53u-pecl-apc": {"default": false, "isext": true},
+      "php53u-pecl-geoip": {"default": false, "isext": true},
+      "php53u-pecl-imagick": {"default": false, "isext": true},
+      "php53u-pecl-memcache": {"default": false, "isext": true},
+      "php53u-pecl-memcached": {"default": false, "isext": true},
+      "php53u-pecl-xdebug": {"default": false, "isext": true},
+      "php53u-pgsql": {"default": false, "isext": true},
+      "php53u-process": {"default": false, "isext": true},
+      "php53u-pspell": {"default": false, "isext": true},
+      "php53u-recode": {"default": false, "isext": true},
+      "php53u-simplepie": {"default": false, "isext": true},
+      "php53u-snmp": {"default": false, "isext": true},
+      "php53u-soap": {"default": true, "isext": true},
+      "php53u-suhosin": {"default": false, "isext": true},
+      "php53u-xcache": {"default": false, "isext": true},
+      "php53u-xml": {"default": true, "isext": true},
+      "php53u-xmlrpc": {"default": false, "isext": true},
+      "php53u-zts": {"default": false, "isext": true},
+      "php-zend-guard-loader": {"default": false, "isext": true}
+    },
+    "php54-fpm": {
+      "php54": {"default": true, "base": true, "conflicts": ["php", "php53u"]},
+      "php54-bcmath": {"default": true, "isext": true},
+      "php54-cli": {"default": true},
+      "php54-common": {"default": true, "base": true},
+      "php54-dba": {"default": false, "isext": true},
+      "php54-devel": {"default": false, "isext": true},
+      "php54-fpm": {"default": true},
+      "php54-gd": {"default": true, "isext": true},
+      "php54-imap": {"default": false, "isext": true},
+      "php54-interbase": {"default": false, "isext": true},
+      "php54-intl": {"default": false, "isext": true},
+      "php54-ldap": {"default": false, "isext": true},
+      "php54-ioncube-loader": {"default": false, "isext": true},
+      "php54-mbstring": {"default": true, "isext": true},
+      "php54-mcrypt": {"default": true, "isext": true},
+      "php54-mssql": {"default": false, "isext": true},
+      "php54-mysql": {"default": true, "isext": true, "conflicts": ["php54-mysqlnd"]},
+      "php54-mysqlnd": {"default": false, "isext": true, "conflicts": ["php54-mysql"]},
+      "php54-odbc": {"default": false, "isext": true},
+      "php54-pdo": {"default": true, "isext": true},
+      "php54-pear": {"default": false},
+      "php54-pecl-apc": {"default": false, "isext": true},
+      "php54-pecl-geoip": {"default": false, "isext": true},
+      "php54-pecl-imagick": {"default": false, "isext": true},
+      "php54-pecl-memcache": {"default": false, "isext": true},
+      "php54-pecl-mysqlnd-ms": {"default": false, "isext": true},
+      "php54-pecl-xdebug": {"default": false, "isext": true},
+      "php54-pgsql": {"default": false, "isext": true},
+      "php54-pgsql84": {"default": false, "isext": true},
+      "php54-process": {"default": false, "isext": true},
+      "php54-pspell": {"default": false, "isext": true},
+      "php54-recode": {"default": false, "isext": true},
+      "php54-simplepie": {"default": false, "isext": true},
+      "php54-snmp": {"default": false, "isext": true},
+      "php54-soap": {"default": true, "isext": true},
+      "php54-suhosin": {"default": false, "isext": true},
+      "php54-xcache": {"default": false, "isext": true},
+      "php54-xml": {"default": true, "isext": true},
+      "php54-xmlrpc": {"default": false, "isext": true},
+      "php54-zts": {"default": false, "isext": true},
+      "php-zend-guard-loader": {"default": false, "isext": true}
+    },
+    "php56u-fpm": {
+      "php56u": {"default": true, "base": true, "conflicts": ["php", "php70u", "php71u"]},
+      "php56u-bcmath": {"default": true, "isext": true},
+      "php56u-cli": {"default": true},
+      "php56u-common": {"default": true, "base": true},
+      "php56u-dba": {"default": false, "isext": true},
+      "php56u-devel": {"default": false, "isext": true},
+      "php56u-eaccelerator": {"default": false, "isext": true},
+      "php56u-fpm": {"default": true},
+      "php56u-gd": {"default": true, "isext": true},
+      "php56u-imap": {"default": false, "isext": true},
+      "php56u-interbase": {"default": false, "isext": true},
+      "php56u-intl": {"default": false, "isext": true},
+      "php56u-ioncube-loader": {"default": false, "isext": true},
+      "php56u-ldap": {"default": false, "isext": true},
+      "php56u-mbstring": {"default": true, "isext": true},
+      "php56u-mcrypt": {"default": true, "isext": true},
+      "php56u-mssql": {"default": false, "isext": true},
+      "php56u-mysql": {"default": true, "isext": true},
+      "php56u-odbc": {"default": false, "isext": true},
+      "php56u-pdo": {"default": true, "isext": true},
+      "php56u-pear": {"default": false},
+      "php56u-pecl-apc": {"default": false, "isext": true},
+      "php56u-pecl-geoip": {"default": false, "isext": true},
+      "php56u-pecl-imagick": {"default": false, "isext": true},
+      "php56u-pecl-memcache": {"default": false, "isext": true},
+      "php56u-pecl-memcached": {"default": false, "isext": true},
+      "php56u-pecl-xdebug": {"default": false, "isext": true},
+      "php56u-pgsql": {"default": false, "isext": true},
+      "php56u-process": {"default": false, "isext": true},
+      "php56u-pspell": {"default": false, "isext": true},
+      "php56u-recode": {"default": false, "isext": true},
+      "php56u-snmp": {"default": false, "isext": true},
+      "php56u-soap": {"default": true, "isext": true},
+      "php56u-suhosin": {"default": false, "isext": true},
+      "php56u-xcache": {"default": false, "isext": true},
+      "php56u-xml": {"default": true, "isext": true},
+      "php56u-xmlrpc": {"default": false, "isext": true}
+    },
+    "php70u-fpm": {
+      "php70u": {"default": true, "base": true, "conflicts": ["php", "php56u", "php71u"]},
+      "php70u-bcmath": {"default": true, "isext": true},
+      "php70u-cli": {"default": true},
+      "php70u-common": {"default": true, "base": true},
+      "php70u-dba": {"default": false, "isext": true},
+      "php70u-devel": {"default": false, "isext": true},
+      "php70u-fpm": {"default": true},
+      "php70u-gd": {"default": true, "isext": true},
+      "php70u-imap": {"default": false, "isext": true},
+      "php70u-interbase": {"default": false, "isext": true},
+      "php70u-intl": {"default": false, "isext": true},
+      "php70u-ldap": {"default": false, "isext": true},
+      "php70u-ioncube-loader": {"default": false, "isext": true},
+      "php70u-mbstring": {"default": true, "isext": true},
+      "php70u-mcrypt": {"default": true, "isext": true},
+      "php70u-mssql": {"default": false, "isext": true},
+      "php70u-mysql": {"default": true, "isext": true, "conflicts": ["php70u-mysqlnd"]},
+      "php70u-mysqlnd": {"default": false, "isext": true, "conflicts": ["php70u-mysql"]},
+      "php70u-odbc": {"default": false, "isext": true},
+      "php70u-pdo": {"default": true, "isext": true},
+      "php70u-pear": {"default": false},
+      "php70u-pecl-apc": {"default": false, "isext": true},
+      "php70u-pecl-geoip": {"default": false, "isext": true},
+      "php70u-pecl-imagick": {"default": false, "isext": true},
+      "php70u-pecl-memcache": {"default": false, "isext": true},
+      "php70u-pecl-mysqlnd-ms": {"default": false, "isext": true},
+      "php70u-pecl-xdebug": {"default": false, "isext": true},
+      "php70u-pgsql": {"default": false, "isext": true},
+      "php70u-process": {"default": false, "isext": true},
+      "php70u-pspell": {"default": false, "isext": true},
+      "php70u-recode": {"default": false, "isext": true},
+      "php70u-snmp": {"default": false, "isext": true},
+      "php70u-soap": {"default": true, "isext": true},
+      "php70u-suhosin": {"default": false, "isext": true},
+      "php70u-xcache": {"default": false, "isext": true},
+      "php70u-xml": {"default": true, "isext": true},
+      "php70u-xmlrpc": {"default": false, "isext": true}
+    },
+    "php71u-fpm": {
+      "php71u": {"default": true, "base": true, "conflicts": ["php", "php56u", "php70u"]},
+      "php71u-bcmath": {"default": true, "isext": true},
+      "php71u-cli": {"default": true},
+      "php71u-common": {"default": true, "base": true},
+      "php71u-dba": {"default": false, "isext": true},
+      "php71u-devel": {"default": false, "isext": true},
+      "php71u-fpm": {"default": true},
+      "php71u-gd": {"default": true, "isext": true},
+      "php71u-imap": {"default": false, "isext": true},
+      "php71u-interbase": {"default": false, "isext": true},
+      "php71u-intl": {"default": false, "isext": true},
+      "php71u-ldap": {"default": false, "isext": true},
+      "php71u-json": {"default": false, "isext": true},
+      "php71u-ioncube-loader": {"default": false, "isext": true},
+      "php71u-mbstring": {"default": true, "isext": true},
+      "php71u-mcrypt": {"default": true, "isext": true},
+      "php71u-mssql": {"default": false, "isext": true},
+      "php71u-mysql": {"default": true, "isext": true, "conflicts": ["php71u-mysqlnd"]},
+      "php71u-mysqlnd": {"default": false, "isext": true, "conflicts": ["php71u-mysql"]},
+      "php71u-odbc": {"default": false, "isext": true},
+      "php71u-pdo": {"default": true, "isext": true},
+      "php71u-pear": {"default": false},
+      "php71u-pecl-apcu": {"default": false, "isext": true},
+      "php71u-pecl-geoip": {"default": false, "isext": true},
+      "php71u-pecl-igbinary": {"default": false, "isext": true},
+      "php71u-pecl-imagick": {"default": false, "isext": true},
+      "php71u-pecl-mongodb": {"default": false, "isext": true},
+      "php71u-pecl-redis": {"default": false, "isext": true},
+      "php71u-pecl-xdebug": {"default": false, "isext": true},
+      "php71u-pgsql": {"default": false, "isext": true},
+      "php71u-process": {"default": false, "isext": true},
+      "php71u-pspell": {"default": false, "isext": true},
+      "php71u-recode": {"default": false, "isext": true},
+      "php71u-snmp": {"default": false, "isext": true},
+      "php71u-soap": {"default": true, "isext": true},
+      "php71u-tidy": {"default": false, "isext": true},
+      "php71u-xml": {"default": true, "isext": true},
+      "php71u-xmlrpc": {"default": false, "isext": true}
+    },
+    "sendmail": {
+      "sendmail": {"default": true, "base": true}
+    },
+    "openssh-server": {
+      "openssh-server": {"default": true, "base": true},
+      "openssh-clients": {"default": false, "isext": true},
+      "openssh-ldap": {"default": false, "isext": true},
+      "openssh-askpass": {"default": false, "isext": true}
+    },
+    "iptables": {
+      "iptables": {"default": true, "base": true},
+      "iptables-ipv6": {"default": false, "isext": true},
+      "iptables-devel": {"default": false, "isext": true}
+    },
+    "cronie": {
+      "cronie": {"default": true, "base": true}
+    },
+    "vixie-cron": {
+      "vixie-cron": {"default": true, "base": true}
+    },
+    "ntp": {
+      "ntp": {"default": true, "base": true},
+      "ntp-doc": {"default": false, "isext": true},
+      "ntp-perl": {"default": false, "isext": true}
+    },
+    "ntpdate": {
+      "ntpdate": {"default": true, "base": true}
+    },
+    "zip": {
+      "zip": {"default": true, "base": true},
+      "unzip": {"default": true, "base": true}
+    },
+    "bind": {
+      "bind": {"default": true, "base": true},
+      "bind-chroot": {"default": true, "isext": true},
+      "bind-devel": {"default": false, "isext": true},
+      "bind-dyndb-ldap": {"default": false, "isext": true},
+      "bind-libs": {"default": false, "isext": true},
+      "bind-sdb": {"default": false, "isext": true},
+      "bind-to-tinydns": {"default": false, "isext": true}
+    },
+    "docker": {
+      "docker": {"default": true, "base": true},
+      "docker-io": {"default": true, "base": true},
+      "docker-io-fish-completion": {"default": false, "isext": true},
+      "docker-io-logrotate": {"default": false, "isext": true},
+      "docker-io-vim": {"default": false, "isext": true},
+      "docker-io-zsh-completion": {"default": false, "isext": true}
+    },
+    "mono": {
+      "mono-core": {"default": true, "base": true},
+      "mono-data": {"default": true, "base": true},
+      "mono-data-oracle": {"default": false, "isext": true},
+      "mono-data-sqlite": {"default": false, "isext": true},
+      "mono-devel": {"default": false, "isext": true},
+      "mono-extras": {"default": false, "isext": true},
+      "mono-locale-extras": {"default": false, "isext": true},
+      "mono-mvc": {"default": false, "isext": true},
+      "mono-mvc-devel": {"default": false, "isext": true},
+      "mono-reactive": {"default": false, "isext": true},
+      "mono-reactive-devel": {"default": false, "isext": true},
+      "mono-reactive-winforms": {"default": false, "isext": true},
+      "mono-wcf": {"default": false, "isext": true},
+      "mono-web": {"default": false, "isext": true},
+      "mono-web-devel": {"default": false, "isext": true},
+      "mono-winforms": {"default": false, "isext": true},
+      "mono-winfx": {"default": false, "isext": true}
+    },
+    "ntfs-3g": {
+      "ntfs-3g": {"default": true, "base": true},
+      "ntfs-3g-devel": {"default": false, "isext": true}
+    },
+    "ntfsprogs": {
+      "ntfsprogs": {"default": true, "base": true},
+      "ntfsprogs-devel": {"default": false, "isext": true},
+      "ntfsprogs-gnomevfs": {"default": false, "isext": true}
+    },
+    "davfs2": {
+      "davfs2": {"default": true, "base": true}
+    },
+    "nfs": {
+      "nfs": {"default": true, "base": true},
+      "nfs-utils": {"default": true, "base": true},
+      "nfs-utils-lib": {"default": false, "isext": true},
+      "nfs-utils-lib-devel": {"default": true, "isext": true}
+    },
+    "cifs": {
+      "cifs-utils": {"default": true, "base": true}
+    },
+    "samba": {
+      "samba": {"default": true, "base": true},
+      "samba-client": {"default": true, "isext": true},
+      "samba-common": {"default": true, "base": true},
+      "samba-doc": {"default": false, "isext": true},
+      "samba-glusterfs": {"default": false, "isext": true},
+      "samba-swat": {"default": false, "isext": true},
+      "samba-winbind": {"default": false, "isext": true},
+      "samba-winbind-clients": {"default": false, "isext": true},
+      "samba-winbind-krb5-locator": {"default": false, "isext": true}
+    },
+    "samba4": {
+      "samba4": {"default": true, "base": true},
+      "samba4-client": {"default": true, "isext": true},
+      "samba4-common": {"default": true, "base": true},
+      "samba4-devel": {"default": false, "isext": true},
+      "samba4-libs": {"default": false, "isext": true},
+      "samba4-python": {"default": false, "isext": true},
+      "samba4-doc": {"default": false, "isext": true},
+      "samba4-glusterfs": {"default": false, "isext": true},
+      "samba4-swat": {"default": false, "isext": true},
+      "samba4-winbind": {"default": false, "isext": true},
+      "samba4-winbind-clients": {"default": false, "isext": true},
+      "samba4-winbind-krb5-locator": {"default": false, "isext": true}
+    }
+  },
+  "yum_pkg_noarchitecture": [
+    "tomcat",
+    "php56u-fpm-nginx",
+    "php70u-fpm-nginx",
+    "php71u-fpm-nginx"
+  ],
+  "yum_builtin_mirrors": [
+    {"name": "CentOS 官方源", "url": "http://mirror.centos.org/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "阿里云 CentOS", "url": "https://mirrors.aliyun.com/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "清华大学 CentOS", "url": "https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "中科大 CentOS", "url": "https://mirrors.ustc.edu.cn/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "华为云 CentOS", "url": "https://repo.huaweicloud.com/centos/$releasever/os/$basearch/", "builtin": true},
+    {"name": "腾讯云 CentOS", "url": "https://mirrors.cloud.tencent.com/centos/$releasever/os/$basearch/", "builtin": true}
+  ]
+}

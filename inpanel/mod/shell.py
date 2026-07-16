@@ -5,7 +5,7 @@
 #
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for Shell.'''
+'''Shell 命令执行模块'''
 
 import shlex
 import subprocess as sbps

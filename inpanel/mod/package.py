@@ -5,9 +5,7 @@
 #
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for Package Manager Integration'''
-
-from typing import Optional
+'''包管理器集成模块'''
 
 from .package_base import PackageManager
 from .package_yum import YumPM
@@ -24,7 +22,7 @@ from .package_map import (
 )
 
 
-def get_package_manager() -> Optional[PackageManager]:
+def get_package_manager():
     """工厂函数：根据系统返回对应的包管理器实例"""
     managers = [DnfPM(), YumPM(), AptPM()]
     for mgr in managers:

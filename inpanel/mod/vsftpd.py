@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for vsftpd Management'''
+'''vsftpd 管理模块'''
 
 from ..utils import cfg_get_array, cfg_set_array
 

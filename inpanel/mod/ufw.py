@@ -6,9 +6,9 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for UFW (Uncomplicated Firewall) Management'''
+'''UFW（简易防火墙）管理模块'''
 
 from .firewall_ufw import UfwPM
 
 if __name__ == '__main__':
-    print('Module for UFW Management')
+    print('UFW 防火墙管理模块')

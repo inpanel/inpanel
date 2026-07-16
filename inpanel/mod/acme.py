@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for getting a signed TLS certificate by ACME protocol from Let's Encrypt.'''
+'''通过 ACME 协议从 Let's Encrypt 获取已签名 TLS 证书的模块。'''
 
 import re
 from base64 import urlsafe_b64encode
@@ -26,7 +26,7 @@ except ImportError:
 
 class ACME():
 
-    # REF: https://github.com/diafygi/acme-tiny, under MIT license, author: Daniel Roesler
+    # 参考: https://github.com/diafygi/acme-tiny，MIT 许可证，作者: Daniel Roesler
     def __init__(self, account_key, csr, acme_check_dir, contact=None):
         self.account_key = account_key
         self.csr = csr
@@ -38,13 +38,13 @@ class ACME():
         self.thumbprint = None
         self.certificate = None
 
-        # Contact details (e.g. mailto:aaa@bbb.com) for your account-key
-        self.contact = contact  # 'a client of the InPanel'
+        # 账号的联系方式（例如 mailto:aaa@bbb.com）
+        self.contact = contact
         # self.ca = "https://acme-v02.api.letsencrypt.org"
-        # self.ca_directory = = "https://acme-v02.api.letsencrypt.org/directory"
-        # dev
+        # self.ca_directory = "https://acme-v02.api.letsencrypt.org/directory"
+        # 开发环境
         self.ca = "https://acme-staging-v02.api.letsencrypt.org"
-        # certificate authority directory url, default is Let's Encrypt
+        # 证书颁发机构目录 URL，默认为 Let's Encrypt
         self.ca_directory = "https://acme-staging-v02.api.letsencrypt.org/directory"
 
         self.init_api_url()
@@ -54,7 +54,7 @@ class ACME():
         # self.create_new_order()
 
     def _cmd(self, cmd_list, stdin=None, cmd_input=None, err_msg="Command Line Error"):
-        '''run external commands'''
+        '''执行外部命令'''
         proc = Popen(cmd_list, stdin=stdin, stdout=PIPE, stderr=PIPE)
         out, err = proc.communicate(cmd_input)
         if proc.returncode != 0:
@@ -62,11 +62,11 @@ class ACME():
         return out
 
     def _b64(self, b):
-        '''base64 encode for jose spec'''
+        '''JOSE 规范的 base64 编码'''
         return urlsafe_b64encode(b).decode('utf8').replace('=', '')
 
     def _request(self, url, data=None, err_msg='Error', depth=0):
-        '''make request and automatically parse json response'''
+        '''发送请求并自动解析 JSON 响应'''
         try:
             hd = {
                 "Content-Type": "application/jose+json",
@@ -84,14 +84,14 @@ class ACME():
         except ValueError:
             pass  # ignore json parsing errors
         if depth < 100 and code == 400 and res_data['type'] == 'urn:ietf:params:acme:error:badNonce':
-            raise IndexError(res_data)  # allow 100 retrys for bad nonces
+            raise IndexError(res_data)  # 允许对无效 nonce 重试 100 次
         if code not in [200, 201, 204]:
             raise ValueError("{0}:\nUrl: {1}\nData: {2}\nResponse Code: {3}\nResponse: {4}".format(
                 err_msg, url, data, code, res_data))
         return res_data, code, headers
 
     def _s_request(self, url, payload, err_msg, depth=0):
-        '''make signed requests'''
+        '''发送签名请求'''
         payload64 = self._b64(dumps(payload).encode('utf8'))
         new_nonce = self._request(self.ca_new_nonce)[2]['Replay-Nonce']
         protected = {'url': url, 'alg': self.alg, "nonce": new_nonce}
@@ -107,10 +107,10 @@ class ACME():
         })
         try:
             return self._request(url, data=data.encode('utf8'), err_msg=err_msg, depth=depth)
-        except IndexError:  # retry bad nonces (they raise IndexError)
+        except IndexError:  # 重试无效 nonce（无效 nonce 会抛出 IndexError）
             return self._s_request(url, payload, err_msg, depth=(depth + 1))
 
-    # helper function - poll until complete
+    # 辅助函数 - 轮询直到完成
     def _poll_until_not(self, url, pending_statuses, err_msg):
         while True:
             result, _, _ = self._request(url, err_msg=err_msg)
@@ -120,7 +120,7 @@ class ACME():
             return result
 
     def init_api_url(self, ca_directory=None):
-        # get the ACME directory of urls
+        # 获取 ACME 目录 URL
         print('API directory getting...')
         ca = ca_directory
         if ca is None:
@@ -135,7 +135,7 @@ class ACME():
         print('API directory ready!')
 
     def init_account(self, account_key=None):
-        # parse account key to get public key
+        # 解析账号密钥以获取公钥
         print('Account key parsing...')
         acc_key = account_key
         if acc_key is None:
@@ -160,7 +160,7 @@ class ACME():
         print('Account key ready...')
 
     def registe_account(self, contact=None):
-        # create account, update contact details (if any), and set the global key identifier
+        # 创建账号，更新联系信息（如有），并设置全局密钥标识
         print('Account registration...')
         reg_payload = {'termsOfServiceAgreed': True}
         account, code, self.acct_headers = self._s_request(
@@ -180,7 +180,7 @@ class ACME():
             print("Updated contact details:\n{0}".format("\n".join(account['contact'])))
 
     def parse_csr(self, order=False):
-        # find domains
+        # 查找域名
         print('Domains CSR parsing...')
         cmd = ['openssl', 'req', '-in', self.csr, '-noout', '-text']
         out = self._cmd(cmd, err_msg="Error loading {0}".format(self.csr))
@@ -200,8 +200,8 @@ class ACME():
             self.create_new_order(domains)
 
     def create_new_order(self, domains, disable_check=False):
-        '''create a new order
-        disable_check: disable checking if the challenge file is hosted correctly before telling the CA
+        '''创建新订单
+        disable_check: 在通知 CA 之前禁用挑战文件是否正确托管的检查
         '''
         print("Creating new order...")
         order_payload = {"identifiers": [
@@ -210,13 +210,13 @@ class ACME():
             self.ca_new_order, order_payload, "Error creating new order")
         print("Order created!")
 
-        # get the authorizations that need to be completed
+        # 获取需要完成的授权
         for auth_url in order['authorizations']:
             authorization, _, _ = self._request(auth_url, err_msg='Error getting challenges')
             domain = authorization['identifier']['value']
             print("Domain {0} Verifying...".format(domain))
 
-            # find the http-01 challenge and write the challenge file
+            # 找到 http-01 挑战并写入挑战文件
             challenge = [c for c in authorization['challenges'] if c['type'] == "http-01"][0]
             token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
             key_auth = "{0}.{1}".format(token, self.thumbprint)
@@ -224,7 +224,7 @@ class ACME():
             with open(wellknown_path, 'w', encoding='utf-8') as f:
                 f.write(key_auth)
 
-            # check that the wellknown_file is in specified place
+            # 检查 wellknown 文件是否在指定位置
             try:
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 assert(disable_check or self._request(wellknown_url)[0] == key_auth)
@@ -233,7 +233,7 @@ class ACME():
                 raise ValueError("Wrote file to {0}, but couldn't download {1}: {2}".format(
                     wellknown_path, wellknown_url, e))
 
-            # say the challenge is done
+            # 告知挑战已完成
             self._s_request(
                 challenge['url'], {}, "Error submitting challenges: {0}".format(domain))
             authorization = self._poll_until_not(auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
@@ -241,18 +241,18 @@ class ACME():
                 raise ValueError("Challenge did not pass for {0}: {1}".format(domain, authorization))
             print("Domain {0} verified!".format(domain))
 
-        # finalize the order with the csr
+        # 使用 CSR 完成订单
         print('Certificate signing...')
         csr_der = self._cmd(['openssl', 'req', '-in', self.csr, '-outform', 'DER'], err_msg='DER Export Error')
         self._s_request(order['finalize'], {'csr': self._b64(csr_der)}, 'Error finalizing order')
-        # poll the order to monitor when it's done
+        # 轮询订单以监控其完成状态
         order = self._poll_until_not(order_headers['Location'], ['pending', 'processing'], 'Error checking order status')
         if order['status'] != 'valid':
             raise ValueError("Order failed: {0}".format(order))
         self.certificate = order['certificate']
 
     def get_certificate(self, certificate=None):
-        # download the certificate
+        # 下载证书
         crt_url = self.certificate if certificate is None else certificate
         if crt_url is None:
             return None
@@ -261,12 +261,12 @@ class ACME():
         return certificate_pem
 
     def ertificate_revoke(self, crt):
-        '''revoke certificate'''
+        '''吊销证书'''
         print(crt)
         print('Certificate revoked!')
 
     def certificate_renew(self, crt):
-        '''renew certificate'''
+        '''续签证书'''
         print(crt)
         print('Certificate updated!')
 

@@ -5,10 +5,9 @@
 #
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for iptables Management'''
+'''iptables 防火墙管理模块'''
 
 import shutil
-from typing import Tuple, List, Dict
 
 from .firewall_base import FirewallManager
 from .system import is_rhel_family, get_os_version_major
@@ -17,7 +16,7 @@ from .system import is_rhel_family, get_os_version_major
 class IptablesPM(FirewallManager):
     """CentOS 7 及以下 / RHEL 7 及以下：iptables"""
     
-    def detect(self) -> bool:
+    def detect(self):
         if not shutil.which("iptables"):
             return False
         if not is_rhel_family():
@@ -25,57 +24,57 @@ class IptablesPM(FirewallManager):
         version_major = get_os_version_major()
         return version_major <= 7 or version_major == 0
     
-    def status(self) -> Tuple[bool, str]:
+    def status(self):
         success, output = self._run_cmd(["systemctl", "status", "iptables"])
         if not success:
             success, output = self._run_cmd(["service", "iptables", "status"])
         return (success, output)
     
-    def enable(self) -> Tuple[bool, str]:
+    def enable(self):
         success, output = self._run_cmd(["systemctl", "enable", "iptables"])
         if not success:
             success, output = self._run_cmd(["chkconfig", "iptables", "on"])
         return (success, output)
     
-    def disable(self) -> Tuple[bool, str]:
+    def disable(self):
         success, output = self._run_cmd(["systemctl", "disable", "iptables"])
         if not success:
             success, output = self._run_cmd(["chkconfig", "iptables", "off"])
         return (success, output)
     
-    def start(self) -> Tuple[bool, str]:
+    def start(self):
         success, output = self._run_cmd(["systemctl", "start", "iptables"])
         if not success:
             success, output = self._run_cmd(["service", "iptables", "start"])
         return (success, output)
     
-    def stop(self) -> Tuple[bool, str]:
+    def stop(self):
         success, output = self._run_cmd(["systemctl", "stop", "iptables"])
         if not success:
             success, output = self._run_cmd(["service", "iptables", "stop"])
         return (success, output)
     
-    def restart(self) -> Tuple[bool, str]:
+    def restart(self):
         success, output = self._run_cmd(["systemctl", "restart", "iptables"])
         if not success:
             success, output = self._run_cmd(["service", "iptables", "restart"])
         return (success, output)
     
-    def add_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def add_rule(self, port, protocol = 'tcp', zone = ''):
         cmd = ["iptables", "-A", "INPUT", "-p", protocol, "--dport", str(port), "-j", "ACCEPT"]
         success, output = self._run_cmd(cmd)
         if success:
             self._run_cmd(["service", "iptables", "save"])
         return (success, output)
     
-    def remove_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def remove_rule(self, port, protocol = 'tcp', zone = ''):
         cmd = ["iptables", "-D", "INPUT", "-p", protocol, "--dport", str(port), "-j", "ACCEPT"]
         success, output = self._run_cmd(cmd)
         if success:
             self._run_cmd(["service", "iptables", "save"])
         return (success, output)
     
-    def add_ip_rule(self, ip: str, action: str = 'allow') -> Tuple[bool, str]:
+    def add_ip_rule(self, ip, action = 'allow'):
         chain = "ACCEPT" if action == 'allow' else "DROP"
         cmd = ["iptables", "-A", "INPUT", "-s", ip, "-j", chain]
         success, output = self._run_cmd(cmd)
@@ -83,7 +82,7 @@ class IptablesPM(FirewallManager):
             self._run_cmd(["service", "iptables", "save"])
         return (success, output)
     
-    def remove_ip_rule(self, ip: str) -> Tuple[bool, str]:
+    def remove_ip_rule(self, ip):
         cmd = ["iptables", "-D", "INPUT", "-s", ip, "-j", "ACCEPT"]
         success1, output1 = self._run_cmd(cmd)
         cmd = ["iptables", "-D", "INPUT", "-s", ip, "-j", "DROP"]
@@ -93,16 +92,16 @@ class IptablesPM(FirewallManager):
             return (True, output1 + output2)
         return (False, output1 + output2)
     
-    def list_rules(self) -> Tuple[bool, str]:
+    def list_rules(self):
         return self._run_cmd(["iptables", "-L", "-n"])
     
-    def list_zones(self) -> Tuple[bool, List[str]]:
+    def list_zones(self):
         return (False, [])
     
-    def get_default_zone(self) -> Tuple[bool, str]:
+    def get_default_zone(self):
         return (False, "Not supported")
     
-    def parse_rules(self) -> List[Dict]:
+    def parse_rules(self):
         rules = []
         success, output = self._run_cmd(["iptables", "-L", "-n", "-v"])
         if not success:

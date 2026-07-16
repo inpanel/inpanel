@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for Web Querying'''
+'''Web 查询模块'''
 
 import binascii
 import os
@@ -68,8 +68,7 @@ class Application(tornado.web.Application):
 class RequestHandler(tornado.web.RequestHandler):
 
     def initialize(self):
-        """Parse JSON data to argument list.
-        """
+        """将 JSON 数据解析为参数列表。"""
         self.config = config.load_config()
         self.lastfile = config.lastfile_config()
 
@@ -100,12 +99,12 @@ class RequestHandler(tornado.web.RequestHandler):
         self.finish()
 
     def check_xsrf_cookie(self):
-        # check for the access token
+        # 检查访问令牌
         if self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"):
             if self.config.get('auth', 'accesskeyenable') != 'on':
                 raise tornado.web.HTTPError(403, "Access Token Not Allowed")
         else:
-            # check xsrf cookie
+            # 检查 xsrf cookie
             token = (self.get_argument("_xsrf", None) or self.request.headers.get("X-XSRF-TOKEN"))
             if not token:
                 raise tornado.web.HTTPError(403, "'_xsrf' argument missing from POST")
@@ -113,7 +112,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 raise tornado.web.HTTPError(403, "XSRF cookie does not match POST argument")
 
     def authed(self):
-        # check for the access token
+        # 检查访问令牌
         access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
 
         if access_token:
@@ -125,14 +124,14 @@ class RequestHandler(tornado.web.RequestHandler):
             cur_authed = self.get_secure_cookie('authed', None, 30.0/1440)
             if not cur_authed:
                 raise tornado.web.HTTPError(403, "Please Login First")
-            # get the cookie within 30 mins
+            # 获取 30 分钟内的 cookie
             if cur_authed.decode('utf-8') == 'yes':
-                # regenerate the cookie timestamp per 5 mins
+                # 每 5 分钟重新生成 cookie 时间戳
                 if self.get_secure_cookie('authed', None, 5.0/1440) == None:
                     self.set_secure_cookie('authed', 'yes', None)
 
     def getlastactive(self):
-        # get last active from cookie
+        # 从 cookie 获取最后活跃时间
         cv = self.get_cookie('authed', False)
         try:
             return int(cv.split('|')[1])
@@ -142,7 +141,7 @@ class RequestHandler(tornado.web.RequestHandler):
     @property
     def xsrf_token(self):
         if not hasattr(self, "_xsrf_token"):
-            token = self.get_cookie("XSRF-TOKEN") #  or self.request.headers.get("X-XSRF-TOKEN"))
+            token = self.get_cookie("XSRF-TOKEN") # 或 self.request.headers.get("X-XSRF-TOKEN")
             # token = (self.get_cookie("XSRF-TOKEN") or self.request.headers.get("X-XSRF-TOKEN"))
             if not token:
                 token = binascii.b2a_hex(uuid4().bytes)
@@ -158,7 +157,7 @@ class IndexHandler(tornado.web.RequestHandler):
 
     def get(self):
         data = {
-            'htmlTitle': '{{ htmlTitle }}', # js template code
+            'htmlTitle': '{{ htmlTitle }}', # JS 模板代码
             'releasetime': version_info['releasetime'],
             'template_path': ''
         }
@@ -169,21 +168,21 @@ class StaticFileHandler(tornado.web.StaticFileHandler):
         self.set_header('Server', app_name)
 
     def authed(self):
-        # check for the access token
+        # 检查访问令牌
         self.config = config.load_config()
         access_token = (self.get_argument("_access", None) or self.request.headers.get("X-ACCESS-TOKEN"))
         if access_token and self.config.get('auth', 'accesskeyenable') == 'on':
             if access_token != self.config.get('auth', 'accesskey'):
                 raise tornado.web.HTTPError(403, 'Access Token Error')
-                # print('access_token matched')
+                # print('access_token 匹配')
                 # return
         else:
             cur_authed = self.get_secure_cookie('authed', None, 30.0/1440)
             if not cur_authed:
                 raise tornado.web.HTTPError(403, "Please login first")
-            # get the cookie within 30 mins
+            # 获取 30 分钟内的 cookie
             if cur_authed.decode('utf-8') == 'yes':
-                # regenerate the cookie timestamp per 5 mins
+                # 每 5 分钟重新生成 cookie 时间戳
                 if self.get_secure_cookie('authed', None, 5.0 / 1440) is None:
                     self.set_secure_cookie('authed', 'yes', None)
 
@@ -212,14 +211,6 @@ class FileDownloadHandler(StaticFileHandler):
         self.set_header('Content-Transfer-Encoding', 'binary')
         print('FileDownloadHandler', self.root, path)
         return StaticFileHandler.get(self, path)
-        # buf_size = 4096
-        # with open(str(Path(self.root, path), 'rb', encoding='utf-8') as f:
-        #     while True:
-        #         data = f.read(buf_size)
-        #         if not data:
-        #             break
-        #         self.write(data)
-        # self.finish()
 
 class FileUploadHandler(RequestHandler):
     def post(self):
@@ -242,8 +233,8 @@ class FileUploadHandler(RequestHandler):
 
 
 class FilePreviewHandler(RequestHandler):
-    '''FilePreviewHandler
-    TODO: support multi
+    '''文件预览处理器
+    待办：支持多文件
     '''
     def get(self, path):
         self.authed()
@@ -269,15 +260,13 @@ class VersionHandler(RequestHandler):
 
 
 class XsrfHandler(RequestHandler):
-    """Write a XSRF token to cookie
-    """
+    """将 XSRF token 写入 cookie。"""
     def get(self):
         self.xsrf_token
 
 
 class AuthStatusHandler(RequestHandler):
-    """Check if client has been authorized
-    """
+    """检查客户端是否已授权。"""
     def check_xsrf_cookie(self):
         pass
 
@@ -285,7 +274,7 @@ class AuthStatusHandler(RequestHandler):
         self.write({'lastactive': self.getlastactive()})
 
     def post(self):
-        # authorize and update cookie
+        # 授权并更新 cookie
         try:
             self.authed()
             self.write({'authed': 'yes'})
@@ -294,16 +283,14 @@ class AuthStatusHandler(RequestHandler):
 
 
 class ClientHandler(RequestHandler):
-    """Get client infomation.
-    """
+    """获取客户端信息。"""
     def get(self, argument):
         if argument == 'ip':
             self.write(self.request.remote_ip)
 
 
 class LoginHandler(RequestHandler):
-    """Validate username and password.
-    """
+    """验证用户名和密码。"""
     def post(self):
         username = self.get_argument('username', '')
         password = self.get_argument('password', '')
@@ -314,8 +301,7 @@ class LoginHandler(RequestHandler):
 
 
 class LogoutHandler(RequestHandler):
-    """Logout
-    """
+    """登出。"""
     def post(self):
         self.authed()
         login.handle_logout()
@@ -323,8 +309,7 @@ class LogoutHandler(RequestHandler):
 
 
 class SitePackageHandler(RequestHandler):
-    """Interface for querying site packages information.
-    """
+    """查询网站软件包信息的接口。"""
 
     def get(self, op):
         self.authed()
@@ -340,15 +325,15 @@ class SitePackageHandler(RequestHandler):
         packages = ''
         packages_cachefile = str(Path(self.settings['package_path']) / '.meta')
 
-        # fetch from cache
+        # 从缓存获取
         if Path(packages_cachefile).exists():
-            # check the file modify time
+            # 检查文件修改时间
             mtime = os.stat(packages_cachefile).st_mtime
-            if time.time() - mtime < 86400:  # cache 24 hours
+            if time.time() - mtime < 86400:  # 缓存 24 小时
                 with open(packages_cachefile, encoding='utf-8') as f:
                     packages = f.read()
 
-        # fetch from api
+        # 从 API 获取
         if not packages:
             http_client = tornado.httpclient.AsyncHTTPClient()
             response = await http_client.fetch(app_api['site_packages'])
@@ -374,7 +359,7 @@ class SitePackageHandler(RequestHandler):
             self.write({'code': -1, 'msg': '获取安装包下载地址失败！'})
             return
 
-        # fetch package list from cache
+        # 从缓存获取软件包列表
         packages_cachefile = str(Path(self.settings['package_path']) / '.meta')
         if not Path(packages_cachefile).exists():
             self.write({'code': -1, 'msg': '获取安装包下载地址失败！'})
@@ -383,7 +368,7 @@ class SitePackageHandler(RequestHandler):
             packages = f.read()
         packages = tornado.escape.json_decode(packages)
 
-        # check if name and version is available
+        # 检查 name 和 version 是否可用
         package = None
         for cate in packages:
             for pkg in cate['packages']:
@@ -413,10 +398,10 @@ class SitePackageHandler(RequestHandler):
 
 
 class QueryHandler(RequestHandler):
-    """Interface for querying server information.
+    """查询服务器信息的接口。
     
-    Query one or more items, seperated by comma.
-    Examples:
+    可查询一个或多个项，以逗号分隔。
+    示例：
     /api/query/*
     /api/query/server.*
     /api/query/mod.service.*
@@ -430,8 +415,7 @@ class QueryHandler(RequestHandler):
 
 
 class UtilsNetworkHandler(RequestHandler):
-    """Handler for network ifconfig.
-    """
+    """网络配置处理器。"""
     def get(self, sec, ifname):
         self.authed()
         result = server.ServerInfo.network_handle_get(sec, ifname)
@@ -456,8 +440,7 @@ class UtilsNetworkHandler(RequestHandler):
             self.write(result)
 
 class UtilsTimeHandler(RequestHandler):
-    """Handler for system datetime mod.setting.
-    """
+    """系统时间设置处理器。"""
     def get(self, sec, region=None):
         self.authed()
         result = server.ServerInfo.handle_time_get(sec, region, self.config)
@@ -475,8 +458,7 @@ class UtilsTimeHandler(RequestHandler):
         if result is not None:
             self.write(result)
 class SettingHandler(RequestHandler):
-    """Settings for InPanel
-    """
+    """InPanel 设置。"""
     async def get(self, section):
         self.authed()
         await setting.handle_get(self, section)
@@ -487,12 +469,10 @@ class SettingHandler(RequestHandler):
 
 
 class OperationHandler(RequestHandler):
-    ''''Server operation handler
-    '''
+    '''服务器操作处理器。'''
 
     def post(self, op):
-        """Run a server operation
-        """
+        """执行服务器操作。"""
         self.authed()
         if hasattr(self, op):
             getattr(self, op)()
@@ -579,8 +559,7 @@ class OperationHandler(RequestHandler):
             self.write({'code': 0, 'msg': '命令已发送', 'data': _get_mod('shell').exec_command(cmd, cwd)})
 
 class PageHandler(RequestHandler):
-    """Return single page.
-    """
+    """返回单页。"""
     def get(self, op, action):
         try:
             self.authed()
@@ -597,7 +576,7 @@ class PageHandler(RequestHandler):
             # =PHPE9568F34-D428-11d2-A769-00AA001ACF42 (PHP Logo)
             # =PHPE9568F35-D428-11d2-A769-00AA001ACF42 (Zend logo)
             # =PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000 (PHP Credits)
-            # redirect them to http://mod.php.net/index.php?***
+            # 将它们重定向到 http://mod.php.net/index.php?***
             if self.request.query.startswith('=PHP'):
                 self.redirect('http://www.mod.php.net/index.php?%s' % self.request.query)
             else:
@@ -670,15 +649,13 @@ class RestoreHandler(RequestHandler):
 
 
 class BuyECSHandler(RequestHandler):
-    """Aliyun CPS program.
-    """
+    """阿里云 CPS 推广计划。"""
     def get(self):
         self.redirect('http://www.aliyun.com/cps/rebate?from_uid=zop0qMW4KbY=')
 
 
 class AccountHandler(RequestHandler):
-    """ECS Account handler.
-    """
+    """ECS 账号处理器。"""
     def get(self):
         self.authed()
         status = self.get_argument('status', '')
@@ -1092,8 +1069,7 @@ class ECSHandler(RequestHandler):
 
 
 class InPanelIndexHandler(RequestHandler):
-    """Index page of InPanel.
-    """
+    """InPanel 首页。"""
     def get(self, instance_name, ip, port):
         path = os.path.join(self.settings['inpanel_path'], 'index.html')
         with open(path, encoding='utf-8') as f:
@@ -1105,8 +1081,7 @@ class InPanelIndexHandler(RequestHandler):
 
 
 class InPanelHandler(RequestHandler):
-    """Operation proxy of InPanel.
-    """
+    """InPanel 操作代理。"""
     def handle_response(self, response):
         if response.error and not isinstance(response.error, tornado.httpclient.HTTPError):
             loginfo("response has error %s", response.error)
@@ -1177,247 +1152,184 @@ class InPanelHandler(RequestHandler):
 
 
 class RepoYumHandler(RequestHandler):
-    """Handler for YUM Request.
+    """YUM 源处理器。
+
+    路由：/api/sources/yum/<action>[/<name>]
+
+    GET 支持：overview, list, item, search, install, refresh, mirrors
+    POST 支持：switch, mirror-add, mirror-del, repo-add, repo-edit, repo-del, edit
     """
-    def get(self, sec, repo=None):
+    def get(self, action, name=None):
         self.authed()
         from .mod import yum
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 YUM ！'})
             return
-        if sec in ('list', 'item', 'overview', 'refresh', 'search', 'install'):
-            if repo is None:
-                repo = self.get_argument('repo', '') or self.get_argument('name', '')
-            context = {
-                'action': sec,
-                'repo': repo,
-                'name': repo,
-                'keyword': self.get_argument('keyword', '')
-            }
-            self.write(yum.web_handler(context))
+        if action in ('list', 'item', 'overview', 'refresh', 'search', 'install', 'mirrors', 'third_party'):
+            yum.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
-    def post(self, sec, repo=None):
+    def post(self, action, name=None):
         self.authed()
+        from .mod import yum
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 YUM ！'})
             return
 
-        if sec in ('edit', 'add'):
-            if repo is None:
-                repo = self.get_argument('repo', None)
-            if repo is None:
-                self.write({'code': -1, 'msg': '配置文件不能为空！'})
-                return
-            serverid = self.get_argument('serverid', '')
-            if serverid == '':
-                self.write({'code': -1, 'msg': '仓库标识ID不能为空！'})
-                return
-            name = self.get_argument('name', '')
-            if name == '':
-                self.write({'code': -1, 'msg': '仓库名称不能为空！'})
-                return
-            baseurl = self.get_argument('baseurl', '')
-            if baseurl == '':
-                self.write({'code': -1, 'msg': '仓库路径不能为空！'})
-                return
-            enabled = self.get_argument('enabled', True)
-            gpgcheck = self.get_argument('gpgcheck', False)
-            data = {
-                serverid: {
-                    'name': name,
-                    'enabled': 0 if not enabled else 1,
-                    'baseurl': baseurl,
-                    'gpgcheck': 0 if not gpgcheck else 1,
-                    'gpgkey': ''
-                }
-            }
-            if sec == 'edit':
-                if not _get_mod('yum').item_exists(repo):
-                    self.write({'code': -1, 'msg': '配置文件不存在！'})
-                    return
-                if _get_mod('yum').set_item(repo, data) is True:
-                    self.write({'code': 0, 'msg': '配置修改成功！'})
-                else:
-                    self.write({'code': -1, 'msg': '配置修改失败！'})
-            else:
-                if _get_mod('yum').item_exists(repo):
-                    self.write({'code': -1, 'msg': '配置文件已存在！'})
-                    return
-                if _get_mod('yum').add_item(repo, data) is True:
-                    self.write({'code': 0, 'msg': '配置添加成功！'})
-                else:
-                    self.write({'code': -1, 'msg': '配置添加失败！'})
-        elif sec == 'del':
-            if repo is None:
-                repo = self.get_argument('repo', None)
-            if repo is None:
-                self.write({'code': -1, 'msg': '配置文件不能为空！'})
-                return
-            if not _get_mod('yum').item_exists(repo):
-                self.write({'code': -1, 'msg': '配置文件不存在！'})
-                return
-            if _get_mod('yum').del_item(repo) is True:
-                self.write({'code': 0, 'msg': '配置文件已移入回收站！'})
-            else:
-                self.write({'code': -1, 'msg': '删除失败！'})
+        if action in ('switch', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'third_party', 'third_party-install'):
+            yum.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
 
 class RepoDnfHandler(RequestHandler):
-    """Handler for DNF Repository Request.
+    """DNF 源处理器。
+
+    GET 支持：overview, list, item, search, install, refresh, mirrors
+    POST 支持：switch, mirror-add, mirror-del, repo-add, repo-edit, repo-del, edit
     """
-    def get(self, sec, repo=None):
+    def get(self, action, name=None):
         self.authed()
         from .mod import dnf
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 DNF ！'})
             return
-        if sec in ('list', 'item', 'overview', 'refresh', 'search', 'install'):
-            if repo is None:
-                repo = self.get_argument('repo', '') or self.get_argument('name', '')
-            context = {
-                'action': sec,
-                'repo': repo,
-                'name': repo,
-                'keyword': self.get_argument('keyword', '')
-            }
-            self.write(dnf.web_handler(context))
+        if action in ('list', 'item', 'overview', 'refresh', 'search', 'install', 'mirrors', 'third_party'):
+            dnf.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
-    def post(self, sec, repo=None):
+    def post(self, action, name=None):
         self.authed()
         from .mod import dnf
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 DNF ！'})
             return
 
-        context = {
-            'action': sec,
-            'repo': repo if repo else self.get_argument('repo', ''),
-            'serverid': self.get_argument('serverid', ''),
-            'name': self.get_argument('name', ''),
-            'baseurl': self.get_argument('baseurl', ''),
-            'enabled': self.get_argument('enabled', True),
-            'gpgcheck': self.get_argument('gpgcheck', False)
-        }
-        
-        result = dnf.web_handler(context)
-        self.write(result)
+        if action in ('switch', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'third_party', 'third_party-install'):
+            dnf.web_handler(self, action)
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
 
 
 class RepoAptHandler(RequestHandler):
-    """Handler for APT Repository Request.
+    """APT 源处理器。
+
+    GET 支持：overview, list, item, search, install, refresh, mirrors
+    POST 支持：switch, mirror-add, mirror-del, repo-add, repo-edit, repo-del, edit
     """
-    def get(self, sec, source=None):
+    def get(self, action, name=None):
         self.authed()
         from .mod import apt
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 APT ！'})
             return
-        if sec in ('list', 'item', 'overview', 'refresh', 'search', 'install'):
-            if source is None:
-                source = self.get_argument('source', '') or self.get_argument('name', '')
-            context = {
-                'action': sec,
-                'source': source,
-                'name': source,
-                'keyword': self.get_argument('keyword', '')
-            }
-            self.write(apt.web_handler(context))
+        if action in ('list', 'item', 'overview', 'refresh', 'search', 'install', 'mirrors', 'third_party'):
+            apt.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
-    def post(self, sec, source=None):
+    def post(self, action, name=None):
         self.authed()
         from .mod import apt
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 APT ！'})
             return
 
-        context = {
-            'action': sec,
-            'source': source if source else self.get_argument('source', ''),
-            'content': self.get_argument('content', ''),
-            'sources': self.get_argument('sources', [])
-        }
-        
-        result = apt.web_handler(context)
-        self.write(result)
+        if action in ('switch', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'parse', 'generate', 'third_party', 'third_party-install'):
+            apt.web_handler(self, action)
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
 
 
 class RepoBrewHandler(RequestHandler):
-    """Handler for Homebrew Repository Request."""
-    def get(self, sec, name=None):
+    """Homebrew 源处理器。
+
+    Homebrew 概念：
+    - 软件仓库列表 = brew tap 列表（内置仓库不可编辑/不可删除）
+    - 镜像源切换 = 在内置仓库详情中修改 git remote URL
+
+    GET 支持：overview, list, item, services, search, install, refresh, mirrors
+    POST 支持：service, install, switch, mirror-add, mirror-del, tap-add, tap-del, repo-edit
+    """
+    def get(self, action, name=None):
         self.authed()
         from .mod import brew
-        if sec in ('overview', 'list', 'item', 'services', 'search', 'install', 'refresh'):
-            if name is None:
-                name = self.get_argument('name', '') or self.get_argument('repo', '')
-            context = {
-                'action': sec,
-                'name': name,
-                'repo': name,
-                'keyword': self.get_argument('keyword', '')
-            }
-            self.write(brew.web_handler(context))
+        if action in ('overview', 'list', 'item', 'services', 'search', 'install', 'refresh', 'mirrors', 'third_party'):
+            brew.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
-    def post(self, sec, name=None):
+    def post(self, action, name=None):
         self.authed()
         from .mod import brew
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 Homebrew ！'})
             return
-        if sec == 'service':
-            op = self.get_argument('op', '')
-            self.write(brew.web_handler({'action': 'service', 'op': op}))
-        elif sec == 'install':
-            if name is None:
-                name = self.get_argument('name', '') or self.get_argument('pkg', '')
-            self.write(brew.web_handler({'action': 'install', 'name': name}))
+        if action in ('service', 'install', 'switch', 'enable', 'mirror-add', 'mirror-edit', 'mirror-del',
+                   'add', 'del', 'tap-add', 'tap-del', 'repo-edit', 'third_party-install'):
+            brew.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
 
 class RepoPipHandler(RequestHandler):
-    """Handler for pip Repository Request."""
-    def get(self, sec, name=None):
+    """pip 源处理器。
+
+    GET 支持：overview, list, item, search, install, refresh
+    POST 支持：install, add, enable, del
+    """
+    def get(self, action, name=None):
         self.authed()
         from .mod import pip
-        if sec in ('overview', 'list', 'item', 'search', 'install', 'refresh'):
-            if name is None:
-                name = self.get_argument('name', '') or self.get_argument('repo', '')
-            context = {
-                'action': sec,
-                'name': name,
-                'repo': name,
-                'keyword': self.get_argument('keyword', '')
-            }
-            self.write(pip.web_handler(context))
+        if action in ('overview', 'list', 'item', 'search', 'install', 'refresh'):
+            pip.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
-    def post(self, sec, name=None):
+    def post(self, action, name=None):
         self.authed()
         from .mod import pip
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置 pip ！'})
             return
-        if sec == 'install':
-            if name is None:
-                name = self.get_argument('name', '') or self.get_argument('pkg', '')
-            self.write(pip.web_handler({'action': 'install', 'name': name}))
+        if action in ('install', 'add', 'enable', 'del'):
+            pip.web_handler(self, action)
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
+
+
+class RepoDockerHandler(RequestHandler):
+    """Docker 镜像源处理器。
+
+    路由：/api/sources/docker/<action>[/<name>]
+
+    GET 支持：overview, list, item
+    POST 支持：switch, enable, add, edit, del
+    """
+    def get(self, action, name=None):
+        self.authed()
+        from .mod import docker_source
+        if action in ('overview', 'list', 'item'):
+            docker_source.web_handler(self, action)
+        else:
+            self.write({'code': -1, 'msg': '未定义的操作！'})
+
+    def post(self, action, name=None):
+        self.authed()
+        from .mod import docker_source
+        if self.config.get('runtime', 'mode') == 'demo':
+            self.write({'code': -1, 'msg': '演示模式不允许设置 Docker ！'})
+            return
+        if action in ('switch', 'enable', 'add', 'edit', 'del'):
+            docker_source.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
 
 class RepoSupportedHandler(RequestHandler):
-    """Handler for supported package managers."""
+    """支持的包管理器处理器。"""
     def get(self):
         self.authed()
         from .mod import system as sysmod
@@ -1428,26 +1340,31 @@ class RepoSupportedHandler(RequestHandler):
             'yum': False,
             'dnf': False,
             'apt': False,
+            'docker': False,
         }
         if family == 'darwin':
             supported['brew'] = True
             supported['pip'] = True
+            supported['docker'] = True
         elif family == 'rhel':
             supported['yum'] = True
             supported['dnf'] = True
             supported['pip'] = True
+            supported['docker'] = True
         elif family == 'debian':
             supported['apt'] = True
             supported['pip'] = True
+            supported['docker'] = True
         else:
-            # fallback: detect by command availability
+            # 回退：通过命令可用性检测
             from shutil import which
             supported['brew'] = which('brew') is not None
             supported['pip'] = which('pip') is not None or which('pip3') is not None
             supported['yum'] = which('yum') is not None
             supported['dnf'] = which('dnf') is not None
             supported['apt'] = which('apt') is not None
-        # ensure pip available across systems
+            supported['docker'] = which('docker') is not None
+        # 确保 pip 在各系统上可用
         if not supported['pip']:
             from shutil import which
             supported['pip'] = which('pip') is not None or which('pip3') is not None
@@ -1455,16 +1372,14 @@ class RepoSupportedHandler(RequestHandler):
 
 
 class FirewallHandler(RequestHandler):
-    """Handler for Firewall Management."""
+    """防火墙管理处理器。"""
     def get(self, action):
         self.authed()
         if self.config.get('runtime', 'mode') == 'demo':
             self.write({'code': -1, 'msg': '演示模式不允许设置防火墙！'})
             return
         
-        context = {'action': action}
-        result = _get_mod('firewall').web_handler(context)
-        self.write(result)
+        _get_mod('firewall').web_handler(self, action)
     
     def post(self, action):
         self.authed()
@@ -1472,38 +1387,25 @@ class FirewallHandler(RequestHandler):
             self.write({'code': -1, 'msg': '演示模式不允许设置防火墙！'})
             return
         
-        context = {
-            'action': action,
-            'port': self.get_argument('port', ''),
-            'protocol': self.get_argument('protocol', 'tcp'),
-            'zone': self.get_argument('zone', ''),
-            'ip': self.get_argument('ip', ''),
-            'action_type': self.get_argument('action_type', 'allow')
-        }
-        
-        result = _get_mod('firewall').web_handler(context)
-        self.write(result)
+        _get_mod('firewall').web_handler(self, action)
 
 
 class BackendHandler(RequestHandler):
-    """Backend process manager
-    """
+    """后台进程管理器。"""
     def initialize(self):
         self.task_manager = _get_task_manager()(self.settings, self.config)
 
     def get(self, jobname):
-        """Get the status of the new process
-        """
+        """获取新进程的状态。"""
         self.authed()
         self.write(self.task_manager._get_job(jobname))
 
     def post(self, jobname):
-        """Create a new backend process
-        """
+        """创建新的后台进程。"""
         print('jobname: ', jobname)
         self.authed()
 
-        # centos/redhat only job
+        # centos/redhat 专属任务
         if jobname in ('yum_repolist', 'yum_installrepo', 'yum_info',
                        'yum_install', 'yum_uninstall', 'yum_ext_info'):
             if self.settings['os_name'] not in ('centos', 'redhat'):
@@ -1535,7 +1437,7 @@ class BackendHandler(RequestHandler):
                 self.task_manager._call(partial(self.task_manager.service, action, service, name))
         elif jobname == 'datetime':
             newdatetime = self.get_argument('datetime', '')
-            # check datetime format
+            # 检查时间格式
             try:
                 datetime.strptime(newdatetime, '%Y-%m-%d %H:%M:%S')
             except:
@@ -1873,7 +1775,7 @@ class BackendHandler(RequestHandler):
             source = self.get_argument('source', '')
             target = self.get_argument('target', '')
             self.task_manager._call(partial(self.task_manager.uploadtoftp, address, account, password, source, target))
-        else:   # undefined job
+        else:   # 未定义的任务
             self.write({'code': -1, 'msg': '未定义的操作！'})
             return
 
@@ -1881,8 +1783,7 @@ class BackendHandler(RequestHandler):
 
 
 class SSLTLSHandler(RequestHandler):
-    """Handler for SSL/TLS setting.
-    """
+    """SSL/TLS 设置处理器。"""
     def get(self, sec, x=None):
         self.authed()
         if self.config.get('runtime', 'mode') == 'demo':
@@ -1930,7 +1831,7 @@ class SSLTLSHandler(RequestHandler):
 
 
 class PluginStaticFileHandler(StaticFileHandler):
-    '''Static file handler for plugins with authentication check.'''
+    '''插件的静态文件处理器（含认证检查）。'''
     
     def initialize(self, path, default_filename=None):
         super().initialize(path, default_filename)
@@ -1955,10 +1856,10 @@ class PluginStaticFileHandler(StaticFileHandler):
 
 
 class PluginHandler(RequestHandler):
-    '''Handler for plugin management API.'''
+    '''插件管理 API 处理器。'''
     
     def _get_plugin_manager(self):
-        '''Get plugin manager instance.'''
+        '''获取插件管理器实例。'''
         if not hasattr(self.application, 'plugin_manager'):
             from .mod.plugins import PluginManager
             self.application.plugin_manager = PluginManager(self.application)

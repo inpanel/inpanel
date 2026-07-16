@@ -223,7 +223,9 @@ var UtilsProcessCtrl = [
 
         $scope.load = function () {
             $scope.loaded = true;
-            $scope.tab_sec(section);
+            $scope.checkVirt(function() {
+                $scope.tab_sec(section);
+            });
         };
 
         $scope.tab_sec = function (section) {
@@ -675,7 +677,9 @@ var StorageCtrl = [
 
         $scope.load = function () {
             $scope.loaded = true;
-            $scope.tab_sec(section);
+            $scope.checkVirt(function() {
+                $scope.tab_sec(section);
+            });
         };
 
         $scope.tab_sec = function (section) {
@@ -1428,11 +1432,11 @@ var StorageRemoteCtrl = [
     }
 ];
 
-var UtilsRepositoryCtrl = [
+var UtilsSourceCtrl = [
     '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
     function($scope, Module, $routeParams, Timeout, Request, Message, Backend, $location) {
-        var module = 'utils.repository';
-        Module.init(module, '软件仓库');
+        var module = 'utils.source';
+        Module.init(module, '软件源');
         $scope.loaded = false;
         $scope.activeTabName = '';
         $scope.pmList = [];
@@ -1440,17 +1444,42 @@ var UtilsRepositoryCtrl = [
         $scope.loading = {};
         $scope.loadingDetail = {};
         $scope.overview = {};
-        $scope.repos = {};
+        $scope.sources = {};
         $scope.detail = {};
         $scope.searchKeyword = {};
         $scope.installPkg = {};
         $scope.installing = {};
+        $scope.searchPkg = {};
+        $scope.filteredPackages = {};
+        $scope.selectedMirror = {};
+
+        $scope.mirrorSources = {
+            pip: [],
+            yum: [],
+            dnf: [],
+            apt: [],
+            brew: []
+        };
+
+        // 第三方专用源
+        $scope.thirdPartySources = {
+            yum: [],
+            dnf: [],
+            apt: [],
+            brew: []
+        };
+        $scope.loadingThirdParty = {
+            yum: false,
+            dnf: false,
+            apt: false,
+            brew: false
+        };
 
         $scope.load = function () {
-            Request.get('/api/repos/supported', function (res) {
+            Request.get('/api/sources/supported', function (res) {
                 if (res && res.code == 0) {
                     $scope.supported = res.data.supported || {};
-                    var order = ['brew', 'yum', 'dnf', 'apt', 'pip'];
+                    var order = ['brew', 'yum', 'dnf', 'apt', 'pip', 'docker'];
                     $scope.pmList = [];
                     angular.forEach(order, function(pm) {
                         if ($scope.supported[pm]) {
@@ -1464,10 +1493,12 @@ var UtilsRepositoryCtrl = [
                     angular.forEach($scope.pmList, function(pm) {
                         $scope.loading[pm] = false;
                         $scope.loadingDetail[pm] = false;
-                        $scope.repos[pm] = [];
+                        $scope.sources[pm] = [];
                         $scope.installing[pm] = false;
                         $scope.installPkg[pm] = '';
                         $scope.searchKeyword[pm] = '';
+                        $scope.searchPkg[pm] = '';
+                        $scope.filteredPackages[pm] = [];
                     });
                     $scope.loaded = true;
                     $scope.tab_sec(section);
@@ -1485,13 +1516,28 @@ var UtilsRepositoryCtrl = [
             if (!$scope.overview[section]) {
                 $scope.load_overview(section);
             }
-            if (!$scope.repos[section] || $scope.repos[section].length === 0) {
+            if (!$scope.sources[section] || $scope.sources[section].length === 0) {
                 $scope.load_list(section, true);
+            }
+            // brew 额外加载镜像源列表和第三方专用源
+            if (section === 'brew') {
+                if ($scope.brewMirrors.length === 0) {
+                    $scope.load_brew_mirrors();
+                }
+                if ($scope.brewThirdParty.length === 0) {
+                    $scope.load_brew_third_party();
+                }
+            }
+            // yum/dnf/apt 加载第三方专用源
+            if (['yum', 'dnf', 'apt'].indexOf(section) > -1) {
+                if (!$scope.thirdPartySources[section] || $scope.thirdPartySources[section].length === 0) {
+                    $scope.load_third_party(section);
+                }
             }
         };
 
         $scope.load_overview = function(pm) {
-            Request.get('/api/repos/' + pm + '/overview', function (res) {
+            Request.get('/api/sources/' + pm + '/overview', function (res) {
                 if (res && res.code == 0) {
                     $scope.overview[pm] = res.data;
                 }
@@ -1499,51 +1545,52 @@ var UtilsRepositoryCtrl = [
         };
 
         $scope.load_list = function(pm, force) {
-            if (!force && !$scope.loading[pm] && $scope.repos[pm] && $scope.repos[pm].length > 0) {
+            if (!force && !$scope.loading[pm] && $scope.sources[pm] && $scope.sources[pm].length > 0) {
                 return;
             }
             $scope.loading[pm] = true;
-            $scope.repos[pm] = [];
+            $scope.sources[pm] = [];
             $scope.searchKeyword[pm] = '';
-            Request.get('/api/repos/' + pm + '/list', function (res) {
+            Request.get('/api/sources/' + pm + '/list', function (res) {
                 $scope.loading[pm] = false;
                 if (res && res.code == 0) {
-                    $scope.repos[pm] = res.data || [];
+                    $scope.sources[pm] = res.data || [];
                 }
             }, null, true);
         };
 
-        $scope.search_repos = function(pm) {
+        $scope.search_sources = function(pm) {
             var kw = ($scope.searchKeyword[pm] || '').trim();
             if (!kw) {
                 $scope.load_list(pm, true);
                 return;
             }
             $scope.loading[pm] = true;
-            Request.get('/api/repos/' + pm + '/search?keyword=' + encodeURIComponent(kw), function (res) {
+            Request.get('/api/sources/' + pm + '/search?keyword=' + encodeURIComponent(kw), function (res) {
                 $scope.loading[pm] = false;
                 if (res && res.code == 0) {
-                    $scope.repos[pm] = res.data || [];
+                    $scope.sources[pm] = res.data || [];
                 }
             }, null, true);
         };
 
         $scope.show_detail = function(pm, name) {
             $scope.loadingDetail[pm] = true;
-            Request.get('/api/repos/' + pm + '/item?name=' + encodeURIComponent(name), function (res) {
+            Request.get('/api/sources/' + pm + '/item?name=' + encodeURIComponent(name), function (res) {
                 $scope.loadingDetail[pm] = false;
                 if (res && res.code == 0) {
                     $scope.detail[pm] = res.data;
                     if (!$scope.detail[pm].name) {
                         $scope.detail[pm].name = name;
                     }
+                    $scope.filter_packages(pm);
                 }
             }, null, true);
         };
 
         $scope.refresh = function(pm) {
             $scope.loading[pm] = true;
-            Request.get('/api/repos/' + pm + '/refresh', function (res) {
+            Request.get('/api/sources/' + pm + '/refresh', function (res) {
                 $scope.loading[pm] = false;
                 if (res && res.code == 0) {
                     $scope.load_list(pm, true);
@@ -1552,7 +1599,7 @@ var UtilsRepositoryCtrl = [
         };
 
         $scope.service_control = function(pm, op) {
-            Request.post('/api/repos/' + pm + '/service', { op: op }, function(data) {
+            Request.post('/api/sources/' + pm + '/service', { op: op }, function(data) {
                 if (data.code == 0) {
                     $scope.load_overview(pm);
                 }
@@ -1570,13 +1617,431 @@ var UtilsRepositoryCtrl = [
                 return;
             }
             $scope.installing[pm] = true;
-            Request.post('/api/repos/' + pm + '/install', { name: name, pkg: name }, function(data) {
+            Request.post('/api/sources/' + pm + '/install', { name: name, pkg: name }, function(data) {
                 $scope.installing[pm] = false;
                 if (data.code == 0) {
                     $scope.installPkg[pm] = '';
                     if ($scope.detail[pm]) {
                         $scope.show_detail(pm, $scope.detail[pm].name);
                     }
+                }
+            });
+        };
+
+        $scope.add_source = function(pm) {
+            $scope.currentSource = {
+                pm: pm,
+                action: 'add',
+                name: '',
+                serverid: '',
+                description: '',
+                baseurl: '',
+                enabled: true,
+                gpgcheck: false
+            };
+            $('#source-modal').modal();
+        };
+
+        $scope.edit_source = function(pm, name) {
+            $scope.loadingDetail[pm] = true;
+            Request.get('/api/sources/' + pm + '/item?name=' + encodeURIComponent(name), function (res) {
+                $scope.loadingDetail[pm] = false;
+                if (res && res.code == 0) {
+                    $scope.detail[pm] = res.data;
+                    if (!$scope.detail[pm].name) {
+                        $scope.detail[pm].name = name;
+                    }
+                    var repos = $scope.detail[pm].repos || {};
+                    var firstKey = Object.keys(repos)[0];
+                    var repoConfig = repos[firstKey] || {};
+                    $scope.currentSource = {
+                        pm: pm,
+                        action: 'edit',
+                        name: name,
+                        serverid: firstKey || '',
+                        description: repoConfig.name || '',
+                        baseurl: repoConfig.baseurl || '',
+                        enabled: repoConfig.enabled == 1,
+                        gpgcheck: repoConfig.gpgcheck == 1
+                    };
+                    $('#source-modal').modal();
+                }
+            }, null, true);
+        };
+
+        $scope.delete_source = function(pm, name) {
+            if (!confirm('确定要删除软件源配置文件 ' + name + ' 吗？')) {
+                return;
+            }
+            $scope.loading[pm] = true;
+            Request.post('/api/sources/' + pm + '/del', { repo: name }, function(data) {
+                $scope.loading[pm] = false;
+                if (data.code == 0) {
+                    $scope.load_list(pm, true);
+                    $scope.detail[pm] = null;
+                }
+            });
+        };
+
+        $scope.save_source = function() {
+            var pm = $scope.currentSource.pm;
+            var action = $scope.currentSource.action;
+
+            var data = {};
+            if ((pm === 'pip' || pm === 'brew' || pm === 'docker') && action === 'add') {
+                // PIP/Brew/Docker 添加源：只需要名称和链接
+                var name = $scope.currentSource.name || '';
+                var url = $scope.currentSource.baseurl || '';
+                if (!url) {
+                    Message.setError('源地址不能为空！');
+                    return;
+                }
+                data = {
+                    name: name,
+                    url: url
+                };
+            } else {
+                data = {
+                    repo: $scope.currentSource.name,
+                    serverid: $scope.currentSource.serverid,
+                    name: $scope.currentSource.description || $scope.currentSource.name,
+                    baseurl: $scope.currentSource.baseurl,
+                    enabled: $scope.currentSource.enabled,
+                    gpgcheck: $scope.currentSource.gpgcheck
+                };
+            }
+
+            $scope.loading[pm] = true;
+            Request.post('/api/sources/' + pm + '/' + action, data, function(res) {
+                $scope.loading[pm] = false;
+                if (res && res.code == 0) {
+                    $('#source-modal').modal('hide');
+                    $scope.load_list(pm, true);
+                }
+            });
+        };
+
+        $scope.filter_packages = function(pm) {
+            var kw = ($scope.searchPkg[pm] || '').toLowerCase().trim();
+            var packages = $scope.detail[pm] && $scope.detail[pm].packages || [];
+            if (!kw) {
+                $scope.filteredPackages[pm] = packages;
+                return;
+            }
+            $scope.filteredPackages[pm] = packages.filter(function(pkg) {
+                return pkg.name && pkg.name.toLowerCase().indexOf(kw) > -1;
+            });
+        };
+
+        $scope.clear_pkg_filter = function(pm) {
+            $scope.searchPkg[pm] = '';
+            $scope.filter_packages(pm);
+        };
+
+        $scope.switch_mirror = function(pm, mirrorName) {
+            // 如果没传 mirrorName，从下拉框 selectedMirror 获取
+            if (!mirrorName) {
+                mirrorName = $scope.selectedMirror[pm];
+            }
+            if (!mirrorName) {
+                return;
+            }
+            // 所有 PM 统一从接口数据 sources 中查找
+            var mirror = null;
+            angular.forEach($scope.sources[pm], function(m) {
+                if (m.name == mirrorName) {
+                    mirror = m;
+                }
+            });
+            if (!mirror) {
+                return;
+            }
+            if (!confirm('确定要切换到 ' + mirror.name + ' 吗？')) {
+                return;
+            }
+            $scope.loading[pm] = true;
+            var data = {
+                name: mirror.name,
+                url: mirror.url || mirror.path
+            };
+            Request.post('/api/sources/' + pm + '/enable', data, function(res) {
+                $scope.loading[pm] = false;
+                if (res && res.code == 0) {
+                    $scope.selectedMirror[pm] = '';
+                    $scope.load_list(pm, true);
+                }
+            });
+        };
+
+        // 列表中直接点击切换按钮
+        $scope.switch_mirror_confirm = function(pm, repo) {
+            if (!repo) return;
+            if (!confirm('确定要切换到 ' + repo.name + ' 吗？')) {
+                return;
+            }
+            $scope.loading[pm] = true;
+            var data = {
+                name: repo.name,
+                url: repo.url || repo.path
+            };
+            Request.post('/api/sources/' + pm + '/enable', data, function(res) {
+                $scope.loading[pm] = false;
+                if (res && res.code == 0) {
+                    $scope.load_list(pm, true);
+                }
+            });
+        };
+
+        // =============================================================
+        // Homebrew 专用：镜像源管理
+        // =============================================================
+
+        $scope.brewMirrors = [];
+        $scope.loadingMirrors = { brew: false };
+        $scope.brewDetailMirror = '';
+        $scope.brewCustomMirrorUrl = '';
+        $scope.brewThirdParty = [];
+
+        $scope.load_brew_mirrors = function() {
+            $scope.loadingMirrors.brew = true;
+            Request.get('/api/sources/brew/mirrors', function(res) {
+                $scope.loadingMirrors.brew = false;
+                if (res && res.code == 0) {
+                    $scope.brewMirrors = res.data || [];
+                }
+            }, null, true);
+        };
+
+        $scope.add_brew_mirror = function() {
+            var name = prompt('请输入镜像源名称：');
+            if (!name || !name.trim()) return;
+            var url = prompt('请输入镜像源地址：', 'https://');
+            if (!url || !url.trim()) return;
+            $scope.loadingMirrors.brew = true;
+            Request.post('/api/sources/brew/mirror-add', { name: name.trim(), url: url.trim() }, function(res) {
+                $scope.loadingMirrors.brew = false;
+                if (res && res.code == 0) {
+                    $scope.load_brew_mirrors();
+                }
+            });
+        };
+
+        $scope.edit_brew_mirror = function(mirror) {
+            if (!mirror) return;
+            var newName = prompt('修改镜像源名称：', mirror.name);
+            if (!newName || !newName.trim()) return;
+            var newUrl = prompt('修改镜像源地址：', mirror.url || mirror.path);
+            if (!newUrl || !newUrl.trim()) return;
+            $scope.loadingMirrors.brew = true;
+            Request.post('/api/sources/brew/mirror-edit', {
+                name: mirror.name,
+                new_name: newName.trim(),
+                url: newUrl.trim()
+            }, function(res) {
+                $scope.loadingMirrors.brew = false;
+                if (res && res.code == 0) {
+                    $scope.load_brew_mirrors();
+                }
+            });
+        };
+
+        $scope.delete_brew_mirror = function(mirror) {
+            if (!mirror || !confirm('确定要删除镜像源「' + mirror.name + '」吗？')) return;
+            $scope.loadingMirrors.brew = true;
+            Request.post('/api/sources/brew/mirror-del', { name: mirror.name }, function(res) {
+                $scope.loadingMirrors.brew = false;
+                if (res && res.code == 0) {
+                    $scope.load_brew_mirrors();
+                }
+            });
+        };
+
+        $scope.brew_switch_mirror = function(mirror) {
+            if (!mirror || !confirm('确定要切换到镜像源「' + mirror.name + '」吗？')) return;
+            $scope.loadingMirrors.brew = true;
+            Request.post('/api/sources/brew/enable', {
+                name: mirror.name,
+                url: mirror.url || mirror.path,
+                repo: 'homebrew/core'
+            }, function(res) {
+                $scope.loadingMirrors.brew = false;
+                if (res && res.code == 0) {
+                    $scope.load_brew_mirrors();
+                }
+            });
+        };
+
+        // =============================================================
+        // Homebrew 专用：仓库管理（tap）
+        // =============================================================
+
+        $scope.add_brew_tap = function() {
+            var name = prompt('请输入 tap 名称（如 user/repo）：');
+            if (!name || !name.trim()) return;
+            $scope.loading.brew = true;
+            Request.post('/api/sources/brew/tap-add', { name: name.trim() }, function(res) {
+                $scope.loading.brew = false;
+                if (res && res.code == 0) {
+                    $scope.load_list('brew', true);
+                }
+            });
+        };
+
+        $scope.edit_brew_tap = function(repo) {
+            if (!repo) return;
+            var newUrl = prompt('修改仓库 git remote URL：', repo.path || '');
+            if (!newUrl || !newUrl.trim()) return;
+            $scope.loading.brew = true;
+            Request.post('/api/sources/brew/repo-edit', { name: repo.name, url: newUrl.trim() }, function(res) {
+                $scope.loading.brew = false;
+                if (res && res.code == 0) {
+                    $scope.load_list('brew', true);
+                }
+            });
+        };
+
+        $scope.delete_brew_tap = function(repo) {
+            if (!repo || !confirm('确定要删除仓库「' + repo.name + '」吗？')) return;
+            $scope.loading.brew = true;
+            Request.post('/api/sources/brew/tap-del', { name: repo.name }, function(res) {
+                $scope.loading.brew = false;
+                if (res && res.code == 0) {
+                    $scope.load_list('brew', true);
+                    $scope.detail.brew = null;
+                }
+            });
+        };
+
+        // 仓库详情中切换镜像源
+        $scope.brew_detail_switch_mirror = function() {
+            var selectedName = $scope.brewDetailMirror;
+            if (!selectedName) return;
+            var mirrors = $scope.detail.brew && $scope.detail.brew.mirrors || [];
+            var mirror = null;
+            for (var i = 0; i < mirrors.length; i++) {
+                if (mirrors[i].name === selectedName) {
+                    mirror = mirrors[i];
+                    break;
+                }
+            }
+            if (!mirror) return;
+            if (!confirm('确定要将仓库「' + $scope.detail.brew.name + '」的镜像源切换到「' + selectedName + '」吗？新地址：' + (mirror.url || mirror.path))) return;
+            $scope.loadingDetail.brew = true;
+            Request.post('/api/sources/brew/switch', {
+                name: selectedName,
+                url: mirror.url || mirror.path,
+                repo: $scope.detail.brew.name,
+                tap: $scope.detail.brew.name
+            }, function(res) {
+                $scope.loadingDetail.brew = false;
+                if (res && res.code == 0) {
+                    $scope.brewDetailMirror = '';
+                    $scope.show_detail('brew', $scope.detail.brew.name);
+                    $scope.load_brew_mirrors();
+                }
+            });
+        };
+
+        $scope.brew_detail_switch_custom = function() {
+            var url = ($scope.brewCustomMirrorUrl || '').trim();
+            if (!url) return;
+            if (!confirm('确定要将仓库「' + $scope.detail.brew.name + '」的镜像源切换到自定义地址吗？' + url)) return;
+            $scope.loadingDetail.brew = true;
+            Request.post('/api/sources/brew/switch', {
+                name: '自定义镜像',
+                url: url,
+                repo: $scope.detail.brew.name,
+                tap: $scope.detail.brew.name
+            }, function(res) {
+                $scope.loadingDetail.brew = false;
+                if (res && res.code == 0) {
+                    $scope.brewCustomMirrorUrl = '';
+                    $scope.show_detail('brew', $scope.detail.brew.name);
+                    $scope.load_brew_mirrors();
+                }
+            });
+        };
+
+        $scope.load_brew_third_party = function() {
+            $scope.loadingThirdParty.brew = true;
+            Request.get('/api/sources/brew/third_party', function(res) {
+                $scope.loadingThirdParty.brew = false;
+                if (res && res.code == 0) {
+                    $scope.brewThirdParty = res.data || [];
+                }
+            }, null, true);
+        };
+
+        $scope.install_brew_third_party = function(source) {
+            if (!source || !confirm('确定要安装第三方专用源「' + source.name + '」吗？')) return;
+            $scope.loadingThirdParty.brew = true;
+            Request.post('/api/sources/brew/third_party-install', { id: source.id }, function(res) {
+                $scope.loadingThirdParty.brew = false;
+                if (res && res.code == 0) {
+                    $scope.load_brew_third_party();
+                    $scope.load_list('brew', true);
+                }
+            });
+        };
+
+        // =============================================================
+        // 通用第三方专用源（yum/dnf/apt）
+        // =============================================================
+
+        $scope.load_third_party = function(pm) {
+            if (!pm) return;
+            $scope.loadingThirdParty[pm] = true;
+            Request.get('/api/sources/' + pm + '/third_party', function(res) {
+                $scope.loadingThirdParty[pm] = false;
+                if (res && res.code == 0) {
+                    $scope.thirdPartySources[pm] = res.data || [];
+                }
+            }, null, true);
+        };
+
+        $scope.install_third_party = function(pm, source) {
+            if (!pm || !source) return;
+            if (!confirm('确定要安装第三方专用源「' + source.name + '」吗？' +(source.note || '') + '安装后将执行源更新。')) return;
+            $scope.loadingThirdParty[pm] = true;
+            Request.post('/api/sources/' + pm + '/third_party-install', { id: source.id }, function(res) {
+                $scope.loadingThirdParty[pm] = false;
+                if (res && res.code == 0) {
+                    $scope.load_third_party(pm);
+                    $scope.load_list(pm, true);
+                }
+            });
+        };
+
+        // =============================================================
+        // Docker 专用：镜像源编辑/删除
+        // =============================================================
+
+        $scope.edit_docker_mirror = function(mirror) {
+            if (!mirror) return;
+            var newName = prompt('修改镜像源名称：', mirror.name);
+            if (!newName || !newName.trim()) return;
+            var newUrl = prompt('修改镜像源地址：', mirror.url || mirror.path);
+            if (!newUrl || !newUrl.trim()) return;
+            $scope.loading.docker = true;
+            Request.post('/api/sources/docker/edit', {
+                name: mirror.name,
+                new_name: newName.trim(),
+                url: newUrl.trim()
+            }, function(res) {
+                $scope.loading.docker = false;
+                if (res && res.code == 0) {
+                    $scope.load_list('docker', true);
+                }
+            });
+        };
+
+        $scope.delete_docker_mirror = function(mirror) {
+            if (!mirror || !confirm('确定要删除镜像源「' + mirror.name + '」吗？')) return;
+            $scope.loading.docker = true;
+            Request.post('/api/sources/docker/del', { name: mirror.name }, function(res) {
+                $scope.loading.docker = false;
+                if (res && res.code == 0) {
+                    $scope.load_list('docker', true);
                 }
             });
         };
@@ -1930,7 +2395,9 @@ var UtilsShellCtrl = ['$scope', '$routeParams', 'Module', 'Timeout', 'Request',
 
         $scope.load = function () {
             $scope.loaded = true;
-            $scope.tab_sec(section);
+            $scope.checkVirt(function() {
+                $scope.tab_sec(section);
+            });
         };
         $scope.tab_sec = function (section) {
             var init = Module.getSection() != section

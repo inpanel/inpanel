@@ -5,7 +5,7 @@
 #
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for reading and writing Server Information'''
+'''服务器信息读写模块'''
 
 import datetime
 import fcntl
@@ -639,35 +639,123 @@ class ServerInfo(object):
         """
         blks = {}
         if kernel_name == 'Linux':
-            p = Popen(shlex.split('/sbin/blkid'), stdout=PIPE, close_fds=True)
-            p.stdout.read()
+            # Try /etc/blkid/blkid.tab first (for older systems / OpenVZ)
+            if Path('/etc/blkid/blkid.tab').exists():
+                with open('/etc/blkid/blkid.tab', encoding='utf-8') as f:
+                    for line in f:
+                        dom = parseString(line).documentElement
+                        _fstype = dom.getAttribute('TYPE')
+                        _uuid = dom.getAttribute('UUID')
+                        _devname = dom.firstChild.nodeValue.replace('/dev/', '')
+                        partinfo = {
+                            'name': _devname,
+                            'fstype': _fstype,
+                            'uuid': _uuid,
+                        }
+                        if uuid and uuid == _uuid:
+                            return partinfo
+                        elif devname and devname == _devname:
+                            return partinfo
+                        else:
+                            blks[_devname] = partinfo
+                if uuid or devname:
+                    return None
+            else:
+                # Fallback: parse /sbin/blkid output directly
+                p = Popen(shlex.split('/sbin/blkid -o export'), stdout=PIPE, close_fds=True)
+                output = p.stdout.read().decode('utf-8', errors='replace')
+                p.wait()
+
+                current = {}
+                for line in output.split('\n'):
+                    line = line.strip()
+                    if not line:
+                        if current:
+                            _devname = current.get('DEVNAME', '').replace('/dev/', '')
+                            if _devname:
+                                partinfo = {
+                                    'name': _devname,
+                                    'fstype': current.get('TYPE', ''),
+                                    'uuid': current.get('UUID', ''),
+                                }
+                                if uuid and uuid == partinfo['uuid']:
+                                    return partinfo
+                                elif devname and devname == _devname:
+                                    return partinfo
+                                else:
+                                    blks[_devname] = partinfo
+                            current = {}
+                        continue
+                    if '=' in line:
+                        k, v = line.split('=', 1)
+                        current[k] = v
+                # Don't forget the last entry
+                if current:
+                    _devname = current.get('DEVNAME', '').replace('/dev/', '')
+                    if _devname:
+                        partinfo = {
+                            'name': _devname,
+                            'fstype': current.get('TYPE', ''),
+                            'uuid': current.get('UUID', ''),
+                        }
+                        if uuid and uuid == partinfo['uuid']:
+                            return partinfo
+                        elif devname and devname == _devname:
+                            return partinfo
+                        else:
+                            blks[_devname] = partinfo
+                if uuid or devname:
+                    return None
+        elif kernel_name == 'Darwin':
+            # macOS: use diskutil to get disk/partition info
+            p = Popen(shlex.split('/usr/sbin/diskutil list -plist'), stdout=PIPE, close_fds=True)
+            output = p.stdout.read()
             p.wait()
-
-            # OpenVZ may not have this file
-            if not Path('/etc/blkid/blkid.tab').exists():
-                return None
-
-            with open('/etc/blkid/blkid.tab', encoding='utf-8') as f:
-                for line in f:
-                    dom = parseString(line).documentElement
-                    _fstype = dom.getAttribute('TYPE')
-                    _uuid = dom.getAttribute('UUID')
-                    _devname = dom.firstChild.nodeValue.replace('/dev/', '')
-                    partinfo = {
-                        'name': _devname,
-                        'fstype': _fstype,
-                        'uuid': _uuid,
-                    }
-                    if uuid and uuid == _uuid:
-                        return partinfo
-                    elif devname and devname == _devname:
-                        return partinfo
-                    else:
-                        blks[_devname] = partinfo
+            if output:
+                try:
+                    dom = parseString(output).documentElement
+                    disks_elems = dom.getElementsByTagName('dict')
+                    for disk_dict in disks_elems:
+                        current_devname = ''
+                        current_uuid = ''
+                        current_fstype = ''
+                        key_elems = disk_dict.getElementsByTagName('key')
+                        for key_elem in key_elems:
+                            key = key_elem.firstChild.nodeValue if key_elem.firstChild else ''
+                            if key == 'DeviceIdentifier':
+                                val = key_elem.nextSibling
+                                while val and val.nodeType != val.ELEMENT_NODE:
+                                    val = val.nextSibling
+                                if val:
+                                    current_devname = val.firstChild.nodeValue if val.firstChild else ''
+                            elif key == 'VolumeUUID':
+                                val = key_elem.nextSibling
+                                while val and val.nodeType != val.ELEMENT_NODE:
+                                    val = val.nextSibling
+                                if val:
+                                    current_uuid = val.firstChild.nodeValue if val.firstChild else ''
+                            elif key == 'Content':
+                                val = key_elem.nextSibling
+                                while val and val.nodeType != val.ELEMENT_NODE:
+                                    val = val.nextSibling
+                                if val:
+                                    current_fstype = val.firstChild.nodeValue if val.firstChild else ''
+                        if current_devname:
+                            partinfo = {
+                                'name': current_devname,
+                                'fstype': current_fstype,
+                                'uuid': current_uuid,
+                            }
+                            if uuid and uuid == current_uuid:
+                                return partinfo
+                            elif devname and devname == current_devname:
+                                return partinfo
+                            else:
+                                blks[current_devname] = partinfo
+                except Exception:
+                    pass
             if uuid or devname:
                 return None
-        elif kernel_name == 'Darwin':
-            pass
         elif kernel_name == 'Windows':
             pass
 
@@ -677,6 +765,9 @@ class ServerInfo(object):
     def diskinfo(self):
         """Return a dictionary contain info of all disks and partitions.
         """
+        if kernel_name == 'Darwin':
+            return self._diskinfo_darwin()
+
         disks = {
             'count': 0,
             'totalsize': 0,
@@ -856,6 +947,104 @@ class ServerInfo(object):
             else:
                 unpartition = b2h(unpartition)
             disks['partitions'][i]['unpartition'] = unpartition
+        return disks
+
+    @classmethod
+    def _diskinfo_darwin(self):
+        """macOS version of diskinfo based on mounts data."""
+        disks = {
+            'count': 0,
+            'totalsize': 0,
+            'partitions': [],
+            'lvm': {
+                'partcount': 0,
+                'unpartition': 0,
+                'partitions': []
+            }
+        }
+
+        mounts = ServerInfo.mounts()
+
+        if not mounts:
+            return disks
+
+        # Group mounts by device prefix (e.g., /dev/disk1s1 -> disk1)
+        # Use the part before the first 's' as the disk name
+        disk_map = {}
+        for m in mounts:
+            dev = m['dev']
+            # Extract disk name from dev path like /dev/disk1s1 -> disk1
+            devname = dev.replace('/dev/', '')
+            if 's' in devname:
+                disk_name = devname[:devname.index('s')]
+            else:
+                disk_name = devname
+
+            if disk_name not in disk_map:
+                disk_map[disk_name] = {
+                    'partitions': [],
+                    'total_bytes': 0,
+                    'used_bytes': 0,
+                }
+
+            try:
+                stat = os.statvfs(m['path'])
+                raw_total = stat.f_blocks * stat.f_bsize
+                raw_free = stat.f_bfree * stat.f_bsize
+                raw_used = raw_total - raw_free
+            except Exception:
+                raw_total = 0
+                raw_free = 0
+                raw_used = 0
+
+            # For APFS, multiple mount points share the same container space.
+            # Only count the primary mount (/) for total size.
+            if m['path'] == '/':
+                disk_map[disk_name]['total_bytes'] = raw_total
+                disk_map[disk_name]['used_bytes'] = raw_used
+
+            disk_map[disk_name]['partitions'].append({
+                'major': 0,
+                'minor': 0,
+                'name': devname,
+                'size': m.get('total', ''),
+                'is_hw': False,
+                'is_pv': False,
+                'is_lv': False,
+                'fstype': m.get('fstype', ''),
+                'uuid': '',
+                'mount': m['path'],
+                'partcount': 0,
+            })
+
+        for disk_name, disk_data in disk_map.items():
+            raw_total = disk_data['total_bytes']
+            hw_disk = {
+                'major': 0,
+                'minor': 0,
+                'name': disk_name,
+                'size': b2h(raw_total),
+                'is_hw': True,
+                'is_pv': False,
+                'partcount': len(disk_data['partitions']),
+                'partitions': disk_data['partitions'],
+                'unpartition': raw_total - disk_data['used_bytes'],
+            }
+
+            disks['partitions'].append(hw_disk)
+            disks['count'] += 1
+            disks['totalsize'] += raw_total
+
+        disks['totalsize'] = b2h(disks['totalsize'])
+
+        for i, part in enumerate(disks['partitions']):
+            unpartition = part['unpartition']
+            if unpartition <= 10 * 1024**2:
+                unpartition = '0'
+            else:
+                unpartition = b2h(unpartition)
+            disks['partitions'][i]['unpartition'] = unpartition
+
         return disks
 
     @classmethod

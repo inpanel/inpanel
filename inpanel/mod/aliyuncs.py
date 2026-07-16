@@ -6,7 +6,7 @@
 # ECSMate is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''ECS SDK'''
+'''阿里云 ECS SDK'''
 
 import time
 import hmac

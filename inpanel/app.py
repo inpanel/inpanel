@@ -4,7 +4,7 @@
 # Copyright (c) 2017-2026 Jackson Dou
 # All rights reserved.
 #
-# InPanel is distributed under the terms of The New BSD License.
+# InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
 import os
@@ -27,7 +27,7 @@ from .utils import make_cookie_secret
 
 
 def _read_pid(pidfile):
-    """read pid from pidfile, return None if not exists or invalid"""
+    """从 pid 文件读取进程 ID，若文件不存在或内容无效则返回 None"""
     pidfile_path = Path(pidfile)
     if not pidfile_path.exists():
         return None
@@ -39,7 +39,7 @@ def _read_pid(pidfile):
 
 
 def _is_running(pid):
-    """check if process with pid is running"""
+    """检查指定 PID 的进程是否正在运行"""
     if pid is None or pid <= 0:
         return False
     try:
@@ -50,7 +50,7 @@ def _is_running(pid):
 
 
 def _wait_stop(pid, timeout=10):
-    """wait for process to stop, return True if stopped"""
+    """等待进程停止，超时返回 False，成功停止返回 True"""
     for _ in range(timeout * 2):
         if not _is_running(pid):
             return True
@@ -94,7 +94,7 @@ Examples:
 
 
 def cmd_start():
-    """start the service in background"""
+    """以后台守护进程方式启动服务"""
     pid = _read_pid(pidfile)
     if pid and _is_running(pid):
         print(f'InPanel is already running with PID: {pid}')
@@ -132,11 +132,11 @@ def cmd_start():
         print(f'InPanel: fork failed: {e}')
         sys.exit(1)
 
-    # child process: detach and run server
+    # 子进程：脱离终端并运行服务器
     os.setsid()
     os.umask(0)
 
-    # redirect stdin/stdout/stderr to log file
+    # 重定向标准输入/输出/错误到日志文件
     sys.stdout.flush()
     sys.stderr.flush()
     with open('/dev/null', 'r') as f:
@@ -150,7 +150,7 @@ def cmd_start():
 
 
 def cmd_stop():
-    """stop the service"""
+    """停止服务"""
     pid = _read_pid(pidfile)
     if not pid:
         print('InPanel is not running (no pid file)')
@@ -178,7 +178,7 @@ def cmd_stop():
 
 
 def cmd_status():
-    """show service status"""
+    """显示服务运行状态"""
     pid = _read_pid(pidfile)
     if not pid:
         print('InPanel: not running')
@@ -197,7 +197,7 @@ def cmd_status():
 
 
 def cmd_restart():
-    """restart the service"""
+    """重启服务"""
     pid = _read_pid(pidfile)
     if pid and _is_running(pid):
         cmd_stop()
@@ -206,13 +206,13 @@ def cmd_restart():
 
 
 def cmd_reload():
-    """reload the service (same as restart)"""
+    """重新加载服务（与重启相同）"""
     print('InPanel: reloading (restart)...')
     cmd_restart()
 
 
 def cmd_uninstall(args=None):
-    """uninstall inpanel"""
+    """卸载 InPanel"""
     if os.geteuid() != 0:
         print('Error: uninstall must be run as root.')
         sys.exit(1)
@@ -246,7 +246,7 @@ def cmd_uninstall(args=None):
 
     print('Uninstalling InPanel...')
 
-    # remove systemd service
+    # 移除 systemd 服务
     if os.path.exists(systemd_service):
         try:
             subprocess.run(['systemctl', 'stop', 'inpanel'], stderr=subprocess.DEVNULL)
@@ -263,7 +263,7 @@ def cmd_uninstall(args=None):
     except Exception:
         pass
 
-    # remove init.d script
+    # 移除 init.d 脚本
     if os.path.exists(initd_script):
         try:
             subprocess.run(['chkconfig', '--del', 'inpanel'], stderr=subprocess.DEVNULL)
@@ -276,19 +276,19 @@ def cmd_uninstall(args=None):
         os.remove(initd_script)
         print(f'  removed: {initd_script}')
 
-    # remove binary / console script
+    # 移除二进制文件 / 控制台脚本
     if os.path.exists(bin_path):
         os.remove(bin_path)
         print(f'  removed: {bin_path}')
 
-    # remove python package via pip
+    # 通过 pip 移除 Python 包
     if run_type == 'system':
         try:
             subprocess.run([sys.executable, '-m', 'pip', 'uninstall', '-y', 'inpanel'],
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             print('  removed: inpanel python package')
         except Exception:
-            # try to find and remove manually
+            # 尝试手动查找并删除
             pkg_path = Path(__file__).parent.resolve()
             if pkg_path.exists() and ('site-packages' in str(pkg_path) or 'dist-packages' in str(pkg_path)):
                 egg_info = pkg_path.parent / 'inpanel.egg-info'
@@ -297,12 +297,12 @@ def cmd_uninstall(args=None):
                 shutil.rmtree(pkg_path, ignore_errors=True)
                 print(f'  removed: {pkg_path}')
 
-    # remove config files (optional)
+    # 移除配置文件（可选）
     if purge_config and config_path and os.path.exists(config_path):
         shutil.rmtree(config_path, ignore_errors=True)
         print(f'  removed: {config_path} (config files)')
 
-    # remove log files (optional)
+    # 移除日志文件（可选）
     if purge_logs and logging_path and os.path.exists(logging_path):
         shutil.rmtree(logging_path, ignore_errors=True)
         print(f'  removed: {logging_path} (log files)')
@@ -320,7 +320,7 @@ def cmd_uninstall(args=None):
 
 
 def run_server():
-    """run the server in foreground"""
+    """以前台模式运行服务器"""
     try:
         Path(logfile).parent.mkdir(parents=True, exist_ok=True)
         Path(logerror).parent.mkdir(parents=True, exist_ok=True)
@@ -356,8 +356,8 @@ def run_server():
         'cookie_secret' : 'debug' if DEBUG else make_cookie_secret(),
         'root_path'     : root_path,
         'data_path'     : data_path,
-        'index_path'    : str(Path(root_path) / 'templates' / 'index.html'),
-        'template_path' : str(Path(root_path) / 'templates'),
+        'index_path'    : str(Path(root_path) / 'public' / 'templates' / 'index.html'),
+        'template_path' : str(Path(root_path) / 'public' / 'templates'),
         'static_path'   : str(Path(root_path) / 'public'),
         'plugins_path'  : str(Path(data_path) / 'plugins'),
         'xsrf_cookies'  : True,
@@ -374,12 +374,13 @@ def run_server():
         (r'/api/process/(.+?)(?:/(.+))?', WebRequestProcess),
         (r'/api/time/(.+?)(?:/(.+))?', web.UtilsTimeHandler),
         (r'/api/ssl/(.+?)(?:/(.+))?', web.SSLTLSHandler),
-        (r'/api/repos/yum/(.+?)(?:/(.+))?', web.RepoYumHandler),
-        (r'/api/repos/dnf/(.+?)(?:/(.+))?', web.RepoDnfHandler),
-        (r'/api/repos/apt/(.+?)(?:/(.+))?', web.RepoAptHandler),
-        (r'/api/repos/brew/(.+?)(?:/(.+))?', web.RepoBrewHandler),
-        (r'/api/repos/pip/(.+?)(?:/(.+))?', web.RepoPipHandler),
-        (r'/api/repos/supported/?', web.RepoSupportedHandler),
+        (r'/api/sources/yum/(.+?)(?:/(.+))?', web.RepoYumHandler),
+        (r'/api/sources/dnf/(.+?)(?:/(.+))?', web.RepoDnfHandler),
+        (r'/api/sources/apt/(.+?)(?:/(.+))?', web.RepoAptHandler),
+        (r'/api/sources/brew/(.+?)(?:/(.+))?', web.RepoBrewHandler),
+        (r'/api/sources/pip/(.+?)(?:/(.+))?', web.RepoPipHandler),
+        (r'/api/sources/docker/(.+?)(?:/(.+))?', web.RepoDockerHandler),
+        (r'/api/sources/supported/?', web.RepoSupportedHandler),
         (r'/api/firewall/(.+)', web.FirewallHandler),
         (r'/api/setting/(.+)', web.SettingHandler),
         (r'/api/operation/(.+)', web.OperationHandler),
@@ -468,13 +469,13 @@ def run_server():
 
 
 def main():
-    # route 'config' subcommand to config module
+    # 将 'config' 子命令路由到 config 模块
     if len(sys.argv) > 1 and sys.argv[1] == 'config':
         from .config import main as config_main
         config_main(sys.argv[2:])
         return
 
-    # service control commands
+    # 服务控制命令
     if len(sys.argv) > 1:
         cmd = sys.argv[1].lower()
         if cmd == 'start':
@@ -511,7 +512,7 @@ def main():
             _print_help()
             sys.exit(1)
 
-    # no arguments: show help
+    # 无参数：显示帮助信息
     _print_help()
 
 

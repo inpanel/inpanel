@@ -1,0 +1,49 @@
+{
+  "docker_builtin_mirrors": [
+    {
+      "name": "Docker Hub 官方",
+      "url": "https://registry-1.docker.io",
+      "builtin": true
+    },
+    {
+      "name": "Docker Hub (Mirror)",
+      "url": "https://registry.docker-cn.com",
+      "builtin": true
+    },
+    {
+      "name": "中科大 Docker",
+      "url": "https://docker.mirrors.ustc.edu.cn",
+      "builtin": true
+    },
+    {
+      "name": "阿里云 Docker",
+      "url": "https://registry.cn-hangzhou.aliyuncs.com",
+      "builtin": true
+    },
+    {
+      "name": "腾讯云 Docker",
+      "url": "https://mirror.ccs.tencentyun.com",
+      "builtin": true
+    },
+    {
+      "name": "网易 Docker",
+      "url": "https://hub-mirror.c.163.com",
+      "builtin": true
+    },
+    {
+      "name": "百度 Docker",
+      "url": "https://mirror.baidubce.com",
+      "builtin": true
+    },
+    {
+      "name": "南京大学 Docker",
+      "url": "https://docker.nju.edu.cn",
+      "builtin": true
+    },
+    {
+      "name": "上海交大 Docker",
+      "url": "https://docker.mirrors.sjtug.sjtu.edu.cn",
+      "builtin": true
+    }
+  ]
+}

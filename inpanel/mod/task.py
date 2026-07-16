@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""Module for Task Management."""
+"""任务管理模块"""
 
 import time
 from datetime import datetime
@@ -18,7 +18,7 @@ from subprocess import PIPE, Popen
 import tornado.escape
 import tornado.httpclient
 
-from .. import remote
+from . import remote
 from ..base import app_api, os_versint
 from . import disk
 from . import shell

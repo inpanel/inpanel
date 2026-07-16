@@ -5,10 +5,9 @@
 #
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for Firewalld Management'''
+'''Firewalld 防火墙管理模块'''
 
 import shutil
-from typing import Tuple, List, Dict
 
 from .firewall_base import FirewallManager
 from .system import is_rhel_family, get_os_version_major
@@ -17,7 +16,7 @@ from .system import is_rhel_family, get_os_version_major
 class FirewalldPM(FirewallManager):
     """Alma 8-10 / Rocky 8-10 / CentOS 8+ / RHEL 8+：firewalld"""
     
-    def detect(self) -> bool:
+    def detect(self):
         if not shutil.which("firewall-cmd"):
             return False
         if not is_rhel_family():
@@ -25,25 +24,25 @@ class FirewalldPM(FirewallManager):
         version_major = get_os_version_major()
         return version_major >= 8
     
-    def status(self) -> Tuple[bool, str]:
+    def status(self):
         return self._run_cmd(["firewall-cmd", "--state"])
     
-    def enable(self) -> Tuple[bool, str]:
+    def enable(self):
         return self._run_cmd(["systemctl", "enable", "firewalld"])
     
-    def disable(self) -> Tuple[bool, str]:
+    def disable(self):
         return self._run_cmd(["systemctl", "disable", "firewalld"])
     
-    def start(self) -> Tuple[bool, str]:
+    def start(self):
         return self._run_cmd(["systemctl", "start", "firewalld"])
     
-    def stop(self) -> Tuple[bool, str]:
+    def stop(self):
         return self._run_cmd(["systemctl", "stop", "firewalld"])
     
-    def restart(self) -> Tuple[bool, str]:
+    def restart(self):
         return self._run_cmd(["systemctl", "restart", "firewalld"])
     
-    def add_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def add_rule(self, port, protocol = 'tcp', zone = ''):
         cmd = ["firewall-cmd", "--permanent"]
         if zone:
             cmd.extend(["--zone", zone])
@@ -53,7 +52,7 @@ class FirewalldPM(FirewallManager):
             self._run_cmd(["firewall-cmd", "--reload"])
         return (success, output)
     
-    def remove_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def remove_rule(self, port, protocol = 'tcp', zone = ''):
         cmd = ["firewall-cmd", "--permanent"]
         if zone:
             cmd.extend(["--zone", zone])
@@ -63,7 +62,7 @@ class FirewalldPM(FirewallManager):
             self._run_cmd(["firewall-cmd", "--reload"])
         return (success, output)
     
-    def add_ip_rule(self, ip: str, action: str = 'allow') -> Tuple[bool, str]:
+    def add_ip_rule(self, ip, action = 'allow'):
         cmd = ["firewall-cmd", "--permanent"]
         if action == 'allow':
             cmd.extend(["--add-source", ip])
@@ -74,27 +73,27 @@ class FirewalldPM(FirewallManager):
             self._run_cmd(["firewall-cmd", "--reload"])
         return (success, output)
     
-    def remove_ip_rule(self, ip: str) -> Tuple[bool, str]:
+    def remove_ip_rule(self, ip):
         cmd = ["firewall-cmd", "--permanent", "--remove-source", ip]
         success, output = self._run_cmd(cmd)
         if success:
             self._run_cmd(["firewall-cmd", "--reload"])
         return (success, output)
     
-    def list_rules(self) -> Tuple[bool, str]:
+    def list_rules(self):
         return self._run_cmd(["firewall-cmd", "--list-all"])
     
-    def list_zones(self) -> Tuple[bool, List[str]]:
+    def list_zones(self):
         success, output = self._run_cmd(["firewall-cmd", "--get-zones"])
         if success:
             zones = output.split()
             return (True, zones)
         return (False, [])
     
-    def get_default_zone(self) -> Tuple[bool, str]:
+    def get_default_zone(self):
         return self._run_cmd(["firewall-cmd", "--get-default-zone"])
     
-    def parse_rules(self) -> List[Dict]:
+    def parse_rules(self):
         rules = []
         success, output = self._run_cmd(["firewall-cmd", "--list-all"])
         if not success:

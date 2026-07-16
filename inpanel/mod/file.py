@@ -6,7 +6,7 @@
 #
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for file Management'''
+'''文件管理模块'''
 
 import os
 import shelve

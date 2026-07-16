@@ -5,53 +5,52 @@
 #
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for Firewall Manager Base Class'''
+'''防火墙管理器抽象基类'''
 
 import subprocess
 from abc import ABC, abstractmethod
-from typing import Tuple, List, Dict
 
 
 class FirewallManager(ABC):
     """防火墙管理器抽象基类"""
     
     @abstractmethod
-    def detect(self) -> bool:
+    def detect(self):
         """检测当前系统是否匹配该防火墙管理器"""
         pass
     
     @abstractmethod
-    def status(self) -> Tuple[bool, str]:
+    def status(self):
         """获取防火墙状态（运行中/已停止）"""
         pass
     
     @abstractmethod
-    def enable(self) -> Tuple[bool, str]:
+    def enable(self):
         """启用防火墙（开机自启）"""
         pass
     
     @abstractmethod
-    def disable(self) -> Tuple[bool, str]:
+    def disable(self):
         """禁用防火墙（关闭开机自启）"""
         pass
     
     @abstractmethod
-    def start(self) -> Tuple[bool, str]:
+    def start(self):
         """启动防火墙服务"""
         pass
     
     @abstractmethod
-    def stop(self) -> Tuple[bool, str]:
+    def stop(self):
         """停止防火墙服务"""
         pass
     
     @abstractmethod
-    def restart(self) -> Tuple[bool, str]:
+    def restart(self):
         """重启防火墙服务"""
         pass
     
     @abstractmethod
-    def add_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def add_rule(self, port, protocol = 'tcp', zone = ''):
         """
         添加端口规则
         :param port: 端口号
@@ -62,12 +61,12 @@ class FirewallManager(ABC):
         pass
     
     @abstractmethod
-    def remove_rule(self, port: int, protocol: str = 'tcp', zone: str = '') -> Tuple[bool, str]:
+    def remove_rule(self, port, protocol = 'tcp', zone = ''):
         """移除端口规则"""
         pass
     
     @abstractmethod
-    def add_ip_rule(self, ip: str, action: str = 'allow') -> Tuple[bool, str]:
+    def add_ip_rule(self, ip, action = 'allow'):
         """
         添加IP规则
         :param ip: IP地址
@@ -77,27 +76,27 @@ class FirewallManager(ABC):
         pass
     
     @abstractmethod
-    def remove_ip_rule(self, ip: str) -> Tuple[bool, str]:
+    def remove_ip_rule(self, ip):
         """移除IP规则"""
         pass
     
     @abstractmethod
-    def list_rules(self) -> Tuple[bool, str]:
+    def list_rules(self):
         """列出所有规则"""
         pass
     
     @abstractmethod
-    def list_zones(self) -> Tuple[bool, List[str]]:
+    def list_zones(self):
         """列出所有区域（firewalld专用）"""
         pass
     
     @abstractmethod
-    def get_default_zone(self) -> Tuple[bool, str]:
+    def get_default_zone(self):
         """获取默认区域（firewalld专用）"""
         pass
     
     @abstractmethod
-    def parse_rules(self) -> List[Dict]:
+    def parse_rules(self):
         """解析规则列表为结构化数据
         
         返回格式示例：
@@ -115,13 +114,13 @@ class FirewallManager(ABC):
         """
         pass
     
-    def is_running(self) -> bool:
+    def is_running(self):
         """检查防火墙是否正在运行"""
         success, output = self.status()
         return success and 'running' in output.lower()
     
     @staticmethod
-    def _run_cmd(cmd: List[str]) -> Tuple[bool, str]:
+    def _run_cmd(cmd):
         """执行 shell 命令并返回结果"""
         try:
             result = subprocess.run(

@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for Configurations Management.'''
+'''配置管理模块'''
 
 from configparser import RawConfigParser
 from pathlib import Path

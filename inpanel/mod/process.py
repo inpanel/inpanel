@@ -5,7 +5,7 @@
 #
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
-'''Module for process Management.'''
+'''进程管理模块'''
 
 from pathlib import Path
 from subprocess import getstatusoutput

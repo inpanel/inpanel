@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of the New BSD License.
 # The full license can be found in 'LICENSE'.
 
-'''Module for Apache HTTP Server Management.'''
+'''Apache HTTP Server 管理模块'''
 
 
 import re
