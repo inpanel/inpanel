@@ -72,8 +72,8 @@ var ECSIndexCtrl = [
 ];
 
 var ECSSettingCtrl = [
-    '$scope', '$rootScope', '$routeParams', '$location', 'Module', 'Message', 'Request', 'Timeout', 'Backend',
-    function ($scope, $rootScope, $routeParams, $location, Module, Message, Request, Timeout, Backend) {
+    '$scope', '$rootScope', '$routeParams', '$location', 'Module', 'Message', 'Request', 'Timeout', 'Task',
+    function ($scope, $rootScope, $routeParams, $location, Module, Message, Request, Timeout, Task) {
         var section = $routeParams.section;
         var section = decodeURIComponent(section);
         fs = section.split(',');
@@ -459,11 +459,11 @@ var ECSSettingCtrl = [
         var doinstallinpanel = function () {
             $scope.processing = true;
             Message.setInfo('正在安装 InPanel 到远程服务器，请稍候...');
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/inpanel_install',
-                '/api/backend/inpanel_install_' + $scope.ssh_ip, {
+                '/api/task/inpanel_install',
+                '/api/task/inpanel_install_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -494,11 +494,11 @@ var ECSSettingCtrl = [
         var douninstallinpanel = function () {
             $scope.processing = true;
             Message.setInfo('正在从远程服务器卸载 InPanel，请稍候...');
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/inpanel_uninstall',
-                '/api/backend/inpanel_uninstall_' + $scope.ssh_ip, {
+                '/api/task/inpanel_uninstall',
+                '/api/task/inpanel_uninstall_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -528,11 +528,11 @@ var ECSSettingCtrl = [
         var doupdateinpanel = function () {
             $scope.processing = true;
             Message.setInfo('正在同步密钥到远程，请稍候...');
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/inpanel_config',
-                '/api/backend/inpanel_config_' + $scope.ssh_ip, {
+                '/api/task/inpanel_config',
+                '/api/task/inpanel_config_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,

@@ -6,8 +6,18 @@
 # InPanel is distributed under the terms of the (new) BSD License.
 # The full license can be found in 'LICENSE'.
 
-"""任务管理模块"""
+"""后台异步任务管理模块
 
+提供异步任务的生命周期管理：创建、执行、状态查询、取消、清理。
+
+设计原则：
+- TaskManager 管理任务状态（running → finish/cancel）
+- 业务逻辑由各 async 方法实现，通过 run_job() 提交到事件循环
+- 前端通过 Task service 的 "POST 创建 → GET 轮询" 模式获取任务结果
+"""
+
+import asyncio
+import logging
 import time
 from datetime import datetime
 from functools import partial
@@ -18,7 +28,6 @@ from subprocess import PIPE, Popen
 import tornado.escape
 import tornado.httpclient
 
-from . import remote
 from ..base import app_api, os_versint
 from . import disk
 from . import shell
@@ -29,52 +38,145 @@ from . import file
 from . import ssh
 from . import ftp
 
+logger = logging.getLogger(__name__)
+
 
 class TaskManager:
-    jobs = {}
-    locks = {}
+    """后台异步任务管理器。
+
+    管理所有后台任务的创建、执行、状态追踪。
+
+    任务状态流转:
+        running → finish (成功/失败)
+        running → cancel (用户取消)
+    """
+
+    # 类变量：所有实例共享同一份任务数据
+    _jobs = {}    # {jobname: {status, code, msg, started_at, finished_at, data?}}
+    _locks = {}   # {lockname: True}  互斥锁
 
     def __init__(self, settings, config):
         self.settings = settings
         self.config = config
 
-    def _lock_job(self, lockname):
-        if lockname in self.locks:
+    # ------------------------------------------------------------------
+    # 任务生命周期管理（公共接口）
+    # ------------------------------------------------------------------
+
+    def run_job(self, coro):
+        """将协程提交到事件循环异步执行。
+
+        Args:
+            coro: 协程对象 或 返回协程的 callable（如 partial, lambda）
+        """
+        async def _wrapper():
+            try:
+                if callable(coro) and not asyncio.iscoroutine(coro):
+                    await coro()
+                else:
+                    await coro
+            except Exception as e:
+                logger.error(f"TaskManager async task error: {e}", exc_info=True)
+        asyncio.ensure_future(_wrapper())
+
+    def get_job(self, jobname):
+        """获取指定任务的状态。
+
+        Returns:
+            dict: 任务状态，不存在的任务返回 {'status': 'none', 'code': -1, 'msg': ''}
+        """
+        if jobname not in self._jobs:
+            return {'status': 'none', 'code': -1, 'msg': ''}
+        return self._jobs[jobname]
+
+    def list_jobs(self):
+        """获取所有任务列表。
+
+        Returns:
+            list[dict]: 任务列表，每个任务包含 name, status, code, msg, started_at, finished_at
+        """
+        result = []
+        for name, info in self._jobs.items():
+            result.append({
+                'name': name,
+                'status': info.get('status', 'unknown'),
+                'code': info.get('code', -1),
+                'msg': info.get('msg', ''),
+                'started_at': info.get('started_at', 0),
+                'finished_at': info.get('finished_at', 0),
+            })
+        return result
+
+    def cancel_job(self, jobname):
+        """取消指定任务（仅标记状态，不强制终止进程）。
+
+        Returns:
+            bool: 是否成功取消
+        """
+        if jobname not in self._jobs:
             return False
-        self.locks[lockname] = True
+        if self._jobs[jobname]['status'] == 'running':
+            self._jobs[jobname]['status'] = 'cancel'
+            self._jobs[jobname]['msg'] = '任务已被用户取消'
+            return True
+        return False
+
+    def clear_finished(self):
+        """清除所有已完成/已取消/无效的任务记录。
+
+        Returns:
+            int: 清除的任务数量
+        """
+        to_remove = [name for name, info in self._jobs.items()
+                     if info.get('status') in ('finish', 'cancel', 'none')]
+        for name in to_remove:
+            del self._jobs[name]
+        return len(to_remove)
+
+    # ------------------------------------------------------------------
+    # 内部辅助方法
+    # ------------------------------------------------------------------
+
+    def _lock_job(self, lockname):
+        """尝试获取互斥锁，防止同一类任务并发执行。"""
+        if lockname in self._locks:
+            return False
+        self._locks[lockname] = True
         return True
 
     def _unlock_job(self, lockname):
-        if lockname not in self.locks:
+        """释放互斥锁。"""
+        if lockname not in self._locks:
             return False
-        del self.locks[lockname]
+        del self._locks[lockname]
         return True
 
     def _start_job(self, jobname):
-        if jobname in self.jobs and self.jobs[jobname]['status'] == 'running':
+        """标记任务为 running 状态。如果同名任务已在运行则返回 False。"""
+        if jobname in self._jobs and self._jobs[jobname]['status'] == 'running':
             return False
-        self.jobs[jobname] = {'status': 'running', 'msg': ''}
+        self._jobs[jobname] = {'status': 'running', 'msg': '', 'started_at': time.time()}
         return True
 
     def _update_job(self, jobname, code, msg):
-        self.jobs[jobname]['code'] = code
-        self.jobs[jobname]['msg'] = msg
-        return True
-
-    def _get_job(self, jobname):
-        if jobname not in self.jobs:
-            return {'status': 'none', 'code': -1, 'msg': ''}
-        return self.jobs[jobname]
+        """更新任务的进度消息（任务仍在运行中）。"""
+        self._jobs[jobname]['code'] = code
+        self._jobs[jobname]['msg'] = msg
 
     def _finish_job(self, jobname, code, msg, data=None):
-        self.jobs[jobname]['status'] = 'finish'
-        self.jobs[jobname]['code'] = code
-        self.jobs[jobname]['msg'] = msg
-        if data:
-            self.jobs[jobname]['data'] = data
+        """标记任务为 finish 状态。
 
-    def _call(self, callback):
-        tornado.ioloop.IOLoop.instance().add_callback(callback)
+        Args:
+            code: 0=成功, -1=失败
+            msg: 结果描述
+            data: 可选的附加数据
+        """
+        self._jobs[jobname]['status'] = 'finish'
+        self._jobs[jobname]['code'] = code
+        self._jobs[jobname]['msg'] = msg
+        self._jobs[jobname]['finished_at'] = time.time()
+        if data is not None:
+            self._jobs[jobname]['data'] = data
 
     async def update(self):
         if not self._start_job('update'):
@@ -1263,6 +1365,7 @@ class TaskManager:
         self._finish_job(jobname, code, msg)
 
     async def inpanel_install(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport=None, accesskey=None):
+        from . import remote
         jobname = f'remote_inpanel_install_{ssh_ip}'
         if not self._start_job(jobname):
             return
@@ -1281,6 +1384,7 @@ class TaskManager:
         self._finish_job(jobname, code, msg)
 
     async def inpanel_uninstall(self, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name):
+        from . import remote
         jobname = f'remote_inpanel_uninstall_{ssh_ip}'
         if not self._start_job(jobname):
             return
@@ -1301,6 +1405,7 @@ class TaskManager:
         self._finish_job(jobname, code, msg)
 
     async def inpanel_config(self, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None):
+        from . import remote
         jobname = f'remote_inpanel_config_{ssh_ip}'
         if not self._start_job(jobname):
             return

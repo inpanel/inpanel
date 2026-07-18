@@ -1390,22 +1390,66 @@ class FirewallHandler(RequestHandler):
         _get_mod('firewall').web_handler(self, action)
 
 
-class BackendHandler(RequestHandler):
-    """后台进程管理器。"""
+class TaskHandler(RequestHandler):
+    """后台异步任务管理器 —— HTTP 接口层。
+
+    负责接收请求、解析参数、委托 TaskManager 执行。
+    不包含任务逻辑，只做参数验证和路由。
+    """
     def initialize(self):
+        super().initialize()
         self.task_manager = _get_task_manager()(self.settings, self.config)
+        self._json_args = None
+
+    def _get_arg(self, name, default=''):
+        """获取参数，优先从 JSON body 解析，其次从 form/query 参数。"""
+        if self._json_args is None:
+            try:
+                body = self.request.body
+                if body:
+                    self._json_args = tornado.escape.json_decode(body)
+            except Exception:
+                self._json_args = {}
+        if isinstance(self._json_args, dict) and name in self._json_args:
+            return self._json_args[name]
+        return self.get_argument(name, default)
 
     def get(self, jobname):
-        """获取新进程的状态。"""
+        """查询任务状态或获取任务列表。
+
+        GET /api/task/list         → 获取所有任务
+        GET /api/task/{jobname}    → 获取指定任务状态
+        """
         self.authed()
-        self.write(self.task_manager._get_job(jobname))
+        if jobname == 'list':
+            self.write({'code': 0, 'data': self.task_manager.list_jobs()})
+        else:
+            self.write(self.task_manager.get_job(jobname))
 
     def post(self, jobname):
-        """创建新的后台进程。"""
-        print('jobname: ', jobname)
+        """创建后台异步任务。
+
+        POST /api/task/{jobname}   → 创建并启动任务
+        POST /api/task/cancel      → 取消指定任务
+        POST /api/task/clear       → 清除已完成任务
+        """
         self.authed()
 
-        # centos/redhat 专属任务
+        # 管理类操作（非异步任务）
+        if jobname == 'cancel':
+            target = self._get_arg('jobname', '')
+            if target:
+                result = self.task_manager.cancel_job(target)
+                self.write({'code': 0 if result else -1, 'msg': '任务已取消' if result else '无法取消该任务'})
+            else:
+                self.write({'code': -1, 'msg': '请指定要取消的任务名称'})
+            return
+        elif jobname == 'clear':
+            count = self.task_manager.clear_finished()
+            self.write({'code': 0, 'msg': f'已清除 {count} 个已完成任务'})
+            return
+
+        # 系统限制检查
         if jobname in ('yum_repolist', 'yum_installrepo', 'yum_info',
                        'yum_install', 'yum_uninstall', 'yum_ext_info'):
             if self.settings['os_name'] not in ('centos', 'redhat'):
@@ -1418,7 +1462,7 @@ class BackendHandler(RequestHandler):
                 return
 
         if jobname == 'update':
-            self.task_manager._call(self.task_manager.update)
+            self.task_manager.run_job(self.task_manager.update)
         elif jobname in ('service_restart', 'service_start', 'service_stop'):
             name = self.get_argument('name', '')
             service = self.get_argument('service', '')
@@ -1434,7 +1478,7 @@ class BackendHandler(RequestHandler):
             if not name: name = service
             dummy, action = jobname.split('_')
             if service != '':
-                self.task_manager._call(partial(self.task_manager.service, action, service, name))
+                self.task_manager.run_job(partial(self.task_manager.service, action, service, name))
         elif jobname == 'datetime':
             newdatetime = self.get_argument('datetime', '')
             # 检查时间格式
@@ -1443,14 +1487,14 @@ class BackendHandler(RequestHandler):
             except:
                 self.write({'code': -1, 'msg': '时间格式有错误！'})
                 return
-            self.task_manager._call(partial(self.task_manager.datetime, newdatetime))
+            self.task_manager.run_job(partial(self.task_manager.datetime, newdatetime))
         elif jobname in ('swapon', 'swapoff'):
             devname = self.get_argument('devname', '')
             if jobname == 'swapon':
                 action = 'on'
             else:
                 action = 'off'
-            self.task_manager._call(partial(self.task_manager.swapon, action, devname))
+            self.task_manager.run_job(partial(self.task_manager.swapon, action, devname))
         elif jobname in ('mount', 'umount'):
             devname = self.get_argument('devname', '')
             mountpoint = self.get_argument('mountpoint', '')
@@ -1459,16 +1503,16 @@ class BackendHandler(RequestHandler):
                 action = 'mount'
             else:
                 action = 'umount'
-            self.task_manager._call(partial(self.task_manager.mount, action, devname, mountpoint, fstype))
+            self.task_manager.run_job(partial(self.task_manager.mount, action, devname, mountpoint, fstype))
         elif jobname == 'format':
             devname = self.get_argument('devname', '')
             fstype = self.get_argument('fstype', '')
-            self.task_manager._call(partial(self.task_manager.format, devname, fstype))
+            self.task_manager.run_job(partial(self.task_manager.format, devname, fstype))
         elif jobname == 'yum_repolist':
-            self.task_manager._call(self.task_manager.yum_repolist)
+            self.task_manager.run_job(self.task_manager.yum_repolist)
         elif jobname == 'yum_installrepo':
             repo = self.get_argument('repo', '')
-            self.task_manager._call(partial(self.task_manager.yum_installrepo, repo))
+            self.task_manager.run_job(partial(self.task_manager.yum_installrepo, repo))
         elif jobname == 'yum_info':
             pkg = self.get_argument('pkg', '')
             repo = self.get_argument('repo', '*')
@@ -1485,7 +1529,7 @@ class BackendHandler(RequestHandler):
                 if repo not in _get_mod('yum').yum_repolist + ('installed', '*'):
                     self.write({'code': -1, 'msg': '未知的软件源 %s！' % repo})
                     return
-            self.task_manager._call(partial(self.task_manager.yum_info, pkg, repo, option))
+            self.task_manager.run_job(partial(self.task_manager.yum_info, pkg, repo, option))
         elif jobname in ('yum_install', 'yum_uninstall', 'yum_update'):
             repo = self.get_argument('repo', '')
             pkg = self.get_argument('pkg', '')
@@ -1513,13 +1557,13 @@ class BackendHandler(RequestHandler):
                 handler = self.task_manager.yum_uninstall
             elif jobname == 'yum_update':
                 handler = self.task_manager.yum_update
-            self.task_manager._call(partial(handler, repo, pkg, version, release, ext))
+            self.task_manager.run_job(partial(handler, repo, pkg, version, release, ext))
         elif jobname == 'yum_ext_info':
             pkg = self.get_argument('pkg', '')
             if not pkg in _get_mod('yum').yum_pkg_relatives:
                 self.write({'code': -1, 'msg': '软件包不存在！'})
                 return
-            self.task_manager._call(partial(self.task_manager.yum_ext_info, pkg))
+            self.task_manager.run_job(partial(self.task_manager.yum_ext_info, pkg))
         elif jobname in ('move', 'copy'):
             srcpath = self.get_argument('srcpath', '')
             despath = self.get_argument('despath', '')
@@ -1542,9 +1586,9 @@ class BackendHandler(RequestHandler):
                 handler = self.task_manager.copy
             elif jobname == 'move':
                 handler = self.task_manager.move
-            self.task_manager._call(partial(handler, srcpath, despath))
+            self.task_manager.run_job(partial(handler, srcpath, despath))
         elif jobname == 'remove':
-            paths = self.get_argument('paths', '')
+            paths = self._get_arg('paths', '')
             paths = paths.split(',')
 
             if self.config.get('runtime', 'mode') == 'demo':
@@ -1553,7 +1597,7 @@ class BackendHandler(RequestHandler):
                         self.write({'code': -1, 'msg': '演示模式不允许在 /var/www 以外的目录下执行删除操作！'})
                         return
 
-            self.task_manager._call(partial(self.task_manager.remove, paths))
+            self.task_manager.run_job(partial(self.task_manager.remove, paths))
         elif jobname == 'compress':
             zippath = self.get_argument('zippath', '')
             paths = self.get_argument('paths', '')
@@ -1568,7 +1612,7 @@ class BackendHandler(RequestHandler):
                         self.write({'code': -1, 'msg': '演示模式不允许在 /var/www 以外的目录下创建压缩包！'})
                         return
 
-            self.task_manager._call(partial(self.task_manager.compress, zippath, paths))
+            self.task_manager.run_job(partial(self.task_manager.compress, zippath, paths))
         elif jobname == 'decompress':
             zippath = self.get_argument('zippath', '')
             despath = self.get_argument('despath', '')
@@ -1579,10 +1623,10 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许在 /var/www 以外的目录下执行解压操作！'})
                     return
 
-            self.task_manager._call(partial(self.task_manager.decompress, zippath, despath))
+            self.task_manager.run_job(partial(self.task_manager.decompress, zippath, despath))
         elif jobname == 'ntpdate':
             server = self.get_argument('server', '')
-            self.task_manager._call(partial(self.task_manager.ntpdate, server))
+            self.task_manager.run_job(partial(self.task_manager.ntpdate, server))
         elif jobname == 'chown':
             paths = self.get_argument('paths', '')
             paths = paths.split(',')
@@ -1597,7 +1641,7 @@ class BackendHandler(RequestHandler):
             a_group = self.get_argument('group', '')
             recursively = self.get_argument('recursively', '')
             option = recursively == 'on' and '-R' or ''
-            self.task_manager._call(partial(self.task_manager.chown, paths, a_user, a_group, option))
+            self.task_manager.run_job(partial(self.task_manager.chown, paths, a_user, a_group, option))
         elif jobname == 'chmod':
             paths = self.get_argument('paths', '')
             paths = paths.split(',')
@@ -1611,7 +1655,7 @@ class BackendHandler(RequestHandler):
             perms = self.get_argument('perms', '')
             recursively = self.get_argument('recursively', '')
             option = recursively == 'on' and '-R' or ''
-            self.task_manager._call(partial(self.task_manager.chmod, paths, perms, option))
+            self.task_manager.run_job(partial(self.task_manager.chmod, paths, perms, option))
         elif jobname == 'wget':
             url = self.get_argument('url', '')
             path = self.get_argument('path', '')
@@ -1621,25 +1665,25 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许下载到 /var/www 以外的目录！'})
                     return
 
-            self.task_manager._call(partial(self.task_manager.wget, url, path))
+            self.task_manager.run_job(partial(self.task_manager.wget, url, path))
         elif jobname == 'mysql_fupdatepwd':
             password = self.get_argument('password', '')
             passwordc = self.get_argument('passwordc', '')
             if password != passwordc:
                 self.write({'code': -1, 'msg': '两次密码输入不一致！'})
                 return
-            self.task_manager._call(partial(self.task_manager.mysql_fupdatepwd, password))
+            self.task_manager.run_job(partial(self.task_manager.mysql_fupdatepwd, password))
         elif jobname == 'mysql_databases':
             password = self.get_argument('password', '')
-            self.task_manager._call(partial(self.task_manager.mysql_databases, password))
+            self.task_manager.run_job(partial(self.task_manager.mysql_databases, password))
         elif jobname == 'mysql_dbinfo':
             password = self.get_argument('password', '')
             dbname = self.get_argument('dbname', '')
-            self.task_manager._call(partial(self.task_manager.mysql_dbinfo, password, dbname))
+            self.task_manager.run_job(partial(self.task_manager.mysql_dbinfo, password, dbname))
         elif jobname == 'mysql_users':
             password = self.get_argument('password', '')
             dbname = self.get_argument('dbname', '')
-            self.task_manager._call(partial(self.task_manager.mysql_users, password, dbname))
+            self.task_manager.run_job(partial(self.task_manager.mysql_users, password, dbname))
         elif jobname == 'mysql_rename':
             password = self.get_argument('password', '')
             dbname = self.get_argument('dbname', '')
@@ -1647,12 +1691,12 @@ class BackendHandler(RequestHandler):
             if dbname == newname:
                 self.write({'code': -1, 'msg': '数据库名无变化！'})
                 return
-            self.task_manager._call(partial(self.task_manager.mysql_rename, password, dbname, newname))
+            self.task_manager.run_job(partial(self.task_manager.mysql_rename, password, dbname, newname))
         elif jobname == 'mysql_create':
             password = self.get_argument('password', '')
             dbname = self.get_argument('dbname', '')
             collation = self.get_argument('collation', '')
-            self.task_manager._call(partial(self.task_manager.mysql_create, password, dbname, collation))
+            self.task_manager.run_job(partial(self.task_manager.mysql_create, password, dbname, collation))
         elif jobname == 'mysql_export':
             password = self.get_argument('password', '')
             dbname = self.get_argument('dbname', '')
@@ -1667,17 +1711,17 @@ class BackendHandler(RequestHandler):
                     self.write({'code': -1, 'msg': '演示模式不允许导出到 /var/www 以外的目录！'})
                     return
 
-            self.task_manager._call(partial(self.task_manager.mysql_export, password, dbname, path))
+            self.task_manager.run_job(partial(self.task_manager.mysql_export, password, dbname, path))
         elif jobname == 'mysql_drop':
             password = self.get_argument('password', '')
             dbname = self.get_argument('dbname', '')
-            self.task_manager._call(partial(self.task_manager.mysql_drop, password, dbname))
+            self.task_manager.run_job(partial(self.task_manager.mysql_drop, password, dbname))
         elif jobname == 'mysql_createuser':
             password = self.get_argument('password', '')
             user = self.get_argument('user', '')
             host = self.get_argument('host', '')
             pwd = self.get_argument('pwd', '')
-            self.task_manager._call(partial(self.task_manager.mysql_createuser, password, user, host, pwd))
+            self.task_manager.run_job(partial(self.task_manager.mysql_createuser, password, user, host, pwd))
         elif jobname == 'mysql_userprivs':
             password = self.get_argument('password', '')
             username = self.get_argument('username', '')
@@ -1685,7 +1729,7 @@ class BackendHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '用户不存在！'})
                 return
             user, host = username.split('@', 1)
-            self.task_manager._call(partial(self.task_manager.mysql_userprivs, password, user, host))
+            self.task_manager.run_job(partial(self.task_manager.mysql_userprivs, password, user, host))
         elif jobname == 'mysql_updateuserprivs':
             password = self.get_argument('password', '')
             username = self.get_argument('username', '')
@@ -1707,7 +1751,7 @@ class BackendHandler(RequestHandler):
                     .replace('REPL CLIENT', 'REPLICATION CLIENT')
                     .replace('REPL SLAVE', 'REPLICATION SLAVE')
                 for priv, value in privs.items() if '_priv' in priv and value == 'Y']
-            self.task_manager._call(partial(self.task_manager.mysql_updateuserprivs, password, user, host, privs, dbname))
+            self.task_manager.run_job(partial(self.task_manager.mysql_updateuserprivs, password, user, host, privs, dbname))
         elif jobname == 'mysql_setuserpassword':
             password = self.get_argument('password', '')
             username = self.get_argument('username', '')
@@ -1716,7 +1760,7 @@ class BackendHandler(RequestHandler):
                 return
             user, host = username.split('@', 1)
             pwd = self.get_argument('pwd', '')
-            self.task_manager._call(partial(self.task_manager.mysql_setuserpassword, password, user, host, pwd))
+            self.task_manager.run_job(partial(self.task_manager.mysql_setuserpassword, password, user, host, pwd))
         elif jobname == 'mysql_dropuser':
             password = self.get_argument('password', '')
             username = self.get_argument('username', '')
@@ -1728,20 +1772,20 @@ class BackendHandler(RequestHandler):
             if user == 'root' and host != '%':
                 self.write({'code': -1, 'msg': '该用户不允许删除！'})
                 return
-            self.task_manager._call(partial(self.task_manager.mysql_dropuser, password, user, host))
+            self.task_manager.run_job(partial(self.task_manager.mysql_dropuser, password, user, host))
         elif jobname == 'ssh_genkey':
             path = self.get_argument('path', '')
             password = self.get_argument('password', '')
             if not path:
                 path = '/root/.ssh/sshkey_inpanel'
-            self.task_manager._call(partial(self.task_manager.ssh_genkey, path, password))
+            self.task_manager.run_job(partial(self.task_manager.ssh_genkey, path, password))
         elif jobname == 'ssh_chpasswd':
             path = self.get_argument('path', '')
             oldpassword = self.get_argument('oldpassword', '')
             newpassword = self.get_argument('newpassword', '')
             if not path:
                 path = '/root/.ssh/sshkey_inpanel'
-            self.task_manager._call(partial(self.task_manager.ssh_chpasswd, path, oldpassword, newpassword))
+            self.task_manager.run_job(partial(self.task_manager.ssh_chpasswd, path, oldpassword, newpassword))
         elif jobname in ('inpanel_install', 'inpanel_uninstall', 'inpanel_config'):
             if self.config.get('runtime', 'mode') == 'demo':
                 self.write({'code': -1, 'msg': '演示模式不允许此类操作！'})
@@ -1763,23 +1807,25 @@ class BackendHandler(RequestHandler):
                 accessdata = accessdata.split('|')
                 accesskey = accessdata[0]
             if jobname == 'inpanel_install':
-                self.task_manager._call(partial(self.task_manager.inpanel_install, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport, accesskey))
+                self.task_manager.run_job(partial(self.task_manager.inpanel_install, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name, accessnet, accessport, accesskey))
             elif jobname == 'inpanel_uninstall':
-                self.task_manager._call(partial(self.task_manager.inpanel_uninstall, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name))
+                self.task_manager.run_job(partial(self.task_manager.inpanel_uninstall, ssh_ip, ssh_port, ssh_user, ssh_password, instance_name))
             elif jobname == 'inpanel_config':
-                self.task_manager._call(partial(self.task_manager.inpanel_config, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey))
+                self.task_manager.run_job(partial(self.task_manager.inpanel_config, ssh_ip, ssh_port, ssh_user, ssh_password, accesskey))
         elif jobname == 'uploadtoftp':
             address = self.get_argument('address', '')
             account = self.get_argument('account', '')
             password = self.get_argument('password', '')
             source = self.get_argument('source', '')
             target = self.get_argument('target', '')
-            self.task_manager._call(partial(self.task_manager.uploadtoftp, address, account, password, source, target))
+            self.task_manager.run_job(partial(self.task_manager.uploadtoftp, address, account, password, source, target))
         else:   # 未定义的任务
             self.write({'code': -1, 'msg': '未定义的操作！'})
+
+
             return
 
-        self.write({'code': 0, 'msg': ''})
+        self.write({'code': 0, 'msg': '任务已创建，正在处理中...'})
 
 
 class SSLTLSHandler(RequestHandler):
@@ -1816,6 +1862,8 @@ class SSLTLSHandler(RequestHandler):
                 self.write({'code': 0, 'msg': '获取站点成功！', 'list': host_list})
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
+
+
 
     def post(self, sec, x=None):
         self.authed()
@@ -1881,6 +1929,8 @@ class PluginHandler(RequestHandler):
             self.write(pm.get_plugin_config(plugin_id))
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
+
+
     
     def post(self, action=None):
         self.authed()
@@ -1912,4 +1962,6 @@ class PluginHandler(RequestHandler):
             self.write(pm.save_plugin_config(plugin_id, config_data))
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
+
+
 

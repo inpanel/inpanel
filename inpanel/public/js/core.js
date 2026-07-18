@@ -78,6 +78,7 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/utils/sources', _r('utils/sources', UtilsSourceCtrl)).
     when('/utils/shell', _r('utils/shell', UtilsShellCtrl)).
     when('/utils/firewall', _r('utils/firewall', UtilsFirewallCtrl)).
+    when('/utils/task', _r('utils/task', UtilsTaskCtrl)).
     when('/storage', _r('storage/index', StorageCtrl)).
     when('/storage/remote/:section', _r('storage/remote', StorageRemoteCtrl)).
     when('/storage/autofm', _r('storage/autofm', StorageAutoFMCtrl)).

@@ -1,6 +1,6 @@
 var FileCtrl = [
-    '$scope', '$routeParams', 'Module', 'Message', 'Request', 'Backend',
-    function($scope, $routeParams, Module, Message, Request, Backend) {
+    '$scope', '$routeParams', 'Module', 'Message', 'Request', 'Task',
+    function($scope, $routeParams, Module, Message, Request, Task) {
         var module = 'file';
         Module.init(module, '文件管理');
 
@@ -363,11 +363,11 @@ var FileCtrl = [
         $scope.download = function() {
             $('#download').modal();
             $scope.dodownload = function() {
-                Backend.call(
+                Task.call(
                     $scope,
                     module,
-                    '/api/backend/wget',
-                    '/api/backend/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
+                    '/api/task/wget',
+                    '/api/task/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
                         'url': $scope.downloadurl,
                         'path': $scope.curpath
                     }, {
@@ -441,11 +441,11 @@ var FileCtrl = [
         };
         var pastedo = function(type, srcpath, despath, name) {
             if (type == 'copy') {
-                Backend.call(
+                Task.call(
                     $scope,
                     module,
-                    '/api/backend/copy',
-                    '/api/backend/copy_' + srcpath + '_' + despath, {
+                    '/api/task/copy',
+                    '/api/task/copy_' + srcpath + '_' + despath, {
                         'srcpath': srcpath,
                         'despath': despath
                     }, {
@@ -461,11 +461,11 @@ var FileCtrl = [
                     }
                 );
             } else if (type == 'cut') {
-                Backend.call(
+                Task.call(
                     $scope,
                     module,
-                    '/api/backend/move',
-                    '/api/backend/move_' + srcpath + '_' + despath, {
+                    '/api/task/move',
+                    '/api/task/move_' + srcpath + '_' + despath, {
                         'srcpath': srcpath,
                         'despath': despath
                     }, {
@@ -562,11 +562,11 @@ var FileCtrl = [
         $scope.compress = function() {
             var zippath = $scope.curpath + '/' + $scope.compress_zipname + $scope.compress_type;
             var srcpath = $scope.curpath + '/' + $scope.compress_name;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/compress',
-                '/api/backend/compress_' + zippath + '_' + srcpath, {
+                '/api/task/compress',
+                '/api/task/compress_' + zippath + '_' + srcpath, {
                     'zippath': zippath,
                     'paths': srcpath
                 }, {
@@ -586,11 +586,11 @@ var FileCtrl = [
             var f2 = ns.pop();
             if (f1 == 'gz' && f2 != 'tar') {
                 var zippath = $scope.curpath + '/' + name;
-                Backend.call(
+                Task.call(
                     $scope,
                     module,
-                    '/api/backend/decompress',
-                    '/api/backend/decompress_' + zippath + '_', {
+                    '/api/task/decompress',
+                    '/api/task/decompress_' + zippath + '_', {
                         'zippath': zippath
                     }, {
                         'success': function(data) {
@@ -618,11 +618,11 @@ var FileCtrl = [
                         Message.setInfo('');
                         var confirm = function() {
                             var zippath = $scope.curpath + '/' + name;
-                            Backend.call(
+                            Task.call(
                                 $scope,
                                 module,
-                                '/api/backend/decompress',
-                                '/api/backend/decompress_' + zippath + '_' + path, {
+                                '/api/task/decompress',
+                                '/api/task/decompress_' + zippath + '_' + path, {
                                     'zippath': zippath,
                                     'despath': path
                                 }, {
@@ -724,11 +724,11 @@ var FileCtrl = [
                 Message.setError('请先选择文件或目录！');
                 return;
             }
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/compress',
-                '/api/backend/compress_' + zippath + '_' + srcpaths.join(','), {
+                '/api/task/compress',
+                '/api/task/compress_' + zippath + '_' + srcpaths.join(','), {
                     'zippath': zippath,
                     'paths': srcpaths.join(',')
                 }, {
@@ -788,11 +788,11 @@ var FileCtrl = [
             for (var i = 0; i < $scope.chown_names.length; i++)
                 paths.push($scope.curpath + '/' + $scope.chown_names[i]);
             paths = paths.join(',');
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/chown',
-                '/api/backend/chown_' + paths, {
+                '/api/task/chown',
+                '/api/task/chown_' + paths, {
                     'paths': paths,
                     'user': $scope.chown_user,
                     'group': $scope.chown_group,
@@ -846,11 +846,11 @@ var FileCtrl = [
             for (var i = 0; i < $scope.chmod_names.length; i++)
                 paths.push($scope.curpath + '/' + $scope.chmod_names[i]);
             paths = paths.join(',');
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/chmod',
-                '/api/backend/chmod_' + paths, {
+                '/api/task/chmod',
+                '/api/task/chmod_' + paths, {
                     'paths': paths,
                     'perms': perms,
                     'recursively': $scope.chmod_recursively
@@ -886,8 +886,8 @@ var FileCtrl = [
 ];
 
 var FileTrashCtrl = [
-    '$scope', '$routeParams', 'Module', 'Message', 'Request', 'Backend',
-    function($scope, $routeParams, Module, Message, Request, Backend) {
+    '$scope', '$routeParams', 'Module', 'Message', 'Request', 'Task',
+    function($scope, $routeParams, Module, Message, Request, Task) {
         var module = 'file.trash';
         Module.init(module, '回收站管理');
 
@@ -934,11 +934,11 @@ var FileTrashCtrl = [
             }, function(data) {
                 if (data.code == 0) {
                     var path = data.data.originpath;
-                    Backend.call(
+                    Task.call(
                         $scope,
                         module,
-                        '/api/backend/remove',
-                        '/api/backend/remove_' + path, {
+                        '/api/task/remove',
+                        '/api/task/remove_' + path, {
                             'paths': path
                         },
                         function() {
@@ -970,11 +970,11 @@ var FileTrashCtrl = [
             }, function(data) {
                 if (data.code == 0) {
                     var trashs = data.data.join(',');
-                    Backend.call(
+                    Task.call(
                         $scope,
                         module,
-                        '/api/backend/remove',
-                        '/api/backend/remove_' + trashs, {
+                        '/api/task/remove',
+                        '/api/task/remove_' + trashs, {
                             'paths': trashs
                         },
                         function() {

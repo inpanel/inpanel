@@ -67,16 +67,16 @@ angular.module('inpanel.directives', []).
             scope: {},
             replace: true,
             templateUrl: template_path + '/partials/directives/srvbase.html',
-            controller: ['$rootScope', '$scope', 'Request', 'Backend', function ($rootScope, $scope, Request, Backend) {
+            controller: ['$rootScope', '$scope', 'Request', 'Task', function ($rootScope, $scope, Request, Task) {
                 $scope.$scope = $scope.$parent;
                 $scope.pkginfo = null;
 
                 $scope.$parent.checkVersion = function () {
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_info',
-                        '/api/backend/yum_info_' + $scope.pkg, {
+                        '/api/task/yum_info',
+                        '/api/task/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -106,11 +106,11 @@ angular.module('inpanel.directives', []).
 
                 var serviceop = function (action) {
                     return function () {
-                        Backend.call(
+                        Task.call(
                             $scope.$parent,
                             $rootScope.module,
-                            '/api/backend/service_' + action,
-                            '/api/backend/service_' + action + '_' + $scope.service, {
+                            '/api/task/service_' + action,
+                            '/api/task/service_' + action + '_' + $scope.service, {
                                 'name': $scope.name,
                                 'service': $scope.service
                             },
@@ -132,7 +132,7 @@ angular.module('inpanel.directives', []).
             scope: {},
             replace: true,
             templateUrl: template_path + '/partials/directives/srvinstall.html',
-            controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
+            controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Task', function ($rootScope, $scope, Request, Timeout, Task) {
                 $scope.$scope = $scope.$parent;
 
                 var repolist = [];
@@ -143,11 +143,11 @@ angular.module('inpanel.directives', []).
                 $scope.startInstall = function () {
                     $scope.installMsg = '正在检测软件源...';
                     $scope.installing = true;
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_repolist',
-                        '/api/backend/yum_repolist', {}, {
+                        '/api/task/yum_repolist',
+                        '/api/task/yum_repolist', {}, {
                             'wait': function (data) {
                                 $scope.installMsg = data.msg;
                             },
@@ -184,11 +184,11 @@ angular.module('inpanel.directives', []).
 
                         // install repo once a time
                         newrepo_found = true;
-                        Backend.call(
+                        Task.call(
                             $scope.$parent,
                             $rootScope.module,
-                            '/api/backend/yum_installrepo',
-                            '/api/backend/yum_installrepo_' + $scope.expected_repolist[i], {
+                            '/api/task/yum_installrepo',
+                            '/api/task/yum_installrepo_' + $scope.expected_repolist[i], {
                                 'repo': $scope.expected_repolist[i]
                             }, {
                                 'wait': function (data) {
@@ -217,11 +217,11 @@ angular.module('inpanel.directives', []).
                 // check and list versions of the pkg
                 $scope.showVerList = false;
                 $scope.checkVersion = function () {
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_info',
-                        '/api/backend/yum_info_' + $scope.pkg, {
+                        '/api/task/yum_info',
+                        '/api/task/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg
                         }, {
                             'wait': function (data) {
@@ -247,11 +247,11 @@ angular.module('inpanel.directives', []).
                 $scope.install = function (repo, name, version, release) {
                     $scope.installMsg = '开始安装...';
                     $scope.showVerList = false;
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_install',
-                        '/api/backend/yum_install_' + repo + '_' + name + '_' + version + '_' + release, {
+                        '/api/task/yum_install',
+                        '/api/task/yum_install_' + repo + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': name,
                             'version': version,
@@ -283,11 +283,11 @@ angular.module('inpanel.directives', []).
                 $scope.uninstall = function (repo, name, version, release) {
                     $scope.installMsg = '正在清理...';
                     $scope.showVerList = false;
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_uninstall',
-                        '/api/backend/yum_uninstall_' + name + '_' + version + '_' + release, {
+                        '/api/task/yum_uninstall',
+                        '/api/task/yum_uninstall_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': name,
                             'version': version,
@@ -323,7 +323,7 @@ angular.module('inpanel.directives', []).
             scope: {},
             replace: true,
             templateUrl: template_path + '/partials/directives/srvupdate.html',
-            controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
+            controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Task', function ($rootScope, $scope, Request, Timeout, Task) {
                 $scope.$scope = $scope.$parent;
 
                 $scope.updating = false;
@@ -333,11 +333,11 @@ angular.module('inpanel.directives', []).
                 $scope.startUpdate = function () {
                     $scope.updating = true;
                     $scope.updateMsg = '正在检测当前版本信息...';
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_info',
-                        '/api/backend/yum_info_' + $scope.pkg, {
+                        '/api/task/yum_info',
+                        '/api/task/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -364,11 +364,11 @@ angular.module('inpanel.directives', []).
                 $scope.showVerList = false;
                 $scope.checkVersion = function (name) {
                     $scope.updateMsg = '正在检测新版本...';
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_info',
-                        '/api/backend/yum_info_' + name, {
+                        '/api/task/yum_info',
+                        '/api/task/yum_info_' + name, {
                             'pkg': name,
                             'option': 'update'
                         }, {
@@ -395,11 +395,11 @@ angular.module('inpanel.directives', []).
                 $scope.update = function (repo, name, version, release) {
                     $scope.updateMsg = '开始升级...';
                     $scope.showVerList = false;
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_update',
-                        '/api/backend/yum_update_' + repo + '_' + name + '_' + version + '_' + release, {
+                        '/api/task/yum_update',
+                        '/api/task/yum_update_' + repo + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': name,
                             'version': version,
@@ -436,7 +436,7 @@ angular.module('inpanel.directives', []).
             scope: {},
             replace: true,
             templateUrl: template_path + '/partials/directives/srvext.html',
-            controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
+            controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Task', function ($rootScope, $scope, Request, Timeout, Task) {
                 $scope.$scope = $scope.$parent;
 
                 $scope.operating = false;
@@ -445,11 +445,11 @@ angular.module('inpanel.directives', []).
                 $scope.start = function () {
                     $scope.operating = true;
                     $scope.showMsg = '正在检测版本信息...';
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_info',
-                        '/api/backend/yum_info_' + $scope.pkg, {
+                        '/api/task/yum_info',
+                        '/api/task/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -478,11 +478,11 @@ angular.module('inpanel.directives', []).
                     $scope.operating = true;
                     $scope.showExtList = false;
                     $scope.showMsg = '正在检测扩展...';
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_ext_info',
-                        '/api/backend/yum_ext_info_' + $scope.pkginfo.name, {
+                        '/api/task/yum_ext_info',
+                        '/api/task/yum_ext_info_' + $scope.pkginfo.name, {
                             'pkg': $scope.pkginfo.name
                         }, {
                             'wait': function (data) {
@@ -508,11 +508,11 @@ angular.module('inpanel.directives', []).
                 $scope.install = function (repo, name, version, release) {
                     $scope.showMsg = '开始安装...';
                     $scope.showExtList = false;
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_install',
-                        '/api/backend/yum_install_' + repo + '_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
+                        '/api/task/yum_install',
+                        '/api/task/yum_install_' + repo + '_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': $scope.pkginfo.name,
                             'ext': name,
@@ -544,11 +544,11 @@ angular.module('inpanel.directives', []).
                 $scope.uninstall = function (repo, name, version, release) {
                     $scope.showMsg = '正在删除...';
                     $scope.showExtList = false;
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_uninstall',
-                        '/api/backend/yum_uninstall_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
+                        '/api/task/yum_uninstall',
+                        '/api/task/yum_uninstall_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': $scope.pkginfo.name,
                             'ext': name,
@@ -585,7 +585,7 @@ angular.module('inpanel.directives', []).
             scope: {},
             replace: true,
             templateUrl: template_path + '/partials/directives/srvuninstall.html',
-            controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Backend', function ($rootScope, $scope, Request, Timeout, Backend) {
+            controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Task', function ($rootScope, $scope, Request, Timeout, Task) {
                 $scope.$scope = $scope.$parent;
 
                 $scope.uninstalling = false;
@@ -595,11 +595,11 @@ angular.module('inpanel.directives', []).
                 $scope.startUninstall = function () {
                     $scope.uninstallMsg = '开始卸载...';
                     $scope.uninstalling = true;
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_info',
-                        '/api/backend/yum_info_' + $scope.pkg, {
+                        '/api/task/yum_info',
+                        '/api/task/yum_info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -626,11 +626,11 @@ angular.module('inpanel.directives', []).
                 $scope.uninstall = function (repo, name, version, release) {
                     $scope.uninstallMsg = '正在卸载...';
                     $scope.showVersion = false;
-                    Backend.call(
+                    Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/backend/yum_uninstall',
-                        '/api/backend/yum_uninstall_' + name + '_' + version + '_' + release, {
+                        '/api/task/yum_uninstall',
+                        '/api/task/yum_uninstall_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': name,
                             'version': version,

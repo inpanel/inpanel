@@ -25,16 +25,16 @@ def handle_query(items):
     qdict = {'server': [], 'service': [], 'config': [], 'tool': []}
     
     for item in items:
-        if item == '**':
-            qdict = {'server': '**', 'service': '**'}
+        if item == 'all':
+            qdict = {'server': 'all', 'service': 'all'}
             break
-        elif item == '*':
-            qdict = {'server': '*', 'service': '*'}
+        elif item == 'dynamic':
+            qdict = {'server': 'dynamic', 'service': 'dynamic'}
             break
-        elif item == 'server.**':
-            qdict['server'] = '**'
-        elif item == 'mod.service.**':
-            qdict['service'] = '**'
+        elif item == 'server.all':
+            qdict['server'] = 'all'
+        elif item == 'service.all':
+            qdict['service'] = 'all'
         else:
             iteminfo = item.split('.', 1)
             if len(iteminfo) != 2:
@@ -42,9 +42,12 @@ def handle_query(items):
             sec, q = iteminfo
             if sec not in ('server', 'service', 'config', 'tool'):
                 continue
-            if qdict[sec] == '**':
+            if qdict[sec] == 'all':
                 continue
-            qdict[sec].append(q)
+            if q in ('all', 'dynamic'):
+                qdict[sec] = q
+            else:
+                qdict[sec].append(q)
 
     config_items = {
         'fstab': False,
@@ -57,9 +60,9 @@ def handle_query(items):
     for sec, qs in qdict.items():
         if sec == 'server':
             server_items = server.ServerInfo.server_items
-            if qs == '**':
+            if qs == 'all':
                 qs = server_items.keys()
-            elif qs == '*':
+            elif qs == 'dynamic':
                 qs = [item for item, relup in server_items.items() if relup == True]
             for q in qs:
                 if q not in server_items:
@@ -68,9 +71,9 @@ def handle_query(items):
         elif sec == 'service':
             service_items = service.Service.service_items
             autostart_services = service.get_autostart_list()
-            if qs == '**':
+            if qs == 'all':
                 qs = service_items.keys()
-            elif qs == '*':
+            elif qs == 'dynamic':
                 qs = [item for item, relup in service_items.items() if relup == True]
             for q in qs:
                 if q not in service_items:

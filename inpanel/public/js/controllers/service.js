@@ -1,6 +1,6 @@
 var ServiceCtrl = [
-    '$scope', '$routeParams', 'Module', 'Timeout', 'Request', 'Backend',
-    function ($scope, $routeParams, Module, Timeout, Request, Backend) {
+    '$scope', '$routeParams', 'Module', 'Timeout', 'Request', 'Task',
+    function ($scope, $routeParams, Module, Timeout, Request, Task) {
         var module = 'service';
         Module.init(module, '服务管理');
         Module.initSection('http');
@@ -11,7 +11,7 @@ var ServiceCtrl = [
         $scope.waiting = true;
 
         $scope.loadInfo = function () {
-            Request.get('/api/query/server.virt,service.**', function (res) {
+            Request.get('/api/query/server.virt,service.all', function (res) {
                 if (!$scope.loaded) $scope.loaded = true;
                 if ($scope.info == null) {
                     $scope.info = res;
@@ -36,11 +36,11 @@ var ServiceCtrl = [
 
         var serviceop = function (action) {
             return function (name, service) {
-                Backend.call(
+                Task.call(
                     $scope,
                     module,
-                    '/api/backend/service_' + action,
-                    '/api/backend/service_' + action + '_' + service, {
+                    '/api/task/service_' + action,
+                    '/api/task/service_' + action + '_' + service, {
                         'name': name,
                         'service': service
                     },
@@ -446,8 +446,8 @@ var ServiceVsftpdCtrl = [
 ];
 
 var ServiceMySQLCtrl = [
-    '$scope', '$rootScope', '$routeParams', 'Module', 'Message', 'Request', 'Backend',
-    function ($scope, $rootScope, $routeParams, Module, Message, Request, Backend) {
+    '$scope', '$rootScope', '$routeParams', 'Module', 'Message', 'Request', 'Task',
+    function ($scope, $rootScope, $routeParams, Module, Message, Request, Task) {
         var module = 'service.mysqld';
         Module.init(module, 'MySQL');
         Module.initSection('base');
@@ -506,11 +506,11 @@ var ServiceMySQLCtrl = [
 
         $scope.fupdatepwd = function () {
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_fupdatepwd',
-                '/api/backend/mysql_fupdatepwd', {
+                '/api/task/mysql_fupdatepwd',
+                '/api/task/mysql_fupdatepwd', {
                     'password': $scope.root_passwd,
                     'passwordc': $scope.root_passwdc
                 },
@@ -532,8 +532,8 @@ var ServiceMySQLCtrl = [
 ];
 
 var ServiceMariaDBCtrl = [
-    '$scope', '$rootScope', '$routeParams', 'Module', 'Message', 'Request', 'Backend',
-    function ($scope, $rootScope, $routeParams, Module, Message, Request, Backend) {
+    '$scope', '$rootScope', '$routeParams', 'Module', 'Message', 'Request', 'Task',
+    function ($scope, $rootScope, $routeParams, Module, Message, Request, Task) {
         var module = 'service.mariadb';
         Module.init(module, 'MariaDB');
         Module.initSection('base');
@@ -592,11 +592,11 @@ var ServiceMariaDBCtrl = [
 
         $scope.fupdatepwd = function () {
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_fupdatepwd',
-                '/api/backend/mysql_fupdatepwd', {
+                '/api/task/mysql_fupdatepwd',
+                '/api/task/mysql_fupdatepwd', {
                     'password': $scope.root_passwd,
                     'passwordc': $scope.root_passwdc
                 },
@@ -1387,8 +1387,8 @@ var ServiceSendmailCtrl = [
 ];
 
 var ServiceSSHCtrl = [
-    '$scope', '$routeParams', 'Module', 'Request', 'Backend', 'Message',
-    function ($scope, $routeParams, Module, Request, Backend, Message) {
+    '$scope', '$routeParams', 'Module', 'Request', 'Task', 'Message',
+    function ($scope, $routeParams, Module, Request, Task, Message) {
         var module = 'service.ssh';
         Module.init(module, 'SSH');
         Module.initSection('base');
@@ -1466,11 +1466,11 @@ var ServiceSSHCtrl = [
             $scope.dogenkey();
         };
         $scope.dogenkey = function () {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/ssh_genkey',
-                '/api/backend/ssh_genkey', {}, {
+                '/api/task/ssh_genkey',
+                '/api/task/ssh_genkey', {}, {
                     'success': function () {
                         $scope.getsettings();
                     }
@@ -1485,11 +1485,11 @@ var ServiceSSHCtrl = [
                 Message.setError('新密码和确认密码不一致！');
                 return;
             }
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/ssh_chpasswd',
-                '/api/backend/ssh_chpasswd', {
+                '/api/task/ssh_chpasswd',
+                '/api/task/ssh_chpasswd', {
                     'path': $scope.setting.prvkey,
                     'oldpassword': $scope.oldpassword,
                     'newpassword': $scope.newpassword

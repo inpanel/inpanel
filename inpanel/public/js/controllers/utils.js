@@ -201,6 +201,105 @@ var UtilsUserCtrl = [
     }
 ];
 
+var UtilsTaskCtrl = ['$scope', 'Module', 'Timeout', 'Request',
+    function($scope, Module, Timeout, Request) {
+        var module = 'utils.task';
+        Module.init(module, '后台异步任务');
+        $scope.loaded = true;
+        $scope.tasks = [];
+        $scope.stats = { running: 0, finished: 0, failed: 0, canceled: 0 };
+        $scope.auto_refresh = false;
+        $scope.refreshing = false;
+
+        function calcStats(list) {
+            var s = { running: 0, finished: 0, failed: 0, canceled: 0 };
+            if (!list) return s;
+            angular.forEach(list, function(t) {
+                if (t.status == 'running') s.running++;
+                else if (t.status == 'finish') {
+                    if (t.code == 0) s.finished++;
+                    else s.failed++;
+                }
+                else if (t.status == 'cancel') s.canceled++;
+                else if (t.status != 'none') s.failed++;
+            });
+            return s;
+        }
+
+        $scope.statusClass = function(status) {
+            if (status == 'running') return 'label label-warning';
+            if (status == 'finish') return 'label label-success';
+            if (status == 'cancel') return 'label label-default';
+            return 'label label-danger';
+        };
+
+        $scope.statusText = function(status) {
+            if (status == 'running') return '运行中';
+            if (status == 'finish') return '已完成';
+            if (status == 'cancel') return '已取消';
+            return '失败';
+        };
+
+        $scope.elapsed = function(task) {
+            if (!task.started_at) return '-';
+            var end = task.finished_at || (Date.now() / 1000);
+            var sec = Math.max(0, end - task.started_at);
+            if (sec < 60) return Math.floor(sec) + ' 秒';
+            if (sec < 3600) return Math.floor(sec / 60) + ' 分 ' + Math.floor(sec % 60) + ' 秒';
+            return Math.floor(sec / 3600) + ' 时 ' + Math.floor((sec % 3600) / 60) + ' 分';
+        };
+
+        $scope.refresh = function() {
+            $scope.refreshing = true;
+            Request.get('/api/task/list', function(data) {
+                $scope.refreshing = false;
+                $scope.tasks = (data && data.data) || [];
+                $scope.stats = calcStats($scope.tasks);
+            });
+        };
+
+        $scope.autoRefresh = function() {
+            $scope.auto_refresh = true;
+            $scope.refresh();
+            Timeout($scope.autoRefreshLoop, 2000, module, true, 'taskAutoTimer');
+        };
+
+        $scope.autoRefreshLoop = function() {
+            if (!$scope.auto_refresh) return;
+            $scope.refresh();
+            Timeout($scope.autoRefreshLoop, 2000, module, true, 'taskAutoTimer');
+        };
+
+        $scope.stopAutoRefresh = function() {
+            $scope.auto_refresh = false;
+        };
+
+        $scope.cancelTask = function(jobname) {
+            Request.post('/api/task/cancel', { jobname: jobname }, function(res) {
+                if (res.code == 0) {
+                    $scope.refresh();
+                }
+            });
+        };
+
+        $scope.clearFinished = function() {
+            Request.post('/api/task/clear', {}, function(res) {
+                if (res.code == 0) {
+                    $scope.refresh();
+                }
+            });
+        };
+
+        // 页面离开时停止自动刷新
+        $scope.$on('$destroy', function() {
+            $scope.stopAutoRefresh();
+        });
+
+        // 初始加载
+        $scope.refresh();
+    }
+];
+
 var UtilsProcessCtrl = [
     '$scope', '$routeParams', 'Module', 'Timeout', 'Request',
     function ($scope, $routeParams, Module, Timeout, Request) {
@@ -418,11 +517,11 @@ var UtilsNetworkCtrl = [
             $scope.restartMessage = '正在重启，请稍候...'
             $scope.showRestartBtn = false;
             Timeout(function() {
-                Request.post('/api/backend/service_restart', {
+                Request.post('/api/task/service_restart', {
                     service: 'network'
                 }, function(data) {
                     var getRestartStatus = function() {
-                        Request.get('/api/backend/service_restart_network', function(data) {
+                        Request.get('/api/task/service_restart_network', function(data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             if (data.status == 'finish') {
                                 Message.setSuccess('');
@@ -442,8 +541,8 @@ var UtilsNetworkCtrl = [
 ];
 
 var UtilsTimeCtrl = [
-    '$scope', '$routeParams', 'Module', 'Timeout', 'Request', 'Backend',
-    function($scope, $routeParams, Module, Timeout, Request, Backend) {
+    '$scope', '$routeParams', 'Module', 'Timeout', 'Request', 'Task',
+    function($scope, $routeParams, Module, Timeout, Request, Task) {
         var module = 'utils.time';
         Module.init(module, '时间设置');
         Module.initSection('datetime');
@@ -458,12 +557,12 @@ var UtilsTimeCtrl = [
             });
         };
         $scope.saveDatetime = function() {
-            Request.post('/api/backend/datetime', {
+            Request.post('/api/task/datetime', {
                 'datetime': $scope.newDatetime
             }, function(data) {
                 Request.setProcessing(true);
                 var getStatus = function() {
-                    Request.get('/api/backend/datetime', function(data) {
+                    Request.get('/api/task/datetime', function(data) {
                         if (data.status != 'finish') {
                             Request.setProcessing(true);
                             Timeout(getStatus, 500, module);
@@ -528,12 +627,12 @@ var UtilsTimeCtrl = [
 
         $scope.synctime = function() {
             var server = 'pool.ntp.org';
-            Request.post('/api/backend/ntpdate', {
+            Request.post('/api/task/ntpdate', {
                 'server': server
             }, function(data) {
                 Request.setProcessing(true);
                 var getStatus = function() {
-                    Request.get('/api/backend/ntpdate_' + server, function(data) {
+                    Request.get('/api/task/ntpdate_' + server, function(data) {
                         if (data.status != 'finish') {
                             Request.setProcessing(true);
                             Timeout(getStatus, 500, module);
@@ -573,11 +672,11 @@ var UtilsTimeCtrl = [
         $scope.ntp_install = function() {
             $scope.installMessage = '正在安装，请稍候...'
             $scope.showInstallBtn = false;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/yum_install',
-                '/api/backend/yum_install_base_ntp', {
+                '/api/task/yum_install',
+                '/api/task/yum_install_base_ntp', {
                     'repo': 'base',
                     'pkg': 'ntp'
                 }, {
@@ -599,11 +698,11 @@ var UtilsTimeCtrl = [
         $scope.ntp_start = function() {
             $scope.startMessage = '正在启动，请稍候...'
             $scope.showStartBtn = false;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/service_start',
-                '/api/backend/service_start_ntpd', {
+                '/api/task/service_start',
+                '/api/task/service_start_ntpd', {
                     name: 'NTP',
                     service: 'ntpd'
                 }, {
@@ -631,11 +730,11 @@ var UtilsTimeCtrl = [
         $scope.ntp_stop = function() {
             $scope.stopMessage = '正在停止，请稍候...'
             $scope.showStopBtn = false;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/service_stop',
-                '/api/backend/service_stop_ntpd', {
+                '/api/task/service_stop',
+                '/api/task/service_stop_ntpd', {
                     name: 'NTP',
                     service: 'ntpd'
                 }, {
@@ -664,8 +763,8 @@ var UtilsTimeCtrl = [
 ];
 
 var StorageCtrl = [
-    '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
-    function($scope, Module, Timeout, Request, Message, Backend) {
+    '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Task',
+    function($scope, Module, Timeout, Request, Message, Task) {
         var module = 'utils.storage';
         Module.init(module, '磁盘管理');
         $scope.loaded = false;
@@ -715,11 +814,11 @@ var StorageCtrl = [
             $('#swaponconfirm').modal();
         };
         $scope.swapon = function() {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/swapon',
-                '/api/backend/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/task/swapon',
+                '/api/task/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.swapoffconfirm = function(devname) {
@@ -727,11 +826,11 @@ var StorageCtrl = [
             $('#swapoffconfirm').modal();
         };
         $scope.swapoff = function() {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/swapoff',
-                '/api/backend/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/task/swapoff',
+                '/api/task/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.umountconfirm = function(devname) {
@@ -739,11 +838,11 @@ var StorageCtrl = [
             $('#umountconfirm').modal();
         };
         $scope.umount = function() {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/umount',
-                '/api/backend/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/task/umount',
+                '/api/task/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.mountconfirm = function(devname, fstype) {
@@ -769,11 +868,11 @@ var StorageCtrl = [
             $('#selector').modal();
         };
         $scope.mount = function() {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mount',
-                '/api/backend/mount_mount_' + $scope.devname, {
+                '/api/task/mount',
+                '/api/task/mount_mount_' + $scope.devname, {
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
                     'fstype': $scope.fstype
@@ -788,11 +887,11 @@ var StorageCtrl = [
             $('#formatconfirm').modal();
         };
         $scope.format = function() {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/format',
-                '/api/backend/format_' + $scope.devname, {
+                '/api/task/format',
+                '/api/task/format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
                 }, { 'success': $scope.get_diskinfo }
@@ -856,8 +955,8 @@ var StorageCtrl = [
 ];
 
 var StorageAutoFMCtrl = [
-    '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
-    function($scope, Module, Timeout, Request, Message, Backend) {
+    '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Task',
+    function($scope, Module, Timeout, Request, Message, Task) {
         var module = 'utils.autofm';
         Module.init(module, '自动格式化挂载');
         $scope.loaded = false;
@@ -977,11 +1076,11 @@ var StorageAutoFMCtrl = [
             }, false, true);
         };
         $scope.mount = function() {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mount',
-                '/api/backend/mount_mount_' + $scope.devname, {
+                '/api/task/mount',
+                '/api/task/mount_mount_' + $scope.devname, {
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
                     'fstype': $scope.fstype
@@ -989,11 +1088,11 @@ var StorageAutoFMCtrl = [
             );
         };
         $scope.format = function() {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/format',
-                '/api/backend/format_' + $scope.devname, {
+                '/api/task/format',
+                '/api/task/format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
                 }, { 'success': $scope.mount }
@@ -1003,8 +1102,8 @@ var StorageAutoFMCtrl = [
 ];
 
 var StorageMoveDataCtrl = [
-    '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Backend',
-    function($scope, Module, Timeout, Request, Message, Backend) {
+    '$scope', 'Module', 'Timeout', 'Request', 'Message', 'Task',
+    function($scope, Module, Timeout, Request, Message, Task) {
         var module = 'utils.movedata';
         Module.init(module, '数据移至数据盘');
         $scope.loaded = false;
@@ -1078,11 +1177,11 @@ var StorageMoveDataCtrl = [
                             $scope.waiting = false;
                         } else {
                             // moving
-                            Backend.call(
+                            Task.call(
                                 $scope,
                                 module,
-                                '/api/backend/move',
-                                '/api/backend/move_' + srcpath + '_' + despath, {
+                                '/api/task/move',
+                                '/api/task/move_' + srcpath + '_' + despath, {
                                     'srcpath': srcpath,
                                     'despath': despath
                                 }, {
@@ -1115,8 +1214,8 @@ var StorageMoveDataCtrl = [
     }
 ];
 
-var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backend', 'Timeout',
-    function($scope, Module, $routeParams, Request, Message, Backend, Timeout) {
+var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Task', 'Timeout',
+    function($scope, Module, $routeParams, Request, Message, Task, Timeout) {
         var module = 'utils.ssl';
         Module.init(module, 'SSL证书管理');
         var section = Module.getSection();
@@ -1288,8 +1387,8 @@ var UtilsSSLCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'B
 ];
 
 var StorageRemoteCtrl = [
-    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
-    function($scope, Module, $routeParams,Timeout, Request, Message, Backend, $location) {
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Task', '$location',
+    function($scope, Module, $routeParams,Timeout, Request, Message, Task, $location) {
         var module = 'utils.remote';
         Module.init(module, '网络磁盘');
         $scope.loaded = false;
@@ -1373,11 +1472,11 @@ var StorageRemoteCtrl = [
         $scope.install_davfs2 = function() {
             $scope.installMessage = '正在安装支持，请稍候...'
             $scope.showInstallBtn = false;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/yum_install',
-                '/api/backend/yum_install_epel_davfs2', {
+                '/api/task/yum_install',
+                '/api/task/yum_install_epel_davfs2', {
                     'repo': 'epel',
                     'pkg': 'davfs2'
                 }, {
@@ -1399,11 +1498,11 @@ var StorageRemoteCtrl = [
         $scope.start_davfs2 = function() {
             $scope.startMessage = '正在启动，请稍候...'
             $scope.showStartBtn = false;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/service_start',
-                '/api/backend/service_start_davfs2', {
+                '/api/task/service_start',
+                '/api/task/service_start_davfs2', {
                     name: 'Davfs2',
                     service: 'davfs2'
                 }, {
@@ -1433,8 +1532,8 @@ var StorageRemoteCtrl = [
 ];
 
 var UtilsSourceCtrl = [
-    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
-    function($scope, Module, $routeParams, Timeout, Request, Message, Backend, $location) {
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Task', '$location',
+    function($scope, Module, $routeParams, Timeout, Request, Message, Task, $location) {
         var module = 'utils.source';
         Module.init(module, '软件源');
         $scope.loaded = false;
@@ -2432,8 +2531,8 @@ var UtilsShellCtrl = ['$scope', '$routeParams', 'Module', 'Timeout', 'Request',
 ];
 
 var UtilsMigrateCtrl = [
-    '$scope', '$routeParams', 'Module', 'Message', 'Timeout', 'Request', 'Backend',
-    function($scope, $routeParams, Module, Message, Timeout, Request, Backend) {
+    '$scope', '$routeParams', 'Module', 'Message', 'Timeout', 'Request', 'Task',
+    function($scope, $routeParams, Module, Message, Timeout, Request, Task) {
         var module = 'utils.migrate';
         var section = Module.getSection();
         var enabled_sections = ['ftp', 'nutstore'];
@@ -2500,10 +2599,10 @@ var UtilsMigrateCtrl = [
         $scope.trans_to_ftp = function () {
             console.log('立即传输', $scope.remote);
             var op_data = angular.copy($scope.remote);
-            // Backend.call = function ($scope, module, url, statusUrl, data, callback, quiet) {
-            Backend.call($scope, module,
-                '/api/backend/uploadtoftp',
-                '/api/backend/uploadtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
+            // Task.call = function ($scope, module, url, statusUrl, data, callback, quiet) {
+            Task.call($scope, module,
+                '/api/task/uploadtoftp',
+                '/api/task/uploadtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
                 op_data, {
                     'wait': function (data) {
                         Message.setInfo(data.msg || '正在处理');
@@ -2522,8 +2621,8 @@ var UtilsMigrateCtrl = [
 ];
 
 var UtilsFirewallCtrl = [
-    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Backend', '$location',
-    function($scope, Module, $routeParams, Timeout, Request, Message, Backend, $location) {
+    '$scope', 'Module', '$routeParams', 'Timeout', 'Request', 'Message', 'Task', '$location',
+    function($scope, Module, $routeParams, Timeout, Request, Message, Task, $location) {
         var module = 'utils.firewall';
         Module.init(module, '防火墙');
         $scope.loaded = false;

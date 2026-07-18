@@ -13,7 +13,7 @@ import base64
 import os
 import shlex
 
-from .lib import pxssh
+from ..lib import pxssh
 
 
 def inpanel_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, inpanel_ip=None, inpanel_port=None):
