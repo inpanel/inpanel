@@ -8,7 +8,7 @@
         <h3>服务管理</h3>
     </div>
 
-    <div class="tabbable" ng-init="loadInfo('service.**')">
+    <div class="tabbable" ng-init="loadInfo('service.all')">
         <ul class="nav nav-tabs">
             <li ng-class="'active' | iftrue:activeTabName=='http'"><a href="#http" ng-click="sec('http')" data-toggle="tab">HTTP</a></li>
             <li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP</a></li>

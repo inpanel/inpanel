@@ -1,6 +1,6 @@
 var DatabaseCtrl = [
-    '$scope', 'Module', '$rootScope', 'Request', 'Message', 'Backend',
-    function($scope, Module, $rootScope, Request, Message, Backend) {
+    '$scope', 'Module', '$rootScope', 'Request', 'Message', 'Task',
+    function($scope, Module, $rootScope, Request, Message, Task) {
         var module = 'database';
         Module.init(module, '数据库管理');
         $scope.loaded = false;
@@ -44,11 +44,11 @@ var DatabaseCtrl = [
         $scope.dbloading = true;
         $scope.loaddbs = function() {
             $scope.dbloading = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_databases',
-                '/api/backend/mysql_databases', {
+                '/api/task/mysql_databases',
+                '/api/task/mysql_databases', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -64,11 +64,11 @@ var DatabaseCtrl = [
         $scope.userloading = true;
         $scope.loadusers = function() {
             $scope.userloading = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_users',
-                '/api/backend/mysql_users', {
+                '/api/task/mysql_users',
+                '/api/task/mysql_users', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -90,8 +90,8 @@ var DatabaseCtrl = [
 ];
 
 var DatabaseMySQLNewDBCtrl = [
-    '$scope', 'Module', '$rootScope', '$location', 'Request', 'Message', 'Backend',
-    function($scope, Module, $rootScope, $location, Request, Message, Backend) {
+    '$scope', 'Module', '$rootScope', '$location', 'Request', 'Message', 'Task',
+    function($scope, Module, $rootScope, $location, Request, Message, Task) {
         var module = 'database.mysql.db.new';
         Module.init(module, '新建数据库');
         $scope.loaded = true;
@@ -111,11 +111,11 @@ var DatabaseMySQLNewDBCtrl = [
         };
         $scope.newdb = function() {
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_create',
-                '/api/backend/mysql_create_' + $scope.dbname, {
+                '/api/task/mysql_create',
+                '/api/task/mysql_create_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'collation': $scope.collation
@@ -134,8 +134,8 @@ var DatabaseMySQLNewDBCtrl = [
 ];
 
 var DatabaseMySQLEditDBCtrl = [
-    '$scope', 'Module', '$rootScope', '$routeParams', '$location', 'Request', 'Message', 'Backend',
-    function($scope, Module, $rootScope, $routeParams, $location, Request, Message, Backend) {
+    '$scope', 'Module', '$rootScope', '$routeParams', '$location', 'Request', 'Message', 'Task',
+    function($scope, Module, $rootScope, $routeParams, $location, Request, Message, Task) {
         var section = $routeParams.section;
         $scope.dbname = decodeURIComponent(section);
 
@@ -161,11 +161,11 @@ var DatabaseMySQLEditDBCtrl = [
         $scope.dbloading = true;
         $scope.loaddbinfo = function() {
             $scope.dbloading = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_dbinfo',
-                '/api/backend/mysql_dbinfo_' + $scope.dbname, {
+                '/api/task/mysql_dbinfo',
+                '/api/task/mysql_dbinfo_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 }, {
@@ -184,11 +184,11 @@ var DatabaseMySQLEditDBCtrl = [
         $scope.userloading = true;
         $scope.loadusers = function() {
             $scope.userloading = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_users',
-                '/api/backend/mysql_users_' + $scope.dbname, {
+                '/api/task/mysql_users',
+                '/api/task/mysql_users_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 }, {
@@ -216,11 +216,11 @@ var DatabaseMySQLEditDBCtrl = [
         };
         $scope.rename = function() {
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_rename',
-                '/api/backend/mysql_rename_' + $scope.dbname, {
+                '/api/task/mysql_rename',
+                '/api/task/mysql_rename_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'newname': $scope.dbinfo.name
@@ -247,11 +247,11 @@ var DatabaseMySQLEditDBCtrl = [
         };
         $scope.exportdb = function() {
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_export',
-                '/api/backend/mysql_export_' + $scope.dbname, {
+                '/api/task/mysql_export',
+                '/api/task/mysql_export_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'path': $scope.exportpath
@@ -263,11 +263,11 @@ var DatabaseMySQLEditDBCtrl = [
         };
         $scope.dropdb = function() {
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_drop',
-                '/api/backend/mysql_drop_' + $scope.dbname, {
+                '/api/task/mysql_drop',
+                '/api/task/mysql_drop_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 },
@@ -288,8 +288,8 @@ var DatabaseMySQLEditDBCtrl = [
 ];
 
 var DatabaseMySQLNewUserCtrl = [
-    '$scope', 'Module', '$rootScope', '$location', 'Request', 'Message', 'Backend',
-    function($scope, Module, $rootScope, $location, Request, Message, Backend) {
+    '$scope', 'Module', '$rootScope', '$location', 'Request', 'Message', 'Task',
+    function($scope, Module, $rootScope, $location, Request, Message, Task) {
         var module = 'database.mysql.user.new';
         Module.init(module, '添加新用户');
         $scope.loaded = true;
@@ -317,11 +317,11 @@ var DatabaseMySQLNewUserCtrl = [
             }
             var username = $scope.user + '@' + $scope.host;
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_createuser',
-                '/api/backend/mysql_createuser_' + username, {
+                '/api/task/mysql_createuser',
+                '/api/task/mysql_createuser_' + username, {
                     'password': $rootScope.$mysql.password,
                     'user': $scope.user,
                     'host': $scope.host,
@@ -364,8 +364,8 @@ var DatabaseMySQLNewUserCtrl = [
 ];
 
 var DatabaseMySQLEditUserCtrl = [
-    '$scope', 'Module', '$rootScope', '$routeParams', '$location', 'Request', 'Message', 'Backend',
-    function($scope, Module, $rootScope, $routeParams, $location, Request, Message, Backend) {
+    '$scope', 'Module', '$rootScope', '$routeParams', '$location', 'Request', 'Message', 'Task',
+    function($scope, Module, $rootScope, $routeParams, $location, Request, Message, Task) {
         var section = $routeParams.section;
         $scope.username = decodeURIComponent(section);
         var fs = $scope.username.split('@');
@@ -395,11 +395,11 @@ var DatabaseMySQLEditUserCtrl = [
         $scope.privsloading = true;
         $scope.loadprivs = function() {
             $scope.privsloading = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_userprivs',
-                '/api/backend/mysql_userprivs_' + $scope.username, {
+                '/api/task/mysql_userprivs',
+                '/api/task/mysql_userprivs_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username
                 }, {
@@ -483,11 +483,11 @@ var DatabaseMySQLEditUserCtrl = [
         };
 
         $scope.updateprivs = function() {
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_updateuserprivs',
-                '/api/backend/mysql_updateuserprivs_' + encodeURIComponent($scope.username + ($scope.curprivs.Db ? '_' + $scope.curprivs.Db : '')), {
+                '/api/task/mysql_updateuserprivs',
+                '/api/task/mysql_updateuserprivs_' + encodeURIComponent($scope.username + ($scope.curprivs.Db ? '_' + $scope.curprivs.Db : '')), {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username,
                     'privs': angular.toJson($scope.curprivs),
@@ -513,11 +513,11 @@ var DatabaseMySQLEditUserCtrl = [
 
         $scope.loaddbs = function() {
             $scope.dbloading = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_databases',
-                '/api/backend/mysql_databases', {
+                '/api/task/mysql_databases',
+                '/api/task/mysql_databases', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -536,11 +536,11 @@ var DatabaseMySQLEditUserCtrl = [
                 }
             }
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_setuserpassword',
-                '/api/backend/mysql_setuserpassword_' + $scope.username, {
+                '/api/task/mysql_setuserpassword',
+                '/api/task/mysql_setuserpassword_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username,
                     'pwd': $scope.emptypassword ? '' : $scope.newpassword
@@ -564,11 +564,11 @@ var DatabaseMySQLEditUserCtrl = [
 
         $scope.dropuser = function() {
             $scope.processing = true;
-            Backend.call(
+            Task.call(
                 $scope,
                 module,
-                '/api/backend/mysql_dropuser',
-                '/api/backend/mysql_dropuser_' + $scope.username, {
+                '/api/task/mysql_dropuser',
+                '/api/task/mysql_dropuser_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username
                 },

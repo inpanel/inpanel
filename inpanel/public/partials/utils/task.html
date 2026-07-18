@@ -1,0 +1,106 @@
+<div navbar ng-init="currentItem='utils'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>后台异步任务</h3>
+    </div>
+
+    <!-- 统计栏 -->
+    <div class="row" style="margin-bottom: 15px;">
+        <div class="col-md-3 col-xs-6">
+            <div class="well well-sm text-center" style="margin-bottom: 0;">
+                <h4 style="margin: 0; color: #f0ad4e;">{{ stats.running }}</h4>
+                <small class="muted">运行中</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-6">
+            <div class="well well-sm text-center" style="margin-bottom: 0;">
+                <h4 style="margin: 0; color: #5cb85c;">{{ stats.finished }}</h4>
+                <small class="muted">已完成</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-6">
+            <div class="well well-sm text-center" style="margin-bottom: 0;">
+                <h4 style="margin: 0; color: #d9534f;">{{ stats.failed }}</h4>
+                <small class="muted">失败</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-6">
+            <div class="well well-sm text-center" style="margin-bottom: 0;">
+                <h4 style="margin: 0; color: #999;">{{ stats.canceled }}</h4>
+                <small class="muted">已取消</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作栏 -->
+    <div class="row" style="margin-bottom: 10px;">
+        <div class="col-md-12">
+            <div class="btn-group">
+                <button class="btn btn-default btn-sm" ng-click="refresh()" ng-disabled="refreshing">
+                    <i class="glyphicon glyphicon-refresh"></i> 刷新
+                </button>
+                <button class="btn btn-default btn-sm" ng-click="autoRefresh()" ng-disabled="auto_refresh">
+                    <i class="glyphicon glyphicon-play"></i> 自动刷新
+                </button>
+                <button class="btn btn-default btn-sm" ng-click="stopAutoRefresh()" ng-disabled="!auto_refresh">
+                    <i class="glyphicon glyphicon-stop"></i> 停止
+                </button>
+            </div>
+            <div class="btn-group pull-right">
+                <button class="btn btn-warning btn-sm" ng-click="clearFinished()" ng-disabled="stats.finished + stats.failed + stats.canceled == 0">
+                    <i class="glyphicon glyphicon-trash"></i> 清除已完成
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 任务列表 -->
+    <div class="table-responsive">
+        <table class="table table-hover table-condensed">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>任务名称</th>
+                    <th style="width: 100px;">状态</th>
+                    <th>消息 / 进度</th>
+                    <th style="width: 160px;">开始时间</th>
+                    <th style="width: 100px;">耗时</th>
+                    <th style="width: 80px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-show="!tasks || tasks.length == 0">
+                    <td colspan="7" class="text-center muted" style="padding: 30px;">
+                        暂无任务
+                    </td>
+                </tr>
+                <tr ng-repeat="task in tasks | orderBy:'-started_at'">
+                    <td>{{ $index + 1 }}</td>
+                    <td><code>{{ task.name }}</code></td>
+                    <td>
+                        <span ng-class="statusClass(task.status)">
+                            {{ statusText(task.status) }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="muted" ng-bind-html="task.msg || '-'"></span>
+                    </td>
+                    <td class="muted">{{ task.started_at * 1000 | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                    <td class="muted">{{ elapsed(task) }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-xs"
+                                ng-show="task.status == 'running'"
+                                ng-click="cancelTask(task.name)"
+                                ng-disabled="task.canceling">
+                            <i class="glyphicon glyphicon-remove"></i> 取消
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

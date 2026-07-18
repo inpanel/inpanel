@@ -1,5 +1,5 @@
-var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backend',
-    function ($scope, Module, $routeParams, Request, Message, Backend) {
+var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Task',
+    function ($scope, Module, $routeParams, Request, Message, Task) {
         var module = 'site';
         Module.init(module, '网站管理');
         var section = Module.getSection();
@@ -65,7 +65,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Backend.call($scope, module, '/api/backend/service_' + status, '/api/backend/service_' + status + '_nginx', {
+            Task.call($scope, module, '/api/task/service_' + status, '/api/task/service_' + status + '_nginx', {
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
@@ -102,7 +102,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Backend.call($scope, module, '/api/backend/service_' + status, '/api/backend/service_' + status + '_httpd', {
+            Task.call($scope, module, '/api/task/service_' + status, '/api/task/service_' + status + '_httpd', {
                 'name': 'Apache',
                 'service': 'httpd'
             }, {
@@ -207,7 +207,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                     $scope.downloadpath = res.data.path;
                     $scope.extractpath = res.data.temp;
 
-                    Backend.call($scope, module, '/api/backend/wget', '/api/backend/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
+                    Task.call($scope, module, '/api/task/wget', '/api/task/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
                         'url': $scope.downloadurl,
                         'path': $scope.downloadpath
                     }, {
@@ -215,7 +215,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                             // decompress it
                             var zippath = $scope.downloadpath;
                             var despath = $scope.extractpath;
-                            Backend.call($scope, module, '/api/backend/decompress', '/api/backend/decompress_' + zippath + '_' + despath, {
+                            Task.call($scope, module, '/api/task/decompress', '/api/task/decompress_' + zippath + '_' + despath, {
                                 'zippath': zippath,
                                 'despath': despath
                             }, {
@@ -224,19 +224,19 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
                                     var corepath = $scope.curver.core_path;
                                     var srcpath = $scope.extractpath + '/' + corepath + '/*';
                                     var despath = $scope.installpath;
-                                    Backend.call( $scope, module, '/api/backend/copy', '/api/backend/copy_' + srcpath + '_' + despath, {
+                                    Task.call( $scope, module, '/api/task/copy', '/api/task/copy_' + srcpath + '_' + despath, {
                                         'srcpath': srcpath,
                                         'despath': despath
                                     }, {
                                         'success': function () {
                                             // install ok, remove the temp folder
                                             Message.setInfo('正在清理安装临时文件...');
-                                            Backend.call( $scope, module, '/api/backend/remove', '/api/backend/remove_' + $scope.extractpath, {
+                                            Task.call( $scope, module, '/api/task/remove', '/api/task/remove_' + $scope.extractpath, {
                                                 'paths': $scope.extractpath
                                             }, function () {
                                                 // set user.group to apache.apache
                                                 Message.setInfo('正在设置目录权限...');
-                                                Backend.call( $scope, module, '/api/backend/chown', '/api/backend/chown_' + $scope.installpath, {
+                                                Task.call( $scope, module, '/api/task/chown', '/api/task/chown_' + $scope.installpath, {
                                                     'paths': $scope.installpath,
                                                     'user': 'apache',
                                                     'group': 'apache',
@@ -307,8 +307,8 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Backe
     }
 ];
 
-var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Backend', 'Timeout',
-    function ($scope, Module, $routeParams, $location, Request, Message, Backend, Timeout) {
+var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Task', 'Timeout',
+    function ($scope, Module, $routeParams, $location, Request, Message, Task, Timeout) {
         var section = $routeParams.section;
         $scope.action = section == 'new' ? 'new' : 'edit';
         $scope.module_header = $scope.action == 'new' ? '新建站点' : '编辑站点';
@@ -468,7 +468,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
 
         $scope.load_nginx_version = function () {
             // nginx version check
-            Backend.call($scope, module, '/api/backend/yum_info', '/api/backend/yum_info_nginx', {
+            Task.call($scope, module, '/api/task/yum_info', '/api/task/yum_info_nginx', {
                 'pkg': 'nginx',
                 'repo': 'installed'
             }, {
@@ -854,7 +854,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Backend.call($scope, module, '/api/backend/service_' + status, '/api/backend/service_' + status + '_nginx', {
+            Task.call($scope, module, '/api/task/service_' + status, '/api/task/service_' + status + '_nginx', {
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
@@ -872,8 +872,8 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
     }
 ];
 
-var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Backend', 'Timeout',
-    function ($scope, Module, $routeParams, $location, Request, Message, Backend, Timeout) {
+var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request', 'Message', 'Task', 'Timeout',
+    function ($scope, Module, $routeParams, $location, Request, Message, Task, Timeout) {
         var section = $routeParams.section;
         var module = 'site.apache';
         var tab_section = Module.getSection();
@@ -916,7 +916,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             } else {
                 $scope.getserver();
             }
-            Backend.call($scope, module, '/api/backend/yum_info', '/api/backend/yum_info_apache', {
+            Task.call($scope, module, '/api/task/yum_info', '/api/task/yum_info_apache', {
                 'pkg': 'apache',
                 'repo': 'installed'
             }, {
@@ -1228,7 +1228,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Backend.call($scope, module, '/api/backend/service_' + status, '/api/backend/service_' + status + '_httpd', {
+            Task.call($scope, module, '/api/task/service_' + status, '/api/task/service_' + status + '_httpd', {
                 'name': 'Apache',
                 'service': 'httpd'
             }, {

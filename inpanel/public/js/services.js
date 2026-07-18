@@ -198,10 +198,10 @@ factory('Request', ['$http', '$rootScope', '$location', '$timeout', 'Message', f
 
     return Request;
 }]).
-factory('Backend', ['Timeout', 'Request', function (Timeout, Request) {
-    var Backend = {};
+factory('Task', ['Timeout', 'Request', function (Timeout, Request) {
+    var Task = {};
 
-    Backend.call = function ($scope, module, url, statusUrl, data, callback, quiet) {
+    Task.call = function ($scope, module, url, statusUrl, data, callback, quiet) {
         $scope.waiting = true;
         Request.post(url, data, function (data) {
             if (data.code == -1) {
@@ -214,9 +214,9 @@ factory('Backend', ['Timeout', 'Request', function (Timeout, Request) {
             }
             var getStatus = function () {
                 Request.get(statusUrl, function (data) {
-                    if (data.status == 'finish') {
+                    if (data.status == 'finish' || data.status == 'cancel') {
                         $scope.waiting = false;
-                        if (data.code == 0) {
+                        if (data.code == 0 || data.status == 'cancel') {
                             if (callback) {
                                 if (typeof callback == 'function') {
                                     callback.call(null, data);
@@ -253,5 +253,5 @@ factory('Backend', ['Timeout', 'Request', function (Timeout, Request) {
         });
     };
 
-    return Backend;
+    return Task;
 }]);

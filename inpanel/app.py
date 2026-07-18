@@ -384,7 +384,7 @@ def run_server():
         (r'/api/firewall/(.+)', web.FirewallHandler),
         (r'/api/setting/(.+)', web.SettingHandler),
         (r'/api/operation/(.+)', web.OperationHandler),
-        (r'/api/backend/(.+)', web.BackendHandler),
+        (r'/api/task/(.+)', web.TaskHandler),
         (r'/api/sitepackage/(.+)', web.SitePackageHandler),
         (r'/api/client/(.+)', web.ClientHandler),
         (r'/api/plugins', web.PluginHandler),
