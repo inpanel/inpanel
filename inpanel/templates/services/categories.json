@@ -1,0 +1,68 @@
+[
+  {
+    "id": "http",
+    "name": "HTTP",
+    "icon": "globe",
+    "order": 1
+  },
+  {
+    "id": "ftp",
+    "name": "FTP",
+    "icon": "upload",
+    "order": 2
+  },
+  {
+    "id": "database",
+    "name": "数据库",
+    "icon": "database",
+    "order": 3
+  },
+  {
+    "id": "storage",
+    "name": "文件存储",
+    "icon": "hdd",
+    "order": 4
+  },
+  {
+    "id": "php",
+    "name": "PHP",
+    "icon": "code",
+    "order": 5
+  },
+  {
+    "id": "java",
+    "name": "Java",
+    "icon": "coffee",
+    "order": 6
+  },
+  {
+    "id": "nodejs",
+    "name": "Node.js",
+    "icon": "node",
+    "order": 7
+  },
+  {
+    "id": "mail",
+    "name": "邮件",
+    "icon": "envelope",
+    "order": 8
+  },
+  {
+    "id": "system",
+    "name": "系统",
+    "icon": "cog",
+    "order": 9
+  },
+  {
+    "id": "security",
+    "name": "安全",
+    "icon": "shield",
+    "order": 10
+  },
+  {
+    "id": "other",
+    "name": "其他",
+    "icon": "ellipsis",
+    "order": 99
+  }
+]

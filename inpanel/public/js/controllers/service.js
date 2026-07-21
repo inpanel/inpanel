@@ -5,53 +5,108 @@ var ServiceCtrl = [
         Module.init(module, '服务管理');
         Module.initSection('http');
         $scope.scope = $scope;
-        $scope.info = null;
 
         $scope.loaded = false;
         $scope.waiting = true;
+        $scope.categories = [];
+        $scope.otherServices = [];
 
         $scope.loadInfo = function () {
-            Request.get('/api/query/server.virt,service.all', function (res) {
-                if (!$scope.loaded) $scope.loaded = true;
-                if ($scope.info == null) {
-                    $scope.info = res;
-                } else {
-                    deepUpdate($scope.info, res);
+            Request.get('/api/service/list', function (res) {
+                if (res.code === 0 && res.data) {
+                    $scope.categories = res.data.categories || [];
+                    $scope.otherServices = res.data.other || [];
+                    // 首次加载时，activeTabName 设为第一个分类
+                    if (!$scope.activeTabName && $scope.categories.length > 0) {
+                        $scope.activeTabName = $scope.categories[0].id;
+                    }
                 }
+                if (!$scope.loaded) $scope.loaded = true;
                 $scope.waiting = false;
-                //Timeout($scope.loadInfo, 1000, module);
             });
         };
-        $scope.toggleAutostart = function (name, service) {
-            var autostart = $scope.info['service.' + service]['autostart'];
-            Request.post('/api/operation/service', {
-                'action': 'chkconfig',
-                'name': name,
-                'service': service,
-                'autostart': !autostart
+
+        $scope.toggleAutostart = function (svc) {
+            Request.post('/api/service/chkconfig', {
+                'service': svc.id,
+                'autostart': svc.autostart ? 'off' : 'on'
             }, function () {
                 $scope.loadInfo();
             });
         };
 
-        var serviceop = function (action) {
-            return function (name, service) {
-                Task.call(
-                    $scope,
-                    module,
-                    '/api/task/service_' + action,
-                    '/api/task/service_' + action + '_' + service, {
-                        'name': name,
-                        'service': service
+        $scope.start = function (svc) {
+            Task.call(
+                $scope,
+                module,
+                '/api/task/service.start',
+                '/api/task/service.start_' + svc.id, {
+                    'service': svc.id,
+                    'name': svc.name
+                }, {
+                    'success': function () {
+                        $scope.loadInfo();
                     },
-                    $scope.loadInfo
-                );
-            };
+                    'error': function () {
+                        $scope.loadInfo();
+                    }
+                }
+            );
+        };
+        $scope.stop = function (svc) {
+            Task.call(
+                $scope,
+                module,
+                '/api/task/service.stop',
+                '/api/task/service.stop_' + svc.id, {
+                    'service': svc.id,
+                    'name': svc.name
+                }, {
+                    'success': function () {
+                        $scope.loadInfo();
+                    },
+                    'error': function () {
+                        $scope.loadInfo();
+                    }
+                }
+            );
+        };
+        $scope.restart = function (svc) {
+            Task.call(
+                $scope,
+                module,
+                '/api/task/service.restart',
+                '/api/task/service.restart_' + svc.id, {
+                    'service': svc.id,
+                    'name': svc.name
+                }, {
+                    'success': function () {
+                        $scope.loadInfo();
+                    },
+                    'error': function () {
+                        $scope.loadInfo();
+                    }
+                }
+            );
         };
 
-        $scope.start = serviceop('start');
-        $scope.stop = serviceop('stop');
-        $scope.restart = serviceop('restart');
+        $scope.install = function (svc) {
+            Task.call(
+                $scope,
+                module,
+                '/api/task/service.install',
+                '/api/task/service.install_' + svc.id, {
+                    'service': svc.id
+                }, {
+                    'success': function () {
+                        $scope.loadInfo();
+                    },
+                    'error': function () {
+                        $scope.loadInfo();
+                    }
+                }
+            );
+        };
     }
 ];
 
@@ -71,12 +126,13 @@ var ServiceNginxCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.nginx', function (res) {
-                var info = res['service.nginx'];
-                if (info) {
+            Request.get('/api/service/detail/nginx', function (res) {
+                var info = res.data;
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                     $scope.getsettings();
                     $scope.getcachesettings();
@@ -224,8 +280,8 @@ var ServiceApacheCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.httpd', function (res) {
-                var info = res['service.httpd'];
+            Request.get('/api/service/detail/httpd', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -307,8 +363,8 @@ var ServiceTomcatCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.tomcat', function (res) {
-                var info = res['service.tomcat'];
+            Request.get('/api/service/detail/tomcat', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -377,8 +433,8 @@ var ServiceVsftpdCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.vsftpd', function (res) {
-                var info = res['service.vsftpd'];
+            Request.get('/api/service/detail/vsftpd', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -462,8 +518,8 @@ var ServiceMySQLCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.mysqld', function (res) {
-                var info = res['service.mysqld'];
+            Request.get('/api/service/detail/mysqld', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -509,8 +565,8 @@ var ServiceMySQLCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_fupdatepwd',
-                '/api/task/mysql_fupdatepwd', {
+                '/api/task/mysql.fupdatepwd',
+                '/api/task/mysql.fupdatepwd', {
                     'password': $scope.root_passwd,
                     'passwordc': $scope.root_passwdc
                 },
@@ -548,8 +604,8 @@ var ServiceMariaDBCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.mariadb', function (res) {
-                var info = res['service.mariadb'];
+            Request.get('/api/service/detail/mariadb', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -595,8 +651,8 @@ var ServiceMariaDBCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_fupdatepwd',
-                '/api/task/mysql_fupdatepwd', {
+                '/api/task/mysql.fupdatepwd',
+                '/api/task/mysql.fupdatepwd', {
                     'password': $scope.root_passwd,
                     'passwordc': $scope.root_passwdc
                 },
@@ -633,8 +689,8 @@ var ServiceRedisCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.redis', function (res) {
-                var info = res['service.redis'];
+            Request.get('/api/service/detail/redis', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -667,8 +723,8 @@ var ServiceMemcacheCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.memcached', function (res) {
-                var info = res['service.memcached'];
+            Request.get('/api/service/detail/memcached', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -701,8 +757,8 @@ var ServiceMongoDBCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.mongod', function (res) {
-                var info = res['service.mongod'];
+            Request.get('/api/service/detail/mongod', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -734,8 +790,8 @@ var ServiceMinIOCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.minio', function (res) {
-                var info = res['service.minio'];
+            Request.get('/api/service/detail/minio', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -765,8 +821,8 @@ var ServicePHP56Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.php56-php-fpm', function (res) {
-                var info = res['service.php56-php-fpm'];
+            Request.get('/api/service/detail/php56-php-fpm', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -797,8 +853,8 @@ var ServicePHP74Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.php74-php-fpm', function (res) {
-                var info = res['service.php74-php-fpm'];
+            Request.get('/api/service/detail/php74-php-fpm', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -829,8 +885,8 @@ var ServicePHP80Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.php80-php-fpm', function (res) {
-                var info = res['service.php80-php-fpm'];
+            Request.get('/api/service/detail/php80-php-fpm', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -861,8 +917,8 @@ var ServicePHP81Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.php81-php-fpm', function (res) {
-                var info = res['service.php81-php-fpm'];
+            Request.get('/api/service/detail/php81-php-fpm', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -893,8 +949,8 @@ var ServicePHP82Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.php82-php-fpm', function (res) {
-                var info = res['service.php82-php-fpm'];
+            Request.get('/api/service/detail/php82-php-fpm', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -925,8 +981,8 @@ var ServicePHP83Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.php83-php-fpm', function (res) {
-                var info = res['service.php83-php-fpm'];
+            Request.get('/api/service/detail/php83-php-fpm', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -957,8 +1013,8 @@ var ServicePHP84Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.php84-php-fpm', function (res) {
-                var info = res['service.php84-php-fpm'];
+            Request.get('/api/service/detail/php84-php-fpm', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -989,8 +1045,8 @@ var ServiceJava8Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.java8', function (res) {
-                var info = res['service.java8'];
+            Request.get('/api/service/detail/java8', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1021,8 +1077,8 @@ var ServiceJava11Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.java11', function (res) {
-                var info = res['service.java11'];
+            Request.get('/api/service/detail/java11', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1053,8 +1109,8 @@ var ServiceJava17Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.java17', function (res) {
-                var info = res['service.java17'];
+            Request.get('/api/service/detail/java17', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1085,8 +1141,8 @@ var ServiceJava21Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.java21', function (res) {
-                var info = res['service.java21'];
+            Request.get('/api/service/detail/java21', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1117,8 +1173,8 @@ var ServiceNodeJS18Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.nodejs18', function (res) {
-                var info = res['service.nodejs18'];
+            Request.get('/api/service/detail/nodejs18', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1149,8 +1205,8 @@ var ServiceNodeJS20Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.nodejs20', function (res) {
-                var info = res['service.nodejs20'];
+            Request.get('/api/service/detail/nodejs20', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1181,8 +1237,8 @@ var ServiceNodeJS22Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.nodejs22', function (res) {
-                var info = res['service.nodejs22'];
+            Request.get('/api/service/detail/nodejs22', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1213,8 +1269,8 @@ var ServiceNodeJS24Ctrl = [
         $scope.checking = false;
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.nodejs24', function (res) {
-                var info = res['service.nodejs24'];
+            Request.get('/api/service/detail/nodejs24', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1247,8 +1303,8 @@ var ServicePHPCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.php-fpm', function (res) {
-                var info = res['service.php-fpm'];
+            Request.get('/api/service/detail/php-fpm', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1368,8 +1424,8 @@ var ServiceSendmailCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.sendmail', function (res) {
-                var info = res['service.sendmail'];
+            Request.get('/api/service/detail/sendmail', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1402,8 +1458,8 @@ var ServiceSSHCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.sshd', function (res) {
-                var info = res['service.sshd'];
+            Request.get('/api/service/detail/sshd', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1469,8 +1525,8 @@ var ServiceSSHCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/ssh_genkey',
-                '/api/task/ssh_genkey', {}, {
+                '/api/task/ssh.genkey',
+                '/api/task/ssh.genkey', {}, {
                     'success': function () {
                         $scope.getsettings();
                     }
@@ -1488,8 +1544,8 @@ var ServiceSSHCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/ssh_chpasswd',
-                '/api/task/ssh_chpasswd', {
+                '/api/task/ssh.chpasswd',
+                '/api/task/ssh.chpasswd', {
                     'path': $scope.setting.prvkey,
                     'oldpassword': $scope.oldpassword,
                     'newpassword': $scope.newpassword
@@ -1519,8 +1575,8 @@ var ServiceIPTablesCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.iptables', function (res) {
-                var info = res['service.iptables'];
+            Request.get('/api/service/detail/iptables', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1553,8 +1609,8 @@ var ServiceFirewalldCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.firewalld', function (res) {
-                var info = res['service.firewalld'];
+            Request.get('/api/service/detail/firewalld', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1587,8 +1643,8 @@ var ServiceUfwCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.ufw', function (res) {
-                var info = res['service.ufw'];
+            Request.get('/api/service/detail/ufw', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1621,8 +1677,8 @@ var ServiceFail2banCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.fail2ban', function (res) {
-                var info = res['service.fail2ban'];
+            Request.get('/api/service/detail/fail2ban', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1656,8 +1712,8 @@ var ServiceCronCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.crond', function (res) {
-                var info = res['service.crond'];
+            Request.get('/api/service/detail/crond', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1724,8 +1780,8 @@ var ServiceNTPCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.ntpd', function (res) {
-                var info = res['service.ntpd'];
+            Request.get('/api/service/detail/ntpd', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1759,8 +1815,8 @@ var ServiceNamedCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.named', function (res) {
-                var info = res['service.named'];
+            Request.get('/api/service/detail/named', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1824,8 +1880,8 @@ var ServiceLighttpdCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.lighttpd', function (res) {
-                var info = res['service.lighttpd'];
+            Request.get('/api/service/detail/lighttpd', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1890,8 +1946,8 @@ var ServiceProFTPDCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.proftpd', function (res) {
-                var info = res['service.proftpd'];
+            Request.get('/api/service/detail/proftpd', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -1957,8 +2013,8 @@ var ServicePureFTPdCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.pure-ftpd', function (res) {
-                var info = res['service.pure-ftpd'];
+            Request.get('/api/service/detail/pure-ftpd', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
@@ -2023,8 +2079,8 @@ var ServiceSambaCtrl = [
 
         $scope.checkInstalled = function () {
             $scope.checking = true;
-            Request.get('/api/query/service.smb', function (res) {
-                var info = res['service.smb'];
+            Request.get('/api/service/detail/smb', function (res) {
+                var info = res.data;
                 if (info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;

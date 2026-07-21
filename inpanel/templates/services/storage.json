@@ -1,0 +1,28 @@
+[
+  {
+    "id": "minio",
+    "name": "MinIO",
+    "category": "storage",
+    "description": "MinIO 对象存储",
+    "packages": {
+      "brew": "minio",
+      "yum": null,
+      "dnf": null,
+      "apt": null
+    },
+    "systemd_unit": "minio.service",
+    "launchctl_label": "homebrew.mxcl.minio",
+    "pgrep_names": ["minio"],
+    "config_files": [
+      {"path": "/etc/default/minio", "label": "环境配置"}
+    ],
+    "log_files": [
+      {"path": "/var/log/minio.log", "label": "运行日志"}
+    ],
+    "data_dirs": [
+      {"path": "/var/lib/minio", "label": "数据目录"},
+      {"path": "/usr/local/var/minio", "label": "数据目录 (Homebrew)"}
+    ],
+    "default_port": 9000
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "sshd",
+    "name": "SSH",
+    "category": "system",
+    "description": "OpenSSH 服务",
+    "packages": {
+      "brew": "openssh",
+      "yum": "openssh-server",
+      "dnf": "openssh-server",
+      "apt": "openssh-server"
+    },
+    "systemd_unit": "sshd.service",
+    "launchctl_label": "homebrew.mxcl.openssh",
+    "pgrep_names": ["sshd"],
+    "pid_file": "/var/run/sshd.pid",
+    "config_files": [
+      {"path": "/etc/ssh/sshd_config", "label": "主配置文件"},
+      {"path": "/usr/local/etc/ssh/sshd_config", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/secure", "label": "安全日志"},
+      {"path": "/var/log/auth.log", "label": "认证日志 (Debian)"}
+    ],
+    "default_port": 22
+  },
+  {
+    "id": "crond",
+    "name": "Cron",
+    "category": "system",
+    "description": "计划任务服务",
+    "packages": {
+      "brew": "cron",
+      "yum": "cronie",
+      "dnf": "cronie",
+      "apt": "cron"
+    },
+    "systemd_unit": "crond.service",
+    "launchctl_label": "homebrew.mxcl.cron",
+    "pgrep_names": ["crond", "cron"],
+    "pid_file": "/var/run/crond.pid",
+    "config_files": [
+      {"path": "/etc/crontab", "label": "系统 crontab"}
+    ],
+    "log_files": [
+      {"path": "/var/log/cron", "label": "Cron 日志"}
+    ],
+    "data_dirs": [
+      {"path": "/var/spool/cron", "label": "用户 crontab 目录"}
+    ]
+  },
+  {
+    "id": "named",
+    "name": "Bind (named)",
+    "category": "system",
+    "description": "Bind DNS 服务器",
+    "packages": {
+      "brew": "bind",
+      "yum": "bind",
+      "dnf": "bind",
+      "apt": "bind9"
+    },
+    "systemd_unit": "named.service",
+    "launchctl_label": "homebrew.mxcl.bind",
+    "pgrep_names": ["named"],
+    "config_files": [
+      {"path": "/etc/named.conf", "label": "主配置文件"},
+      {"path": "/etc/bind/named.conf", "label": "主配置文件 (Debian)"},
+      {"path": "/usr/local/etc/bind/named.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/named.log", "label": "运行日志"}
+    ],
+    "default_port": 53
+  },
+  {
+    "id": "smb",
+    "name": "Samba",
+    "category": "system",
+    "description": "Samba 文件共享服务",
+    "packages": {
+      "brew": "samba",
+      "yum": "samba",
+      "dnf": "samba",
+      "apt": "samba"
+    },
+    "systemd_unit": "smb.service",
+    "launchctl_label": "homebrew.mxcl.samba",
+    "pgrep_names": ["smbd"],
+    "config_files": [
+      {"path": "/etc/samba/smb.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/smb.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/samba/log.smbd", "label": "运行日志"}
+    ],
+    "default_port": 445
+  },
+  {
+    "id": "ntpd",
+    "name": "NTP",
+    "category": "system",
+    "description": "NTP 时间同步服务",
+    "packages": {
+      "brew": "ntp",
+      "yum": "ntp",
+      "dnf": "chrony",
+      "apt": "ntp"
+    },
+    "systemd_unit": "ntpd.service",
+    "launchctl_label": "homebrew.mxcl.ntp",
+    "pgrep_names": ["ntpd", "chronyd"],
+    "config_files": [
+      {"path": "/etc/ntp.conf", "label": "主配置文件"},
+      {"path": "/etc/chrony.conf", "label": "主配置文件 (Chrony)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/ntp.log", "label": "运行日志"}
+    ],
+    "default_port": 123
+  }
+]

@@ -575,3 +575,393 @@ if __name__ == '__main__':
     #pp.pprint(create_user('admin', 'hilyjiang', '%'))
     #pp.pprint(drop_user('admin', 'hilyjiang', 'localhost'))
     #pp.pprint(set_user_password('admin', 'ddyh', 'localhost', 'ddyh'))
+
+
+# ==========================================================================
+# 异步任务函数（供 web.py _dispatch_task 调用，第一个参数 tm 为 TaskManager）
+# ==========================================================================
+
+import asyncio
+import time
+from subprocess import PIPE, Popen
+
+
+async def mysql_fupdatepwd(tm, password):
+    """强制重置 MySQL root 密码（异步任务）"""
+    jobname = 'mysql.fupdatepwd'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, '正在检测 MySQL 服务状态...')
+    cmd = 'service mysqld status'
+    result, output = await shell.async_command(cmd)
+    isstopped = 'stopped' in output
+
+    if not isstopped:
+        tm._update_job(jobname, 2, '正在停止 MySQL 服务...')
+        cmd = 'service mysqld stop'
+        result, output = await shell.async_command(cmd)
+        if result != 0:
+            tm._finish_job(jobname, -1, '停止 MySQL 服务时出错！',
+                           data=output.strip().replace(' ', '<br>'))
+            return
+
+    tm._update_job(jobname, 2, '正在启用 MySQL 恢复模式...')
+    manually = False
+    cmd = 'service mysqld startsos'
+    result, output = await shell.async_command(cmd)
+    if result != 0:
+        manually = True
+        cmd = 'mysqld_safe --skip-grant-tables --skip-networking'
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE, close_fds=True, shell=True)
+        if not p:
+            tm._finish_job(jobname, -1, '启用 MySQL 恢复模式时出错！',
+                           data=output.strip().replace('\n', '<br>'))
+            return
+
+    if manually:
+        time.sleep(2)
+
+    error = False
+    tm._update_job(jobname, 2, '正在强制重置 root 密码...')
+    if not fupdatepwd(password):
+        error = True
+
+    if manually:
+        result = await shell.async_task(shutdown, password)
+        if result:
+            tm._update_job(jobname, 0, '成功停止 MySQL 服务！')
+        else:
+            tm._update_job(jobname, -1, '停止 MySQL 服务失败！')
+        p.terminate()
+        p.wait()
+
+    msg = ''
+    if not isstopped:
+        if error:
+            msg = '重置 root 密码时发生错误！正在重启 MySQL 服务...'
+            tm._update_job(jobname, -1, msg)
+        else:
+            tm._update_job(jobname, 2, '正在重启 MySQL 服务...')
+        if manually:
+            cmd = 'service mysqld start'
+        else:
+            cmd = 'service mysqld restart'
+    else:
+        if error:
+            msg = '重置 root 密码时发生错误！正在停止 MySQL 服务...'
+            tm._update_job(jobname, -1, msg)
+        else:
+            tm._update_job(jobname, 2, '正在停止 MySQL 服务...')
+        if manually:
+            cmd = ''
+        else:
+            cmd = 'service mysqld stop'
+
+    if not cmd:
+        if error:
+            code = -1
+            msg = '%sOK' % msg
+        else:
+            code = 0
+            msg = 'root 密码重置成功！'
+    else:
+        result, output = await shell.async_command(cmd)
+        if result == 0:
+            if error:
+                code = -1
+                msg = '%sOK' % msg
+            else:
+                code = 0
+                msg = 'root 密码重置成功！'
+        else:
+            if error:
+                code = -1
+                msg = '%sOK' % msg
+            else:
+                code = -1
+                msg = 'root 密码重置成功，但在操作服务时出错！'
+                data = output.strip().replace('\n', '<br>')
+
+    tm._finish_job(jobname, code, msg, data=data)
+
+
+async def mysql_databases(tm, password):
+    """获取数据库列表（异步任务）"""
+    jobname = 'mysql.databases'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, '正在获取数据库列表...')
+    dbs = []
+    dbs = await shell.async_task(show_databases, password)
+    if dbs:
+        code = 0
+        msg = '获取数据库列表成功！'
+    else:
+        code = -1
+        msg = '获取数据库列表失败！'
+
+    tm._finish_job(jobname, code, msg, dbs)
+
+
+async def mysql_users(tm, password, dbname=None):
+    """获取用户列表（异步任务）"""
+    if not dbname:
+        jobname = 'mysql.users'
+    else:
+        jobname = f'mysql.users_{dbname}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    if not dbname:
+        tm._update_job(jobname, 2, '正在获取用户列表...')
+    else:
+        tm._update_job(jobname, 2, f'正在获取数据库 {dbname} 的用户列表...')
+
+    users = []
+    users = await shell.async_task(show_users, password, dbname)
+    if users:
+        code = 0
+        msg = '获取用户列表成功！'
+    else:
+        code = -1
+        msg = '获取用户列表失败！'
+
+    tm._finish_job(jobname, code, msg, users)
+
+
+async def mysql_dbinfo(tm, password, dbname):
+    """获取数据库详情（异步任务）"""
+    jobname = f'mysql.dbinfo_{dbname}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, '正在获取数据库 %s 的信息...' % dbname)
+    dbinfo = False
+    dbinfo = await shell.async_task(show_database, password, dbname)
+    if dbinfo:
+        code = 0
+        msg = '获取数据库 %s 的信息成功！' % dbname
+    else:
+        code = -1
+        msg = '获取数据库 %s 的信息失败！' % dbname
+
+    tm._finish_job(jobname, code, msg, dbinfo)
+
+
+async def mysql_rename(tm, password, dbname, newname):
+    """重命名数据库（异步任务）"""
+    jobname = f'mysql.rename_{dbname}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, f'正在重命名 {dbname}...')
+    result = await shell.async_task(rename_database, password, dbname, newname)
+    if result == True:
+        code = 0
+        msg = f'{dbname} 重命名成功！'
+    else:
+        code = -1
+        msg = f'{dbname} 重命名失败！'
+
+    tm._finish_job(jobname, code, msg)
+
+
+async def mysql_create(tm, password, dbname, collation):
+    """创建数据库（异步任务）"""
+    jobname = f'mysql.create_{dbname}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, f'正在创建 {dbname}...')
+    result = await shell.async_task(create_database, password, dbname, collation=collation)
+    if result == True:
+        code = 0
+        msg = f'{dbname} 创建成功！'
+    else:
+        code = -1
+        msg = f'{dbname} 创建失败！'
+
+    tm._finish_job(jobname, code, msg)
+
+
+async def mysql_export(tm, password, dbname, path):
+    """导出数据库（异步任务）"""
+    jobname = f'mysql.export_{dbname}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, f'正在导出 {dbname}...')
+    result = await shell.async_task(export_database, password, dbname, path)
+    if result == True:
+        code = 0
+        msg = f'{dbname} 导出成功！'
+    else:
+        code = -1
+        msg = f'{dbname} 导出失败！'
+
+    tm._finish_job(jobname, code, msg)
+
+
+async def mysql_drop(tm, password, dbname):
+    """删除数据库（异步任务）"""
+    jobname = f'mysql.drop_{dbname}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, f'正在删除 {dbname}...')
+    result = await shell.async_task(drop_database, password, dbname)
+    if result == True:
+        code = 0
+        msg = f'{dbname} 删除成功！'
+    else:
+        code = -1
+        msg = f'{dbname} 删除失败！'
+
+    tm._finish_job(jobname, code, msg)
+
+
+async def mysql_createuser(tm, password, user, host, pwd=None):
+    """创建用户（异步任务）"""
+    username = f'{user}@{host}'
+    jobname = f'mysql.createuser_{username}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, f'正在添加用户 {username}...')
+    result = await shell.async_task(create_user, password, user, host, pwd)
+    if result is True:
+        code = 0
+        msg = f'用户 {username} 添加成功！'
+    else:
+        code = -1
+        msg = f'用户 {username} 添加失败！'
+
+    tm._finish_job(jobname, code, msg)
+
+
+async def mysql_userprivs(tm, password, user, host):
+    """获取用户权限（异步任务）"""
+    username = f'{user}@{host}'
+    jobname = f'mysql.userprivs_{username}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, f'正在获取用户 {username} 的权限...')
+
+    privs = {'global': {}, 'bydb': {}}
+    globalprivs = await shell.async_task(show_user_globalprivs, password, user, host)
+    if globalprivs != False:
+        code = 0
+        msg = f'获取用户 {username} 的全局权限成功！'
+        privs['global'] = globalprivs
+    else:
+        code = -1
+        msg = f'获取用户 {username} 的全局权限失败！'
+        privs = False
+
+    if privs:
+        dbprivs = await shell.async_task(show_user_dbprivs, password, user, host)
+        if dbprivs != False:
+            code = 0
+            msg = f'获取用户 {username} 的数据库权限成功！'
+            privs['bydb'] = dbprivs
+        else:
+            code = -1
+            msg = f'获取用户 {username} 的数据库权限失败！'
+            privs = False
+
+    tm._finish_job(jobname, code, msg, privs)
+
+
+async def mysql_updateuserprivs(tm, password, user, host, privs, dbname=None):
+    """更新用户权限（异步任务）"""
+    username = f'{user}@{host}'
+    if dbname:
+        jobname = f'mysql.updateuserprivs_{username}_{dbname}'
+    else:
+        jobname = f'mysql.updateuserprivs_{username}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    if dbname:
+        tm._update_job(jobname, 2, f'正在更新用户 {username} 在数据库 {dbname} 中的权限...')
+    else:
+        tm._update_job(jobname, 2, f'正在更新用户 {username} 的权限...')
+
+    rt = await shell.async_task(update_user_privs, password, user, host, privs, dbname)
+    if rt != False:
+        code = 0
+        msg = f'用户 {username} 的权限更新成功！'
+    else:
+        code = -1
+        msg = f'用户 {username} 的权限更新失败！'
+
+    tm._finish_job(jobname, code, msg)
+
+
+async def mysql_setuserpassword(tm, password, user, host, pwd):
+    """设置用户密码（异步任务）"""
+    username = f'{user}@{host}'
+    jobname = f'mysql.setuserpassword_{username}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, f'正在更新用户 {username} 的密码...')
+
+    rt = await shell.async_task(set_user_password, password, user, host, pwd)
+    if rt != False:
+        code = 0
+        msg = f'用户 {username} 的密码更新成功 ！'
+    else:
+        code = -1
+        msg = f'用户 {username} 的密码更新失败 ！'
+
+    tm._finish_job(jobname, code, msg)
+
+
+async def mysql_dropuser(tm, password, user, host):
+    """删除用户（异步任务）"""
+    username = f'{user}@{host}'
+    jobname = f'mysql.dropuser_{username}'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, f'正在删除用户 {username}...')
+
+    rt = await shell.async_task(drop_user, password, user, host)
+    if rt != False:
+        code = 0
+        msg = f'用户 {username} 删除成功 ！'
+    else:
+        code = -1
+        msg = f'用户 {username} 删除失败 ！'
+
+    tm._finish_job(jobname, code, msg)

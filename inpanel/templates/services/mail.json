@@ -1,0 +1,47 @@
+[
+  {
+    "id": "sendmail",
+    "name": "Sendmail",
+    "category": "mail",
+    "description": "Sendmail 邮件传输代理",
+    "packages": {
+      "brew": "sendmail",
+      "yum": "sendmail",
+      "dnf": "sendmail",
+      "apt": "sendmail"
+    },
+    "systemd_unit": "sendmail.service",
+    "launchctl_label": "homebrew.mxcl.sendmail",
+    "pgrep_names": ["sendmail"],
+    "config_files": [
+      {"path": "/etc/mail/sendmail.cf", "label": "主配置文件"}
+    ],
+    "log_files": [
+      {"path": "/var/log/maillog", "label": "邮件日志"}
+    ],
+    "default_port": 25
+  },
+  {
+    "id": "postfix",
+    "name": "Postfix",
+    "category": "mail",
+    "description": "Postfix 邮件传输代理",
+    "packages": {
+      "brew": "postfix",
+      "yum": "postfix",
+      "dnf": "postfix",
+      "apt": "postfix"
+    },
+    "systemd_unit": "postfix.service",
+    "launchctl_label": "homebrew.mxcl.postfix",
+    "pgrep_names": ["master"],
+    "config_files": [
+      {"path": "/etc/postfix/main.cf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/postfix/main.cf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/mail.log", "label": "邮件日志"}
+    ],
+    "default_port": 25
+  }
+]

@@ -11,6 +11,7 @@ from .package_base import PackageManager
 from .package_yum import YumPM
 from .package_dnf import DnfPM
 from .package_apt import AptPM
+from .package_brew import BrewPM
 from .package_map import (
     PACKAGE_MAP,
     resolve_package_names,
@@ -24,7 +25,7 @@ from .package_map import (
 
 def get_package_manager():
     """工厂函数：根据系统返回对应的包管理器实例"""
-    managers = [DnfPM(), YumPM(), AptPM()]
+    managers = [DnfPM(), YumPM(), AptPM(), BrewPM()]
     for mgr in managers:
         if mgr.detect():
             return mgr

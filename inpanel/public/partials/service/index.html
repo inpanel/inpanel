@@ -3,461 +3,70 @@
     <div loading></div>
 </div>
 
-<div id="main" ng-show="!Auth.processing&&loaded" style="display:none">
+<div id="main" ng-show="!Auth.processing&&loaded" style="display:none" ng-init="loadInfo()">
     <div class="module-header">
         <h3>服务管理</h3>
     </div>
 
-    <div class="tabbable" ng-init="loadInfo('service.all')">
+    <div class="tabbable">
         <ul class="nav nav-tabs">
-            <li ng-class="'active' | iftrue:activeTabName=='http'"><a href="#http" ng-click="sec('http')" data-toggle="tab">HTTP</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='ftp'"><a href="#ftp" ng-click="sec('ftp')" data-toggle="tab">FTP</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='database'"><a href="#database" ng-click="sec('database')" data-toggle="tab">数据库</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='storage'"><a href="#storage" ng-click="sec('storage')" data-toggle="tab">文件存储</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='appengine'"><a href="#appengine" ng-click="sec('appengine')" data-toggle="tab">脚本引擎</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='mail'"><a href="#mail" ng-click="sec('mail')" data-toggle="tab">邮件</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='system'"><a href="#system" ng-click="sec('system')" data-toggle="tab">系统</a></li>
-            <li ng-class="'active' | iftrue:activeTabName=='security'"><a href="#security" ng-click="sec('security')" data-toggle="tab">安全</a></li>
+            <li ng-repeat="cat in categories" ng-class="'active' | iftrue:activeTabName==cat.id">
+                <a href="#{{cat.id}}" ng-click="sec(cat.id)" data-toggle="tab">{{cat.name}}</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTabName=='other'" ng-show="otherServices.length > 0">
+                <a href="#other" ng-click="sec('other')" data-toggle="tab">其他</a>
+            </li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='http'" id="http">
+            <div class="tab-pane table-responsive" ng-repeat="cat in categories" ng-class="'active' | iftrue:activeTabName==cat.id" id="{{cat.id}}">
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th colspan="4">HTTP 服务器软件</th>
+                            <th colspan="4">{{cat.name}} 服务</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Apache</td>
-                            <td ng-bind-html-unsafe="info['service.httpd']['status'] | service.status"></td>
-                            <td class="muted">广泛使用的开源 HTTP 服务器软件</td>
-                            <td>
-                                <div srvminiop ng-init="name='Apache';service='httpd';urlname='apache'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Nginx</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>
-                            <td class="muted">高性能的开源 HTTP 服务器软件</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Nginx';service='nginx';urlname='nginx'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Tomcat(开发中)</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.tomcat']['status'] | service.status"></td>
-                            <td class="muted">小型的轻量级 JSP 引擎应用</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Tomcat';service='tomcat';urlname='tomcat'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Lighttpd(开发中)</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.lighttpd']['status'] | service.status"></td>
-                            <td class="muted">快速灵活高性能的开源 HTTP 服务器软件</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Lighttpd';service='lighttpd';urlname='lighttpd'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Tengine(开发中)</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.tengine']['status'] | service.status"></td>
-                            <td class="muted">基于 Nginx 的高效稳定安全的 HTTP 服务器软件</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Tengine';service='tengine';urlname='tengine'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Caddy(开发中)</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.caddy']['status'] | service.status"></td>
-                            <td class="muted">自动 SSL 的 HTTP 服务器软件</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Caddy';service='caddy';urlname='caddy'"></div>
+                        <tr ng-repeat="svc in cat.services">
+                            <td style="width:100px">{{svc.name}}</td>
+                            <td style="width:60px" ng-bind-html-unsafe="svc.status | service.status"></td>
+                            <td class="muted">{{svc.description}}</td>
+                            <td style="width:180px">
+                                <span ng-show="svc.installed">
+                                    <button class="btn btn-xs btn-success" ng-show="svc.status != 'running'"
+                                        ng-click="start(svc)">启动</button>
+                                    <button class="btn btn-xs btn-warning" ng-show="svc.status == 'running'"
+                                        ng-click="stop(svc)">停止</button>
+                                    <button class="btn btn-xs btn-danger" ng-show="svc.status == 'running'"
+                                        ng-click="restart(svc)">重启</button>
+                                    <a class="btn btn-xs btn-info" href="#/service/{{svc.id}}">详情</a>
+                                </span>
+                                <button class="btn btn-xs btn-primary" ng-hide="svc.installed"
+                                    ng-click="install(svc)">安装</button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='ftp'" id="ftp">
+            <!-- 其他服务 -->
+            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='other'" id="other" ng-show="otherServices.length > 0">
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th colspan="4">FTP 服务器软件</th>
+                            <th colspan="4">其他服务（系统发现）</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td style="width:100px">vsftpd</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.vsftpd']['status'] | service.status"></td>
-                            <td class="muted">安全快速的 FTP 服务器</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='vsftpd';service='vsftpd';urlname='vsftpd'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">ProFTPD</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.proftpd']['status'] | service.status"></td>
-                            <td class="muted">安全简单的 FTP 服务器</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='proftpd';service='proftpd';urlname='proftpd'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Pure-FTPd</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.pure-ftpd']['status'] | service.status"></td>
-                            <td class="muted">快速稳定全功能的 FTP 服务器</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Pure-FTPd';service='pure-ftpd';urlname='pureftpd'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='database'" id="database">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">数据库服务</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">MariaDB</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.mariadb']['status'] | service.status"></td>
-                            <td class="muted">MySQL的一个分支，主要由开源社区在维护</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='MariaDB';service='mariadb';urlname='mariadb'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>MySQL</td>
-                            <td ng-bind-html-unsafe="info['service.mysqld']['status'] | service.status"></td>
-                            <td class="muted">最流行的开源关系型数据库服务器</td>
-                            <td>
-                                <div srvminiop ng-init="name='MySQL';service='mysqld';urlname='mysql'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Redis</td>
-                            <td ng-bind-html-unsafe="info['service.redis']['status'] | service.status"></td>
-                            <td class="muted">高性能内存KV数据库</td>
-                            <td>
-                                <div srvminiop ng-init="name='Redis';service='redis';urlname='redis'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Memcache</td>
-                            <td ng-bind-html-unsafe="info['service.memcached']['status'] | service.status"></td>
-                            <td class="muted">高性能的分布式内存对象缓存系统</td>
-                            <td>
-                                <div srvminiop ng-init="name='Memcache';service='memcached';urlname='memcache'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>MongoDB</td>
-                            <td ng-bind-html-unsafe="info['service.mongod']['status'] | service.status"></td>
-                            <td class="muted">分布式高性能的NOSQL数据库服务器</td>
-                            <td>
-                                <div srvminiop ng-init="name='MongoDB';service='mongod';urlname='mongodb'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>PostgreSQL[未完成]</td>
-                            <td ng-bind-html-unsafe="info['service.postgresql']['status'] | service.status"></td>
-                            <td class="muted">功能强大的开源数据库</td>
-                            <td>
-                                <div srvminiop ng-init="name='PostgreSQL';service='postgresql';urlname='postgresql'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='storage'" id="storage">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">文件存储服务</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">MinIO</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.minio']['status'] | service.status"></td>
-                            <td class="muted">MinIO是一个开源的轻量级对象存储服务</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='MinIO';service='minio';urlname='minio'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='appengine'" id="appengine">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">PHP</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">PHP 5.6</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.php56-php-fpm']['status'] | service.status"></td>
-                            <td class="muted">PHP 5.6 脚本解析器 (EOL)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='PHP 5.6';service='php56-php-fpm';urlname='php56'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">PHP 7.4</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.php74-php-fpm']['status'] | service.status"></td>
-                            <td class="muted">PHP 7.4 脚本解析器 (EOL)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='PHP 7.4';service='php74-php-fpm';urlname='php74'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">PHP 8.0</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.php80-php-fpm']['status'] | service.status"></td>
-                            <td class="muted">PHP 8.0 脚本解析器</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='PHP 8.0';service='php80-php-fpm';urlname='php80'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">PHP 8.1</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.php81-php-fpm']['status'] | service.status"></td>
-                            <td class="muted">PHP 8.1 脚本解析器</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='PHP 8.1';service='php81-php-fpm';urlname='php81'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">PHP 8.2</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.php82-php-fpm']['status'] | service.status"></td>
-                            <td class="muted">PHP 8.2 脚本解析器</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='PHP 8.2';service='php82-php-fpm';urlname='php82'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">PHP 8.3</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.php83-php-fpm']['status'] | service.status"></td>
-                            <td class="muted">PHP 8.3 脚本解析器</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='PHP 8.3';service='php83-php-fpm';urlname='php83'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">PHP 8.4</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.php84-php-fpm']['status'] | service.status"></td>
-                            <td class="muted">PHP 8.4 脚本解析器 (最新)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='PHP 8.4';service='php84-php-fpm';urlname='php84'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">Java</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">Java 8</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.java8']['status'] | service.status"></td>
-                            <td class="muted">Java 8 Runtime Environment</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Java 8';service='java8';urlname='java8'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Java 11</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.java11']['status'] | service.status"></td>
-                            <td class="muted">Java 11 Runtime Environment (LTS)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Java 11';service='java11';urlname='java11'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Java 17</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.java17']['status'] | service.status"></td>
-                            <td class="muted">Java 17 Runtime Environment (LTS)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Java 17';service='java17';urlname='java17'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Java 21</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.java21']['status'] | service.status"></td>
-                            <td class="muted">Java 21 Runtime Environment (LTS)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Java 21';service='java21';urlname='java21'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">Node.js</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">Node.js 18</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.nodejs18']['status'] | service.status"></td>
-                            <td class="muted">Node.js 18.x (LTS)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Node.js 18';service='nodejs18';urlname='nodejs18'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Node.js 20</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.nodejs20']['status'] | service.status"></td>
-                            <td class="muted">Node.js 20.x (LTS)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Node.js 20';service='nodejs20';urlname='nodejs20'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Node.js 22</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.nodejs22']['status'] | service.status"></td>
-                            <td class="muted">Node.js 22.x (LTS)</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Node.js 22';service='nodejs22';urlname='nodejs22'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Node.js 24</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.nodejs24']['status'] | service.status"></td>
-                            <td class="muted">Node.js 24.x</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Node.js 24';service='nodejs24';urlname='nodejs24'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='mail'" id="mail">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">邮件服务</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">Sendmail</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.sendmail']['status'] | service.status"></td>
-                            <td class="muted">邮件传输服务</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='Sendmail';service='sendmail';urlname='sendmail'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='system'" id="system">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">系统服务</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">SSH</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.sshd']['status'] | service.status"></td>
-                            <td class="muted">远程连接服务器</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='SSH';service='sshd';urlname='ssh'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Cron</td>
-                            <td ng-bind-html-unsafe="info['service.crond']['status'] | service.status"></td>
-                            <td class="muted">定时任务管理服务器</td>
-                            <td>
-                                <div srvminiop ng-init="name='Cron';service='crond';urlname='cron'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">BIND</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.named']['status'] | service.status"></td>
-                            <td class="muted">DNS 域名解析服务器 (BIND)</td>
-                            <td style="width:100px">
-                                <div srvminiop ng-init="name='BIND';service='named';urlname='named'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">Samba</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.smb']['status'] | service.status"></td>
-                            <td class="muted">文件资源共享服务器</td>
-                            <td style="width:100px">
-                                <div srvminiop ng-init="name='samba';service='smb';urlname='samba'"></div>
-                            </td>
-                        </tr>
-                        <tr style="display:none" ng-show="info['server.virt'] != 'Virtuozzo/OpenVZ'">
-                            <td>NTP</td>
-                            <td ng-bind-html-unsafe="info['service.ntpd']['status'] | service.status"></td>
-                            <td class="muted">时间同步服务</td>
-                            <td>
-                                <div srvminiop ng-init="name='NTP';service='ntpd';urlname='ntp'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="tab-pane table-responsive" ng-class="'active' | iftrue:activeTabName=='security'" id="security">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">防火墙</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">iptables</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.iptables']['status'] | service.status"></td>
-                            <td class="muted">Linux 传统防火墙</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='iptables';service='iptables';urlname='iptables'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">firewalld</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.firewalld']['status'] | service.status"></td>
-                            <td class="muted">CentOS/RHEL 动态防火墙管理工具</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='firewalld';service='firewalld';urlname='firewalld'"></div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width:100px">ufw</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.ufw']['status'] | service.status"></td>
-                            <td class="muted">Ubuntu/Debian 简单防火墙管理工具</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='ufw';service='ufw';urlname='ufw'"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th colspan="4">安全服务</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="width:100px">fail2ban</td>
-                            <td style="width:60px" ng-bind-html-unsafe="info['service.fail2ban']['status'] | service.status"></td>
-                            <td class="muted">入侵防御系统，自动封禁恶意IP</td>
-                            <td style="width:150px">
-                                <div srvminiop ng-init="name='fail2ban';service='fail2ban';urlname='fail2ban'"></div>
+                        <tr ng-repeat="svc in otherServices">
+                            <td style="width:120px">{{svc.name}}</td>
+                            <td style="width:60px" ng-bind-html-unsafe="svc.status | service.status"></td>
+                            <td class="muted">通过 {{svc.package_manager}} 发现的系统服务</td>
+                            <td style="width:180px">
+                                <button class="btn btn-xs btn-success" ng-hide="svc.status == 'running'"
+                                    ng-click="start(svc)">启动</button>
+                                <button class="btn btn-xs btn-warning" ng-show="svc.status == 'running'"
+                                    ng-click="stop(svc)">停止</button>
+                                <button class="btn btn-xs btn-danger" ng-show="svc.status == 'running'"
+                                    ng-click="restart(svc)">重启</button>
                             </td>
                         </tr>
                     </tbody>

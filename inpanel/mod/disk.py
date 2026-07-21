@@ -310,6 +310,91 @@ def fstab(devname, config=None):
                            devname=devname, config=config)
 
 
+# ------------------------------------------------------------------
+# 异步任务函数（由 web.py 的 _dispatch_task 调用）
+# 命名规则：disk_<method>，对应 jobname 中的 disk_<method>_...
+# ------------------------------------------------------------------
+
+from shlex import quote as sh_quote
+from . import shell
+
+
+async def disk_swap(tm, action, devname):
+    """启用/停用 swap（异步任务）"""
+    jobname = f'disk.swap_{action}_{devname}'
+    if not tm._start_job(jobname):
+        return
+
+    action_str = {'on': '启用', 'off': '停用'}
+    tm._update_job(jobname, 2, f'正在{action_str.get(action, action)} {devname}...')
+
+    if action == 'on':
+        cmd = f'swapon /dev/{devname}'
+    else:
+        cmd = f'swapoff /dev/{devname}'
+
+    result, output = await shell.async_command(cmd)
+    if result == 0:
+        tm._finish_job(jobname, 0, f'{action_str.get(action, action)} {devname} 成功！')
+    else:
+        tm._finish_job(jobname, -1,
+                       f'{action_str.get(action, action)} {devname} 失败！',
+                       data=output.strip().replace('\n', '<br>'))
+
+
+async def disk_mount(tm, action, devname, mountpoint, fstype):
+    """挂载/卸载磁盘（异步任务）"""
+    jobname = f'disk.mount_{action}_{devname}'
+    if not tm._start_job(jobname):
+        return
+
+    action_str = {'mount': '挂载', 'umount': '卸载'}
+    tm._update_job(jobname, 2, f'正在{action_str.get(action, action)} {devname} 到 {mountpoint}...')
+
+    if action == 'mount':
+        fstab(devname, {
+            'devname': devname,
+            'mount': mountpoint,
+            'fstype': fstype,
+        })
+        cmd = f'mount -t {fstype} /dev/{devname} {mountpoint}'
+    else:
+        cmd = f'umount /dev/{devname}'
+
+    result, output = await shell.async_command(cmd)
+    if result == 0:
+        tm._finish_job(jobname, 0, f'{action_str.get(action, action)} {devname} 成功！')
+    else:
+        tm._finish_job(jobname, -1,
+                       f'{action_str.get(action, action)} {devname} 失败！',
+                       data=output.strip().replace('\n', '<br>'))
+
+
+async def disk_format(tm, devname, fstype):
+    """格式化磁盘（异步任务）"""
+    jobname = f'disk.format_{devname}'
+    if not tm._start_job(jobname):
+        return
+
+    tm._update_job(jobname, 2, f'正在格式化 {devname}，可能需要较长时间，请耐心等候...')
+
+    if fstype in ('ext2', 'ext3', 'ext4'):
+        cmd = f'mkfs.{fstype} -F /dev/{devname}'
+    elif fstype in ('xfs', 'reiserfs', 'btrfs'):
+        cmd = f'mkfs.{fstype} -f /dev/{devname}'
+    elif fstype == 'swap':
+        cmd = f'mkswap -f /dev/{devname}'
+    else:
+        cmd = f'mkfs.{fstype} /dev/{devname}'
+
+    result, output = await shell.async_command(cmd)
+    if result == 0:
+        tm._finish_job(jobname, 0, f'{devname} 格式化成功！')
+    else:
+        tm._finish_job(jobname, -1, f'{devname} 格式化失败！',
+                       data=output.strip().replace('\n', '<br>'))
+
+
 if __name__ == '__main__':
     # !!!!!!!!!!! DANGEROUS TESTING !!!!!!!!!!!
     # print('* Add partition to sdb with 5G:',)

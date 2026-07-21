@@ -1,0 +1,69 @@
+[
+  {
+    "id": "vsftpd",
+    "name": "vsftpd",
+    "category": "ftp",
+    "description": "Very Secure FTP Daemon",
+    "packages": {
+      "brew": "vsftpd",
+      "yum": "vsftpd",
+      "dnf": "vsftpd",
+      "apt": "vsftpd"
+    },
+    "systemd_unit": "vsftpd.service",
+    "launchctl_label": "homebrew.mxcl.vsftpd",
+    "pgrep_names": ["vsftpd"],
+    "config_files": [
+      {"path": "/etc/vsftpd/vsftpd.conf", "label": "主配置文件"}
+    ],
+    "log_files": [
+      {"path": "/var/log/vsftpd.log", "label": "运行日志"}
+    ],
+    "default_port": 21
+  },
+  {
+    "id": "proftpd",
+    "name": "ProFTPD",
+    "category": "ftp",
+    "description": "ProFTPD FTP 服务器",
+    "packages": {
+      "brew": "proftpd",
+      "yum": "proftpd",
+      "dnf": "proftpd",
+      "apt": "proftpd-basic"
+    },
+    "systemd_unit": "proftpd.service",
+    "launchctl_label": "homebrew.mxcl.proftpd",
+    "pgrep_names": ["proftpd"],
+    "config_files": [
+      {"path": "/etc/proftpd/proftpd.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/proftpd.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/proftpd/proftpd.log", "label": "运行日志"}
+    ],
+    "default_port": 21
+  },
+  {
+    "id": "pure-ftpd",
+    "name": "Pure-FTPd",
+    "category": "ftp",
+    "description": "Pure-FTPd FTP 服务器",
+    "packages": {
+      "brew": "pure-ftpd",
+      "yum": "pure-ftpd",
+      "dnf": "pure-ftpd",
+      "apt": "pure-ftpd"
+    },
+    "systemd_unit": "pure-ftpd.service",
+    "launchctl_label": "homebrew.mxcl.pure-ftpd",
+    "pgrep_names": ["pure-ftpd"],
+    "config_files": [
+      {"path": "/etc/pure-ftpd/pure-ftpd.conf", "label": "主配置文件"}
+    ],
+    "log_files": [
+      {"path": "/var/log/pure-ftpd.log", "label": "运行日志"}
+    ],
+    "default_port": 21
+  }
+]

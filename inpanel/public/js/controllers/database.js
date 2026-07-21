@@ -10,8 +10,8 @@ var DatabaseCtrl = [
         $scope.mysql_supported = false;
 
         $scope.load = function() {
-            Request.get('/api/query/service.mysqld', function(data) {
-                if (data['service.mysqld'] && data['service.mysqld'].status) $scope.mysql_supported = true;
+            Request.get('/api/service/detail/mysqld', function(data) {
+                if (data.code === 0 && data.data) $scope.mysql_supported = true;
                 $scope.has_dbserver = $scope.mysql_supported;
                 if ($scope.has_dbserver) {
                     if (section) {
@@ -47,8 +47,8 @@ var DatabaseCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_databases',
-                '/api/task/mysql_databases', {
+                '/api/task/mysql.databases',
+                '/api/task/mysql.databases', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -67,8 +67,8 @@ var DatabaseCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_users',
-                '/api/task/mysql_users', {
+                '/api/task/mysql.users',
+                '/api/task/mysql.users', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -114,8 +114,8 @@ var DatabaseMySQLNewDBCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_create',
-                '/api/task/mysql_create_' + $scope.dbname, {
+                '/api/task/mysql.create',
+                '/api/task/mysql.create_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'collation': $scope.collation
@@ -164,8 +164,8 @@ var DatabaseMySQLEditDBCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_dbinfo',
-                '/api/task/mysql_dbinfo_' + $scope.dbname, {
+                '/api/task/mysql.dbinfo',
+                '/api/task/mysql.dbinfo_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 }, {
@@ -187,8 +187,8 @@ var DatabaseMySQLEditDBCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_users',
-                '/api/task/mysql_users_' + $scope.dbname, {
+                '/api/task/mysql.users',
+                '/api/task/mysql.users_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 }, {
@@ -219,8 +219,8 @@ var DatabaseMySQLEditDBCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_rename',
-                '/api/task/mysql_rename_' + $scope.dbname, {
+                '/api/task/mysql.rename',
+                '/api/task/mysql.rename_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'newname': $scope.dbinfo.name
@@ -250,8 +250,8 @@ var DatabaseMySQLEditDBCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_export',
-                '/api/task/mysql_export_' + $scope.dbname, {
+                '/api/task/mysql.export',
+                '/api/task/mysql.export_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname,
                     'path': $scope.exportpath
@@ -266,8 +266,8 @@ var DatabaseMySQLEditDBCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_drop',
-                '/api/task/mysql_drop_' + $scope.dbname, {
+                '/api/task/mysql.drop',
+                '/api/task/mysql.drop_' + $scope.dbname, {
                     'password': $rootScope.$mysql.password,
                     'dbname': $scope.dbname
                 },
@@ -320,8 +320,8 @@ var DatabaseMySQLNewUserCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_createuser',
-                '/api/task/mysql_createuser_' + username, {
+                '/api/task/mysql.createuser',
+                '/api/task/mysql.createuser_' + username, {
                     'password': $rootScope.$mysql.password,
                     'user': $scope.user,
                     'host': $scope.host,
@@ -398,8 +398,8 @@ var DatabaseMySQLEditUserCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_userprivs',
-                '/api/task/mysql_userprivs_' + $scope.username, {
+                '/api/task/mysql.userprivs',
+                '/api/task/mysql.userprivs_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username
                 }, {
@@ -486,8 +486,8 @@ var DatabaseMySQLEditUserCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_updateuserprivs',
-                '/api/task/mysql_updateuserprivs_' + encodeURIComponent($scope.username + ($scope.curprivs.Db ? '_' + $scope.curprivs.Db : '')), {
+                '/api/task/mysql.updateuserprivs',
+                '/api/task/mysql.updateuserprivs_' + encodeURIComponent($scope.username + ($scope.curprivs.Db ? '_' + $scope.curprivs.Db : '')), {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username,
                     'privs': angular.toJson($scope.curprivs),
@@ -516,8 +516,8 @@ var DatabaseMySQLEditUserCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_databases',
-                '/api/task/mysql_databases', {
+                '/api/task/mysql.databases',
+                '/api/task/mysql.databases', {
                     'password': $rootScope.$mysql.password
                 }, {
                     'success': function(data) {
@@ -539,8 +539,8 @@ var DatabaseMySQLEditUserCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_setuserpassword',
-                '/api/task/mysql_setuserpassword_' + $scope.username, {
+                '/api/task/mysql.setuserpassword',
+                '/api/task/mysql.setuserpassword_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username,
                     'pwd': $scope.emptypassword ? '' : $scope.newpassword
@@ -567,8 +567,8 @@ var DatabaseMySQLEditUserCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mysql_dropuser',
-                '/api/task/mysql_dropuser_' + $scope.username, {
+                '/api/task/mysql.dropuser',
+                '/api/task/mysql.dropuser_' + $scope.username, {
                     'password': $rootScope.$mysql.password,
                     'username': $scope.username
                 },
