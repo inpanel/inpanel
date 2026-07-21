@@ -7,7 +7,6 @@
 # The full license can be found in 'LICENSE'.
 '''系统检测与信息模块'''
 
-import os
 import shutil
 from json import loads
 from platform import mac_ver, platform, uname, win32_ver
@@ -225,19 +224,16 @@ __all__ = [
 # 命名规则：system_<method>，对应 jobname 中的 system_<method>
 # ------------------------------------------------------------------
 
-import tornado.escape
 import tornado.httpclient
 from pathlib import Path as _Path
 from . import shell
 from ..base import app_api
 
 
-async def system_update(tm, settings=None, config=None):
+async def system_update(tm, settings=None):
     """升级 InPanel（异步任务）"""
     if settings is None:
         settings = tm.settings
-    if config is None:
-        config = tm.config
     jobname = 'system.update'
     if not tm._start_job(jobname):
         return

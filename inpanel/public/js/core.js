@@ -104,6 +104,7 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
 }]);
 inpanel.run(['$rootScope', '$location', 'Request', function ($rootScope, $location, Request) {
     $rootScope.sec = function (sec) {
+        $rootScope.activeTabName = sec;
         $location.search('s', sec)
     };
 

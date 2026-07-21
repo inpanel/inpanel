@@ -8,7 +8,6 @@
 
 '''PHP 操作模块'''
 
-import os
 import subprocess
 from glob import glob
 from pathlib import Path

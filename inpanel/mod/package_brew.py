@@ -20,10 +20,12 @@ class BrewPM(PackageManager):
         return shutil.which("brew") is not None
 
     def install(self, packages, assume_yes=True):
+        # Homebrew 默认无需确认
         cmd = ["brew", "install"] + packages
         return self._run_cmd(cmd)
 
     def remove(self, packages, assume_yes=True):
+        # Homebrew 默认无需确认
         cmd = ["brew", "uninstall", "--ignore-dependencies"] + packages
         return self._run_cmd(cmd)
 
@@ -37,7 +39,7 @@ class BrewPM(PackageManager):
         return self._run_cmd(["brew", "list", "--formula"])
 
     def update(self):
-        return self._run_cmd(["brew", "upgrade"])
+        return self._run_cmd(["brew", "update"])
 
     def upgrade(self):
         return self._run_cmd(["brew", "upgrade"])

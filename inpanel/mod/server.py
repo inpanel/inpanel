@@ -314,7 +314,7 @@ class ServerInfo(object):
                 mount['used'] = b2h(used)
                 mount['used_rate'] = div_percent(used, total)
                 if detectdev:
-                    dev = os.stat(mount['path']).st_dev
+                    dev = Path(mount['path']).stat().st_dev
                     mount['major'], mount['minor'] = os.major(dev), os.minor(dev)
         elif kernel_name == 'Darwin':
             p = Popen(['df', '-k', '-P'], stdout=PIPE, close_fds=True)
@@ -343,7 +343,7 @@ class ServerInfo(object):
                     'used_rate': div_percent(used, total),
                 }
                 if detectdev:
-                    mount_stat = os.stat(path)
+                    mount_stat = Path(path).stat()
                     mount_info['major'], mount_info['minor'] = os.major(mount_stat.st_dev), os.minor(mount_stat.st_dev)
                 _mounts.append(mount_info)
 
@@ -790,7 +790,7 @@ class ServerInfo(object):
             return disks
 
         for devname, blkinfo in blks.items():
-            dev = os.stat('/dev/%s' % devname).st_rdev
+            dev = Path(f'/dev/{devname}').stat().st_rdev
             major, minor = os.major(dev), os.minor(dev)
             blks[devname]['major'] = major
             blks[devname]['minor'] = minor
@@ -1171,9 +1171,9 @@ class ServerInfo(object):
             'pid_file': pidfile,
             'log_file': logfile,
             'error_log_file': logerror,
-            'plugins_path': os.path.join(data_path, 'plugins'),
-            'plugins_config_file': os.path.join(config_path, 'plugins.json'),
-            'plugins_log_file': os.path.join(logging_path, 'plugins.log'),
+            'plugins_path': str(Path(data_path) / 'plugins'),
+            'plugins_config_file': str(Path(config_path) / 'plugins.json'),
+            'plugins_log_file': str(Path(logging_path) / 'plugins.log'),
             'exec_file': execfile,
         }
 
@@ -1514,7 +1514,7 @@ class ServerTool(object):
 
 # ------------------------------------------------------------------
 # 异步任务函数（由 web.py 的 _dispatch_task 调用）
-# 命名规则：time_<method>，对应 jobname 中的 time_<method>_...
+# 命名规则：server_<method>，对应 jobname 中的 server_<method>_...
 # ------------------------------------------------------------------
 
 from shlex import quote as sh_quote
@@ -1544,7 +1544,7 @@ async def server_ntpdate(tm, server):
         return
     tm._update_job(jobname, 2, f'正在从 {server} 同步时间...')
 
-    cmd = f'ntpdate -u {server}'
+    cmd = f'ntpdate -u {sh_quote(server)}'
     result, output = await shell.async_command(cmd)
     if result == 0:
         offset = output.split(' offset ')[-1].split()[0]

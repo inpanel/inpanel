@@ -14,7 +14,8 @@ Loading failures will raise exceptions – there is no hardcoded fallback.
 """
 
 import json
-import os
+
+from pathlib import Path
 
 _cache = {}
 
@@ -27,7 +28,7 @@ def _load_json(filename):
     """
     if filename in _cache:
         return _cache[filename]
-    path = os.path.join(os.path.dirname(__file__), filename)
+    path = str(Path(__file__).parent / filename)
     with open(path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     _cache[filename] = data

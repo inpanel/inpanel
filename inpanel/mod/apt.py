@@ -13,7 +13,6 @@
 '''
 
 import json
-import os
 import re
 import time
 from pathlib import Path
@@ -38,12 +37,12 @@ from ..base import config_path
 
 def _get_sources_file():
     conf_dir = str(config_path).rstrip('/')
-    return os.path.join(conf_dir, 'sources_apt.json')
+    return str(Path(conf_dir) / 'sources_apt.json')
 
 
 def _load_sources_config():
     filepath = _get_sources_file()
-    if os.path.isfile(filepath):
+    if Path(filepath).is_file():
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -58,10 +57,10 @@ def _load_sources_config():
 
 def _save_sources_config(sources):
     filepath = _get_sources_file()
-    conf_dir = os.path.dirname(filepath)
-    if not os.path.isdir(conf_dir):
+    conf_dir = str(Path(filepath).parent)
+    if not Path(conf_dir).is_dir():
         try:
-            os.makedirs(conf_dir, exist_ok=True)
+            Path(conf_dir).mkdir(parents=True, exist_ok=True)
         except OSError:
             pass
     try:
@@ -153,7 +152,7 @@ def get_list():
         if Path(sources_list_path).exists():
             res.append('sources.list')
         if Path(sources_list_d_path).exists() and Path(sources_list_d_path).is_dir():
-            items = sorted(os.listdir(sources_list_d_path))
+            items = sorted(p.name for p in Path(sources_list_d_path).iterdir())
             for item in items:
                 if item.endswith('.list'):
                     res.append('sources.list.d/' + item)

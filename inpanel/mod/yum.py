@@ -13,7 +13,6 @@
 '''
 
 import json
-import os
 import re
 import time
 from pathlib import Path
@@ -36,12 +35,12 @@ config_path = '/etc/yum.repos.d'
 # ==================================================================
 def _get_sources_file():
     conf_dir = str(_base_config_path).rstrip('/')
-    return os.path.join(conf_dir, 'sources_yum.json')
+    return str(Path(conf_dir) / 'sources_yum.json')
 
 
 def _load_sources_config():
     filepath = _get_sources_file()
-    if os.path.isfile(filepath):
+    if Path(filepath).is_file():
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -56,10 +55,10 @@ def _load_sources_config():
 
 def _save_sources_config(sources):
     filepath = _get_sources_file()
-    conf_dir = os.path.dirname(filepath)
-    if not os.path.isdir(conf_dir):
+    conf_dir = str(Path(filepath).parent)
+    if not Path(conf_dir).is_dir():
         try:
-            os.makedirs(conf_dir, exist_ok=True)
+            Path(conf_dir).mkdir(parents=True, exist_ok=True)
         except OSError:
             pass
     try:
@@ -147,7 +146,7 @@ def get_list():
         d = str(Path(config_path))
         if not Path(d).exists() or not Path(d).is_dir():
             return None
-        items = sorted(os.listdir(d))
+        items = sorted(p.name for p in Path(d).iterdir())
         return items if len(items) > 0 else []
     elif base.kernel_name in ('Darwin'):
         return None
@@ -303,7 +302,7 @@ def get_repo_list():
     d = Path(config_path)
     if not d.exists() or not d.is_dir():
         return []
-    items = sorted(os.listdir(str(d)))
+    items = sorted(p.name for p in Path(d).iterdir())
     repos = []
     for item in items:
         if not item.endswith('.repo'):

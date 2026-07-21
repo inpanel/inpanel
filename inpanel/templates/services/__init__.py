@@ -25,7 +25,8 @@
 """
 
 import json
-import os
+
+from pathlib import Path
 
 from inpanel.base import config_path
 
@@ -36,8 +37,8 @@ def _load_json(filename):
     """Load a JSON config file with caching."""
     if filename in _cache:
         return _cache[filename]
-    path = os.path.join(os.path.dirname(__file__), filename)
-    if not os.path.isfile(path):
+    path = str(Path(__file__).parent / filename)
+    if not Path(path).is_file():
         _cache[filename] = None
         return None
     with open(path, 'r', encoding='utf-8') as f:
@@ -76,8 +77,8 @@ def load_services():
     }
 
     # 加载用户自定义服务分类
-    user_config = os.path.join(str(config_path), 'services.json')
-    if os.path.isfile(user_config):
+    user_config = str(Path(config_path) / 'services.json')
+    if Path(user_config).is_file():
         try:
             with open(user_config, 'r', encoding='utf-8') as f:
                 user_data = json.load(f)
@@ -97,14 +98,14 @@ def load_categories():
 
 def save_user_custom_categories(custom_categories):
     """保存用户自定义服务分类到 data_path/services.json"""
-    user_config = os.path.join(str(config_path), 'services.json')
-    conf_dir = os.path.dirname(user_config)
-    if not os.path.isdir(conf_dir):
-        os.makedirs(conf_dir, exist_ok=True)
+    user_config = str(Path(config_path) / 'services.json')
+    conf_dir = str(Path(user_config).parent)
+    if not Path(conf_dir).is_dir():
+        Path(conf_dir).mkdir(parents=True, exist_ok=True)
 
     # 读取已有内容
     existing = {}
-    if os.path.isfile(user_config):
+    if Path(user_config).is_file():
         try:
             with open(user_config, 'r', encoding='utf-8') as f:
                 existing = json.load(f)

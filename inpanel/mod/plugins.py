@@ -8,7 +8,6 @@
 
 '''InPanel 插件管理模块'''
 
-import os
 import sys
 import json
 import zipfile
@@ -220,7 +219,7 @@ class PluginManager:
                     with zipfile.ZipFile(zip_path, 'r') as zf:
                         zf.extractall(tmp_dir)
                     
-                    plugin_dir = os.listdir(tmp_dir)[0]
+                    plugin_dir = [p.name for p in Path(tmp_dir).iterdir()][0]
                     plugin_path = tmp_path / plugin_dir
                 else:
                     import subprocess

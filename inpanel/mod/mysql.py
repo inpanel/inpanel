@@ -9,7 +9,6 @@
 
 """MySQL 数据库管理模块"""
 
-import os
 import re
 import shlex
 import time
@@ -581,8 +580,6 @@ if __name__ == '__main__':
 # 异步任务函数（供 web.py _dispatch_task 调用，第一个参数 tm 为 TaskManager）
 # ==========================================================================
 
-import asyncio
-import time
 from subprocess import PIPE, Popen
 
 
@@ -605,7 +602,7 @@ async def mysql_fupdatepwd(tm, password):
         result, output = await shell.async_command(cmd)
         if result != 0:
             tm._finish_job(jobname, -1, '停止 MySQL 服务时出错！',
-                           data=output.strip().replace(' ', '<br>'))
+                           data=output.strip().replace('\n', '<br>'))
             return
 
     tm._update_job(jobname, 2, '正在启用 MySQL 恢复模式...')
@@ -615,10 +612,10 @@ async def mysql_fupdatepwd(tm, password):
     if result != 0:
         manually = True
         cmd = 'mysqld_safe --skip-grant-tables --skip-networking'
-        p = Popen(cmd, stdout=PIPE, stderr=PIPE, close_fds=True, shell=True)
-        if not p:
-            tm._finish_job(jobname, -1, '启用 MySQL 恢复模式时出错！',
-                           data=output.strip().replace('\n', '<br>'))
+        try:
+            p = Popen(cmd, stdout=PIPE, stderr=PIPE, close_fds=True, shell=True)
+        except Exception:
+            tm._finish_job(jobname, -1, '启用 MySQL 恢复模式时出错！')
             return
 
     if manually:
@@ -639,6 +636,7 @@ async def mysql_fupdatepwd(tm, password):
         p.wait()
 
     msg = ''
+    data = None
     if not isstopped:
         if error:
             msg = '重置 root 密码时发生错误！正在重启 MySQL 服务...'
@@ -685,7 +683,10 @@ async def mysql_fupdatepwd(tm, password):
                 msg = 'root 密码重置成功，但在操作服务时出错！'
                 data = output.strip().replace('\n', '<br>')
 
-    tm._finish_job(jobname, code, msg, data=data)
+    if data is not None:
+        tm._finish_job(jobname, code, msg, data=data)
+    else:
+        tm._finish_job(jobname, code, msg)
 
 
 async def mysql_databases(tm, password):
@@ -725,7 +726,6 @@ async def mysql_users(tm, password, dbname=None):
     else:
         tm._update_job(jobname, 2, f'正在获取数据库 {dbname} 的用户列表...')
 
-    users = []
     users = await shell.async_task(show_users, password, dbname)
     if users:
         code = 0
@@ -746,7 +746,6 @@ async def mysql_dbinfo(tm, password, dbname):
     from . import shell
 
     tm._update_job(jobname, 2, '正在获取数据库 %s 的信息...' % dbname)
-    dbinfo = False
     dbinfo = await shell.async_task(show_database, password, dbname)
     if dbinfo:
         code = 0

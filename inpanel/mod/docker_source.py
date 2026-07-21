@@ -16,7 +16,6 @@ Docker 镜像加速源管理：通过 /etc/docker/daemon.json 中的 registry-mi
 """
 
 import json
-import os
 import time
 from pathlib import Path
 
@@ -34,7 +33,7 @@ _DOCKER_DAEMON_PATH = '/etc/docker/daemon.json'
 
 def _get_docker_sources_file():
     """获取 Docker 源配置文件的路径"""
-    return os.path.join(config_path, 'sources_docker.json')
+    return str(Path(config_path) / 'sources_docker.json')
 
 
 def _load_sources_config():
@@ -44,7 +43,7 @@ def _load_sources_config():
     返回源列表（list of dict），每个 dict 包含 name、url、builtin。
     """
     filepath = _get_docker_sources_file()
-    if os.path.isfile(filepath):
+    if Path(filepath).is_file():
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -62,10 +61,10 @@ def _load_sources_config():
 def _save_sources_config(sources):
     """保存 Docker 源配置到 sources_docker.json"""
     filepath = _get_docker_sources_file()
-    conf_dir = os.path.dirname(filepath)
-    if not os.path.isdir(conf_dir):
+    conf_dir = str(Path(filepath).parent)
+    if not Path(conf_dir).is_dir():
         try:
-            os.makedirs(conf_dir, exist_ok=True)
+            Path(conf_dir).mkdir(parents=True, exist_ok=True)
         except OSError:
             pass
     try:
@@ -81,7 +80,7 @@ def _read_daemon_json():
     Returns:
         dict: daemon.json 的内容，如果文件不存在或解析失败返回空 dict
     """
-    if not os.path.isfile(_DOCKER_DAEMON_PATH):
+    if not Path(_DOCKER_DAEMON_PATH).is_file():
         return {}
     try:
         with open(_DOCKER_DAEMON_PATH, 'r', encoding='utf-8') as f:
@@ -100,9 +99,9 @@ def _write_daemon_json(config):
         config: dict，要写入的配置
     """
     try:
-        daemon_dir = os.path.dirname(_DOCKER_DAEMON_PATH)
-        if not os.path.isdir(daemon_dir):
-            os.makedirs(daemon_dir, exist_ok=True)
+        daemon_dir = str(Path(_DOCKER_DAEMON_PATH).parent)
+        if not Path(daemon_dir).is_dir():
+            Path(daemon_dir).mkdir(parents=True, exist_ok=True)
         with open(_DOCKER_DAEMON_PATH, 'w', encoding='utf-8') as f:
             json.dump(config, f, ensure_ascii=False, indent=2)
             f.write('\n')
@@ -334,7 +333,7 @@ def web_handler(context, action):
     name = context.get_argument('name', '')
 
     if action == 'overview':
-        daemon_exists = os.path.isfile(_DOCKER_DAEMON_PATH)
+        daemon_exists = Path(_DOCKER_DAEMON_PATH).is_file()
         active_mirrors = _get_active_mirrors()
         context.write({
             'code': 0,

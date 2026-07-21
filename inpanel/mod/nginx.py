@@ -8,7 +8,6 @@
 
 '''Nginx 管理模块'''
 
-import os
 import pprint
 import re
 from glob import glob

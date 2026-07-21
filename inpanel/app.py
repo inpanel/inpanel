@@ -247,16 +247,16 @@ def cmd_uninstall(args=None):
     print('Uninstalling InPanel...')
 
     # 移除 systemd 服务
-    if os.path.exists(systemd_service):
+    if Path(systemd_service).exists():
         try:
             subprocess.run(['systemctl', 'stop', 'inpanel'], stderr=subprocess.DEVNULL)
             subprocess.run(['systemctl', 'disable', 'inpanel'], stderr=subprocess.DEVNULL)
         except Exception:
             pass
-        os.remove(systemd_service)
+        Path(systemd_service).unlink()
         print(f'  removed: {systemd_service}')
-    if os.path.exists(systemd_service_etc):
-        os.remove(systemd_service_etc)
+    if Path(systemd_service_etc).exists():
+        Path(systemd_service_etc).unlink()
         print(f'  removed: {systemd_service_etc}')
     try:
         subprocess.run(['systemctl', 'daemon-reload'], stderr=subprocess.DEVNULL)
@@ -264,7 +264,7 @@ def cmd_uninstall(args=None):
         pass
 
     # 移除 init.d 脚本
-    if os.path.exists(initd_script):
+    if Path(initd_script).exists():
         try:
             subprocess.run(['chkconfig', '--del', 'inpanel'], stderr=subprocess.DEVNULL)
         except Exception:
@@ -273,12 +273,12 @@ def cmd_uninstall(args=None):
             subprocess.run(['update-rc.d', '-f', 'inpanel', 'remove'], stderr=subprocess.DEVNULL)
         except Exception:
             pass
-        os.remove(initd_script)
+        Path(initd_script).unlink()
         print(f'  removed: {initd_script}')
 
     # 移除二进制文件 / 控制台脚本
-    if os.path.exists(bin_path):
-        os.remove(bin_path)
+    if Path(bin_path).exists():
+        Path(bin_path).unlink()
         print(f'  removed: {bin_path}')
 
     # 通过 pip 移除 Python 包
@@ -298,18 +298,18 @@ def cmd_uninstall(args=None):
                 print(f'  removed: {pkg_path}')
 
     # 移除配置文件（可选）
-    if purge_config and config_path and os.path.exists(config_path):
+    if purge_config and config_path and Path(config_path).exists():
         shutil.rmtree(config_path, ignore_errors=True)
         print(f'  removed: {config_path} (config files)')
 
     # 移除日志文件（可选）
-    if purge_logs and logging_path and os.path.exists(logging_path):
+    if purge_logs and logging_path and Path(logging_path).exists():
         shutil.rmtree(logging_path, ignore_errors=True)
         print(f'  removed: {logging_path} (log files)')
 
-    pidfile_dir = os.path.dirname(pidfile)
-    if os.path.exists(pidfile):
-        os.remove(pidfile)
+    pidfile_dir = str(Path(pidfile).parent)
+    if Path(pidfile).exists():
+        Path(pidfile).unlink()
 
     print()
     print('InPanel uninstalled successfully.')

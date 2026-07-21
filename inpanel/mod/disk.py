@@ -315,7 +315,6 @@ def fstab(devname, config=None):
 # 命名规则：disk_<method>，对应 jobname 中的 disk_<method>_...
 # ------------------------------------------------------------------
 
-from shlex import quote as sh_quote
 from . import shell
 
 
