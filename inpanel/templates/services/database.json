@@ -1,0 +1,170 @@
+[
+  {
+    "id": "mariadb",
+    "name": "MariaDB",
+    "category": "database",
+    "description": "MariaDB 数据库服务器",
+    "packages": {
+      "brew": "mariadb",
+      "yum": "mariadb-server",
+      "dnf": "mariadb-server",
+      "apt": "mariadb-server"
+    },
+    "systemd_unit": "mariadb.service",
+    "launchctl_label": "homebrew.mxcl.mariadb",
+    "pgrep_names": ["mariadbd", "mysqld"],
+    "pid_file": "/var/run/mariadb/mariadb.pid",
+    "config_files": [
+      {"path": "/etc/my.cnf", "label": "主配置文件"},
+      {"path": "/etc/mysql/my.cnf", "label": "主配置文件 (Debian)"},
+      {"path": "/usr/local/etc/my.cnf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/mariadb/mariadb.log", "label": "运行日志"},
+      {"path": "/var/log/mysql/error.log", "label": "错误日志 (Debian)"}
+    ],
+    "data_dirs": [
+      {"path": "/var/lib/mysql", "label": "数据目录"},
+      {"path": "/usr/local/var/mysql", "label": "数据目录 (Homebrew)"}
+    ],
+    "default_port": 3306
+  },
+  {
+    "id": "mysqld",
+    "name": "MySQL",
+    "category": "database",
+    "description": "MySQL 数据库服务器",
+    "packages": {
+      "brew": "mysql",
+      "yum": "mysql-server",
+      "dnf": "mysql-server",
+      "apt": "mysql-server"
+    },
+    "systemd_unit": "mysqld.service",
+    "launchctl_label": "homebrew.mxcl.mysql",
+    "pgrep_names": ["mysqld"],
+    "pid_file": "/var/run/mysqld/mysqld.pid",
+    "config_files": [
+      {"path": "/etc/my.cnf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/my.cnf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/mysqld.log", "label": "运行日志"},
+      {"path": "/usr/local/var/mysql/error.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "data_dirs": [
+      {"path": "/var/lib/mysql", "label": "数据目录"},
+      {"path": "/usr/local/var/mysql", "label": "数据目录 (Homebrew)"}
+    ],
+    "default_port": 3306
+  },
+  {
+    "id": "redis",
+    "name": "Redis",
+    "category": "database",
+    "description": "Redis 内存数据库",
+    "packages": {
+      "brew": "redis",
+      "yum": "redis",
+      "dnf": "redis",
+      "apt": "redis-server"
+    },
+    "systemd_unit": "redis.service",
+    "launchctl_label": "homebrew.mxcl.redis",
+    "pgrep_names": ["redis-server"],
+    "pid_file": "/var/run/redis/redis.pid",
+    "config_files": [
+      {"path": "/etc/redis/redis.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/redis.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/redis/redis.log", "label": "运行日志"},
+      {"path": "/usr/local/var/log/redis.log", "label": "运行日志 (Homebrew)"}
+    ],
+    "data_dirs": [
+      {"path": "/var/lib/redis", "label": "数据目录"},
+      {"path": "/usr/local/var/db/redis", "label": "数据目录 (Homebrew)"}
+    ],
+    "default_port": 6379
+  },
+  {
+    "id": "memcached",
+    "name": "Memcached",
+    "category": "database",
+    "description": "Memcached 内存缓存",
+    "packages": {
+      "brew": "memcached",
+      "yum": "memcached",
+      "dnf": "memcached",
+      "apt": "memcached"
+    },
+    "systemd_unit": "memcached.service",
+    "launchctl_label": "homebrew.mxcl.memcached",
+    "pgrep_names": ["memcached"],
+    "config_files": [
+      {"path": "/etc/sysconfig/memcached", "label": "配置文件"},
+      {"path": "/etc/memcached.conf", "label": "配置文件 (Debian)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/memcached.log", "label": "运行日志"}
+    ],
+    "default_port": 11211
+  },
+  {
+    "id": "mongod",
+    "name": "MongoDB",
+    "category": "database",
+    "description": "MongoDB 文档数据库",
+    "packages": {
+      "brew": "mongodb-community",
+      "yum": "mongodb-server",
+      "dnf": "mongodb-server",
+      "apt": "mongodb-server"
+    },
+    "systemd_unit": "mongod.service",
+    "launchctl_label": "homebrew.mxcl.mongodb-community",
+    "pgrep_names": ["mongod"],
+    "config_files": [
+      {"path": "/etc/mongod.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/mongod.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/mongodb/mongod.log", "label": "运行日志"},
+      {"path": "/usr/local/var/log/mongodb/mongo.log", "label": "运行日志 (Homebrew)"}
+    ],
+    "data_dirs": [
+      {"path": "/var/lib/mongo", "label": "数据目录"},
+      {"path": "/usr/local/var/mongodb", "label": "数据目录 (Homebrew)"}
+    ],
+    "default_port": 27017
+  },
+  {
+    "id": "postgresql",
+    "name": "PostgreSQL",
+    "category": "database",
+    "description": "PostgreSQL 关系型数据库",
+    "packages": {
+      "brew": "postgresql",
+      "yum": "postgresql-server",
+      "dnf": "postgresql-server",
+      "apt": "postgresql"
+    },
+    "systemd_unit": "postgresql.service",
+    "launchctl_label": "homebrew.mxcl.postgresql",
+    "pgrep_names": ["postgres"],
+    "config_files": [
+      {"path": "/var/lib/pgsql/data/postgresql.conf", "label": "主配置文件"},
+      {"path": "/etc/postgresql/main/postgresql.conf", "label": "主配置文件 (Debian)"},
+      {"path": "/usr/local/var/postgres/postgresql.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/postgresql/postgresql.log", "label": "运行日志"},
+      {"path": "/usr/local/var/log/postgres.log", "label": "运行日志 (Homebrew)"}
+    ],
+    "data_dirs": [
+      {"path": "/var/lib/pgsql/data", "label": "数据目录"},
+      {"path": "/usr/local/var/postgres", "label": "数据目录 (Homebrew)"}
+    ],
+    "default_port": 5432
+  }
+]

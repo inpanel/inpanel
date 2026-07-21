@@ -428,9 +428,9 @@ var SettingCtrl = [
         $scope.update = function () {
             $scope.upverMessage = '正在升级，请稍候...'
             $scope.showUpdateBtn = false;
-            Request.post('/api/task/update', {}, function (data) {
+            Request.post('/api/task/system.update', {}, function (data) {
                 var getUpdateStatus = function () {
-                    Request.get('/api/task/update', function (data) {
+                    Request.get('/api/task/system.update', function (data) {
                         Message.setInfo('')
                         if (data.msg) $scope.upverMessage = data.msg;
                         if (data.code == -1) {
@@ -439,11 +439,11 @@ var SettingCtrl = [
                             // restart service
                             $scope.upverMessage = '正在重启 InPanel...';
                             Timeout(function () {
-                                Request.post('/api/task/service_restart', {
+                                Request.post('/api/task/service.restart', {
                                     service: 'inpanel'
                                 }, function (data) {
                                     var getRestartStatus = function () {
-                                        Request.get('/api/task/service_restart_inpanel', function (data) {
+                                        Request.get('/api/task/service.restart_inpanel', function (data) {
                                             Message.setInfo('')
                                             if (data.msg) $scope.upverMessage = data.msg;
                                             Timeout(getRestartStatus, 500, module);
@@ -472,11 +472,11 @@ var SettingCtrl = [
             $scope.restartMessage = '正在重启，请稍候...'
             $scope.showRestartBtn = false;
             Timeout(function () {
-                Request.post('/api/task/service_restart', {
+                Request.post('/api/task/service.restart', {
                     service: 'inpanel'
                 }, function (data) {
                     var getRestartStatus = function () {
-                        Request.get('/api/task/service_restart_inpanel', function (data) {
+                        Request.get('/api/task/service.restart_inpanel', function (data) {
                             if (data.msg) $scope.restartMessage = data.msg;
                             Timeout(getRestartStatus, 500, module);
                         }, function (data, status) { // error occur because server is terminate

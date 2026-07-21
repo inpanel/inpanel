@@ -29,19 +29,27 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Task'
         };
 
         $scope.load_status = function (callback) {
-            Request.get('/api/query/service.nginx,service.httpd', function (res) {
-                if (res['service.nginx'] && res['service.nginx'].status) {
-                    $scope.nginx_status = res['service.nginx'].status;
+            var pending = 2;
+            function done() {
+                pending--;
+                if (pending === 0) {
+                    $scope.has_httpserver = $scope.nginx_supported || $scope.apache_supported;
+                    if (callback) callback();
+                }
+            }
+            Request.get('/api/service/detail/nginx', function (res) {
+                if (res.code === 0 && res.data) {
+                    $scope.nginx_status = res.data.status;
                     $scope.nginx_supported = true;
                 }
-                if (res['service.httpd'] && res['service.httpd'].status) {
+                done();
+            });
+            Request.get('/api/service/detail/httpd', function (res) {
+                if (res.code === 0 && res.data) {
                     $scope.apache_supported = true;
-                    $scope.apache_status = res['service.httpd'].status;
+                    $scope.apache_status = res.data.status;
                 }
-                $scope.has_httpserver = $scope.nginx_supported || $scope.apache_supported;
-                if (callback) {
-                    callback();
-                }
+                done();
             });
         };
         $scope.load_section = function () {
@@ -65,7 +73,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Task'
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Task.call($scope, module, '/api/task/service_' + status, '/api/task/service_' + status + '_nginx', {
+            Task.call($scope, module, '/api/task/service.' + status, '/api/task/service.' + status + '_nginx', {
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
@@ -102,7 +110,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Task'
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Task.call($scope, module, '/api/task/service_' + status, '/api/task/service_' + status + '_httpd', {
+            Task.call($scope, module, '/api/task/service.' + status, '/api/task/service.' + status + '_httpd', {
                 'name': 'Apache',
                 'service': 'httpd'
             }, {
@@ -207,7 +215,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Task'
                     $scope.downloadpath = res.data.path;
                     $scope.extractpath = res.data.temp;
 
-                    Task.call($scope, module, '/api/task/wget', '/api/task/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
+                    Task.call($scope, module, '/api/task/file.wget', '/api/task/file.wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
                         'url': $scope.downloadurl,
                         'path': $scope.downloadpath
                     }, {
@@ -215,7 +223,7 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Task'
                             // decompress it
                             var zippath = $scope.downloadpath;
                             var despath = $scope.extractpath;
-                            Task.call($scope, module, '/api/task/decompress', '/api/task/decompress_' + zippath + '_' + despath, {
+                            Task.call($scope, module, '/api/task/file.decompress', '/api/task/file.decompress_' + zippath + '_' + despath, {
                                 'zippath': zippath,
                                 'despath': despath
                             }, {
@@ -224,19 +232,19 @@ var SiteCtrl = ['$scope', 'Module', '$routeParams', 'Request', 'Message', 'Task'
                                     var corepath = $scope.curver.core_path;
                                     var srcpath = $scope.extractpath + '/' + corepath + '/*';
                                     var despath = $scope.installpath;
-                                    Task.call( $scope, module, '/api/task/copy', '/api/task/copy_' + srcpath + '_' + despath, {
+                                    Task.call( $scope, module, '/api/task/file.copy', '/api/task/file.copy_' + srcpath + '_' + despath, {
                                         'srcpath': srcpath,
                                         'despath': despath
                                     }, {
                                         'success': function () {
                                             // install ok, remove the temp folder
                                             Message.setInfo('正在清理安装临时文件...');
-                                            Task.call( $scope, module, '/api/task/remove', '/api/task/remove_' + $scope.extractpath, {
+                                            Task.call( $scope, module, '/api/task/file.remove', '/api/task/file.remove_' + $scope.extractpath, {
                                                 'paths': $scope.extractpath
                                             }, function () {
                                                 // set user.group to apache.apache
                                                 Message.setInfo('正在设置目录权限...');
-                                                Task.call( $scope, module, '/api/task/chown', '/api/task/chown_' + $scope.installpath, {
+                                                Task.call( $scope, module, '/api/task/file.chown', '/api/task/file.chown_' + $scope.installpath, {
                                                     'paths': $scope.installpath,
                                                     'user': 'apache',
                                                     'group': 'apache',
@@ -468,18 +476,13 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
 
         $scope.load_nginx_version = function () {
             // nginx version check
-            Task.call($scope, module, '/api/task/yum_info', '/api/task/yum_info_nginx', {
-                'pkg': 'nginx',
-                'repo': 'installed'
-            }, {
-                'success': function (res) {
-                    $scope.nginx_version = res.data[0].version;
-                },
-                'error': function (error) {
+            Request.get('/api/service/detail/nginx', function (res) {
+                if (res.code === 0 && res.data) {
+                    $scope.nginx_version = res.data.package_version || '';
+                } else {
                     $scope.nginx_version = '';
-                    //$scope.loaded = true;
                 }
-            }, true);
+            });
         };
         $scope.load_proxy_caches = function () {
             // load proxy cache list
@@ -854,7 +857,7 @@ var SiteNginxCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request',
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Task.call($scope, module, '/api/task/service_' + status, '/api/task/service_' + status + '_nginx', {
+            Task.call($scope, module, '/api/task/service.' + status, '/api/task/service.' + status + '_nginx', {
                 'name': 'Nginx',
                 'service': 'nginx'
             }, {
@@ -916,17 +919,13 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             } else {
                 $scope.getserver();
             }
-            Task.call($scope, module, '/api/task/yum_info', '/api/task/yum_info_apache', {
-                'pkg': 'apache',
-                'repo': 'installed'
-            }, {
-                'success': function (res) {
-                    $scope.apache_version = res.data[0].version;
-                },
-                'error': function () {
+            Request.get('/api/service/detail/httpd', function (res) {
+                if (res.code === 0 && res.data) {
+                    $scope.apache_version = res.data.package_version || '';
+                } else {
                     $scope.apache_version = '';
                 }
-            }, true);
+            });
         };
         var server_tmpl = {
             servername: '',
@@ -1228,7 +1227,7 @@ var SiteApacheCtrl = ['$scope', 'Module', '$routeParams', '$location', 'Request'
             if (!status || ['start', 'stop', 'restart'].indexOf(status) < 0) {
                 return;
             }
-            Task.call($scope, module, '/api/task/service_' + status, '/api/task/service_' + status + '_httpd', {
+            Task.call($scope, module, '/api/task/service.' + status, '/api/task/service.' + status + '_httpd', {
                 'name': 'Apache',
                 'service': 'httpd'
             }, {

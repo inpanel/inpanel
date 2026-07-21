@@ -381,6 +381,7 @@ def run_server():
         (r'/api/sources/pip/(.+?)(?:/(.+))?', web.RepoPipHandler),
         (r'/api/sources/docker/(.+?)(?:/(.+))?', web.RepoDockerHandler),
         (r'/api/sources/supported/?', web.RepoSupportedHandler),
+        (r'/api/service/(.+?)(?:/(.+))?', web.ServiceHandler),
         (r'/api/firewall/(.+)', web.FirewallHandler),
         (r'/api/setting/(.+)', web.SettingHandler),
         (r'/api/operation/(.+)', web.OperationHandler),

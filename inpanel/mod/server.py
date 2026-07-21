@@ -1512,6 +1512,56 @@ class ServerTool(object):
         support_list.append('swap')
         return support_list
 
+# ------------------------------------------------------------------
+# 异步任务函数（由 web.py 的 _dispatch_task 调用）
+# 命名规则：time_<method>，对应 jobname 中的 time_<method>_...
+# ------------------------------------------------------------------
+
+from shlex import quote as sh_quote
+from . import shell
+
+
+async def server_datetime(tm, datetime=''):
+    """设置系统时间（异步任务）"""
+    jobname = 'server.datetime'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, '正在设置系统时间...')
+
+    cmd = f'date -s {sh_quote(datetime)}'
+    result, output = await shell.async_command(cmd)
+    if result == 0:
+        tm._finish_job(jobname, 0, '系统时间设置成功！')
+    else:
+        tm._finish_job(jobname, -1, '系统时间设置失败！',
+                       data=output.strip().replace('\n', '<br>'))
+
+
+async def server_ntpdate(tm, server):
+    """同步网络时间（异步任务）"""
+    jobname = f'server.ntpdate_{server}'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, f'正在从 {server} 同步时间...')
+
+    cmd = f'ntpdate -u {server}'
+    result, output = await shell.async_command(cmd)
+    if result == 0:
+        offset = output.split(' offset ')[-1].split()[0]
+        tm._finish_job(jobname, 0, f'同步时间成功！（时间偏差 {offset} 秒）')
+    else:
+        if 'no server suitable' in output:
+            msg = '同步时间失败！没有找到合适同步服务器。'
+        elif 'no servers can be used' in output:
+            msg = '同步时间失败！没有找到同步服务器的地址'
+        else:
+            msg = '同步时间失败！'
+            data = output.strip().replace('\n', '<br>')
+            tm._finish_job(jobname, -1, msg, data=data)
+            return
+        tm._finish_job(jobname, -1, msg)
+
+
 if __name__ == '__main__':
     print('')
     print('* Hostname: %s' % ServerInfo.hostname())

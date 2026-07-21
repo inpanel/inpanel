@@ -5,7 +5,7 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/navbar.html',
+            templateUrl: template_path + '/partials/container/directives/navbar.html',
             controller: ['$scope', '$rootScope', function ($scope, $rootScope) {
                 $rootScope.navbar_loaded = true;
             }]
@@ -33,7 +33,7 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/message.html',
+            templateUrl: template_path + '/partials/container/directives/message.html',
             controller: ['$scope', '$rootScope', function ($scope, $rootScope) {
                 $rootScope.showErrorMsg = false;
                 $rootScope.errorMessage = '';
@@ -54,7 +54,7 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/srvminiop.html',
+            templateUrl: template_path + '/partials/container/directives/srvminiop.html',
             controller: ['$scope', function ($scope) {
                 $scope.$scope = $scope.$parent;
             }]
@@ -66,53 +66,48 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/srvbase.html',
+            templateUrl: template_path + '/partials/container/directives/srvbase.html',
             controller: ['$rootScope', '$scope', 'Request', 'Task', function ($rootScope, $scope, Request, Task) {
                 $scope.$scope = $scope.$parent;
-                $scope.pkginfo = null;
 
+                // 从父 scope 的 detail 对象读取包信息
+                $scope.pkginfo = $scope.$parent.detail ? {
+                    'name': $scope.$parent.detail.package_name || $scope.$parent.detail.name,
+                    'version': $scope.$parent.detail.package_version || '',
+                    'summary': $scope.$parent.detail.description || ''
+                } : null;
+
+                // checkVersion 改为从 detail 刷新包信息
                 $scope.$parent.checkVersion = function () {
-                    Task.call(
-                        $scope.$parent,
-                        $rootScope.module,
-                        '/api/task/yum_info',
-                        '/api/task/yum_info_' + $scope.pkg, {
-                            'pkg': $scope.pkg,
-                            'repo': 'installed'
-                        }, {
-                            'success': function (data) {
-                                $scope.$parent.pkginfo = $scope.pkginfo = data.data[0];
-                            },
-                            'error': function (data) {
-                                $scope.pkginfo = {
-                                    'name': '获取失败！'
-                                };
-                            }
-                        },
-                        true
-                    );
+                    var detail = $scope.$parent.detail;
+                    if (detail) {
+                        $scope.pkginfo = {
+                            'name': detail.package_name || detail.name,
+                            'version': detail.package_version || '',
+                            'summary': detail.description || ''
+                        };
+                    }
                 };
 
                 $scope.toggleAutostart = function () {
-                    Request.post('/api/operation/service', {
-                        'action': 'chkconfig',
-                        'name': $scope.name,
-                        'service': $scope.service,
-                        'autostart': !$scope.$parent.autostart
-                    }, function (data) {
+                    Request.post('/api/service/chkconfig', {
+                        'service': $scope.service || $scope.$parent.service,
+                        'autostart': $scope.$parent.autostart ? 'off' : 'on'
+                    }, function () {
                         $scope.$parent.checkInstalled();
                     });
                 };
 
                 var serviceop = function (action) {
                     return function () {
+                        var svc = $scope.service || $scope.$parent.service;
                         Task.call(
                             $scope.$parent,
                             $rootScope.module,
-                            '/api/task/service_' + action,
-                            '/api/task/service_' + action + '_' + $scope.service, {
+                            '/api/task/service.' + action,
+                            '/api/task/service.' + action + '_' + svc, {
                                 'name': $scope.name,
-                                'service': $scope.service
+                                'service': svc
                             },
                             $scope.$parent.checkInstalled
                         );
@@ -131,145 +126,37 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/srvinstall.html',
+            templateUrl: template_path + '/partials/container/directives/srvinstall.html',
             controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Task', function ($rootScope, $scope, Request, Timeout, Task) {
                 $scope.$scope = $scope.$parent;
 
-                var repolist = [];
                 $scope.installing = false;
                 $scope.installMsg = '';
 
-                // check repolist
+                // 异步安装服务
                 $scope.startInstall = function () {
-                    $scope.installMsg = '正在检测软件源...';
+                    $scope.installMsg = '正在安装...';
                     $scope.installing = true;
+                    var svc = $scope.service || $scope.$parent.service;
                     Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/task/yum_repolist',
-                        '/api/task/yum_repolist', {}, {
-                            'wait': function (data) {
-                                $scope.installMsg = data.msg;
-                            },
-                            'success': function (data) {
-                                $scope.installMsg = data.msg;
-                                if (data && data.data) {
-                                    repolist = data.data;
-                                }
-                                $scope.installRepo();
-                            },
-                            'error': function (data) {
-                                $scope.installMsg = data.msg;
-                                Timeout(function () {
-                                    $scope.installing = false;
-                                }, 3000, $rootScope.module);
-                            }
-                        },
-                        true
-                    );
-                };
-
-                // install expected repolist
-                $scope.installRepo = function () {
-                    var newrepo_found = false;
-                    for (var i = 0; i < $scope.expected_repolist.length; i++) {
-                        var repo_found = false;
-                        for (var j = 0; j < repolist.length; j++) {
-                            if (repolist[j] == $scope.expected_repolist[i]) {
-                                repo_found = true;
-                                break;
-                            }
-                        }
-                        if (repo_found) continue;
-
-                        // install repo once a time
-                        newrepo_found = true;
-                        Task.call(
-                            $scope.$parent,
-                            $rootScope.module,
-                            '/api/task/yum_installrepo',
-                            '/api/task/yum_installrepo_' + $scope.expected_repolist[i], {
-                                'repo': $scope.expected_repolist[i]
-                            }, {
-                                'wait': function (data) {
-                                    $scope.installMsg = data.msg;
-                                },
-                                'success': function (data) {
-                                    $scope.installMsg = data.msg;
-                                    repolist.push($scope.expected_repolist[i]);
-                                    $scope.installRepo();
-                                },
-                                'error': function (data) {
-                                    $scope.installMsg = data.msg;
-                                    Timeout(function () {
-                                        $scope.installing = false;
-                                    }, 3000, $rootScope.module);
-                                }
-                            },
-                            true
-                        );
-                        break;
-                    }
-                    // if no new repo be installed, goto next step
-                    if (!newrepo_found) $scope.checkVersion();
-                };
-
-                // check and list versions of the pkg
-                $scope.showVerList = false;
-                $scope.checkVersion = function () {
-                    Task.call(
-                        $scope.$parent,
-                        $rootScope.module,
-                        '/api/task/yum_info',
-                        '/api/task/yum_info_' + $scope.pkg, {
-                            'pkg': $scope.pkg
+                        '/api/task/service.install',
+                        '/api/task/service.install_' + svc, {
+                            'service': svc
                         }, {
                             'wait': function (data) {
-                                $scope.installMsg = data.msg;
+                                $scope.installMsg = data.msg || '正在安装...';
                             },
                             'success': function (data) {
-                                $scope.installMsg = data.msg;
-                                $scope.pkgs = data.data;
-                                $scope.showVerList = true;
-                            },
-                            'error': function (data) {
-                                $scope.installMsg = data.msg;
-                                Timeout(function () {
-                                    $scope.installing = false;
-                                }, 3000, $rootScope.module);
-                            }
-                        },
-                        true
-                    );
-                };
-
-                // install specified version of pkg in specified repository
-                $scope.install = function (repo, name, version, release) {
-                    $scope.installMsg = '开始安装...';
-                    $scope.showVerList = false;
-                    Task.call(
-                        $scope.$parent,
-                        $rootScope.module,
-                        '/api/task/yum_install',
-                        '/api/task/yum_install_' + repo + '_' + name + '_' + version + '_' + release, {
-                            'repo': repo,
-                            'pkg': name,
-                            'version': version,
-                            'release': release
-                        }, {
-                            'wait': function (data) {
-                                $scope.installMsg = data.msg;
-                            },
-                            'success': function (data) {
-                                $scope.installMsg = data.msg;
-                                $scope.$parent.activeTabName = 'base';
+                                $scope.installMsg = data.msg || '安装完成';
                                 Timeout(function () {
                                     $scope.installing = false;
                                     $scope.$parent.checkInstalled();
-                                }, 3000, $rootScope.module);
+                                }, 2000, $rootScope.module);
                             },
                             'error': function (data) {
-                                $scope.installMsg = data.msg;
+                                $scope.installMsg = data.msg || '安装失败';
                                 Timeout(function () {
                                     $scope.installing = false;
                                 }, 3000, $rootScope.module);
@@ -279,32 +166,30 @@ angular.module('inpanel.directives', []).
                     );
                 };
 
-                // uninstall specified version of pkg in specified repository
-                $scope.uninstall = function (repo, name, version, release) {
-                    $scope.installMsg = '正在清理...';
-                    $scope.showVerList = false;
+                // 异步卸载服务
+                $scope.uninstall = function () {
+                    $scope.installMsg = '正在卸载...';
+                    $scope.installing = true;
+                    var svc = $scope.service || $scope.$parent.service;
                     Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/task/yum_uninstall',
-                        '/api/task/yum_uninstall_' + name + '_' + version + '_' + release, {
-                            'repo': repo,
-                            'pkg': name,
-                            'version': version,
-                            'release': release
+                        '/api/task/service.uninstall',
+                        '/api/task/service.uninstall_' + svc, {
+                            'service': svc
                         }, {
                             'wait': function (data) {
-                                $scope.installMsg = data.msg;
+                                $scope.installMsg = data.msg || '正在卸载...';
                             },
                             'success': function (data) {
-                                $scope.installMsg = data.msg;
+                                $scope.installMsg = data.msg || '卸载完成';
                                 Timeout(function () {
                                     $scope.installing = false;
                                     $scope.$parent.checkInstalled();
-                                }, 3000, $rootScope.module);
+                                }, 2000, $rootScope.module);
                             },
                             'error': function (data) {
-                                $scope.installMsg = data.msg;
+                                $scope.installMsg = data.msg || '卸载失败';
                                 Timeout(function () {
                                     $scope.installing = false;
                                 }, 3000, $rootScope.module);
@@ -322,102 +207,38 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/srvupdate.html',
+            templateUrl: template_path + '/partials/container/directives/srvupdate.html',
             controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Task', function ($rootScope, $scope, Request, Timeout, Task) {
                 $scope.$scope = $scope.$parent;
 
                 $scope.updating = false;
                 $scope.updateMsg = '';
 
-                // check pkg version
+                // 异步升级服务
                 $scope.startUpdate = function () {
                     $scope.updating = true;
-                    $scope.updateMsg = '正在检测当前版本信息...';
+                    $scope.updateMsg = '正在升级...';
+                    var svc = $scope.service || $scope.$parent.service;
                     Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/task/yum_info',
-                        '/api/task/yum_info_' + $scope.pkg, {
-                            'pkg': $scope.pkg,
-                            'repo': 'installed'
+                        '/api/task/service.install',
+                        '/api/task/service.install_' + svc, {
+                            'service': svc,
+                            'action': 'upgrade'
                         }, {
                             'wait': function (data) {
-                                $scope.updateMsg = data.msg;
+                                $scope.updateMsg = data.msg || '正在升级...';
                             },
                             'success': function (data) {
-                                $scope.updateMsg = data.msg;
-                                $scope.pkginfo = data.data[0];
-                                $scope.checkVersion($scope.pkginfo.name);
-                            },
-                            'error': function (data) {
-                                $scope.updateMsg = data.msg;
-                                Timeout(function () {
-                                    $scope.updating = false;
-                                }, 3000, $rootScope.module);
-                            }
-                        },
-                        true
-                    );
-                };
-
-                // check and list versions of the pkg
-                $scope.showVerList = false;
-                $scope.checkVersion = function (name) {
-                    $scope.updateMsg = '正在检测新版本...';
-                    Task.call(
-                        $scope.$parent,
-                        $rootScope.module,
-                        '/api/task/yum_info',
-                        '/api/task/yum_info_' + name, {
-                            'pkg': name,
-                            'option': 'update'
-                        }, {
-                            'wait': function (data) {
-                                $scope.updateMsg = data.msg;
-                            },
-                            'success': function (data) {
-                                $scope.updateMsg = data.msg;
-                                $scope.pkgs = data.data;
-                                $scope.showVerList = true;
-                            },
-                            'error': function (data) {
-                                $scope.updateMsg = data.msg;
-                                Timeout(function () {
-                                    $scope.updating = false;
-                                }, 3000, $rootScope.module);
-                            }
-                        },
-                        true
-                    );
-                };
-
-                // update pkg
-                $scope.update = function (repo, name, version, release) {
-                    $scope.updateMsg = '开始升级...';
-                    $scope.showVerList = false;
-                    Task.call(
-                        $scope.$parent,
-                        $rootScope.module,
-                        '/api/task/yum_update',
-                        '/api/task/yum_update_' + repo + '_' + name + '_' + version + '_' + release, {
-                            'repo': repo,
-                            'pkg': name,
-                            'version': version,
-                            'release': release
-                        }, {
-                            'wait': function (data) {
-                                $scope.updateMsg = data.msg;
-                            },
-                            'success': function (data) {
-                                $scope.updateMsg = data.msg;
-                                $scope.$parent.activeTabName = 'base';
+                                $scope.updateMsg = data.msg || '升级完成';
                                 Timeout(function () {
                                     $scope.updating = false;
                                     $scope.$parent.checkInstalled();
-                                }, 3000, $rootScope.module);
+                                }, 2000, $rootScope.module);
                             },
                             'error': function (data) {
-                                $scope.updateMsg = data.msg;
+                                $scope.updateMsg = data.msg || '升级失败';
                                 Timeout(function () {
                                     $scope.updating = false;
                                 }, 3000, $rootScope.module);
@@ -435,7 +256,7 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/srvext.html',
+            templateUrl: template_path + '/partials/container/directives/srvext.html',
             controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Task', function ($rootScope, $scope, Request, Timeout, Task) {
                 $scope.$scope = $scope.$parent;
 
@@ -448,8 +269,8 @@ angular.module('inpanel.directives', []).
                     Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/task/yum_info',
-                        '/api/task/yum_info_' + $scope.pkg, {
+                        '/api/task/yum.info',
+                        '/api/task/yum.info_' + $scope.pkg, {
                             'pkg': $scope.pkg,
                             'repo': 'installed'
                         }, {
@@ -481,8 +302,8 @@ angular.module('inpanel.directives', []).
                     Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/task/yum_ext_info',
-                        '/api/task/yum_ext_info_' + $scope.pkginfo.name, {
+                        '/api/task/yum.ext_info',
+                        '/api/task/yum.ext_info_' + $scope.pkginfo.name, {
                             'pkg': $scope.pkginfo.name
                         }, {
                             'wait': function (data) {
@@ -511,8 +332,8 @@ angular.module('inpanel.directives', []).
                     Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/task/yum_install',
-                        '/api/task/yum_install_' + repo + '_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
+                        '/api/task/yum.install',
+                        '/api/task/yum.install_' + repo + '_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': $scope.pkginfo.name,
                             'ext': name,
@@ -547,8 +368,8 @@ angular.module('inpanel.directives', []).
                     Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/task/yum_uninstall',
-                        '/api/task/yum_uninstall_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
+                        '/api/task/yum.uninstall',
+                        '/api/task/yum.uninstall_' + $scope.pkginfo.name + '_' + name + '_' + version + '_' + release, {
                             'repo': repo,
                             'pkg': $scope.pkginfo.name,
                             'ext': name,
@@ -584,70 +405,37 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/srvuninstall.html',
+            templateUrl: template_path + '/partials/container/directives/srvuninstall.html',
             controller: ['$rootScope', '$scope', 'Request', 'Timeout', 'Task', function ($rootScope, $scope, Request, Timeout, Task) {
                 $scope.$scope = $scope.$parent;
 
                 $scope.uninstalling = false;
                 $scope.uninstallMsg = '';
 
-                // check pkg version
+                // 异步卸载服务
                 $scope.startUninstall = function () {
-                    $scope.uninstallMsg = '开始卸载...';
-                    $scope.uninstalling = true;
-                    Task.call(
-                        $scope.$parent,
-                        $rootScope.module,
-                        '/api/task/yum_info',
-                        '/api/task/yum_info_' + $scope.pkg, {
-                            'pkg': $scope.pkg,
-                            'repo': 'installed'
-                        }, {
-                            'wait': function (data) {
-                                $scope.uninstallMsg = data.msg;
-                            },
-                            'success': function (data) {
-                                $scope.uninstallMsg = data.msg;
-                                $scope.pkginfo = data.data[0];
-                                $scope.showVersion = true;
-                            },
-                            'error': function (data) {
-                                $scope.uninstallMsg = data.msg;
-                                Timeout(function () {
-                                    $scope.uninstalling = false;
-                                }, 3000, $rootScope.module);
-                            }
-                        },
-                        true
-                    );
-                };
-
-                // uninstall specified version of pkg in specified repository
-                $scope.uninstall = function (repo, name, version, release) {
                     $scope.uninstallMsg = '正在卸载...';
-                    $scope.showVersion = false;
+                    $scope.uninstalling = true;
+                    var svc = $scope.service || $scope.$parent.service;
                     Task.call(
                         $scope.$parent,
                         $rootScope.module,
-                        '/api/task/yum_uninstall',
-                        '/api/task/yum_uninstall_' + name + '_' + version + '_' + release, {
-                            'repo': repo,
-                            'pkg': name,
-                            'version': version,
-                            'release': release
+                        '/api/task/service.uninstall',
+                        '/api/task/service.uninstall_' + svc, {
+                            'service': svc
                         }, {
                             'wait': function (data) {
-                                $scope.uninstallMsg = data.msg;
+                                $scope.uninstallMsg = data.msg || '正在卸载...';
                             },
                             'success': function (data) {
-                                $scope.uninstallMsg = data.msg;
+                                $scope.uninstallMsg = data.msg || '卸载完成';
                                 Timeout(function () {
                                     $scope.uninstalling = false;
                                     $scope.$parent.checkInstalled();
-                                }, 3000, $rootScope.module);
+                                }, 2000, $rootScope.module);
                             },
                             'error': function (data) {
-                                $scope.uninstallMsg = data.msg;
+                                $scope.uninstallMsg = data.msg || '卸载失败';
                                 Timeout(function () {
                                     $scope.uninstalling = false;
                                 }, 3000, $rootScope.module);
@@ -665,8 +453,22 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/srvfile.html',
-            controller: ['$scope', function ($scope) { }]
+            templateUrl: template_path + '/partials/container/directives/srvfile.html',
+            controller: ['$scope', function ($scope) {
+                // 从父 scope 的 detail 读取 config_files，优先，否则回退到 ng-init 的 items
+                $scope.$watch('$parent.detail', function (detail) {
+                    if (detail && detail.config_files && detail.config_files.length > 0) {
+                        $scope.items = detail.config_files.map(function (cf) {
+                            return {
+                                name: cf.label || cf.path,
+                                path: cf.path,
+                                isfile: !cf.path.endsWith('/'),
+                                isdir: cf.path.endsWith('/')
+                            };
+                        });
+                    }
+                });
+            }]
         };
     }).
     directive('srvlog', function () {
@@ -675,8 +477,22 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/srvlog.html',
-            controller: ['$scope', function ($scope) { }]
+            templateUrl: template_path + '/partials/container/directives/srvlog.html',
+            controller: ['$scope', function ($scope) {
+                // 从父 scope 的 detail 读取 log_files
+                $scope.$watch('$parent.detail', function (detail) {
+                    if (detail && detail.log_files && detail.log_files.length > 0) {
+                        $scope.items = detail.log_files.map(function (lf) {
+                            return {
+                                name: lf.label || lf.path,
+                                path: lf.path,
+                                isfile: true,
+                                isdir: false
+                            };
+                        });
+                    }
+                });
+            }]
         };
     }).
     directive('selector', function () {
@@ -685,7 +501,7 @@ angular.module('inpanel.directives', []).
             transclude: true,
             scope: {},
             replace: true,
-            templateUrl: template_path + '/partials/directives/selector.html',
+            templateUrl: template_path + '/partials/container/directives/selector.html',
             controller: ['$scope', 'Request', function ($scope, Request) {
                 $scope.$scope = $scope.$parent;
                 $scope.onlydir = true;

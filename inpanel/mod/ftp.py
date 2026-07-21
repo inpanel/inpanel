@@ -226,6 +226,30 @@ def test():
 
     ftp.quit()  # 退出
 
+# ------------------------------------------------------------------
+# 异步任务函数（由 web.py 的 _dispatch_task 调用）
+# ------------------------------------------------------------------
+
+from . import shell
+
+
+async def ftp_upload(tm, address, account, password, source, target):
+    """FTP 上传文件（异步任务）"""
+    jobname = f'ftp.upload_{address}_{source}_{target}'
+    if not tm._start_job(jobname):
+        return
+
+    if not Path(source).exists():
+        tm._finish_job(jobname, -1, '传输失败！文件不存在')
+        return
+
+    tm._update_job(jobname, 2, f'正在传输文件 {source}...')
+    result = await shell.async_task(uploadtoftp, address, account, password, source, target)
+    if result:
+        tm._finish_job(jobname, 0, f'文件 {source} 已成功传输到 {address} 服务器！')
+    else:
+        tm._finish_job(jobname, -1, '文件传输失败！')
+
 
 if __name__ == '__main__':
     test()

@@ -1,0 +1,86 @@
+[
+  {
+    "id": "java8",
+    "name": "Java 8",
+    "category": "java",
+    "description": "OpenJDK 8 运行时",
+    "packages": {
+      "brew": "openjdk@8",
+      "yum": "java-1.8.0-openjdk",
+      "dnf": "java-1.8.0-openjdk",
+      "apt": "openjdk-8-jdk"
+    },
+    "systemd_unit": null,
+    "launchctl_label": "homebrew.mxcl.openjdk@8",
+    "pgrep_names": ["java"],
+    "config_files": [],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/usr/lib/jvm/java-1.8.0", "label": "JVM 目录"},
+      {"path": "/usr/local/opt/openjdk@8", "label": "JVM 目录 (Homebrew)"}
+    ]
+  },
+  {
+    "id": "java11",
+    "name": "Java 11",
+    "category": "java",
+    "description": "OpenJDK 11 运行时",
+    "packages": {
+      "brew": "openjdk@11",
+      "yum": "java-11-openjdk",
+      "dnf": "java-11-openjdk",
+      "apt": "openjdk-11-jdk"
+    },
+    "systemd_unit": null,
+    "launchctl_label": "homebrew.mxcl.openjdk@11",
+    "pgrep_names": ["java"],
+    "config_files": [],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/usr/lib/jvm/java-11", "label": "JVM 目录"},
+      {"path": "/usr/local/opt/openjdk@11", "label": "JVM 目录 (Homebrew)"}
+    ]
+  },
+  {
+    "id": "java17",
+    "name": "Java 17",
+    "category": "java",
+    "description": "OpenJDK 17 运行时",
+    "packages": {
+      "brew": "openjdk@17",
+      "yum": "java-17-openjdk",
+      "dnf": "java-17-openjdk",
+      "apt": "openjdk-17-jdk"
+    },
+    "systemd_unit": null,
+    "launchctl_label": "homebrew.mxcl.openjdk@17",
+    "pgrep_names": ["java"],
+    "config_files": [],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/usr/lib/jvm/java-17", "label": "JVM 目录"},
+      {"path": "/usr/local/opt/openjdk@17", "label": "JVM 目录 (Homebrew)"}
+    ]
+  },
+  {
+    "id": "java21",
+    "name": "Java 21",
+    "category": "java",
+    "description": "OpenJDK 21 运行时",
+    "packages": {
+      "brew": "openjdk@21",
+      "yum": "java-21-openjdk",
+      "dnf": "java-21-openjdk",
+      "apt": "openjdk-21-jdk"
+    },
+    "systemd_unit": null,
+    "launchctl_label": "homebrew.mxcl.openjdk@21",
+    "pgrep_names": ["java"],
+    "config_files": [],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/usr/lib/jvm/java-21", "label": "JVM 目录"},
+      {"path": "/usr/local/opt/openjdk@21", "label": "JVM 目录 (Homebrew)"}
+    ]
+  }
+]

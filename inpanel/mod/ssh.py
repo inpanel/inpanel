@@ -278,3 +278,50 @@ if __name__ == '__main__':
 
     #print genkey('/root/.ssh/sshkey_inpanel')
     #print chpasswd('/root/.ssh/sshkey_inpanel', '', 'aaaaaa')
+
+
+# ==========================================================================
+# 异步任务函数（供 web.py _dispatch_task 调用，第一个参数 tm 为 TaskManager）
+# ==========================================================================
+
+
+async def ssh_genkey(tm, path, password=''):
+    """生成 SSH 密钥对（异步任务）"""
+    jobname = 'ssh.genkey'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, '正在生成密钥对...')
+
+    rt = await shell.async_task(genkey, path, password)
+    if rt != False:
+        code = 0
+        msg = '密钥对生成成功 ！'
+    else:
+        code = -1
+        msg = '密钥对生成失败 ！'
+
+    tm._finish_job(jobname, code, msg)
+
+
+async def ssh_chpasswd(tm, path, oldpassword, newpassword=''):
+    """修改 SSH 私钥密码（异步任务）"""
+    jobname = 'ssh.chpasswd'
+    if not tm._start_job(jobname):
+        return
+
+    from . import shell
+
+    tm._update_job(jobname, 2, '正在修改私钥密码...')
+
+    rt = await shell.async_task(chpasswd, path, oldpassword, newpassword)
+    if rt != False:
+        code = 0
+        msg = '私钥密码修改成功！'
+    else:
+        code = -1
+        msg = '私钥密码修改失败！'
+
+    tm._finish_job(jobname, code, msg)

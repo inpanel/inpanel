@@ -1,0 +1,8 @@
+{
+  "custom_categories": {},
+  "package_manager_priority": {
+    "darwin": ["brew"],
+    "rhel": ["yum", "dnf"],
+    "debian": ["apt"]
+  }
+}
