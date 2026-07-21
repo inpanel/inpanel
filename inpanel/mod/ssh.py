@@ -9,12 +9,13 @@
 
 '''SSH 管理模块'''
 
-import os
 import re
 import shlex
 from pathlib import Path
 
 import pexpect
+
+from . import shell
 
 SSHCFG = '/etc/ssh/sshd_config'
 
@@ -291,12 +292,10 @@ async def ssh_genkey(tm, path, password=''):
     if not tm._start_job(jobname):
         return
 
-    from . import shell
-
     tm._update_job(jobname, 2, '正在生成密钥对...')
 
     rt = await shell.async_task(genkey, path, password)
-    if rt != False:
+    if rt:
         code = 0
         msg = '密钥对生成成功 ！'
     else:
@@ -312,12 +311,10 @@ async def ssh_chpasswd(tm, path, oldpassword, newpassword=''):
     if not tm._start_job(jobname):
         return
 
-    from . import shell
-
     tm._update_job(jobname, 2, '正在修改私钥密码...')
 
     rt = await shell.async_task(chpasswd, path, oldpassword, newpassword)
-    if rt != False:
+    if rt:
         code = 0
         msg = '私钥密码修改成功！'
     else:

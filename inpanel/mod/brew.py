@@ -17,7 +17,6 @@
 '''
 
 import json
-import os
 import time
 from pathlib import Path
 from subprocess import getstatusoutput
@@ -40,12 +39,12 @@ _BREW_BUILTIN_MIRRORS = _cfg['brew_builtin_mirrors']
 
 def _get_sources_file():
     conf_dir = str(config_path).rstrip('/')
-    return os.path.join(conf_dir, 'sources_brew.json')
+    return str(Path(conf_dir) / 'sources_brew.json')
 
 
 def _load_sources_config():
     filepath = _get_sources_file()
-    if os.path.isfile(filepath):
+    if Path(filepath).is_file():
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -60,10 +59,10 @@ def _load_sources_config():
 
 def _save_sources_config(sources):
     filepath = _get_sources_file()
-    conf_dir = os.path.dirname(filepath)
-    if not os.path.isdir(conf_dir):
+    conf_dir = str(Path(filepath).parent)
+    if not Path(conf_dir).is_dir():
         try:
-            os.makedirs(conf_dir, exist_ok=True)
+            Path(conf_dir).mkdir(parents=True, exist_ok=True)
         except OSError:
             pass
     try:

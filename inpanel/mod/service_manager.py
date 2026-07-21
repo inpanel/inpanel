@@ -40,15 +40,14 @@
 '''
 
 import glob as glob_mod
-import json
-import os
 import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
 from subprocess import getstatusoutput
 
 from .system import get_os_family, is_darwin
-from ..templates.services import load_services, save_user_custom_categories
+from ..templates.services import load_services
+from ..templates.services import save_user_custom_categories as _save_user_custom_categories
 
 
 # ==========================================================================
@@ -60,6 +59,13 @@ def _load_services_config():
     if not hasattr(_load_services_config, '_cache'):
         _load_services_config._cache = load_services()
     return _load_services_config._cache
+
+
+def save_user_custom_categories(custom_categories):
+    """保存用户自定义服务分类（保存后清除缓存）"""
+    _save_user_custom_categories(custom_categories)
+    if hasattr(_load_services_config, '_cache'):
+        del _load_services_config._cache
 
 
 def _get_package_manager_priority():
@@ -244,7 +250,7 @@ class BrewServiceManager(ServiceManagerBase):
         ]
         for pattern in patterns:
             for f in glob_mod.glob(pattern):
-                name = os.path.basename(f).replace('.plist', '')
+                name = Path(f).name.replace('.plist', '')
                 installed[name] = f
         return installed
 
@@ -252,11 +258,11 @@ class BrewServiceManager(ServiceManagerBase):
         """获取已在 LaunchAgents 注册的服务（软链接）"""
         loaded = set()
         patterns = [
-            os.path.expanduser('~/Library/LaunchAgents/homebrew.mxcl.*.plist'),
+            str(Path('~/Library/LaunchAgents/homebrew.mxcl.*.plist').expanduser()),
         ]
         for pattern in patterns:
             for f in glob_mod.glob(pattern):
-                name = os.path.basename(f).replace('.plist', '')
+                name = Path(f).name.replace('.plist', '')
                 loaded.add(name)
         return loaded
 
@@ -363,11 +369,12 @@ class BrewServiceManager(ServiceManagerBase):
             if label.startswith('com.apple.'):
                 continue
             is_installed = label in installed
+            loaded = self._loaded_services_cache if self._loaded_services_cache is not None else self._get_loaded_services()
             other_services.append({
                 'id': label,
                 'name': label.replace('homebrew.mxcl.', ''),
                 'status': status,
-                'autostart': label in (self._loaded_services_cache or self._get_loaded_services()),
+                'autostart': label in loaded,
                 'package_manager': 'brew' if is_installed else 'unknown',
                 'category': 'other',
                 'installed': is_installed,
@@ -384,6 +391,7 @@ class BrewServiceManager(ServiceManagerBase):
             if self._loaded_services_cache is not None:
                 return label in self._loaded_services_cache
             return label in self._get_loaded_services()
+        # return False  # 非 launchd 服务无法可靠判断自启状态
         return self._check_pgrep(self._get_pgrep_names(service_name))
 
     # ---- 操作层（brew 命令） ----
@@ -826,7 +834,7 @@ def build_service_detail(service_id, status, autostart):
     if not svc:
         return None
 
-    from inpanel.base import config_path, data_path, logging_path
+    from ..base import config_path, data_path, logging_path
 
     pm = _get_active_package_manager()
     pkg_name = svc.get('packages', {}).get(pm) if pm else None
@@ -838,11 +846,11 @@ def build_service_detail(service_id, status, autostart):
         if p.startswith('/'):
             return p
         if path_info.get('relative_to_config'):
-            return os.path.join(str(config_path), p)
+            return str(Path(config_path) / p)
         if path_info.get('relative_to_logs'):
-            return os.path.join(str(logging_path), p)
+            return str(Path(logging_path) / p)
         if path_info.get('relative_to_data'):
-            return os.path.join(str(data_path), p)
+            return str(Path(data_path) / p)
         return p
 
     config_files = []

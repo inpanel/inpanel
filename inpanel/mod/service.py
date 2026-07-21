@@ -21,6 +21,8 @@
 '''
 
 
+import asyncio
+
 from .service_manager import (
     get_service_manager,
     get_all_service_names,
@@ -261,8 +263,6 @@ def get_service_list():
 
     # 构建分类结构
     categories_config = load_categories()
-    category_order = {c['id']: c.get('order', 99) for c in categories_config}
-    category_names = {c['id']: c['name'] for c in categories_config}
 
     # 按分类组织固定服务
     categorized = {}  # {category_id: [service_items]}
@@ -401,23 +401,6 @@ class Service(object):
         cls._ensure_items()
         return dict(cls._page_service_items)
 
-    # 兼容旧代码：Service.service_items 作为属性访问
-    @property
-    def service_items(self):
-        self._ensure_items()
-        return self._page_service_items
-
-    @service_items.setter
-    def service_items(self, value):
-        pass  # 忽略赋值，从配置加载
-
-    # 类级别的 service_items 属性
-    _class_service_items = None
-
-    @classmethod
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-
     @classmethod
     def status(cls, service=None):
         """获取单个服务状态"""
@@ -450,8 +433,6 @@ __all__ = [
 # 异步任务函数（供 web.py _dispatch_task 调用，第一个参数 tm 为 TaskManager）
 # ==========================================================================
 
-import asyncio
-
 
 async def _service_action(tm, action, service, name):
     """服务启停控制（start/stop/restart）"""
@@ -460,9 +441,8 @@ async def _service_action(tm, action, service, name):
         return
 
     action_str = {'start': '启动', 'stop': '停止', 'restart': '重启'}
-    tm._update_job(jobname, 2, f'正在{action_str[action]} {name} 服务...')
+    tm._update_job(jobname, 2, f'正在{action_str.get(action, action)} {name} 服务...')
 
-    from .service_manager import get_service_manager
     manager = get_service_manager()
 
     if manager is None:
@@ -558,7 +538,6 @@ async def service_uninstall(tm, service, name=''):
 
     tm._update_job(jobname, 2, f'正在卸载 {name} 服务...')
 
-    from .service_manager import get_service_manager
     manager = get_service_manager()
 
     if manager is None:

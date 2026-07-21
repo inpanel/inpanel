@@ -14,7 +14,6 @@ from binascii import unhexlify
 from hashlib import sha256
 from json import dumps, loads
 from pathlib import Path
-import os
 from subprocess import PIPE, STDOUT, Popen
 from time import sleep
 
@@ -229,7 +228,7 @@ class ACME():
                 wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
                 assert(disable_check or self._request(wellknown_url)[0] == key_auth)
             except (AssertionError, ValueError) as e:
-                os.remove(wellknown_path)
+                Path(wellknown_path).unlink()
                 raise ValueError("Wrote file to {0}, but couldn't download {1}: {2}".format(
                     wellknown_path, wellknown_url, e))
 

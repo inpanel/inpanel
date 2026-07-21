@@ -385,7 +385,7 @@ def listdir(path, showdotfiles=False, onlydir=None):
     path = str(Path(path))
     if not Path(path).exists() or not Path(path).is_dir():
         return False
-    items = sorted(os.listdir(path))
+    items = sorted(p.name for p in Path(path).iterdir())
     if not showdotfiles:
         items = [item for item in items if not item.startswith('.')]
     for i, item in enumerate(items):
@@ -407,7 +407,7 @@ def listfile(directory):
     d = str(Path(directory))
     if not Path(d).exists() or not Path(d).is_dir():
         return None
-    items = sorted(os.listdir(d))
+    items = sorted(p.name for p in Path(d).iterdir())
     return items if len(items) > 0 else []
 
 
@@ -417,7 +417,7 @@ def getitem(path):
         return False
     name = Path(path).name
     basepath = str(Path(path).parent)
-    l_stat = os.lstat(path)
+    l_stat = Path(path).lstat()
     mode = l_stat.st_mode
     try:
         uname = getpwuid(l_stat.st_uid).pw_name
@@ -458,7 +458,7 @@ def getitem(path):
         if not linkfile.startswith('/'):
             linkfile = str(Path(basepath) / linkfile)
         try:
-            mode = os.stat(linkfile).st_mode
+            mode = Path(linkfile).stat().st_mode
             item['link_isdir'] = stat.S_ISDIR(mode)
             item['link_isreg'] = stat.S_ISREG(mode)
             item['link_broken'] = False
@@ -474,7 +474,7 @@ def rename(oldpath, newname):
     try:
         basepath = str(Path(oldpath).parent)
         newpath = str(Path(basepath) / newname)
-        os.rename(oldpath, newpath)
+        Path(oldpath).rename(newpath)
         return True
     except:
         return False
@@ -482,7 +482,7 @@ def rename(oldpath, newname):
 
 def link(srcpath, despath):
     try:
-        os.symlink(srcpath, despath)
+        Path(despath).symlink_to(srcpath)
         return True
     except:
         return False
@@ -552,7 +552,7 @@ def mimetype(filepath):
 def fsize(filepath):
     if not Path(filepath).is_file():
         return None
-    return os.lstat(filepath).st_size
+    return Path(filepath).lstat().st_size
 
 
 def fadd(path, name):
@@ -577,7 +577,7 @@ def fsave(path, content, bakup=True):
         if bakup:
             dname = str(Path(path).parent)
             filename = '.%s.bak' % Path(path).name
-            os.rename(path, str(Path(dname) / filename))
+            Path(path).rename(str(Path(dname) / filename))
         with open(path, 'wb') as f:
             f.write(content)
         return True
@@ -631,7 +631,7 @@ def delete(path):
         with safe_shelve_open(str(Path(trashpath) / '.fileinfo'), 'c') as db:
             db[uuid] = '\t'.join([filename, path, str(int(time()))])
 
-        os.rename(path, str(Path(trashpath) / uuid))
+        Path(path).rename(str(Path(trashpath) / uuid))
         dname = str(Path(path).parent)
         bakfilepath = str(Path(dname) / ('.%s.bak' % filename))
         if Path(bakfilepath).exists():
@@ -691,7 +691,7 @@ def tlist():
                 }
                 filepath = str(Path(mount) / '.deleted_files' / uuid)
                 if Path(filepath).exists():
-                    mode = os.stat(filepath).st_mode
+                    mode = Path(filepath).stat().st_mode
                     item['isdir'] = stat.S_ISDIR(mode)
                     item['isreg'] = stat.S_ISREG(mode)
                     item['islnk'] = stat.S_ISLNK(mode)
@@ -723,7 +723,7 @@ def trestore(mount, uuid):
     try:
         info = titem(mount, uuid)
         trashpath = str(Path(mount) / '.deleted_files')
-        os.rename(str(Path(trashpath) / uuid), info['path'])
+        Path(str(Path(trashpath) / uuid)).rename(info['path'])
         with safe_shelve_open(str(Path(trashpath) / '.fileinfo'), 'c') as db:
             del db[uuid]
         return True
@@ -777,13 +777,13 @@ def chmod(path, perms, recursively=False):
                     tpath = str(Path(root) / momo)
                     if not Path(tpath).exists():
                         continue  # maybe broken link
-                    os.chmod(tpath, perms)
+                    Path(tpath).chmod(perms)
                 for momo in files:
                     tpath = str(Path(root) / momo)
                     if not Path(tpath).exists():
                         continue
-                    os.chmod(tpath, perms)
-        os.chmod(path, perms)
+                    Path(tpath).chmod(perms)
+        Path(path).chmod(perms)
     except:
         return False
     return True
@@ -859,7 +859,7 @@ async def file_remove(tm, paths):
     jobname = f'file.remove_{",".join(paths)}'
     if not tm._start_job(jobname):
         return
-    data = None
+    code, msg, data = 0, '', None
     for path in paths:
         tm._update_job(jobname, 2, f'正在删除 {path}...')
         cmd = f'rm -rf {sh_quote(path)}'
@@ -900,6 +900,12 @@ async def file_compress(tm, zippath, paths):
     elif zippath.endswith('.gz'):
         path = ' '.join([sh_quote(item) for item in paths])
         cmd = f'gzip -f {path}'
+        # import shutil
+        # # .gz 为单文件压缩，需先复制源文件到目标路径（去掉 .gz 后缀），再 gzip
+        # src_path = paths[0]
+        # tmp_path = zippath[:-3]  # 去掉 .gz 后缀
+        # shutil.copy2(src_path, tmp_path)
+        # cmd = f'gzip -f {sh_quote(tmp_path)}'
     else:
         tm._finish_job(jobname, -1, '不支持的类型！')
         return
@@ -914,7 +920,7 @@ async def file_compress(tm, zippath, paths):
 
 async def file_decompress(tm, zippath, despath=''):
     """解压文件（异步任务）"""
-    jobname = f'file.decompress_{zippath}_{despath}'
+    jobname = f'file.decompress_{zippath}_{despath}' if despath else f'file.decompress_{zippath}'
     if not tm._start_job(jobname):
         return
     tm._update_job(jobname, 2, f'正在解压 {zippath}...')
@@ -954,6 +960,7 @@ async def file_chown(tm, paths, user, group, recursively=''):
         return
     tm._update_job(jobname, 2, '正在设置用户和用户组...')
 
+    code, msg = 0, ''
     for path in paths:
         result = await shell.async_task(chown, path, user, group, recursively == 'on')
         if result:
@@ -981,6 +988,7 @@ async def file_chmod(tm, paths, perms, recursively=''):
         tm._finish_job(jobname, -1, '权限值输入有误！')
         return
 
+    code, msg = 0, ''
     for path in paths:
         result = await shell.async_task(chmod, path, perms_int, recursively == 'on')
         if result:
@@ -1002,9 +1010,9 @@ async def file_wget(tm, url, path):
     tm._update_job(jobname, 2, f'正在下载 {url}...')
 
     if Path(path).is_dir():
-        cmd = f'wget -q "{sh_quote(url)}" --directory-prefix={sh_quote(path)}'
+        cmd = f'wget -q {sh_quote(url)} --directory-prefix={sh_quote(path)}'
     else:
-        cmd = f'wget -q "{sh_quote(url)}" -O {sh_quote(path)}'
+        cmd = f'wget -q {sh_quote(url)} -O {sh_quote(path)}'
     result, output = await shell.async_command(cmd)
     if result == 0:
         tm._finish_job(jobname, 0, '下载成功！')

@@ -18,10 +18,13 @@
 """
 
 import asyncio
+import importlib
+import inspect
+import json
 import logging
-import os
 import time
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 
 from . import shell
@@ -39,9 +42,9 @@ def _get_task_log_path(settings=None):
 
 def _ensure_log_dir(log_path):
     """确保日志目录存在。"""
-    log_dir = os.path.dirname(log_path)
-    if log_dir and not os.path.exists(log_dir):
-        os.makedirs(log_dir, exist_ok=True)
+    log_dir = str(Path(log_path).parent)
+    if log_dir and not Path(log_dir).exists():
+        Path(log_dir).mkdir(parents=True, exist_ok=True)
 
 
 def _write_task_log(settings, log_entry):
@@ -176,9 +179,12 @@ class TaskManager:
         status_map = {'running': '正在执行', 'finish': '已完成', 'cancel': '已取消'}
         result_map = {0: '成功', -1: '失败'}
         status_cn = status_map.get(job.get('status', event), event)
-        # 任务刚启动（event='start'）时还没有执行结果，显示 '-'；否则取 code 映射
+        # 任务刚启动（event='start'）时还没有执行结果，显示 '-'；
+        # 用户取消（event='cancel'）不算失败，显示 '已取消'；否则取 code 映射
         if event == 'start':
             result_cn = '-'
+        elif event == 'cancel':
+            result_cn = '已取消'
         else:
             result_cn = result_map.get(job.get('code', -1), '-')
 
@@ -263,16 +269,11 @@ def dispatch_task(jobname, task_manager, post_body=None, arguments=None):
     Returns:
         (ok: bool, msg: str)
     """
-    import importlib
-    import inspect
-    import json as json_mod
-    from functools import partial
-
     # ---- 解析 JSON body ----
     json_args = {}
     if post_body:
         try:
-            json_args = json_mod.loads(post_body)
+            json_args = json.loads(post_body)
         except Exception:
             pass
 
@@ -289,8 +290,6 @@ def dispatch_task(jobname, task_manager, post_body=None, arguments=None):
     mod = None
     func = None
     extra_parts = []
-    mod_name = None
-    func_name = None
 
     for split_pos in underscore_positions:
         method_path = jobname[:split_pos]
@@ -309,8 +308,6 @@ def dispatch_task(jobname, task_manager, post_body=None, arguments=None):
 
         func = getattr(mod, candidate_full, None)
         if func is not None:
-            mod_name = candidate_mod
-            func_name = candidate_func
             extra_parts = param_str.split('_') if param_str else []
             break
 
@@ -325,14 +322,22 @@ def dispatch_task(jobname, task_manager, post_body=None, arguments=None):
                 mod = importlib.import_module(f'inpanel.mod.{candidate_mod}')
                 func = getattr(mod, candidate_full, None)
                 if func is not None:
-                    mod_name = candidate_mod
-                    func_name = candidate_func
                     extra_parts = []
             except ImportError:
                 pass
 
     if mod is None or func is None:
         return False, '未定义的操作！'
+
+    # 演示模式下禁止破坏性操作
+    mod_func = f'{candidate_mod}.{candidate_func}'
+    if hasattr(task_manager, 'config') and task_manager.config.get('runtime', 'mode') == 'demo':
+        demo_blocked = ['update', 'datetime', 'swapon', 'swapoff', 'mount', 'umount', 'format',
+                        'file.move', 'file.copy', 'file.remove', 'file.compress', 'file.decompress',
+                        'file.chown', 'file.chmod', 'file.wget', 'mysql.export', 'remote.install']
+        for blocked in demo_blocked:
+            if mod_func.startswith(blocked) or candidate_func.startswith(blocked):
+                return False, '演示模式下不支持此操作'
 
     # ---- 收集参数：POST body + jobname 参数段 ----
     kwargs = {}

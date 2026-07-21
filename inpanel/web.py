@@ -9,7 +9,6 @@
 '''Web 查询模块'''
 
 import binascii
-import os
 import re
 import time
 from base64 import b64decode, b64encode
@@ -18,6 +17,7 @@ from json import dumps, loads
 from logging import info as loginfo
 from pathlib import Path
 from shlex import quote
+from urllib.parse import quote as url_quote
 from uuid import uuid4
 
 from .mod import login
@@ -204,10 +204,11 @@ class FileDownloadHandler(StaticFileHandler):
 
     def get(self, path):
         self.authed()
+        filename = Path(path).name
         self.set_header('Content-Type', 'application/octet-stream')
-        self.set_header('Content-Disposition', 'attachment; filename=%s' % Path(path))
+        self.set_header('Content-Disposition',
+                        f"attachment; filename*=UTF-8''{url_quote(filename)}")
         self.set_header('Content-Transfer-Encoding', 'binary')
-        print('FileDownloadHandler', self.root, path)
         return StaticFileHandler.get(self, path)
 
 class FileUploadHandler(RequestHandler):
@@ -326,7 +327,7 @@ class SitePackageHandler(RequestHandler):
         # 从缓存获取
         if Path(packages_cachefile).exists():
             # 检查文件修改时间
-            mtime = os.stat(packages_cachefile).st_mtime
+            mtime = Path(packages_cachefile).stat().st_mtime
             if time.time() - mtime < 86400:  # 缓存 24 小时
                 with open(packages_cachefile, encoding='utf-8') as f:
                     packages = f.read()
@@ -509,6 +510,7 @@ class ServiceHandler(RequestHandler):
 
     def post(self, action, service_id=None):
         self.authed()
+        from functools import partial
         from .mod import service as svc_mod
         from .mod.service_manager import get_service_manager
 
@@ -524,7 +526,6 @@ class ServiceHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '服务名称不能为空'})
                 return
             # 使用 task 异步处理，避免阻塞请求
-            from functools import partial
             tm = _get_task_manager()(self.settings, self.config)
             func_name = f'service_{action}'
             func = getattr(svc_mod, func_name, None)
@@ -570,7 +571,6 @@ class ServiceHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '服务名称不能为空'})
                 return
             # 使用 task 异步处理
-            from functools import partial
             tm = _get_task_manager()(self.settings, self.config)
             name = self.get_argument('name', '') or service_label
             coro = partial(svc_mod.service_install, tm=tm, service=service_label, name=name)
@@ -584,7 +584,6 @@ class ServiceHandler(RequestHandler):
                 self.write({'code': -1, 'msg': '服务名称不能为空'})
                 return
             # 使用 task 异步处理
-            from functools import partial
             tm = _get_task_manager()(self.settings, self.config)
             name = self.get_argument('name', '') or service_label
             coro = partial(svc_mod.service_uninstall, tm=tm, service=service_label, name=name)
@@ -719,8 +718,8 @@ class BackupHandler(RequestHandler):
             self.write('演示模式不允许执行此操作！')
             return
 
-        path = os.path.join(self.settings['data_path'], 'config.ini')
-        if os.path.isfile(path):
+        path = str(Path(self.settings['data_path']) / 'config.ini')
+        if Path(path).is_file():
             self.set_header('Content-Type', 'application/octet-stream')
             self.set_header('Content-disposition', 'attachment; filename=inpanel_backup_%s.bak' % time.strftime('%Y%m%d'))
             self.set_header('Content-Transfer-Encoding', 'binary')
@@ -751,7 +750,7 @@ class RestoreHandler(RequestHandler):
             self.write('演示模式不允许执行此操作！')
             return
 
-        path = os.path.join(self.settings['data_path'], 'config.ini')
+        path = str(Path(self.settings['data_path']) / 'config.ini')
 
         self.write('<body style="font-size:14px;overflow:hidden;margin:0;padding:0;">')
 
@@ -771,7 +770,7 @@ class RestoreHandler(RequestHandler):
             except:
                 self.write('配置文件有误，还原失败！')
 
-            os.unlink(testpath)
+            Path(testpath).unlink()
 
         self.write('</body>')
 
@@ -1199,7 +1198,7 @@ class ECSHandler(RequestHandler):
 class InPanelIndexHandler(RequestHandler):
     """InPanel 首页。"""
     def get(self, instance_name, ip, port):
-        path = os.path.join(self.settings['inpanel_path'], 'index.html')
+        path = str(Path(self.settings['inpanel_path']) / 'index.html')
         with open(path, encoding='utf-8') as f:
             html = f.read()
         html = html.replace('<link rel="stylesheet" href="', '<link rel="stylesheet" href="/inpanel/')
@@ -1590,12 +1589,11 @@ class TaskHandler(RequestHandler):
 
     def _get_arg(self, name, default=''):
         """获取参数，优先从 JSON body 解析，其次从 form/query 参数。"""
-        import json as json_mod
-        if not hasattr(self, '_json_args'):
+        if self._json_args is None:
             try:
                 body = self.request.body
                 if body:
-                    self._json_args = json_mod.loads(body)
+                    self._json_args = loads(body)
             except Exception:
                 self._json_args = {}
         if isinstance(self._json_args, dict) and name in self._json_args:

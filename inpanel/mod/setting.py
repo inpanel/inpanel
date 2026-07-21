@@ -16,7 +16,6 @@ from json import loads
 from pathlib import Path
 
 import tornado.httpclient
-import tornado.escape
 from ..base import app_api
 from .. import utils
 from .config import upgrade_config

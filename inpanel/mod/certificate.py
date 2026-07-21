@@ -13,14 +13,13 @@ from shutil import copy
 from subprocess import PIPE, Popen
 
 from . import file
-import os
 from .acme import ACME
 
 
 class Certificate():
 
     def __init__(self):
-        # self.path_current = os.path.dirname(os.path.abspath(__file__))
+        # self.path_current = str(Path(__file__).resolve().parent)
         self.path_home = '/etc/inpanel/certs/'
         self.path_acc = str(Path(self.path_home) / 'client.key')
         self.path_crt = str(Path(self.path_home) / 'crt')
@@ -142,7 +141,7 @@ class Certificate():
             cmd.extend(['-reqexts', 'SAN', '-config', conf_tmp])
         out = self._cmd(cmd, err_msg="Create csr error")
         if conf_tmp is not None and Path(conf_tmp).exists():
-            os.remove(conf_tmp)
+            Path(conf_tmp).unlink()
         if out is None:
             return {'code': -1, 'msg': 'csr_create_error'}
         else:

@@ -1188,7 +1188,7 @@ if __name__ == '__main__':
     # print dumps(_context_getservers(disabled=None))
 
     # path = str(Path(SERVERCONF, clist[i])
-    # print os.path.splitext('/Users/douzhenjiang/Projects/inpanel/test/aaa.com')
+    # print Path('/Users/douzhenjiang/Projects/inpanel/test/aaa.com').suffix
     # SERVERCONF = '/Users/douzhenjiang/Projects/inpanel/test'
     # print(servername_exists('1.1.1.1', 80, 'inpanel.org'))
     # addserver('inpanel.org', '1.1.1.1', 80,

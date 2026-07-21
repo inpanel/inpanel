@@ -13,11 +13,6 @@
 '''
 
 
-import base64
-import os
-import shlex
-import time
-
 from ..lib import pxssh
 from . import shell
 
@@ -163,7 +158,7 @@ async def remote_uninstall(tm, ssh_ip, ssh_port, ssh_user, ssh_password, instanc
 
 
 async def remote_config(tm, ssh_ip, ssh_port, ssh_user, ssh_password,
-                        instance_name='', accesskey=None):
+                        accesskey=None):
     """远程更新 InPanel 配置（异步任务）"""
     jobname = f'remote.config_{ssh_ip}'
     if not tm._start_job(jobname):

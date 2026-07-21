@@ -10,7 +10,6 @@
 pip 只有单一 index-url，没有多仓库概念。此处管理的是"镜像源 URL"的切换。'''
 
 import json
-import os
 import re
 import time
 from pathlib import Path
@@ -108,7 +107,7 @@ _PIP_BUILTIN_MIRRORS = _cfg['pip_builtin_mirrors']
 
 def _get_pip_sources_file():
     """获取 pip 源配置文件的路径"""
-    return os.path.join(config_path, 'sources_pip.json')
+    return str(Path(config_path) / 'sources_pip.json')
 
 
 def _load_sources_config():
@@ -118,7 +117,7 @@ def _load_sources_config():
     返回源列表（list of dict），每个 dict 包含 name、url、builtin。
     """
     filepath = _get_pip_sources_file()
-    if os.path.isfile(filepath):
+    if Path(filepath).is_file():
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -136,10 +135,10 @@ def _load_sources_config():
 def _save_sources_config(sources):
     """保存 pip 源配置到 sources_pip.json"""
     filepath = _get_pip_sources_file()
-    conf_dir = os.path.dirname(filepath)
-    if not os.path.isdir(conf_dir):
+    conf_dir = str(Path(filepath).parent)
+    if not Path(conf_dir).is_dir():
         try:
-            os.makedirs(conf_dir, exist_ok=True)
+            Path(conf_dir).mkdir(parents=True, exist_ok=True)
         except OSError:
             pass
     try:

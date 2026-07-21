@@ -282,10 +282,11 @@ var ServiceApacheCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/httpd', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                     $scope.getSettings();
                 } else {
@@ -365,10 +366,11 @@ var ServiceTomcatCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/tomcat', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                     $scope.getsettings();
                 } else {
@@ -435,10 +437,11 @@ var ServiceVsftpdCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/vsftpd', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     $scope.getsettings();
                     if ($scope.checkVersion) {
                         $scope.checkVersion();
@@ -520,10 +523,11 @@ var ServiceMySQLCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/mysqld', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -606,10 +610,11 @@ var ServiceMariaDBCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/mariadb', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -691,10 +696,11 @@ var ServiceRedisCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/redis', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -725,10 +731,11 @@ var ServiceMemcacheCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/memcached', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -759,10 +766,11 @@ var ServiceMongoDBCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/mongod', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -792,10 +800,11 @@ var ServiceMinIOCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/minio', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -823,10 +832,11 @@ var ServicePHP56Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/php56-php-fpm', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -855,10 +865,11 @@ var ServicePHP74Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/php74-php-fpm', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -887,10 +898,11 @@ var ServicePHP80Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/php80-php-fpm', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -919,10 +931,11 @@ var ServicePHP81Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/php81-php-fpm', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -951,10 +964,11 @@ var ServicePHP82Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/php82-php-fpm', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -983,10 +997,11 @@ var ServicePHP83Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/php83-php-fpm', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1015,10 +1030,11 @@ var ServicePHP84Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/php84-php-fpm', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1047,10 +1063,11 @@ var ServiceJava8Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/java8', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1079,10 +1096,11 @@ var ServiceJava11Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/java11', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1111,10 +1129,11 @@ var ServiceJava17Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/java17', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1143,10 +1162,11 @@ var ServiceJava21Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/java21', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1175,10 +1195,11 @@ var ServiceNodeJS18Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/nodejs18', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1207,10 +1228,11 @@ var ServiceNodeJS20Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/nodejs20', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1239,10 +1261,11 @@ var ServiceNodeJS22Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/nodejs22', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1271,10 +1294,11 @@ var ServiceNodeJS24Ctrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/nodejs24', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1305,10 +1329,11 @@ var ServicePHPCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/php-fpm', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                     $scope.getphpsettings();
                     $scope.getfpmsettings();
@@ -1426,10 +1451,11 @@ var ServiceSendmailCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/sendmail', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1460,10 +1486,11 @@ var ServiceSSHCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/sshd', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     $scope.getsettings();
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
@@ -1577,10 +1604,11 @@ var ServiceIPTablesCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/iptables', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1611,10 +1639,11 @@ var ServiceFirewalldCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/firewalld', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1645,10 +1674,11 @@ var ServiceUfwCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/ufw', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1679,10 +1709,11 @@ var ServiceFail2banCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/fail2ban', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1714,10 +1745,11 @@ var ServiceCronCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/crond', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1782,10 +1814,11 @@ var ServiceNTPCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/ntpd', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
@@ -1817,10 +1850,11 @@ var ServiceNamedCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/named', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                     if (section == 'settings') {
                         $scope.load_settings();
@@ -1882,10 +1916,11 @@ var ServiceLighttpdCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/lighttpd', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if (section == 'settings') {
                         $scope.load_settings();
                     }
@@ -1948,10 +1983,11 @@ var ServiceProFTPDCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/proftpd', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if (section == 'settings') {
                         $scope.load_settings();
                     }
@@ -2015,10 +2051,11 @@ var ServicePureFTPdCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/pure-ftpd', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if (section == 'settings') {
                         $scope.load_settings();
                     }
@@ -2081,10 +2118,11 @@ var ServiceSambaCtrl = [
             $scope.checking = true;
             Request.get('/api/service/detail/smb', function (res) {
                 var info = res.data;
-                if (info) {
+                if (res.code === 0 && info) {
                     $scope.installed = true;
                     $scope.autostart = info.autostart;
                     $scope.status = info.status;
+                    $scope.detail = info;
                     if ($scope.checkVersion) $scope.checkVersion();
                 } else {
                     $scope.installed = false;
