@@ -69,16 +69,27 @@ def handle_query(items):
                     continue
                 result['%s.%s' % (sec, q)] = getattr(server.ServerInfo, q)()
         elif sec == 'service':
-            service_items = service.Service.service_items
-            autostart_services = service.get_autostart_list()
+            # 使用新的服务管理接口
+            manager = service.Service._get_manager()
+            if manager and hasattr(manager, 'get_all_status'):
+                all_status = manager.get_all_status()
+                autostart_services = set(
+                    s for s, st in all_status.items() if st is not None and manager.is_enabled(s)
+                )
+            else:
+                all_status = {}
+                autostart_services = set()
+
+            service_items = service.Service.get_service_items()
             if qs == 'all':
-                qs = service_items.keys()
+                qs = list(service_items.keys())
             elif qs == 'dynamic':
                 qs = [item for item, relup in service_items.items() if relup == True]
+
             for q in qs:
                 if q not in service_items:
                     continue
-                status = service.Service.status(q)
+                status = all_status.get(q)
                 result['%s.%s' % (sec, q)] = status and {
                     'status': status,
                     'autostart': q in autostart_services,

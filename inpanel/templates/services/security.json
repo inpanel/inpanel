@@ -1,0 +1,93 @@
+[
+  {
+    "id": "iptables",
+    "name": "iptables",
+    "category": "security",
+    "description": "Linux 防火墙 (iptables)",
+    "packages": {
+      "brew": null,
+      "yum": "iptables-services",
+      "dnf": "iptables-services",
+      "apt": "iptables"
+    },
+    "systemd_unit": "iptables.service",
+    "launchctl_label": null,
+    "pgrep_names": ["iptables"],
+    "config_files": [
+      {"path": "/etc/sysconfig/iptables", "label": "规则配置"}
+    ],
+    "log_files": [],
+    "data_dirs": []
+  },
+  {
+    "id": "firewalld",
+    "name": "Firewalld",
+    "category": "security",
+    "description": "动态防火墙 (firewalld)",
+    "packages": {
+      "brew": null,
+      "yum": "firewalld",
+      "dnf": "firewalld",
+      "apt": null
+    },
+    "systemd_unit": "firewalld.service",
+    "launchctl_label": null,
+    "pgrep_names": ["firewalld"],
+    "config_files": [
+      {"path": "/etc/firewalld/firewalld.conf", "label": "主配置文件"}
+    ],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/etc/firewalld/zones", "label": "区域配置目录"}
+    ]
+  },
+  {
+    "id": "ufw",
+    "name": "UFW",
+    "category": "security",
+    "description": "Uncomplicated Firewall",
+    "packages": {
+      "brew": null,
+      "yum": null,
+      "dnf": null,
+      "apt": "ufw"
+    },
+    "systemd_unit": "ufw.service",
+    "launchctl_label": null,
+    "pgrep_names": ["ufw"],
+    "config_files": [
+      {"path": "/etc/default/ufw", "label": "默认配置"},
+      {"path": "/etc/ufw/before.rules", "label": "前置规则"}
+    ],
+    "log_files": [
+      {"path": "/var/log/ufw.log", "label": "UFW 日志"}
+    ],
+    "data_dirs": []
+  },
+  {
+    "id": "fail2ban",
+    "name": "Fail2Ban",
+    "category": "security",
+    "description": "入侵防护系统",
+    "packages": {
+      "brew": "fail2ban",
+      "yum": "fail2ban",
+      "dnf": "fail2ban",
+      "apt": "fail2ban"
+    },
+    "systemd_unit": "fail2ban.service",
+    "launchctl_label": "homebrew.mxcl.fail2ban",
+    "pgrep_names": ["fail2ban-server"],
+    "config_files": [
+      {"path": "/etc/fail2ban/jail.conf", "label": "主配置文件"},
+      {"path": "/etc/fail2ban/jail.local", "label": "本地配置"},
+      {"path": "/usr/local/etc/fail2ban/jail.local", "label": "本地配置 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/fail2ban.log", "label": "运行日志"}
+    ],
+    "data_dirs": [
+      {"path": "/etc/fail2ban/filter.d", "label": "过滤规则目录"}
+    ]
+  }
+]

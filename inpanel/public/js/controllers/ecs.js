@@ -462,8 +462,8 @@ var ECSSettingCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/inpanel_install',
-                '/api/task/inpanel_install_' + $scope.ssh_ip, {
+                '/api/task/remote.install',
+                '/api/task/remote.install_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -497,8 +497,8 @@ var ECSSettingCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/inpanel_uninstall',
-                '/api/task/inpanel_uninstall_' + $scope.ssh_ip, {
+                '/api/task/remote.uninstall',
+                '/api/task/remote.uninstall_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,
@@ -531,8 +531,8 @@ var ECSSettingCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/inpanel_config',
-                '/api/task/inpanel_config_' + $scope.ssh_ip, {
+                '/api/task/remote.config',
+                '/api/task/remote.config_' + $scope.ssh_ip, {
                     'ssh_ip': $scope.ssh_ip,
                     'ssh_port': $scope.ssh_port,
                     'ssh_user': $scope.ssh_user,

@@ -284,11 +284,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>InPanel</td>
-                            <td ng-bind-html-unsafe="info['service.inpanel']['status'] | service.status"></td>
-                            <td class="muted">服务器控制面板 InPanel</td>
-                        </tr>
                         <tr ng-show="info['service.nginx'] != null">
                             <td>Nginx</td>
                             <td ng-bind-html-unsafe="info['service.nginx']['status'] | service.status"></td>

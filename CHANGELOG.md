@@ -1,3 +1,41 @@
+## InPanel v1.2.6 (2026-07-21)
+
+**版本更新：**
+
+- 发布 InPanel v1.2.6
+
+**服务软件管理底层重构：**
+
+- 新增 `mod/service_manager.py` 统一服务管理器抽象层（`ServiceManagerBase`）
+- 实现 `SystemdManager`：Linux systemd / init.d 服务管理（启停/状态/自启动）
+- 实现 `BrewServiceManager`：macOS brew services 服务管理（启停/状态/自启动）
+- 新增 `mod/package_brew.py`：Homebrew 包管理器（`BrewPM`），支持安装/卸载/搜索/更新
+- 扩展 `mod/package.py` 包管理器工厂，注册 `BrewPM`，支持 brew/apt/yum/dnf 自动选择
+- 重构 `mod/service.py`：`Service` 类和 `web_handler` 全部委托给 `ServiceManager`
+- 重构 `mod/task.py`：`service()` 方法使用 `ServiceManager` 替代硬编码 systemctl
+- 更新 `mod/query.py`：`Service.get_service_items()` 动态获取服务列表
+
+**服务模板系统：**
+
+- 新增 `templates/services/` 目录，包含服务分类和配置模板
+- 服务分类：database、ftp、http、java、mail、nodejs、php、security、storage、system
+- 统一服务描述格式，支持动态服务列表渲染
+
+**前端更新：**
+
+- AngularJS 从 1.0.2 升级至 1.0.8（零代码改动，修复 200+ 已知 bug）
+- 服务管理页面重构，支持动态服务列表展示
+- 指令模板目录结构优化：`directives/` → `directives/container/`
+
+**API 接口：**
+
+- 新增 `/api/service/(.+?)(?:/(.+))?` 路由，支持服务管理操作
+
+**其他：**
+
+- 更新版本号至 1.2.6
+- 优化磁盘、文件、FTP、MySQL、Nginx、SSH、系统等模块兼容性
+
 ## InPanel v1.2.5 (2026-07-18)
 
 **版本更新：**

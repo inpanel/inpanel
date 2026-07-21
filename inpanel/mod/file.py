@@ -789,6 +789,230 @@ def chmod(path, perms, recursively=False):
     return True
 
 
+# ------------------------------------------------------------------
+# 异步任务函数（由 web.py 的 _dispatch_task 调用）
+# 命名规则：file_<method>，对应 jobname 中的 file_<method>_...
+# ------------------------------------------------------------------
+
+from shlex import quote as sh_quote
+from . import shell
+
+
+async def file_copy(tm, srcpath, despath):
+    """复制文件/目录（异步任务）"""
+    jobname = f'file.copy_{srcpath}_{despath}'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, f'正在复制 {srcpath} 到 {despath}...')
+
+    cmd = f'cp -rf {sh_quote(srcpath)} {sh_quote(despath)}'
+    result, output = await shell.async_command(cmd)
+
+    if result == 0:
+        tm._finish_job(jobname, 0, f'复制 {srcpath} 到 {despath} 完成！')
+    else:
+        tm._finish_job(jobname, -1,
+                       f'复制 {srcpath} 到 {despath} 失败！',
+                       data=output.strip().replace('\n', '<br>'))
+
+
+async def file_move(tm, srcpath, despath):
+    """移动文件/目录（异步任务）"""
+    jobname = f'file.move_{srcpath}_{despath}'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, f'正在移动 {srcpath} 到 {despath}...')
+
+    despath_exists = Path(despath).exists()
+    if despath_exists:
+        if not Path(srcpath).exists():
+            tm._finish_job(jobname, -1, '不可识别的源！')
+            return
+        cmd = f'cp -rf {sh_quote(srcpath)}/* {sh_quote(despath)}'
+    else:
+        cmd = f'mv {sh_quote(srcpath)} {sh_quote(despath)}'
+
+    result, output = await shell.async_command(cmd)
+    data = None
+    if result == 0:
+        code = 0
+        msg = f'移动 {srcpath} 到 {despath} 完成！'
+    else:
+        code = -1
+        msg = f'移动 {srcpath} 到 {despath} 失败！'
+        data = output.strip().replace('\n', '<br>')
+
+    if despath_exists and code == 0:
+        result2, output2 = await shell.async_command(f'rm -rf {sh_quote(srcpath)}')
+        if result2 != 0:
+            code = -1
+            msg = f'移动 {srcpath} 到 {despath} 失败！'
+            data = output2.strip().replace('\n', '<br>')
+
+    tm._finish_job(jobname, code, msg, data=data)
+
+
+async def file_remove(tm, paths):
+    """删除文件/目录（异步任务）"""
+    if isinstance(paths, str):
+        paths = paths.split(',')
+    jobname = f'file.remove_{",".join(paths)}'
+    if not tm._start_job(jobname):
+        return
+    data = None
+    for path in paths:
+        tm._update_job(jobname, 2, f'正在删除 {path}...')
+        cmd = f'rm -rf {sh_quote(path)}'
+        result, output = await shell.async_command(cmd)
+        if result == 0:
+            code = 0
+            msg = f'删除 {path} 成功！'
+        else:
+            code = -1
+            msg = f'删除 {path} 失败！'
+            data = output.strip().replace('\n', '<br>')
+    tm._finish_job(jobname, code, msg, data=data)
+
+
+async def file_compress(tm, zippath, paths):
+    """压缩文件/目录（异步任务）"""
+    if isinstance(paths, str):
+        paths = paths.split(',')
+    jobname = f'file.compress_{zippath}_{",".join(paths)}'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, f'正在压缩生成 {zippath}...')
+
+    basepath = str(Path(zippath).parent) + '/'
+    path = ' '.join([sh_quote(item.replace(basepath, '')) for item in paths])
+    if zippath.endswith('.tar.gz') or zippath.endswith('.tgz'):
+        cmd = f'tar zcf {sh_quote(zippath)} -C {sh_quote(basepath)} {path}'
+    elif zippath.endswith('.tar.bz2'):
+        cmd = f'tar jcf {sh_quote(zippath)} -C {sh_quote(basepath)} {path}'
+    elif zippath.endswith('.zip'):
+        if not Path('/usr/bin/zip').exists():
+            tm._update_job(jobname, 2, '正在安装 zip...')
+            result, _ = await shell.async_command('yum install -y zip unzip')
+            if result != 0:
+                tm._finish_job(jobname, -1, 'zip 安装失败！')
+                return
+        cmd = f'cd {sh_quote(basepath)}; zip -rq9 {sh_quote(zippath)} {path}'
+    elif zippath.endswith('.gz'):
+        path = ' '.join([sh_quote(item) for item in paths])
+        cmd = f'gzip -f {path}'
+    else:
+        tm._finish_job(jobname, -1, '不支持的类型！')
+        return
+
+    result, output = await shell.async_command(cmd)
+    if result == 0:
+        tm._finish_job(jobname, 0, f'压缩到 {zippath} 成功！')
+    else:
+        tm._finish_job(jobname, -1, '压缩失败！',
+                       data=output.strip().replace('\n', '<br>'))
+
+
+async def file_decompress(tm, zippath, despath=''):
+    """解压文件（异步任务）"""
+    jobname = f'file.decompress_{zippath}_{despath}'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, f'正在解压 {zippath}...')
+
+    if zippath.endswith('.tar.gz') or zippath.endswith('.tgz'):
+        cmd = f'tar zxf {sh_quote(zippath)} -C {sh_quote(despath)}'
+    elif zippath.endswith('.tar.bz2'):
+        cmd = f'tar jxf {sh_quote(zippath)} -C {sh_quote(despath)}'
+    elif zippath.endswith('.zip'):
+        if not Path('/usr/bin/unzip').is_file():
+            tm._update_job(jobname, 2, '正在安装 unzip...')
+            result, _ = await shell.async_command('yum install -y zip unzip')
+            if result != 0:
+                tm._finish_job(jobname, -1, 'unzip 安装失败！')
+                return
+        cmd = f'unzip -q -o {sh_quote(zippath)} -d {sh_quote(despath)}'
+    elif zippath.endswith('.gz'):
+        cmd = f'gunzip -f {sh_quote(zippath)}'
+    else:
+        tm._finish_job(jobname, -1, '不支持的类型！')
+        return
+
+    result, output = await shell.async_command(cmd)
+    if result == 0:
+        tm._finish_job(jobname, 0, f'解压 {zippath} 成功！')
+    else:
+        tm._finish_job(jobname, -1, f'解压 {zippath} 失败！',
+                       data=output.strip().replace('\n', '<br>'))
+
+
+async def file_chown(tm, paths, user, group, recursively=''):
+    """设置文件/目录所有者（异步任务）"""
+    if isinstance(paths, str):
+        paths = paths.split(',')
+    jobname = f'file.chown_{",".join(paths)}'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, '正在设置用户和用户组...')
+
+    for path in paths:
+        result = await shell.async_task(chown, path, user, group, recursively == 'on')
+        if result:
+            code = 0
+            msg = '设置用户和用户组成功！'
+        else:
+            code = -1
+            msg = f'设置 {path} 的用户和用户组时失败！'
+            break
+    tm._finish_job(jobname, code, msg)
+
+
+async def file_chmod(tm, paths, perms, recursively=''):
+    """设置文件/目录权限（异步任务）"""
+    if isinstance(paths, str):
+        paths = paths.split(',')
+    jobname = f'file.chmod_{",".join(paths)}'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, '正在设置权限...')
+
+    try:
+        perms_int = int(perms, 8)
+    except (ValueError, TypeError):
+        tm._finish_job(jobname, -1, '权限值输入有误！')
+        return
+
+    for path in paths:
+        result = await shell.async_task(chmod, path, perms_int, recursively == 'on')
+        if result:
+            code = 0
+            msg = '权限修改成功！'
+        else:
+            code = -1
+            msg = f'修改 {path} 的权限时失败！'
+            break
+    tm._finish_job(jobname, code, msg)
+
+
+async def file_wget(tm, url, path):
+    """下载文件（异步任务）"""
+    import tornado.escape
+    jobname = f'file.wget_{tornado.escape.url_escape(url)}'
+    if not tm._start_job(jobname):
+        return
+    tm._update_job(jobname, 2, f'正在下载 {url}...')
+
+    if Path(path).is_dir():
+        cmd = f'wget -q "{sh_quote(url)}" --directory-prefix={sh_quote(path)}'
+    else:
+        cmd = f'wget -q "{sh_quote(url)}" -O {sh_quote(path)}'
+    result, output = await shell.async_command(cmd)
+    if result == 0:
+        tm._finish_job(jobname, 0, '下载成功！')
+    else:
+        tm._finish_job(jobname, -1, '下载失败！',
+                       data=output.strip().replace('\n', '<br>'))
+
+
 if __name__ == '__main__':
     print('* List directory of /Users:')
     path = '/Users'

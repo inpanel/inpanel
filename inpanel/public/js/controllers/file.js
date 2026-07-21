@@ -366,8 +366,8 @@ var FileCtrl = [
                 Task.call(
                     $scope,
                     module,
-                    '/api/task/wget',
-                    '/api/task/wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
+                    '/api/task/file.wget',
+                    '/api/task/file.wget_' + encodeURIComponent(encodeURIComponent($scope.downloadurl)), {
                         'url': $scope.downloadurl,
                         'path': $scope.curpath
                     }, {
@@ -444,8 +444,8 @@ var FileCtrl = [
                 Task.call(
                     $scope,
                     module,
-                    '/api/task/copy',
-                    '/api/task/copy_' + srcpath + '_' + despath, {
+                    '/api/task/file.copy',
+                    '/api/task/file.copy_' + srcpath + '_' + despath, {
                         'srcpath': srcpath,
                         'despath': despath
                     }, {
@@ -464,8 +464,8 @@ var FileCtrl = [
                 Task.call(
                     $scope,
                     module,
-                    '/api/task/move',
-                    '/api/task/move_' + srcpath + '_' + despath, {
+                    '/api/task/file.move',
+                    '/api/task/file.move_' + srcpath + '_' + despath, {
                         'srcpath': srcpath,
                         'despath': despath
                     }, {
@@ -565,8 +565,8 @@ var FileCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/compress',
-                '/api/task/compress_' + zippath + '_' + srcpath, {
+                '/api/task/file.compress',
+                '/api/task/file.compress_' + zippath + '_' + srcpath, {
                     'zippath': zippath,
                     'paths': srcpath
                 }, {
@@ -589,8 +589,8 @@ var FileCtrl = [
                 Task.call(
                     $scope,
                     module,
-                    '/api/task/decompress',
-                    '/api/task/decompress_' + zippath + '_', {
+                    '/api/task/file.decompress',
+                    '/api/task/file.decompress_' + zippath, {
                         'zippath': zippath
                     }, {
                         'success': function(data) {
@@ -621,8 +621,8 @@ var FileCtrl = [
                             Task.call(
                                 $scope,
                                 module,
-                                '/api/task/decompress',
-                                '/api/task/decompress_' + zippath + '_' + path, {
+                                '/api/task/file.decompress',
+                                '/api/task/file.decompress_' + zippath + '_' + path, {
                                     'zippath': zippath,
                                     'despath': path
                                 }, {
@@ -727,8 +727,8 @@ var FileCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/compress',
-                '/api/task/compress_' + zippath + '_' + srcpaths.join(','), {
+                '/api/task/file.compress',
+                '/api/task/file.compress_' + zippath + '_' + srcpaths.join(','), {
                     'zippath': zippath,
                     'paths': srcpaths.join(',')
                 }, {
@@ -791,8 +791,8 @@ var FileCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/chown',
-                '/api/task/chown_' + paths, {
+                '/api/task/file.chown',
+                '/api/task/file.chown_' + paths, {
                     'paths': paths,
                     'user': $scope.chown_user,
                     'group': $scope.chown_group,
@@ -849,8 +849,8 @@ var FileCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/chmod',
-                '/api/task/chmod_' + paths, {
+                '/api/task/file.chmod',
+                '/api/task/file.chmod_' + paths, {
                     'paths': paths,
                     'perms': perms,
                     'recursively': $scope.chmod_recursively
@@ -937,8 +937,8 @@ var FileTrashCtrl = [
                     Task.call(
                         $scope,
                         module,
-                        '/api/task/remove',
-                        '/api/task/remove_' + path, {
+                        '/api/task/file.remove',
+                        '/api/task/file.remove_' + path, {
                             'paths': path
                         },
                         function() {
@@ -973,8 +973,8 @@ var FileTrashCtrl = [
                     Task.call(
                         $scope,
                         module,
-                        '/api/task/remove',
-                        '/api/task/remove_' + trashs, {
+                        '/api/task/file.remove',
+                        '/api/task/file.remove_' + trashs, {
                             'paths': trashs
                         },
                         function() {

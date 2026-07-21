@@ -1,0 +1,153 @@
+[
+  {
+    "id": "httpd",
+    "name": "Apache (httpd)",
+    "category": "http",
+    "description": "Apache HTTP Server",
+    "packages": {
+      "brew": "httpd",
+      "yum": "httpd",
+      "dnf": "httpd",
+      "apt": "apache2"
+    },
+    "systemd_unit": "httpd.service",
+    "launchctl_label": "homebrew.mxcl.httpd",
+    "pgrep_names": ["httpd", "apache2"],
+    "pid_file": "/var/run/httpd/httpd.pid",
+    "config_files": [
+      {"path": "/etc/httpd/conf/httpd.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/httpd/httpd.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/httpd/error_log", "label": "错误日志"},
+      {"path": "/var/log/httpd/access_log", "label": "访问日志"},
+      {"path": "/usr/local/var/log/httpd/error_log", "label": "错误日志 (Homebrew)"},
+      {"path": "/usr/local/var/log/httpd/access_log", "label": "访问日志 (Homebrew)"}
+    ],
+    "data_dirs": [
+      {"path": "/var/www/html", "label": "网站根目录"}
+    ],
+    "default_port": 80
+  },
+  {
+    "id": "nginx",
+    "name": "Nginx",
+    "category": "http",
+    "description": "Nginx HTTP 和反向代理服务器",
+    "packages": {
+      "brew": "nginx",
+      "yum": "nginx",
+      "dnf": "nginx",
+      "apt": "nginx"
+    },
+    "systemd_unit": "nginx.service",
+    "launchctl_label": "homebrew.mxcl.nginx",
+    "pgrep_names": ["nginx"],
+    "pid_file": "/var/run/nginx.pid",
+    "config_files": [
+      {"path": "/etc/nginx/nginx.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/nginx/nginx.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/nginx/error.log", "label": "错误日志"},
+      {"path": "/var/log/nginx/access.log", "label": "访问日志"},
+      {"path": "/usr/local/var/log/nginx/error.log", "label": "错误日志 (Homebrew)"},
+      {"path": "/usr/local/var/log/nginx/access.log", "label": "访问日志 (Homebrew)"}
+    ],
+    "data_dirs": [
+      {"path": "/etc/nginx/conf.d", "label": "站点配置目录"},
+      {"path": "/usr/local/etc/nginx/servers", "label": "站点配置目录 (Homebrew)"}
+    ],
+    "default_port": 80
+  },
+  {
+    "id": "tomcat",
+    "name": "Tomcat",
+    "category": "http",
+    "description": "Apache Tomcat Java Servlet 容器",
+    "packages": {
+      "brew": "tomcat",
+      "yum": "tomcat",
+      "dnf": "tomcat",
+      "apt": "tomcat"
+    },
+    "systemd_unit": "tomcat.service",
+    "launchctl_label": "homebrew.mxcl.tomcat",
+    "pgrep_names": ["tomcat", "java"],
+    "config_files": [
+      {"path": "/etc/tomcat/server.xml", "label": "主配置文件"}
+    ],
+    "log_files": [
+      {"path": "/var/log/tomcat/catalina.out", "label": "运行日志"}
+    ],
+    "default_port": 8080
+  },
+  {
+    "id": "lighttpd",
+    "name": "Lighttpd",
+    "category": "http",
+    "description": "Lighttpd 轻量级 Web 服务器",
+    "packages": {
+      "brew": "lighttpd",
+      "yum": "lighttpd",
+      "dnf": "lighttpd",
+      "apt": "lighttpd"
+    },
+    "systemd_unit": "lighttpd.service",
+    "launchctl_label": "homebrew.mxcl.lighttpd",
+    "pgrep_names": ["lighttpd"],
+    "config_files": [
+      {"path": "/etc/lighttpd/lighttpd.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/lighttpd/lighttpd.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/lighttpd/error.log", "label": "错误日志"}
+    ],
+    "default_port": 80
+  },
+  {
+    "id": "tengine",
+    "name": "Tengine",
+    "category": "http",
+    "description": "淘宝 Tengine Web 服务器",
+    "packages": {
+      "brew": null,
+      "yum": "tengine",
+      "dnf": "tengine",
+      "apt": null
+    },
+    "systemd_unit": "tengine.service",
+    "launchctl_label": "homebrew.mxcl.tengine",
+    "pgrep_names": ["tengine", "nginx"],
+    "config_files": [
+      {"path": "/etc/tengine/nginx.conf", "label": "主配置文件"}
+    ],
+    "log_files": [
+      {"path": "/var/log/tengine/error.log", "label": "错误日志"}
+    ],
+    "default_port": 80
+  },
+  {
+    "id": "caddy",
+    "name": "Caddy",
+    "category": "http",
+    "description": "Caddy Web 服务器（自动 HTTPS）",
+    "packages": {
+      "brew": "caddy",
+      "yum": null,
+      "dnf": null,
+      "apt": "caddy"
+    },
+    "systemd_unit": "caddy.service",
+    "launchctl_label": "homebrew.mxcl.caddy",
+    "pgrep_names": ["caddy"],
+    "config_files": [
+      {"path": "/etc/caddy/Caddyfile", "label": "主配置文件"},
+      {"path": "/usr/local/etc/caddy/Caddyfile", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/caddy/access.log", "label": "访问日志"}
+    ],
+    "default_port": 443
+  }
+]

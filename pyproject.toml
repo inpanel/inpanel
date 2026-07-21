@@ -1,7 +1,7 @@
 [project]
 name = "InPanel"
-version = "1.2.5"
-description = "InPanel - A Web-based Linux Server Management Tool"
+version = "1.2.6"
+description = "InPanel - A Server Management Tool"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [{name = "Jackson Dou", email = "jksdou@qq.com"}]

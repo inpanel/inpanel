@@ -1,0 +1,82 @@
+[
+  {
+    "id": "nodejs18",
+    "name": "Node.js 18",
+    "category": "nodejs",
+    "description": "Node.js 18 运行时",
+    "packages": {
+      "brew": "node@18",
+      "yum": null,
+      "dnf": null,
+      "apt": null
+    },
+    "systemd_unit": null,
+    "launchctl_label": "homebrew.mxcl.node@18",
+    "pgrep_names": ["node"],
+    "config_files": [],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/usr/local/opt/node@18", "label": "Node.js 目录 (Homebrew)"}
+    ]
+  },
+  {
+    "id": "nodejs20",
+    "name": "Node.js 20",
+    "category": "nodejs",
+    "description": "Node.js 20 运行时",
+    "packages": {
+      "brew": "node@20",
+      "yum": null,
+      "dnf": null,
+      "apt": null
+    },
+    "systemd_unit": null,
+    "launchctl_label": "homebrew.mxcl.node@20",
+    "pgrep_names": ["node"],
+    "config_files": [],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/usr/local/opt/node@20", "label": "Node.js 目录 (Homebrew)"}
+    ]
+  },
+  {
+    "id": "nodejs22",
+    "name": "Node.js 22",
+    "category": "nodejs",
+    "description": "Node.js 22 运行时",
+    "packages": {
+      "brew": "node@22",
+      "yum": null,
+      "dnf": null,
+      "apt": null
+    },
+    "systemd_unit": null,
+    "launchctl_label": "homebrew.mxcl.node@22",
+    "pgrep_names": ["node"],
+    "config_files": [],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/usr/local/opt/node@22", "label": "Node.js 目录 (Homebrew)"}
+    ]
+  },
+  {
+    "id": "nodejs24",
+    "name": "Node.js 24",
+    "category": "nodejs",
+    "description": "Node.js 24 运行时",
+    "packages": {
+      "brew": "node@24",
+      "yum": null,
+      "dnf": null,
+      "apt": null
+    },
+    "systemd_unit": null,
+    "launchctl_label": "homebrew.mxcl.node@24",
+    "pgrep_names": ["node"],
+    "config_files": [],
+    "log_files": [],
+    "data_dirs": [
+      {"path": "/usr/local/opt/node@24", "label": "Node.js 目录 (Homebrew)"}
+    ]
+  }
+]

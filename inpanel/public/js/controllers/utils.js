@@ -517,7 +517,7 @@ var UtilsNetworkCtrl = [
             $scope.restartMessage = '正在重启，请稍候...'
             $scope.showRestartBtn = false;
             Timeout(function() {
-                Request.post('/api/task/service_restart', {
+                Request.post('/api/task/service.restart', {
                     service: 'network'
                 }, function(data) {
                     var getRestartStatus = function() {
@@ -557,12 +557,12 @@ var UtilsTimeCtrl = [
             });
         };
         $scope.saveDatetime = function() {
-            Request.post('/api/task/datetime', {
+            Request.post('/api/task/server.datetime', {
                 'datetime': $scope.newDatetime
             }, function(data) {
                 Request.setProcessing(true);
                 var getStatus = function() {
-                    Request.get('/api/task/datetime', function(data) {
+                    Request.get('/api/task/server.datetime', function(data) {
                         if (data.status != 'finish') {
                             Request.setProcessing(true);
                             Timeout(getStatus, 500, module);
@@ -627,12 +627,12 @@ var UtilsTimeCtrl = [
 
         $scope.synctime = function() {
             var server = 'pool.ntp.org';
-            Request.post('/api/task/ntpdate', {
+            Request.post('/api/task/server.ntpdate', {
                 'server': server
             }, function(data) {
                 Request.setProcessing(true);
                 var getStatus = function() {
-                    Request.get('/api/task/ntpdate_' + server, function(data) {
+                    Request.get('/api/task/server.ntpdate_' + server, function(data) {
                         if (data.status != 'finish') {
                             Request.setProcessing(true);
                             Timeout(getStatus, 500, module);
@@ -662,9 +662,9 @@ var UtilsTimeCtrl = [
         stopInit();
 
         $scope.loadSync = function() {
-            Request.get('/api/query/service.ntpd', function(data) {
-                if (data['service.ntpd']) {
-                    $scope.ntpdStatus = data['service.ntpd']['status'];
+            Request.get('/api/service/detail/ntpd', function(data) {
+                if (data.code === 0 && data.data) {
+                    $scope.ntpdStatus = data.data.status;
                 }
                 $scope.ntpdChecking = false;
             });
@@ -675,20 +675,19 @@ var UtilsTimeCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/yum_install',
-                '/api/task/yum_install_base_ntp', {
-                    'repo': 'base',
-                    'pkg': 'ntp'
+                '/api/task/service.install',
+                '/api/task/service.install_ntp', {
+                    'service': 'ntp'
                 }, {
                     'wait': function(data) {
-                        $scope.installMessage = data.msg;
+                        $scope.installMessage = data.msg || '正在安装...';
                     },
                     'success': function(data) {
-                        $scope.installMessage = data.msg;
+                        $scope.installMessage = data.msg || '安装完成';
                         Timeout($scope.loadSync, 3000, module);
                     },
                     'error': function(data) {
-                        $scope.installMessage = data.msg;
+                        $scope.installMessage = data.msg || '安装失败';
                         Timeout($scope.loadSync, 3000, module);
                     }
                 },
@@ -701,8 +700,8 @@ var UtilsTimeCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/service_start',
-                '/api/task/service_start_ntpd', {
+                '/api/task/service.start',
+                '/api/task/service.start_ntpd', {
                     name: 'NTP',
                     service: 'ntpd'
                 }, {
@@ -733,8 +732,8 @@ var UtilsTimeCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/service_stop',
-                '/api/task/service_stop_ntpd', {
+                '/api/task/service.stop',
+                '/api/task/service.stop_ntpd', {
                     name: 'NTP',
                     service: 'ntpd'
                 }, {
@@ -817,8 +816,8 @@ var StorageCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/swapon',
-                '/api/task/swapon_on_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/task/disk.swap',
+                '/api/task/disk.swap_on_' + $scope.devname, { 'devname': $scope.devname, 'action': 'on' }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.swapoffconfirm = function(devname) {
@@ -829,8 +828,8 @@ var StorageCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/swapoff',
-                '/api/task/swapon_off_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/task/disk.swap',
+                '/api/task/disk.swap_off_' + $scope.devname, { 'devname': $scope.devname, 'action': 'off' }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.umountconfirm = function(devname) {
@@ -841,8 +840,8 @@ var StorageCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/umount',
-                '/api/task/mount_umount_' + $scope.devname, { 'devname': $scope.devname }, { 'success': $scope.get_diskinfo }
+                '/api/task/disk.mount',
+                '/api/task/disk.mount.umount_' + $scope.devname, { 'devname': $scope.devname, 'action': 'umount' }, { 'success': $scope.get_diskinfo }
             );
         };
         $scope.mountconfirm = function(devname, fstype) {
@@ -871,11 +870,12 @@ var StorageCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mount',
-                '/api/task/mount_mount_' + $scope.devname, {
+                '/api/task/disk.mount',
+                '/api/task/disk.mount.mount_' + $scope.devname, {
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
-                    'fstype': $scope.fstype
+                    'fstype': $scope.fstype,
+                    'action': 'mount'
                 }, { 'success': $scope.get_diskinfo }
             );
         };
@@ -890,8 +890,8 @@ var StorageCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/format',
-                '/api/task/format_' + $scope.devname, {
+                '/api/task/disk.format',
+                '/api/task/disk.format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
                 }, { 'success': $scope.get_diskinfo }
@@ -1079,11 +1079,12 @@ var StorageAutoFMCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/mount',
-                '/api/task/mount_mount_' + $scope.devname, {
+                '/api/task/disk.mount',
+                '/api/task/disk.mount.mount_' + $scope.devname, {
                     'devname': $scope.devname,
                     'mountpoint': $scope.mountpoint,
-                    'fstype': $scope.fstype
+                    'fstype': $scope.fstype,
+                    'action': 'mount'
                 }, { 'success': $scope.loadDiskinfo }
             );
         };
@@ -1091,8 +1092,8 @@ var StorageAutoFMCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/format',
-                '/api/task/format_' + $scope.devname, {
+                '/api/task/disk.format',
+                '/api/task/disk.format_' + $scope.devname, {
                     'devname': $scope.devname,
                     'fstype': $scope.fstype
                 }, { 'success': $scope.mount }
@@ -1180,8 +1181,8 @@ var StorageMoveDataCtrl = [
                             Task.call(
                                 $scope,
                                 module,
-                                '/api/task/move',
-                                '/api/task/move_' + srcpath + '_' + despath, {
+                                '/api/task/file.move',
+                                '/api/task/file.move_' + srcpath + '_' + despath, {
                                     'srcpath': srcpath,
                                     'despath': despath
                                 }, {
@@ -1456,10 +1457,10 @@ var StorageRemoteCtrl = [
         };
 
         $scope.loadDavfs2 = function(callback) {
-            Request.get('/api/query/service.davfs2', function(data) {
+            Request.get('/api/service/detail/davfs2', function(data) {
                 $scope.checking_davfs2 = false;
-                if (data['service.davfs2']) {
-                    $scope.status_davfs2 = data['service.davfs2']['status'];
+                if (data.code === 0 && data.data) {
+                    $scope.status_davfs2 = data.data.status;
                     if (callback) {
                         callback();
                     };
@@ -1475,20 +1476,19 @@ var StorageRemoteCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/yum_install',
-                '/api/task/yum_install_epel_davfs2', {
-                    'repo': 'epel',
-                    'pkg': 'davfs2'
+                '/api/task/service.install',
+                '/api/task/service.install_davfs2', {
+                    'service': 'davfs2'
                 }, {
                     'wait': function(data) {
-                        $scope.installMessage = data.msg;
+                        $scope.installMessage = data.msg || '正在安装...';
                     },
                     'success': function(data) {
-                        $scope.installMessage = data.msg;
+                        $scope.installMessage = data.msg || '安装完成';
                         Timeout($scope.loadDavfs2, 3000, module);
                     },
                     'error': function(data) {
-                        $scope.installMessage = data.msg;
+                        $scope.installMessage = data.msg || '安装失败';
                         Timeout($scope.loadDavfs2, 3000, module);
                     }
                 },
@@ -1501,8 +1501,8 @@ var StorageRemoteCtrl = [
             Task.call(
                 $scope,
                 module,
-                '/api/task/service_start',
-                '/api/task/service_start_davfs2', {
+                '/api/task/service.start',
+                '/api/task/service.start_davfs2', {
                     name: 'Davfs2',
                     service: 'davfs2'
                 }, {
@@ -2166,8 +2166,8 @@ var UtilsCronCtrl = ['$scope', 'Module', 'Request', 'Timeout',
         $scope.has_cron_service = false;
 
         $scope.load = function () {
-            Request.get('/api/query/service.crond', function(data) {
-                if (data['service.crond'] && data['service.crond'].status) {
+            Request.get('/api/service/detail/crond', function(data) {
+                if (data.code === 0 && data.data) {
                     $scope.has_cron_service = true;
                 }
                 $scope.tab_sec(section);
@@ -2601,8 +2601,8 @@ var UtilsMigrateCtrl = [
             var op_data = angular.copy($scope.remote);
             // Task.call = function ($scope, module, url, statusUrl, data, callback, quiet) {
             Task.call($scope, module,
-                '/api/task/uploadtoftp',
-                '/api/task/uploadtoftp_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
+                '/api/task/ftp.upload',
+                '/api/task/ftp.upload_' + op_data.address + '_' + op_data.source + '_' + op_data.target,
                 op_data, {
                     'wait': function (data) {
                         Message.setInfo(data.msg || '正在处理');

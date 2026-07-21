@@ -12,6 +12,7 @@ import time
 from hashlib import md5
 from hmac import new as hmac_new
 from base64 import b64decode
+from json import loads
 from pathlib import Path
 
 import tornado.httpclient
@@ -82,7 +83,7 @@ async def handle_get(context, section):
                         update_info.set('update', 'lastcheck', int(time.time()))
                         update_info.set('update', 'updateinfo', data)
                         try:
-                            data = tornado.escape.json_decode(data)
+                            data = loads(data)
                             context.write({'code': 0, 'msg':'', 'data': data})
                         except:
                             context.write({'code': -1, 'msg': '获取新版本信息失败！'})
@@ -91,7 +92,7 @@ async def handle_get(context, section):
         else:
             data = update_info.get('update', 'updateinfo')
             try:
-                data = tornado.escape.json_decode(data)
+                data = loads(data)
             except:
                 data = None
 

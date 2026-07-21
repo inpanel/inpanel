@@ -12,9 +12,9 @@ import os
 import pprint
 import re
 from glob import glob
+from json import loads
 from pathlib import Path
 
-import tornado
 
 from ..base import COMMENTFLAG, DEBUG, GENBY, config_path
 from .config import Config
@@ -1899,7 +1899,7 @@ def web_handler(context):
         context.write({'code': 0, 'msg': '设置保存成功！'})
 
     elif action == 'setproxycachesettings':
-        proxy_caches = tornado.escape.json_decode(context.get_argument('proxy_caches', ''))
+        proxy_caches = loads(context.get_argument('proxy_caches', ''))
 
         values = []
         for cache in proxy_caches:
@@ -1976,7 +1976,7 @@ def web_handler(context):
             old_server_name = context.get_argument('server_name', '')
 
         version = context.get_argument('version', '')
-        setting = tornado.escape.json_decode(context.get_argument('setting', ''))
+        setting = loads(context.get_argument('setting', ''))
 
         server_names = None
         if 'server_names' in setting:

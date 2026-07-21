@@ -1,0 +1,194 @@
+[
+  {
+    "id": "php-fpm",
+    "name": "PHP-FPM",
+    "category": "php",
+    "description": "PHP FastCGI Process Manager（默认版本）",
+    "packages": {
+      "brew": "php",
+      "yum": "php-fpm",
+      "dnf": "php-fpm",
+      "apt": "php-fpm"
+    },
+    "systemd_unit": "php-fpm.service",
+    "launchctl_label": "homebrew.mxcl.php",
+    "pgrep_names": ["php-fpm"],
+    "config_files": [
+      {"path": "/etc/php-fpm.conf", "label": "主配置文件"},
+      {"path": "/etc/php-fpm.d/www.conf", "label": "进程池配置"},
+      {"path": "/usr/local/etc/php/php-fpm.conf", "label": "主配置文件 (Homebrew)"},
+      {"path": "/usr/local/etc/php/php-fpm.d/www.conf", "label": "进程池配置 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/log/php-fpm/error.log", "label": "错误日志"},
+      {"path": "/usr/local/var/log/php-fpm.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "data_dirs": [
+      {"path": "/etc/php-fpm.d", "label": "进程池配置目录"},
+      {"path": "/etc/php.d", "label": "PHP 模块配置目录"}
+    ],
+    "default_port": 9000
+  },
+  {
+    "id": "php56-php-fpm",
+    "name": "PHP 5.6 FPM",
+    "category": "php",
+    "description": "PHP 5.6 FastCGI Process Manager",
+    "packages": {
+      "brew": "php@5.6",
+      "yum": "rh-php56-php-fpm",
+      "dnf": "rh-php56-php-fpm",
+      "apt": "php5.6-fpm"
+    },
+    "systemd_unit": "php56-php-fpm.service",
+    "launchctl_label": "homebrew.mxcl.php@5.6",
+    "pgrep_names": ["php-fpm56"],
+    "config_files": [
+      {"path": "/etc/opt/rh/rh-php56/php-fpm.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/php/5.6/php-fpm.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/opt/rh/rh-php56/log/php-fpm/error.log", "label": "错误日志"},
+      {"path": "/usr/local/var/log/php@5.6-fpm.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "default_port": 9056
+  },
+  {
+    "id": "php74-php-fpm",
+    "name": "PHP 7.4 FPM",
+    "category": "php",
+    "description": "PHP 7.4 FastCGI Process Manager",
+    "packages": {
+      "brew": "php@7.4",
+      "yum": "rh-php74-php-fpm",
+      "dnf": "rh-php74-php-fpm",
+      "apt": "php7.4-fpm"
+    },
+    "systemd_unit": "php74-php-fpm.service",
+    "launchctl_label": "homebrew.mxcl.php@7.4",
+    "pgrep_names": ["php-fpm74"],
+    "config_files": [
+      {"path": "/etc/opt/rh/rh-php74/php-fpm.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/php/7.4/php-fpm.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/opt/rh/rh-php74/log/php-fpm/error.log", "label": "错误日志"},
+      {"path": "/usr/local/var/log/php@7.4-fpm.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "default_port": 9074
+  },
+  {
+    "id": "php80-php-fpm",
+    "name": "PHP 8.0 FPM",
+    "category": "php",
+    "description": "PHP 8.0 FastCGI Process Manager",
+    "packages": {
+      "brew": "php@8.0",
+      "yum": "rh-php80-php-fpm",
+      "dnf": "rh-php80-php-fpm",
+      "apt": "php8.0-fpm"
+    },
+    "systemd_unit": "php80-php-fpm.service",
+    "launchctl_label": "homebrew.mxcl.php@8.0",
+    "pgrep_names": ["php-fpm80"],
+    "config_files": [
+      {"path": "/etc/opt/rh/rh-php80/php-fpm.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/php/8.0/php-fpm.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/opt/rh/rh-php80/log/php-fpm/error.log", "label": "错误日志"},
+      {"path": "/usr/local/var/log/php@8.0-fpm.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "default_port": 9080
+  },
+  {
+    "id": "php81-php-fpm",
+    "name": "PHP 8.1 FPM",
+    "category": "php",
+    "description": "PHP 8.1 FastCGI Process Manager",
+    "packages": {
+      "brew": "php@8.1",
+      "yum": "rh-php81-php-fpm",
+      "dnf": "rh-php81-php-fpm",
+      "apt": "php8.1-fpm"
+    },
+    "systemd_unit": "php81-php-fpm.service",
+    "launchctl_label": "homebrew.mxcl.php@8.1",
+    "pgrep_names": ["php-fpm81"],
+    "config_files": [
+      {"path": "/etc/opt/rh/rh-php81/php-fpm.conf", "label": "主配置文件"},
+      {"path": "/usr/local/etc/php/8.1/php-fpm.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/var/opt/rh/rh-php81/log/php-fpm/error.log", "label": "错误日志"},
+      {"path": "/usr/local/var/log/php@8.1-fpm.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "default_port": 9081
+  },
+  {
+    "id": "php82-php-fpm",
+    "name": "PHP 8.2 FPM",
+    "category": "php",
+    "description": "PHP 8.2 FastCGI Process Manager",
+    "packages": {
+      "brew": "php@8.2",
+      "yum": null,
+      "dnf": null,
+      "apt": "php8.2-fpm"
+    },
+    "systemd_unit": "php82-php-fpm.service",
+    "launchctl_label": "homebrew.mxcl.php@8.2",
+    "pgrep_names": ["php-fpm82"],
+    "config_files": [
+      {"path": "/usr/local/etc/php/8.2/php-fpm.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/usr/local/var/log/php@8.2-fpm.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "default_port": 9082
+  },
+  {
+    "id": "php83-php-fpm",
+    "name": "PHP 8.3 FPM",
+    "category": "php",
+    "description": "PHP 8.3 FastCGI Process Manager",
+    "packages": {
+      "brew": "php@8.3",
+      "yum": null,
+      "dnf": null,
+      "apt": "php8.3-fpm"
+    },
+    "systemd_unit": "php83-php-fpm.service",
+    "launchctl_label": "homebrew.mxcl.php@8.3",
+    "pgrep_names": ["php-fpm83"],
+    "config_files": [
+      {"path": "/usr/local/etc/php/8.3/php-fpm.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/usr/local/var/log/php@8.3-fpm.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "default_port": 9083
+  },
+  {
+    "id": "php84-php-fpm",
+    "name": "PHP 8.4 FPM",
+    "category": "php",
+    "description": "PHP 8.4 FastCGI Process Manager",
+    "packages": {
+      "brew": "php@8.4",
+      "yum": null,
+      "dnf": null,
+      "apt": null
+    },
+    "systemd_unit": "php84-php-fpm.service",
+    "launchctl_label": "homebrew.mxcl.php@8.4",
+    "pgrep_names": ["php-fpm84"],
+    "config_files": [
+      {"path": "/usr/local/etc/php/8.4/php-fpm.conf", "label": "主配置文件 (Homebrew)"}
+    ],
+    "log_files": [
+      {"path": "/usr/local/var/log/php@8.4-fpm.log", "label": "错误日志 (Homebrew)"}
+    ],
+    "default_port": 9084
+  }
+]

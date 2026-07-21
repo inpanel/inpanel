@@ -9,6 +9,7 @@
 
 import os
 import shutil
+from json import loads
 from platform import mac_ver, platform, uname, win32_ver
 
 
@@ -217,3 +218,90 @@ __all__ = [
     'has_package_manager',
     'get_system_info',
 ]
+
+
+# ------------------------------------------------------------------
+# 异步任务函数（由 web.py 的 _dispatch_task 调用）
+# 命名规则：system_<method>，对应 jobname 中的 system_<method>
+# ------------------------------------------------------------------
+
+import tornado.escape
+import tornado.httpclient
+from pathlib import Path as _Path
+from . import shell
+from ..base import app_api
+
+
+async def system_update(tm, settings=None, config=None):
+    """升级 InPanel（异步任务）"""
+    if settings is None:
+        settings = tm.settings
+    if config is None:
+        config = tm.config
+    jobname = 'system.update'
+    if not tm._start_job(jobname):
+        return
+
+    root_path = settings['root_path']
+    data_path = settings['data_path']
+
+    if _Path(f'{root_path}/../.git').exists():
+        tm._finish_job(jobname, 0, '升级成功！')
+        return
+
+    http_client = tornado.httpclient.AsyncHTTPClient()
+    response = await http_client.fetch(app_api['latest'])
+    if response.error:
+        tm._finish_job(jobname, -1, '获取版本信息失败！')
+        return
+
+    versioninfo = loads(response.body.decode('utf-8'))
+    downloadurl = versioninfo['download']
+    initscript = f'{root_path}/scripts/init.d/{settings["os_name"]}/inpanel'
+    binscript = f'{root_path}/scripts/bin/inpanel'
+
+    steps = [
+        {'desc': '正在备份当前配置文件...',
+         'cmd': f'/bin/cp -f {data_path}/config.ini /tmp/inpanel_config.ini'},
+        {'desc': '正在下载安装包...',
+         'cmd': f'wget -q "{downloadurl}" -O {data_path}/inpanel.tar.gz'},
+        {'desc': '正在创建解压目录...',
+         'cmd': f'mkdir -p {data_path}/inpanel'},
+        {'desc': '正在解压安装包...',
+         'cmd': f'tar zxmf {data_path}/inpanel.tar.gz -C {data_path}/inpanel --strip-components 1'},
+        {'desc': '正在删除旧版本...',
+         'cmd': f'find {root_path} -mindepth 1 -maxdepth 1 -path {data_path} -prune -o -exec rm -rf {{}} \\\\;'},
+        {'desc': '正在复制新版本...',
+         'cmd': f'find {data_path}/inpanel -mindepth 1 -maxdepth 1 -exec cp -r {{}} {root_path} \\\\;'},
+        {'desc': '正在删除旧的服务脚本...',
+         'cmd': 'rm -f /etc/init.d/inpanel /usr/bin/inpanel'},
+        {'desc': '正在安装新的服务脚本...',
+         'cmd': f'ln -s {initscript} /etc/init.d/inpanel'},
+        {'desc': '正在安装新的命令脚本...',
+         'cmd': f'ln -s {binscript} /usr/bin/inpanel'},
+        {'desc': '正在更改脚本权限...',
+         'cmd': f'chmod +x /usr/bin/inpanel /etc/init.d/inpanel {root_path}/config.py {root_path}/server.py'},
+        {'desc': '正在删除安装临时文件...',
+         'cmd': f'rm -rf {data_path}/inpanel {data_path}/inpanel.tar.gz'},
+        {'desc': '正在恢复旧的配置文件...',
+         'cmd': f'/bin/cp -f /tmp/inpanel_config.ini {data_path}/config.ini'},
+        {'desc': '正在删除旧的配置文件...',
+         'cmd': 'rm -f /tmp/inpanel_config.ini'},
+    ]
+
+    result = 0
+    output = ''
+    for step in steps:
+        desc = step['desc']
+        cmd = step['cmd']
+        tm._update_job(jobname, 2, desc)
+        result, output = await shell.async_command(cmd)
+        if result != 0:
+            tm._update_job(jobname, -1, desc + '失败！')
+            break
+
+    if result == 0:
+        tm._finish_job(jobname, 0, '升级成功！请刷新页面重新登录。')
+    else:
+        tm._finish_job(jobname, -1, '升级失败！',
+                       data=output.strip().replace('\n', '<br>'))
