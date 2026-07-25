@@ -1,3 +1,89 @@
+## InPanel v1.2.7 (2026-07-25)
+
+**版本更新：**
+
+- 发布 InPanel v1.2.7
+
+**文件操作日志系统：**
+
+- 新增 `mod/logs.py` 文件操作日志模块，记录文件增删改查等操作
+- 新增 `write_file_operation_log()` 函数，统一文件操作日志写入接口，含去重机制（2秒窗口）
+- 在 `mod/file.py` 中集成日志记录：查看、修改、创建、重命名、创建链接、删除、还原、彻底删除、复制、移动、压缩、解压、修改权限、下载等操作均有日志
+- 在 `mod/web.py` 中集成日志记录：文件上传成功/失败日志
+- 新增 `/api/logs/(.+)` 路由，注册 `LogsHandler` 处理日志查询 API
+- 新增前端日志管理页面（`/logs`），替换旧版日志页面，支持文件操作日志、登录日志、错误日志、任务日志子选项卡
+- 新增 `logs.js` 控制器，实现日志分页加载与多 Tab 切换
+- 删除旧版 `partials/log.html`，新增 `partials/logs.html`
+- 删除旧版 `LogCtrl` 控制器
+
+**回收站机制重构：**
+
+- 移除 `shelve` 依赖，回收站元信息改为 INI 文件存储（`data/trash/{uuid}.ini`）
+- 回收站目录从各挂载点的 `.deleted_files/.fileinfo` 统一改为 `.inpanel_trash/`
+- 新增辅助函数：`_get_trash_meta_dir()`、`_get_mount_for_path()`、`_ensure_trash_dir()`、`_get_file_size()`、`_write_meta()`、`_read_meta()`、`_remove_meta()`
+- 回收站操作优先同盘 `rename`（速度快），若 mount 下无写权限则 fallback 到 `data/trash/files/` 跨盘复制
+- `titem()`、`trestore()`、`tdelete()` 函数签名简化，不再需要 `mount` 参数
+- 回收站页面新增"大小"列显示
+
+**软件源管理增强：**
+
+- 新增 APT/DNF/YUM 镜像站切换功能（`enable` 操作），支持在软件源详情页切换镜像站 URL
+- 前端新增镜像站列表加载与切换 UI（`load_yum_mirrors`、`load_dnf_mirrors`、`switch_yum_mirror` 等）
+- 术语统一："镜像源" → "镜像站"
+- APT/DNF/YUM/Brew/Docker/Pip 模块 docstring 和注释统一更新
+
+**Redis 数据库管理：**
+
+- 新增 Redis 数据库管理功能，支持连接/断开 Redis、查看服务信息
+- 支持查看 Redis 数据库列表、Key 值浏览与详情查看
+- 支持 Redis 清空数据库（flushdb）和清空全部数据（flushall）操作
+- 演示模式下禁止 Redis 危险操作（flushdb/flushall/del_key）
+- 前端 `database.js` 新增完整的 Redis 管理逻辑
+- 前端 `database/index.html` 新增 Redis Tab 页面
+
+**CodeMirror 编辑器升级：**
+
+- CodeMirror 从压缩版升级至 5.x 分模块版本（`codemirror.min.js` + `codemirror.min.css`）
+- 新增语法高亮模式按需加载：支持 CSS、Diff、JavaScript、JSON、Nginx、PHP、Python、Shell、SQL、TOML、XML、YAML 等
+- 新增编辑器插件：括号匹配（matchbrackets）、搜索高亮（match-highlighter）、当前行高亮（active-line）
+- 前端 `file.js` 编辑器重构：根据文件扩展名自动选择 CodeMirror mode，按需动态加载 mode 文件
+- 优化编辑器样式（`global.css`），调整字体栈和最小高度
+
+**路径与配置优化：**
+
+- `base.py` 新增 `files_log` 和 `filespath_log` 路径变量
+- 开发模式检测优化：通过符号链接判断是否为开发模式，自动调整日志/数据路径
+- `config.py` 密码 HMAC 计算改为 f-string 格式
+- 移除 `history_path` 变量，由文件操作日志系统接管
+
+**前端优化：**
+
+- `core.js` 路由表重构：清理重复路由，新增 `/logs`、`/logs/:tab` 路由
+- 移除登录超时闪烁标题逻辑（blink title），简化超时处理
+- 工具列表页面布局调整（全宽显示）
+- `index.html` 和 `templates/index.html` 更新 CodeMirror 资源引用
+
+**代码质量：**
+
+- 全部 Python 文件 `%` 字符串格式化改为 f-string（约 390 处）
+- `utils.py` 中 `%d` 整数格式化统一改为 `str()` 或 f-string
+
+**Bug 修复：**
+
+- 修复 `/api/logs/files` 404 错误：`LogsHandler` 未注册到路由表
+- 修复文件操作日志重复记录问题：新增 2 秒窗口去重机制
+- 修复文件上传路径异常时未记录失败日志的问题
+- 修复文本文件修改后保存误判"文件未修改"的问题：改用 `originalContent` 精确字符串比较替代 `hasChange` 标记
+- 修复文件存在性检查接口（`exist`）永远返回路径导致复制/剪切误弹"已存在"确认的问题
+- 修复压缩/解压时 zip 安装逻辑硬编码 `yum` 的问题：改用 `get_package_manager()` 自动适配系统包管理器
+- 优化 zip 安装失败提示：权限不足时给出明确指引（需 root 或手动安装），而非暴露原始错误堆栈
+
+**其他：**
+
+- 版本号更新至 1.2.7
+- `pyproject.toml` 版本号更新
+
+
 ## InPanel v1.2.6 (2026-07-22)
 
 **版本更新：**

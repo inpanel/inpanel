@@ -34,13 +34,12 @@ def handle_login(config, username, password):
     if loginlock == 'on':
         loginlockexpire = config.getint('runtime', 'loginlockexpire')
         if time.time() < loginlockexpire:
+            t = datetime.fromtimestamp(loginlockexpire).strftime("%Y-%m-%d %H:%M:%S")
             return {
                 'code': -1,
-                'msg': '登录已被锁定，请在 %s 后重试登录。<br>'\
-                    '如需立即解除锁定，请在服务器上执行以下命令：<br>'\
-                    'inpanel config loginlock off' %
-                    datetime.fromtimestamp(loginlockexpire)
-                        .strftime('%Y-%m-%d %H:%M:%S')
+                'msg': f'登录已被锁定，请在 {t} 后重试登录。<br>'
+                    '如需立即解除锁定，请在服务器上执行以下命令：<br>'
+                    'inpanel config set runtime loginlock off'
             }
         else:
             config.set('runtime', 'loginlock', 'off')
@@ -69,9 +68,9 @@ def handle_login(config, username, password):
             
             passwordcheck = config.getboolean('auth', 'passwordcheck')
             if passwordcheck:
-                return {'code': 1, 'msg': '%s，您已登录成功！' % username}
+                return {'code': 1, 'msg': f'{username}，您已登录成功！'}
             else:
-                return {'code': 0, 'msg': '%s，您已登录成功！' % username}
+                return {'code': 0, 'msg': f'{username}，您已登录成功！'}
         else:
             if config.get('runtime', 'mode') == 'demo':
                 return {'code': -1, 'msg': '用户名或密码错误！'}
@@ -86,7 +85,7 @@ def handle_login(config, username, password):
                     '已连续错误 5 次，登录已被禁止！'}
             else:
                 return {'code': -1, 'msg': '用户名或密码错误！<br>'\
-                    '连续错误 5 次后将被禁止登录，还有 %d 次机会。' % (5 - loginfails)}
+                    f'连续错误 5 次后将被禁止登录，还有 {5 - loginfails} 次机会。'}
 
 
 def handle_logout():

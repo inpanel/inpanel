@@ -334,7 +334,8 @@ def dispatch_task(jobname, task_manager, post_body=None, arguments=None):
     if hasattr(task_manager, 'config') and task_manager.config.get('runtime', 'mode') == 'demo':
         demo_blocked = ['update', 'datetime', 'swapon', 'swapoff', 'mount', 'umount', 'format',
                         'file.move', 'file.copy', 'file.remove', 'file.compress', 'file.decompress',
-                        'file.chown', 'file.chmod', 'file.wget', 'mysql.export', 'remote.install']
+                        'file.chown', 'file.chmod', 'file.wget', 'mysql.export', 'remote.install',
+                        'redis.flushdb', 'redis.flushall', 'redis.del_key']
         for blocked in demo_blocked:
             if mod_func.startswith(blocked) or candidate_func.startswith(blocked):
                 return False, '演示模式下不支持此操作'

@@ -128,7 +128,7 @@ def handle_post(context, section):
         if password != '':
             key = md5(utils.randstr().encode('utf-8')).hexdigest()
             pwd = hmac_new(key.encode('utf-8'), password.encode('utf-8'), md5).hexdigest()
-            context.config.set('auth', 'password', '%s:%s' % (pwd, key))
+            context.config.set('auth', 'password', f'{pwd}:{key}')
 
         context.write({'code': 0, 'msg': '账号设置更新成功！'})
 
@@ -140,12 +140,12 @@ def handle_post(context, section):
         ip = context.get_argument('ip', '*')
         if ip != '*' and ip != '':
             if not utils.is_valid_ip(ip):
-                context.write({'code': -1, 'msg': '%s 不是有效的IP地址！' % ip})
+                context.write({'code': -1, 'msg': f'{ip} 不是有效的IP地址！'})
                 return
             netifaces = server.ServerInfo.netifaces()
             ips = [netiface['ip'] for netiface in netifaces]
             if not ip in ips:
-                msg = '<p>%s 不是该服务器的IP地址！</p><p>可用的IP地址有：<br>%s</p>' % (ip, '<br>'.join(ips))
+                msg = f"<p>{ip} 不是该服务器的IP地址！</p><p>可用的IP地址有：<br>{'<br>'.join(ips)}</p>"
                 context.write({'code': -1, 'msg': msg})
                 return
 

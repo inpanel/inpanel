@@ -57,7 +57,7 @@ class ACME():
         proc = Popen(cmd_list, stdin=stdin, stdout=PIPE, stderr=PIPE)
         out, err = proc.communicate(cmd_input)
         if proc.returncode != 0:
-            raise IOError("{0}\n{1}".format(err_msg, err))
+            raise IOError(f"{err_msg}\n{err}")
         return out
 
     def _b64(self, b):
@@ -85,8 +85,7 @@ class ACME():
         if depth < 100 and code == 400 and res_data['type'] == 'urn:ietf:params:acme:error:badNonce':
             raise IndexError(res_data)  # 允许对无效 nonce 重试 100 次
         if code not in [200, 201, 204]:
-            raise ValueError("{0}:\nUrl: {1}\nData: {2}\nResponse Code: {3}\nResponse: {4}".format(
-                err_msg, url, data, code, res_data))
+            raise ValueError(f"{err_msg}:\nUrl: {url}\nData: {data}\nResponse Code: {code}\nResponse: {res_data}")
         return res_data, code, headers
 
     def _s_request(self, url, payload, err_msg, depth=0):
@@ -96,7 +95,7 @@ class ACME():
         protected = {'url': url, 'alg': self.alg, "nonce": new_nonce}
         protected.update({"jwk": self.jwk} if self.acct_headers is None else {"kid": self.acct_headers['Location']})
         protected64 = self._b64(dumps(protected).encode('utf8'))
-        protected_input = "{0}.{1}".format(protected64, payload64).encode('utf8')
+        protected_input = f"{protected64}.{payload64}".encode('utf8')
         cmd = ['openssl', 'dgst', '-sha256', '-sign', self.account_key]
         out = self._cmd(cmd, stdin=PIPE, cmd_input=protected_input, err_msg='OpenSSL Error')
         data = dumps({
@@ -146,8 +145,8 @@ class ACME():
         out = self._cmd(cmd, err_msg='openssl error')
         pub_pattern = r"modulus:\n\s+00:([a-f0-9\:\s]+?)\npublicExponent: ([0-9]+)"
         pub_hex, pub_exp = re.search(pub_pattern, out.decode('utf8'), re.MULTILINE | re.DOTALL).groups()
-        pub_exp = "{0:x}".format(int(pub_exp))
-        pub_exp = "0{0}".format(pub_exp) if len(pub_exp) % 2 else pub_exp
+        pub_exp = f"{int(pub_exp):x}"
+        pub_exp = f"0{pub_exp}" if len(pub_exp) % 2 else pub_exp
         self.jwk = {
             'e': self._b64(unhexlify(pub_exp.encode('utf-8'))),
             'kty': 'RSA',
@@ -182,7 +181,7 @@ class ACME():
         # 查找域名
         print('Domains CSR parsing...')
         cmd = ['openssl', 'req', '-in', self.csr, '-noout', '-text']
-        out = self._cmd(cmd, err_msg="Error loading {0}".format(self.csr))
+        out = self._cmd(cmd, err_msg=f"Error loading {self.csr}")
         domains = set([])
         common_name = re.search(r"Subject:.*? CN\s?=\s?([^\s,;/]+)", out.decode('utf8'))
         if common_name is not None:
@@ -193,7 +192,7 @@ class ACME():
             for san in subject_alt_names.group(1).split(", "):
                 if san.startswith("DNS:"):
                     domains.add(san[4:])
-        print("Found domains: {0}".format(", ".join(domains)))
+        print(f"Found domains: {', '.join(domains)}")
         # print('domains', domains)
         if order == True:
             self.create_new_order(domains)
@@ -213,32 +212,31 @@ class ACME():
         for auth_url in order['authorizations']:
             authorization, _, _ = self._request(auth_url, err_msg='Error getting challenges')
             domain = authorization['identifier']['value']
-            print("Domain {0} Verifying...".format(domain))
+            print(f"Domain {domain} Verifying...")
 
             # 找到 http-01 挑战并写入挑战文件
             challenge = [c for c in authorization['challenges'] if c['type'] == "http-01"][0]
             token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
-            key_auth = "{0}.{1}".format(token, self.thumbprint)
+            key_auth = f"{token}.{self.thumbprint}"
             wellknown_path = str(Path(self.acme_check_dir) / token)
             with open(wellknown_path, 'w', encoding='utf-8') as f:
                 f.write(key_auth)
 
             # 检查 wellknown 文件是否在指定位置
             try:
-                wellknown_url = "http://{0}/.well-known/acme-challenge/{1}".format(domain, token)
+                wellknown_url = f"http://{domain}/.well-known/acme-challenge/{token}"
                 assert(disable_check or self._request(wellknown_url)[0] == key_auth)
             except (AssertionError, ValueError) as e:
                 Path(wellknown_path).unlink()
-                raise ValueError("Wrote file to {0}, but couldn't download {1}: {2}".format(
-                    wellknown_path, wellknown_url, e))
+                raise ValueError(f"Wrote file to {wellknown_path}, but couldn't download {wellknown_url}: {e}")
 
             # 告知挑战已完成
             self._s_request(
-                challenge['url'], {}, "Error submitting challenges: {0}".format(domain))
-            authorization = self._poll_until_not(auth_url, ["pending"], "Error checking challenge status for {0}".format(domain))
+                challenge['url'], {}, f"Error submitting challenges: {domain}")
+            authorization = self._poll_until_not(auth_url, ["pending"], f"Error checking challenge status for {domain}")
             if authorization['status'] != "valid":
-                raise ValueError("Challenge did not pass for {0}: {1}".format(domain, authorization))
-            print("Domain {0} verified!".format(domain))
+                raise ValueError(f"Challenge did not pass for {domain}: {authorization}")
+            print(f"Domain {domain} verified!")
 
         # 使用 CSR 完成订单
         print('Certificate signing...')
@@ -247,7 +245,7 @@ class ACME():
         # 轮询订单以监控其完成状态
         order = self._poll_until_not(order_headers['Location'], ['pending', 'processing'], 'Error checking order status')
         if order['status'] != 'valid':
-            raise ValueError("Order failed: {0}".format(order))
+            raise ValueError(f"Order failed: {order}")
         self.certificate = order['certificate']
 
     def get_certificate(self, certificate=None):

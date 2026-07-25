@@ -108,7 +108,7 @@ def get_pids(name):
     res = []
     # /bin/ps auxww | grep php | grep -v grep | awk '{print $2}'
     if kernel_name in ('Linux', 'Darwin'):
-        cmd = "/bin/ps auxww | grep %s | grep -v grep | awk '{print $2}'" % name
+        cmd = f"/bin/ps auxww | grep {name} | grep -v grep | awk '{{print $2}}'"
         status, result = getstatusoutput(cmd)
         if status == 0 and result:
             res = ' '.join(result.split()).split(' ')  # list
@@ -120,7 +120,7 @@ def get_cmdline(pid):
     if not pid:
         return None
     if kernel_name == 'Linux':
-        p = '/proc/%s/cmdline' % pid
+        p = f'/proc/{pid}/cmdline'
         if not Path(p).exists():
             return None
         with open(p, 'r', encoding='utf-8') as f:
@@ -182,7 +182,7 @@ def get_io(pid):
         return None
     res = {}
     if kernel_name == 'Linux':
-        p = '/proc/%s/io' % pid
+        p = f'/proc/{pid}/io'
         if not Path(p).exists():
             return None
         with open(p, 'r', encoding='utf-8') as f:

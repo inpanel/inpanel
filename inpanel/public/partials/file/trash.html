@@ -51,6 +51,7 @@
                 <thead>
                     <tr>
                         <th>名称</th>
+                        <th>大小</th>
                         <th>原路径</th>
                         <th>删除时间</th>
                         <th>操作</th>
@@ -64,11 +65,12 @@
                             <i class="glyphicon glyphicon-link" title="链接" ng-show="item.islnk&&(item.link_isdir||item.link_isreg)"></i>
                             <i class="glyphicon glyphicon-ban-circle" title="未知" ng-show="!item.isdir&&!item.isreg&&(!item.islnk||(item.islnk&&!item.link_isdir&&!item.link_isreg))"></i> {{item.name}}
                         </td>
+                        <td>{{formatSize(item.size) || '-'}}</td>
                         <td>{{item.path}}</td>
                         <td>{{item.time}}</td>
                         <td>
-                            <button class="btn btn-primary btn-xs" ng-click="restore(item.mount, item.uuid)">还原文件</button>
-                            <button class="btn btn-default btn-xs" ng-click="tdeleteconfirm(item.name, item.mount, item.uuid)">彻底删除</button>
+                            <button class="btn btn-primary btn-xs" ng-click="restore(item.uuid)">还原文件</button>
+                            <button class="btn btn-default btn-xs" ng-click="tdeleteconfirm(item.name, item.uuid)">彻底删除</button>
                         </td>
                     </tr>
                 </tbody>

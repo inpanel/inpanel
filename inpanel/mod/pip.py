@@ -21,7 +21,7 @@ from ..base import config_path
 def _pip_cmd():
     """返回可用的 pip 命令"""
     for cmd in ('pip3', 'pip'):
-        status, _ = getstatusoutput('which %s' % cmd)
+        status, _ = getstatusoutput(f'which {cmd}')
         if status == 0:
             return cmd
     return 'pip'
@@ -29,12 +29,12 @@ def _pip_cmd():
 
 def _run(args):
     """执行 pip 命令"""
-    return getstatusoutput('%s %s' % (_pip_cmd(), args))
+    return getstatusoutput(f'{_pip_cmd()} {args}')
 
 
 def is_installed():
     """检查 pip 是否已安装"""
-    status, _ = getstatusoutput('which %s' % _pip_cmd())
+    status, _ = getstatusoutput(f'which {_pip_cmd()}')
     return status == 0
 
 
@@ -264,10 +264,10 @@ def install_package(name):
     """通过 pip 安装软件"""
     if not name:
         return {'code': -1, 'msg': '软件名称不能为空！'}
-    status, output = _run('install %s' % name)
+    status, output = _run(f'install {name}')
     if status == 0:
-        return {'code': 0, 'msg': '软件 %s 安装成功！' % name, 'data': output}
-    return {'code': -1, 'msg': '软件 %s 安装失败：%s' % (name, output)}
+        return {'code': 0, 'msg': f'软件 {name} 安装成功！', 'data': output}
+    return {'code': -1, 'msg': f'软件 {name} 安装失败：{output}'}
 
 
 def refresh_cache():
@@ -321,7 +321,7 @@ def web_handler(context, action):
         sources.append({'name': source_name, 'url': url, 'builtin': False})
         _save_sources_config(sources)
 
-        context.write({'code': 0, 'msg': 'pip 镜像源已添加：%s' % url})
+        context.write({'code': 0, 'msg': f'pip 镜像源已添加：{url}'})
 
     elif action == 'enable':
         url = context.get_argument('url', '').strip()
@@ -342,16 +342,16 @@ def web_handler(context, action):
             return
 
         # 用 pip config 设置当前激活源
-        status, output = _run('config set global.index-url %s' % url)
+        status, output = _run(f'config set global.index-url {url}')
         if status != 0:
-            context.write({'code': -1, 'msg': '切换 pip 镜像源失败：%s' % output})
+            context.write({'code': -1, 'msg': f'切换 pip 镜像站失败：{output}'})
             return
 
-        context.write({'code': 0, 'msg': 'pip 镜像源已切换至：%s' % (source_name or url)})
+        context.write({'code': 0, 'msg': f'pip 镜像站已切换至：{source_name or url}'})
 
     elif action == 'del':
         if not name:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
             return
         sources = _load_sources_config()
         found = None
@@ -360,13 +360,13 @@ def web_handler(context, action):
                 found = s
                 break
         if found is None:
-            context.write({'code': -1, 'msg': '镜像源不存在！'})
+            context.write({'code': -1, 'msg': '镜像站不存在！'})
             return
         if found.get('builtin'):
             context.write({'code': -1, 'msg': '内置镜像源不可删除！'})
             return
         sources = [s for s in sources if s['name'] != name]
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': '镜像源「%s」已删除' % name})
+        context.write({'code': 0, 'msg': f'镜像站「{name}」已删除'})
     else:
         context.write({'code': -1, 'msg': '未定义的操作！'})

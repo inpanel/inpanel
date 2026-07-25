@@ -657,7 +657,7 @@ def _context_getserver(ip, port, server_name, config=None, disabled=None, getlin
         else:
             server_names = ' '.join([v for v in s['server_name']]).split()
             listens = [v.split()[0] for v in s['listen']]
-        find_listen = ip and ['%s:%s' % (ip, port)] or [port, '*:%s' % port, '0.0.0.0:%s' % port]
+        find_listen = ip and [f'{ip}:{port}'] or [port, f'*:{port}', f'0.0.0.0:{port}']
         if server_name in server_names and any([i in listens for i in find_listen]):
             return s
     return False
@@ -672,10 +672,10 @@ def _context_getupstreams(server_name, config=None, disabled=None, getlineinfo=T
     if not upstreams: return False
     if getlineinfo:
         upstreams = [upstream for upstream in upstreams 
-            if upstream['_param']['value'].startswith('backend_of_%s_' % server_name)]
+            if upstream['_param']['value'].startswith(f'backend_of_{server_name}_')]
     else:
         upstreams = [upstream for upstream in upstreams 
-            if upstream['_param'].startswith('backend_of_%s_' % server_name)]
+            if upstream['_param'].startswith(f'backend_of_{server_name}_')]
 
     if disabled == None or not getlineinfo:
         return upstreams
@@ -878,7 +878,7 @@ def _context_server_clear_default_server(ip, port, config=None):
         for listen in listens:
             if 'default_server' in listen['value']:
                 _replace([(config['_files'][listen['file']], listen['line'][0], listen['line'][1])],
-                        ['listen %s;' % listen['value'].replace('default_server', '').strip()])
+                        [f"listen {listen['value'].replace('default_server', '').strip()};"])
                 found = True
                 break
         if found: break
@@ -1105,7 +1105,7 @@ def http_set(directive, values, config=None):
         values = []
     elif isinstance(values, str):
         values = [values]
-    values = ['%s %s;' % (directive, v) for v in values]
+    values = [f'{directive} {v};' for v in values]
 
     if directive in hcontext:
         # update or delete value
@@ -1152,7 +1152,8 @@ def getserver(ip, port, server_name, config=None):
     if not config or config['_isdirty']:
         config = loadconfig(NGINXCONF, False)
     scontext = _context_getserver(ip, port, server_name, config=config, getlineinfo=False)
-    if not scontext: return False
+    if not scontext:
+        return False
 
     server = {}
     server['_inpanel'] = scontext['_inpanel']
@@ -1184,7 +1185,7 @@ def getserver(ip, port, server_name, config=None):
     if 'ssl_certificate' in scontext: server['ssl_crt'] = scontext['ssl_certificate'][-1]
     if 'ssl_certificate_key' in scontext: server['ssl_key'] = scontext['ssl_certificate_key'][-1]
     if 'rewrite' in scontext:
-        server['rewrite_rules'] = ['rewrite %s' % rule for rule in scontext['rewrite']]
+        server['rewrite_rules'] = [f'rewrite {rule}' for rule in scontext['rewrite']]
 
     server['locations'] = []
     if 'location' in scontext:
@@ -1229,7 +1230,7 @@ def getserver(ip, port, server_name, config=None):
                 else:
                     if not 'rewrite_rules' in location:
                         location['rewrite_rules'] = []
-                    location['rewrite_rules'].append('rewrite %s' % rule)
+                    location['rewrite_rules'].append(f'rewrite {rule}')
 
             # detect fastcgi
             if 'fastcgi_pass' in loc:
@@ -1257,8 +1258,8 @@ def getserver(ip, port, server_name, config=None):
                             elif hinfo[0] == 'Host':
                                 location['proxy_host'] = hinfo[1]
                     # detect upstream
-                    upstream_name = 'backend_of_%s_%s' % (server_name, location['urlpath'].replace('/', '_'))
-                    if backend == '%s://%s' % (location['proxy_protocol'], upstream_name):
+                    upstream_name = f"backend_of_{server_name}_{location['urlpath'].replace('/', '_')}"
+                    if backend == f"{location['proxy_protocol']}://{upstream_name}":
                         upstreams = http_get('upstream', config)
                         for upstream in upstreams:
                             if upstream['_param'] == upstream_name:
@@ -1408,12 +1409,12 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                     return False
 
     # start generate the config string
-    servercfg = ['server { # %s' % GENBY]
+    servercfg = [f'server {{ # {GENBY}']
 
-    if limit_rate: servercfg.append('    limit_rate %sk;' % limit_rate)
+    if limit_rate: servercfg.append(f'    limit_rate {limit_rate}k;')
     if limit_conn:
         _context_http_init_limit_conn(version=version)
-        servercfg.append('    limit_conn addr %s;' % limit_conn)
+        servercfg.append(f'    limit_conn addr {limit_conn};')
 
     for listen in listens:
         flag_ds = 'default_server' in listen and listen['default_server'] and ' default_server' or ''
@@ -1423,21 +1424,21 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             ip = '[' + ip + ']'
         port = listen['port']
         if ip:
-            servercfg.append('    listen %s:%s%s%s;' % (ip, port, flag_ds, flag_ssl))
+            servercfg.append(f'    listen {ip}:{port}{flag_ds}{flag_ssl};')
         else:
-            servercfg.append('    listen %s%s%s;' % (port, flag_ds, flag_ssl))
+            servercfg.append(f'    listen {port}{flag_ds}{flag_ssl};')
         # if set to default server, we should clear the default_server flag
         if flag_ds: _context_server_clear_default_server(ip, port)
 
-    servercfg.append('    server_name %s;' % (' '.join(server_names)))
+    servercfg.append(f"    server_name {' '.join(server_names)};")
 
-    if charset: servercfg.append('    charset %s;' % charset)
+    if charset: servercfg.append(f'    charset {charset};')
     servercfg.append('')
 
     if ssl_crt and ssl_key:
         if not Path(ssl_crt).is_file() or not Path(ssl_key).is_file(): return False
-        servercfg.append('    ssl_certificate %s;' % ssl_crt)
-        servercfg.append('    ssl_certificate_key %s;' % ssl_key)
+        servercfg.append(f'    ssl_certificate {ssl_crt};')
+        servercfg.append(f'    ssl_certificate_key {ssl_key};')
         servercfg.append('    ssl_session_timeout 5m;')
         servercfg.append('    ssl_protocols SSLv2 SSLv3 TLSv1;')
         servercfg.append('    ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;')
@@ -1445,7 +1446,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
         servercfg.append('')
 
     if index:
-        servercfg.append('    index %s;' % index)
+        servercfg.append(f'    index {index};')
         servercfg.append('')
 
     upstreams = {}
@@ -1456,18 +1457,18 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
             if urlpath in urlpaths: return False
             urlpaths.append(urlpath)
 
-            servercfg.append('    location %s {' % urlpath)
+            servercfg.append(f'    location {urlpath} {{')
             if 'root' in location:
                 if urlpath.startswith('~'):  # deal with old config
-                    servercfg.append('        root    %s;' % location['root'])
+                    servercfg.append(f"        root    {location['root']};")
                 else:
                     if urlpath == '/':
-                        servercfg.append('        root    %s;' % location['root'])
+                        servercfg.append(f"        root    {location['root']};")
                     else:
-                        servercfg.append('        alias   %s;' % location['root'])
+                        servercfg.append(f"        alias   {location['root']};")
 
             if 'autoindex' in location:
-                servercfg.append('        autoindex   %s;' % (location['autoindex'] and 'on' or 'off'))
+                servercfg.append(f"        autoindex   {'on' if location['autoindex'] else 'off'};")
 
             if 'fastcgi_pass' in location:
                 if urlpath.startswith('~'):  # deal with old config
@@ -1476,14 +1477,14 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                     servercfg.append('        fastcgi_param PATH_INFO $fastcgi_path_info;')
                     servercfg.append('        fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;')
                     servercfg.append('        include        fastcgi_params;')
-                    servercfg.append('        fastcgi_pass   %s;' % location['fastcgi_pass'])
+                    servercfg.append(f"        fastcgi_pass   {location['fastcgi_pass']};")
                 else:
                     if urlpath == '/':
                         servercfg.append(r'        location ~ ^/.+\.php {')
                         servercfg.append('            fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;')
                     else:
-                        servercfg.append(r'        location ~ ^%s(/.+\.php) {' % urlpath)
-                        servercfg.append('            root  %s;' % location['root'])
+                        servercfg.append(fr'        location ~ ^{urlpath}(/.+\.php) {{')
+                        servercfg.append(f"            root  {location['root']};")
                         servercfg.append('            set $fastcgi_script_alias $1;')
                         servercfg.append('            fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_alias;')
 
@@ -1492,7 +1493,7 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                     servercfg.append('            fastcgi_param PATH_INFO $fastcgi_path_info;')
                     servercfg.append('            fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;')
                     servercfg.append('            include        fastcgi_params;')
-                    servercfg.append('            fastcgi_pass   %s;' % location['fastcgi_pass'])
+                    servercfg.append(f"            fastcgi_pass   {location['fastcgi_pass']};")
                     servercfg.append('        }')
 
             if 'rewrite_rules' in location:
@@ -1501,11 +1502,11 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                     servercfg.append('        if (!-e $request_filename)')
                     servercfg.append('        {')
                     for rule in rules:
-                        servercfg.append('            %s;' % rule)
+                        servercfg.append(f'            {rule};')
                     servercfg.append('        }')
                 else:
                     for rule in rules:
-                        servercfg.append('        %s;' % rule)
+                        servercfg.append(f'        {rule};')
 
             if 'redirect_url' in location:
                 redirect_url = location['redirect_url']
@@ -1513,28 +1514,28 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                     redirect_type = 'redirect_type' in location and location['redirect_type'] or '302'
                     redirect_option = 'redirect_option' in location and location['redirect_option'] or 'ignore'
                     if urlpath == '/' or redirect_option == 'ignore':
-                        servercfg.append('        rewrite ^ %s%s %s;' % (redirect_url,
-                                redirect_option=='keep' and '$request_uri?' or '',
-                                redirect_type=='301' and 'permanent' or 'redirect'))
+                        servercfg.append(f'        rewrite ^ {redirect_url}'
+                                f'{"$request_uri?" if redirect_option=="keep" else ""}'
+                                f' {"permanent" if redirect_type=="301" else "redirect"};')
                     else:
-                        servercfg.append('        if ($request_uri ~ ^%s(/.+)$) {' % urlpath)
+                        servercfg.append(f'        if ($request_uri ~ ^{urlpath}(/.+)$) {{')
                         servercfg.append('            set $request_uri_alias $1;')
-                        servercfg.append('            rewrite ^ %s$request_uri_alias? %s;' % (redirect_url,
-                                redirect_type=='301' and 'permanent' or 'redirect'))
+                        servercfg.append(f'            rewrite ^ {redirect_url}$request_uri_alias? '
+                                f'{"permanent" if redirect_type=="301" else "redirect"};')
                         servercfg.append('        }')
 
             if 'proxy_backends' in location and location['proxy_backends']:
                 if urlpath != '/':
-                    servercfg.append('        rewrite %s(.*) / break;' % urlpath)
+                    servercfg.append(f'        rewrite {urlpath}(.*) / break;')
                 if 'proxy_charset' in location and location['proxy_charset']:
-                    servercfg.append('        charset %s;' % location['proxy_charset'])
+                    servercfg.append(f"        charset {location['proxy_charset']};")
                 if 'proxy_host' in location and location['proxy_host']:
-                    servercfg.append('        proxy_set_header Host %s;' % location['proxy_host'])
+                    servercfg.append(f"        proxy_set_header Host {location['proxy_host']};")
                 if 'proxy_realip' in location and location['proxy_realip']:
                     servercfg.append('        proxy_set_header X-Real-IP  $remote_addr;')
                 proxy_protocol = 'proxy_protocol' in location and location['proxy_protocol'] or 'http'
-                upstream_name = 'backend_of_%s_%s' % (server_names[0], urlpath.replace('/', '_'))
-                servercfg.append('        proxy_pass %s://%s;' % (proxy_protocol, upstream_name))
+                upstream_name = f"backend_of_{server_names[0]}_{urlpath.replace('/', '_')}"
+                servercfg.append(f'        proxy_pass {proxy_protocol}://{upstream_name};')
                 proxy_balance = 'proxy_balance' in location and location['proxy_balance'] or 'ip_hash'
                 upstreams[upstream_name] = {
                     'balance': proxy_balance,
@@ -1543,31 +1544,31 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
                 }
 
             if 'proxy_cache' in location and location['proxy_cache']:
-                servercfg.append('        proxy_cache %s;' % location['proxy_cache'])
+                servercfg.append(f"        proxy_cache {location['proxy_cache']};")
                 if 'proxy_cache_min_uses' in location:
-                    servercfg.append('        proxy_cache_min_uses %s;' % location['proxy_cache_min_uses'])
+                    servercfg.append(f"        proxy_cache_min_uses {location['proxy_cache_min_uses']};")
                 if 'proxy_cache_methods' in location:
-                    servercfg.append('        proxy_cache_methods %s;' % location['proxy_cache_methods'])
+                    servercfg.append(f"        proxy_cache_methods {location['proxy_cache_methods']};")
                 if 'proxy_cache_key' in location:
-                    servercfg.append('        proxy_cache_key %s;' % location['proxy_cache_key'])
+                    servercfg.append(f"        proxy_cache_key {location['proxy_cache_key']};")
                 if 'proxy_cache_valid' in location:
                     for v in location['proxy_cache_valid']:
-                        servercfg.append('        proxy_cache_valid %s %s;' % (v['code'], v['time']))
+                        servercfg.append(f"        proxy_cache_valid {v['code']} {v['time']};")
                 if 'proxy_cache_use_stale' in location:
-                    servercfg.append('        proxy_cache_use_stale %s;' % (' '.join(location['proxy_cache_use_stale'])))
+                    servercfg.append(f"        proxy_cache_use_stale {' '.join(location['proxy_cache_use_stale'])};")
                 if 'proxy_cache_lock' in location and location['proxy_cache_lock']:
                     servercfg.append('        proxy_cache_lock on;')
                     if 'proxy_cache_lock_timeout' in location:
-                        servercfg.append('        proxy_cache_lock_timeout %ss;' % location['proxy_cache_lock_timeout'])
+                        servercfg.append(f"        proxy_cache_lock_timeout {location['proxy_cache_lock_timeout']}s;")
 
-            if 'error_code' in location: servercfg.append('        return %s;' % location['error_code'])
+            if 'error_code' in location: servercfg.append(f"        return {location['error_code']};")
 
             servercfg.append('    }')
             servercfg.append('')
 
     if rewrite_rules:
         for rewrite_rule in rewrite_rules:
-            if rewrite_rule: servercfg.append('    %s;' % rewrite_rule.strip())
+            if rewrite_rule: servercfg.append(f'    {rewrite_rule.strip()};')
 
     # end of server context
     servercfg.append('}')
@@ -1576,29 +1577,28 @@ def addserver(server_names, listens, charset=None, index=None, locations=None,
         balance = upstream['balance']
         backends = upstream['backends']
 
-        servercfg.append('upstream %s { # %s' % (upstream_name, GENBY))
+        servercfg.append(f'upstream {upstream_name} {{ # {GENBY}')
 
         if len(backends) > 1: # have balance options
             if balance == 'ip_hash': servercfg.append('    ip_hash;')
             if balance == 'least_conn': servercfg.append('    least_conn;')
-            if upstream['keepalive']: servercfg.append('    keepalive %s;' % upstream['keepalive'])
+            if upstream['keepalive']: servercfg.append(f"    keepalive {upstream['keepalive']};")
             for backend in backends:
                 weight = fail_timeout = max_fails = ''
                 if balance == 'weight' and 'weight' in backend and backend['weight']:
-                    weight = ' weight=%s' % backend['weight']
+                    weight = f" weight={backend['weight']}"
                 if 'fail_timeout' in backend and backend['fail_timeout']:
-                    fail_timeout = ' fail_timeout=%ss' % backend['fail_timeout']
+                    fail_timeout = f" fail_timeout={backend['fail_timeout']}s"
                 if 'max_fails' in backend and backend['max_fails']:
-                    max_fails = ' max_fails=%s' % backend['max_fails']
-                servercfg.append('    server %s%s%s%s;' % (backend['server'],
-                            weight, fail_timeout, max_fails))
+                    max_fails = f" max_fails={backend['max_fails']}"
+                servercfg.append(f"    server {backend['server']}{weight}{fail_timeout}{max_fails};")
         else:
-            servercfg.append('    server %s;' % backends[0]['server'])
+            servercfg.append(f"    server {backends[0]['server']};")
 
         servercfg.append('}')
 
     #print '\n'.join(servercfg)
-    configfile = str(Path(SERVERCONF) / ('%s.conf' % server_names[0]))
+    configfile = str(Path(SERVERCONF) / (f'{server_names[0]}.conf'))
     configfile_exists = Path(configfile).exists()
 
     # check if need to add a new line at the end of the file to
@@ -1760,9 +1760,9 @@ def web_handler(context):
             'deleteserver': '删除',
         }
         if handler(ip, port, name):
-            context.write({'code': 0, 'msg': '站点 %s:%s %s成功！' % (name, port, opstr[action])})
+            context.write({'code': 0, 'msg': f'站点 {name}:{port} {opstr[action]}成功！'})
         else:
-            context.write({'code': -1, 'msg': '站点 %s:%s %s失败！' % (name, port, opstr[action])})
+            context.write({'code': -1, 'msg': f'站点 {name}:{port} {opstr[action]}失败！'})
 
     elif action == 'gethttpsettings':
         items = context.get_argument('items', '')
@@ -1855,24 +1855,24 @@ def web_handler(context):
         setting['gzip'] = gzip == 'on' and 'on' or 'off'
         if not limit_rate.isdigit():
             limit_rate = ''
-        setting['limit_rate'] = limit_rate and '%sk' % limit_rate or ''
+        setting['limit_rate'] = limit_rate and f'{limit_rate}k' or ''
         if not limit_conn.isdigit():
             limit_conn = ''
-        setting['limit_conn'] = limit_conn and 'addr %s' % limit_conn or ''
+        setting['limit_conn'] = limit_conn and f'addr {limit_conn}' or ''
         if not limit_conn_zone.isdigit():
             limit_conn_zone = '10'
         if not version or version_get(version, '1.1.8'):
-            setting['limit_conn_zone'] = '$binary_remote_addr zone=addr:%sm' % limit_conn_zone
+            setting['limit_conn_zone'] = f'$binary_remote_addr zone=addr:{limit_conn_zone}m'
             setting['limit_zone'] = ''
         else:
-            setting['limit_zone'] = 'addr $binary_remote_addr %sm' % limit_conn_zone
+            setting['limit_zone'] = f'addr $binary_remote_addr {limit_conn_zone}m'
             setting['limit_conn_zone'] = ''
         if not client_max_body_size.isdigit():
             client_max_body_size = '1'
-        setting['client_max_body_size'] = '%sm' % client_max_body_size
+        setting['client_max_body_size'] = f'{client_max_body_size}m'
         if not keepalive_timeout.isdigit():
             keepalive_timeout = ''
-        setting['keepalive_timeout'] = keepalive_timeout and '%ss' % keepalive_timeout or ''
+        setting['keepalive_timeout'] = keepalive_timeout and f'{keepalive_timeout}s' or ''
         if access_status == 'white':
             setting['allow'] = [a.strip() for a in allow.split() if a.strip()]
             setting['deny'] = 'all'
@@ -1908,7 +1908,7 @@ def web_handler(context):
                     try:
                         Path(cache['path']).mkdir(parents=True, exist_ok=True)
                     except:
-                        context.write({'code': -1, 'msg': '缓存目录 %s 创建失败！' % cache['path']})
+                        context.write({'code': -1, 'msg': f"缓存目录 {cache['path']} 创建失败！"})
                         return
             else:
                 context.write({'code': -1, 'msg': '请选择缓存目录！'})
@@ -1927,7 +1927,7 @@ def web_handler(context):
                 levels.append(cache['path_level_2'])
             if int(cache['path_level_3']) > 0:
                 levels.append(cache['path_level_3'])
-            fields.append('levels=%s' % (':'.join(levels)))
+            fields.append(f"levels={':'.join(levels)}")
 
             if not 'name' in cache or cache['name'].strip() == '':
                 context.write({'code': -1, 'msg': '缓存区名称不能为空！'})
@@ -1935,7 +1935,7 @@ def web_handler(context):
             if not 'mem' in cache or not cache['mem'].isdigit():
                 context.write({'code': -1, 'msg': '缓存计数内存大小必须是数字！'})
                 return
-            fields.append('keys_zone=%s:%sm' % (cache['name'].strip(), cache['mem']))
+            fields.append(f"keys_zone={cache['name'].strip()}:{cache['mem']}m")
 
             if not 'inactive' in cache or not cache['inactive'].isdigit():
                 context.write({'code': -1, 'msg': '缓存过期时间必须是数字！'})
@@ -1943,7 +1943,7 @@ def web_handler(context):
             if not 'inactive_unit' in cache or not cache['inactive_unit'] in ('s', 'm', 'h', 'd'):
                 context.write({'code': -1, 'msg': '缓存过期时间单位错误！'})
                 return
-            fields.append('inactive=%s%s' % (cache['inactive'], cache['inactive_unit']))
+            fields.append(f"inactive={cache['inactive']}{cache['inactive_unit']}")
 
             if not 'max_size' in cache or not cache['max_size'].isdigit():
                 context.write({'code': -1, 'msg': '缓存大小限制值必须是数字！'})
@@ -1951,7 +1951,7 @@ def web_handler(context):
             if not 'max_size_unit' in cache or not cache['max_size_unit'] in ('m', 'g'):
                 context.write({'code': -1, 'msg': '缓存大小限制单位错误！'})
                 return
-            fields.append('max_size=%s%s' % (cache['max_size'], cache['max_size_unit']))
+            fields.append(f"max_size={cache['max_size']}{cache['max_size_unit']}")
 
             values.append(' '.join(fields))
 
@@ -2008,7 +2008,7 @@ def web_handler(context):
                     if port <= 0 or port > 65535:
                         listens = None
                         break
-                ipport = '%s:%s' % (listen['ip'], listen['port'])
+                ipport = f"{listen['ip']}:{listen['port']}"
                 if ipport in ipportpairs:
                     context.write({'code': -1, 'msg': '监听的IP:端口重复！'})
                     return
@@ -2067,7 +2067,7 @@ def web_handler(context):
                     if len(t) not in (3, 4) or \
                        len(t) == 4 and (t[0] != 'rewrite' or t[-1] not in ('last', 'break', 'redirect', 'permanent')) or \
                        len(t) == 3 and t[0] != 'rewrite':
-                        context.write({'code': -1, 'msg': 'Rewrite 规则 "%s" 格式有误！' % rule})
+                        context.write({'code': -1, 'msg': f'Rewrite 规则 "{rule}" 格式有误！'})
                         return
                     rewrite_rules.append(rule)
 
@@ -2089,7 +2089,7 @@ def web_handler(context):
                 location = {}
                 location['urlpath'] = loc['urlpath']
                 if loc['urlpath'] in urlpaths:
-                    context.write({'code': -1, 'msg': '重复的站点路径 %s！' % loc['urlpath']})
+                    context.write({'code': -1, 'msg': f"重复的站点路径 {loc['urlpath']}！"})
                     return
                 urlpaths.append(loc['urlpath'])
                 locsetting = loc[loc['engine']]
@@ -2102,10 +2102,10 @@ def web_handler(context):
                             try:
                                 Path(locsetting['root']).mkdir(parents=True, exist_ok=True)
                             except:
-                                context.write({'code': -1, 'msg': '站点目录 %s 创建失败！' % locsetting['root']})
+                                context.write({'code': -1, 'msg': f"站点目录 {locsetting['root']} 创建失败！"})
                                 return
                         else:
-                            context.write({'code': -1, 'msg': '站点目录 %s 不存在！' % locsetting['root']})
+                            context.write({'code': -1, 'msg': f"站点目录 {locsetting['root']} 不存在！"})
                             return
                     location['root'] = locsetting['root']
                     if 'charset' in locsetting and locsetting['charset'] in charsets:
@@ -2127,7 +2127,7 @@ def web_handler(context):
                             if len(t) not in (3, 4) or \
                                len(t) == 4 and (t[0] != 'rewrite' or t[-1] not in ('last', 'break')) or \
                                len(t) == 3 and t[0] != 'rewrite':
-                                context.write({'code': -1, 'msg': 'Rewrite 规则 "%s" 格式有误！' % rule})
+                                context.write({'code': -1, 'msg': f'Rewrite 规则 "{rule}" 格式有误！'})
                                 return
                             location['rewrite_rules'].append(rule)
                 if loc['engine'] == 'static':
@@ -2146,7 +2146,7 @@ def web_handler(context):
                             server = fields[0]
                             port = None
                         if not is_valid_domain(server) or port and not port.isdigit():
-                            context.write({'code': -1, 'msg': 'FastCGI服务器地址 %s 输入有误！' % fastcgi_pass})
+                            context.write({'code': -1, 'msg': f'FastCGI服务器地址 {fastcgi_pass} 输入有误！'})
                             return
                     location['fastcgi_pass'] = fastcgi_pass
                 elif loc['engine'] == 'redirect':
@@ -2154,7 +2154,7 @@ def web_handler(context):
                         context.write({'code': -1, 'msg': '请输入要跳转到的 URL 地址！'})
                         return
                     if not is_url(locsetting['url']):
-                        context.write({'code': -1, 'msg': '跳转到的 URL 地址"%s"格式有误，请检查是否添加了 http:// 或 https:// 等！' % locsetting['url']})
+                        context.write({'code': -1, 'msg': f"跳转到的 URL 地址\"{locsetting['url']}\"格式有误，请检查是否添加了 http:// 或 https:// 等！"})
                         return
                     location['redirect_url'] = locsetting['url']
                     if 'type' in locsetting and locsetting['type'] in ('301', '302'):
@@ -2209,7 +2209,7 @@ def web_handler(context):
                             server = fields[0]
                             port = None
                         if not is_valid_domain(server) or port and not port.isdigit():
-                            context.write({'code': -1, 'msg': '后端地址 %s 输入有误！' % backend['server']})
+                            context.write({'code': -1, 'msg': f"后端地址 {backend['server']} 输入有误！"})
                             return
                         proxy_backend = {'server': backend['server']}
                         if len(backends) > 1:
@@ -2274,7 +2274,7 @@ def web_handler(context):
                                 if not cv['time_unit'] in ('s', 'm', 'h', 'd'):
                                     context.write({'code': -1, 'msg': '缓存过期规则的过期时间单位有误！'})
                                     return
-                                t.append({'code': cv['code'], 'time': '%s%s' % (cv['time'], cv['time_unit'])})
+                                t.append({'code': cv['code'], 'time': f"{cv['time']}{cv['time_unit']}"})
                             if len(t) > 0:
                                 location['proxy_cache_valid'] = t
                         if 'proxy_cache_use_stale' in locsetting:

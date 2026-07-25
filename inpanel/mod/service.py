@@ -574,7 +574,7 @@ async def service_info(tm, service_id):
         data = detail
     else:
         code = -1
-        msg = '获取服务详情失败：服务 %s 不存在' % service_id
+        msg = f'获取服务详情失败：服务 {service_id} 不存在'
         data = None
 
     tm._finish_job(jobname, code, msg, data)

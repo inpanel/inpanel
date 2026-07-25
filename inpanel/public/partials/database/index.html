@@ -146,8 +146,237 @@
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='redis'" ng-show="redis_supported" style="display:none" id="redis">
-                <div>
-                    <div waiting ng-init="waitingText='暂不支持 Redis，请等待新版本...'"></div>
+                <!-- Redis 连接面板 -->
+                <div class="panel panel-warning" ng-show="!$redis.connected">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-lock"></i>
+                            <span> 请输入 Redis 连接信息</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-horizontal" onsubmit="return false" method="get" action="/">
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="redisHost">主机地址</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="$redis.host" type="text" id="redisHost" ng-disabled="processing" placeholder="127.0.0.1">
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="redisPort">端口</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="$redis.port" type="text" id="redisPort" ng-disabled="processing" placeholder="6379" style="width:120px;">
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <label class="col-sm-2 control-label" for="redisPassword">密码</label>
+                                <div class="col-sm-10">
+                                    <input class="form-control" ng-model="$redis.password" type="password" id="redisPassword" ng-disabled="processing" placeholder="留空表示无密码" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group form-inline">
+                                <div class="col-sm-2 control-label"></div>
+                                <div class="col-sm-10">
+                                    <button class="btn btn-primary" ng-click="redis_connect()" ng-disabled="processing">
+                                        <i class="glyphicon glyphicon-user"></i> <span>连接 Redis</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Redis 服务器信息 -->
+                <div class="panel panel-default" ng-show="$redis.connected">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-info-sign"></i>
+                            <span> Redis 服务器信息</span>
+                            <div class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="redis_load_info()" ng-disabled="redisLoading.info">
+                                    <i class="glyphicon glyphicon-refresh"></i> 刷新
+                                </button>
+                                <button class="btn btn-danger btn-xs" ng-click="redis_disconnect()" style="margin-left:5px;">
+                                    <i class="glyphicon glyphicon-off"></i> 断开
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body" ng-show="redisLoading.info">
+                        <div waiting ng-init="waitingText='正在加载 Redis 信息...'"></div>
+                    </div>
+                    <table class="table table-hover table-bordered table-condensed" ng-hide="redisLoading.info || !redisInfo">
+                        <tbody>
+                            <tr ng-repeat="(section, items) in redisInfo">
+                                <td style="width:180px;"><strong>{{section}}</strong></td>
+                                <td>
+                                    <span ng-repeat="(key, val) in items" style="margin-right:15px;">
+                                        <code>{{key}}</code>: {{val}}&nbsp;&nbsp;
+                                    </span>
+                                    <span ng-hide="isObject(items)">
+                                        {{items}}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 数据库列表 -->
+                <div ng-show="$redis.connected && redisLoading.dbs">
+                    <div waiting ng-init="waitingText='正在加载数据库列表，请稍候...'"></div>
+                </div>
+                <div class="panel panel-default" ng-show="$redis.connected && !redisLoading.dbs">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-list-alt"></i>
+                            <span> 数据库列表</span>
+                            <div class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="redis_load_dbs()" ng-disabled="redisLoading.dbs">
+                                    <i class="glyphicon glyphicon-refresh"></i> 刷新
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table table-hover table-bordered table-condensed">
+                        <thead>
+                            <tr>
+                                <th style="width:20px" class="text-right">#</th>
+                                <th>数据库名</th>
+                                <th style="width:120px" class="text-right">Key 数量</th>
+                                <th style="width:220px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="db in redisDbs">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{db.name}}</td>
+                                <td class="text-right">{{db.keys}}</td>
+                                <td>
+                                    <button class="btn btn-default btn-xs" ng-click="redis_show_db(db)">
+                                        <i class="glyphicon glyphicon-eye-open"></i> 查看数据
+                                    </button>
+                                    <button class="btn btn-danger btn-xs" ng-click="redis_flushdb_confirm(db)" ng-show="db.keys > 0">
+                                        <i class="glyphicon glyphicon-trash"></i> 清空
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="panel-footer" ng-show="redisDbs && redisDbs.length > 0">
+                        <button class="btn btn-danger btn-sm" ng-click="redis_flushall_confirm()">
+                            <i class="glyphicon glyphicon-trash"></i> 清空所有数据库
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 数据库详情（Key 列表） -->
+                <div class="panel panel-info" ng-show="redisDetail.db != null">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-th-list"></i>
+                            <span> 数据库 {{redisDetail.db.name}} 详情</span>
+                            <button class="btn btn-default btn-xs pull-right" ng-click="redisDetail.db=null;redisDetail.keys=null;redisDetail.keyInfo=null">关闭</button>
+                        </div>
+                    </div>
+                    <div class="panel-body" ng-show="redisLoading.detail">
+                        <div waiting ng-init="waitingText='正在加载 Key 列表...'"></div>
+                    </div>
+                    <div ng-hide="redisLoading.detail">
+                        <div ng-show="redisDetail.keys && redisDetail.keys.length > 0">
+                            <table class="table table-hover table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th style="width:20px" class="text-right">#</th>
+                                        <th>Key 名称</th>
+                                        <th style="width:100px">类型</th>
+                                        <th style="width:100px">TTL (秒)</th>
+                                        <th style="width:180px">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="k in redisDetail.keys">
+                                        <td class="text-right">{{$index+1}}</td>
+                                        <td><code>{{k.name}}</code></td>
+                                        <td>
+                                            <span class="label label-info" ng-show="k.type=='string'">String</span>
+                                            <span class="label label-success" ng-show="k.type=='list'">List</span>
+                                            <span class="label label-warning" ng-show="k.type=='set'">Set</span>
+                                            <span class="label label-danger" ng-show="k.type=='zset'">ZSet</span>
+                                            <span class="label label-primary" ng-show="k.type=='hash'">Hash</span>
+                                            <span class="label label-default" ng-show="['string','list','set','zset','hash'].indexOf(k.type)==-1">{{k.type}}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-success" ng-show="k.ttl==-1">永久</span>
+                                            <span class="text-muted" ng-show="k.ttl==-2">已过期</span>
+                                            <span ng-show="k.ttl>=0">{{k.ttl}}</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-default btn-xs" ng-click="redis_show_key(k)">
+                                                <i class="glyphicon glyphicon-eye-open"></i> 查看
+                                            </button>
+                                            <button class="btn btn-danger btn-xs" ng-click="redis_del_key_confirm(k)">
+                                                <i class="glyphicon glyphicon-trash"></i> 删除
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="panel-body text-muted" ng-show="redisDetail.keyCount > 50">
+                                仅显示前 50 个 Key，共 {{redisDetail.keyCount}} 个
+                            </div>
+                        </div>
+                        <div class="panel-body text-muted" ng-hide="redisDetail.keys && redisDetail.keys.length > 0">
+                            该数据库为空，暂无数据
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key 值查看 -->
+                <div class="panel panel-info" ng-show="redisDetail.keyInfo">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <i class="glyphicon glyphicon-file"></i>
+                            <span> Key: <code>{{redisDetail.keyInfo.key}}</code></span>
+                            <button class="btn btn-default btn-xs pull-right" ng-click="redisDetail.keyInfo=null">关闭</button>
+                        </div>
+                    </div>
+                    <div class="panel-body" ng-show="redisLoading.key">
+                        <div waiting ng-init="waitingText='正在加载 Key 信息...'"></div>
+                    </div>
+                    <div ng-hide="redisLoading.key">
+                        <table class="table table-bordered table-condensed" style="margin-bottom:0;">
+                            <tbody>
+                                <tr>
+                                    <td style="width:100px;"><strong>类型</strong></td>
+                                    <td>
+                                        <span class="label label-info" ng-show="redisDetail.keyInfo.type=='string'">String</span>
+                                        <span class="label label-success" ng-show="redisDetail.keyInfo.type=='list'">List</span>
+                                        <span class="label label-warning" ng-show="redisDetail.keyInfo.type=='set'">Set</span>
+                                        <span class="label label-danger" ng-show="redisDetail.keyInfo.type=='zset'">ZSet</span>
+                                        <span class="label label-primary" ng-show="redisDetail.keyInfo.type=='hash'">Hash</span>
+                                        <span class="label label-default" ng-hide="['string','list','set','zset','hash'].indexOf(redisDetail.keyInfo.type)>-1">{{redisDetail.keyInfo.type}}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TTL</strong></td>
+                                    <td>
+                                        <span class="text-success" ng-show="redisDetail.keyInfo.ttl==-1">永久有效</span>
+                                        <span class="text-muted" ng-show="redisDetail.keyInfo.ttl==-2">已过期</span>
+                                        <span ng-show="redisDetail.keyInfo.ttl>=0">{{redisDetail.keyInfo.ttl}} 秒</span>
+                                    </td>
+                                </tr>
+                                <tr ng-show="redisDetail.keyInfo.size != null">
+                                    <td><strong>大小</strong></td>
+                                    <td>{{redisDetail.keyInfo.size}}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>值</strong></td>
+                                    <td><pre style="max-height:400px; overflow:auto; margin:0; white-space:pre-wrap; word-break:break-all;">{{redisDetail.keyInfo.value}}</pre></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='memcache'" ng-show="memcache_supported" style="display:none" id="memcache">

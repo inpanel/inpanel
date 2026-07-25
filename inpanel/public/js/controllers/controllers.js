@@ -280,15 +280,6 @@ var SecureCtrl = [
     }
 ];
 
-var LogCtrl = [
-    '$scope', 'Module',
-    function ($scope, Module) {
-        var module = 'log';
-        Module.init(module, '日志管理');
-        $scope.loaded = true;
-    }
-];
-
 var SettingCtrl = [
     '$scope', '$routeParams', 'Module', 'Timeout', 'Message', 'Request',
     function ($scope, $routeParams, Module, Timeout, Message, Request) {

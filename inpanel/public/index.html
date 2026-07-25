@@ -14,7 +14,7 @@
     <meta name="keywords" content="InPanel, VPSMate, Linux, VPS, VPS Management, 开源, VPS管理面板, 开源Linux服务器管理面板" />
     <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" />
     <!-- <link rel="stylesheet" href="lib/bootstrap/css/bootstrap-theme.min.css" /> -->
-    <link rel="stylesheet" href="lib/codemirror/codemirror.css" />
+    <link rel="stylesheet" href="lib/codemirror/codemirror.min.css" />
     <link rel="stylesheet" href="css/global.css"/>
 </head>
 
@@ -66,7 +66,10 @@
     <script src="lib/angular/1.0.8/angular.min.js"></script>
     <script src="lib/jquery/jquery-1.12.4.min.js"></script>
     <script src="lib/bootstrap/js/bootstrap.min.js"></script>
-    <script src="lib/codemirror/codemirror-compressed.js"></script>
+    <script src="lib/codemirror/codemirror.min.js"></script>
+    <script src="lib/codemirror/addon/selection/active-line.min.js"></script>
+    <script src="lib/codemirror/addon/edit/matchbrackets.min.js"></script>
+    <script src="lib/codemirror/addon/search/match-highlighter.min.js"></script>
     <script src="lib/md5/md5.min.js"></script>
     <script>
         var location_path = location.pathname.replace(/(\s+)?\/$/, '');
@@ -88,6 +91,7 @@
     <script src="js/controllers/utils.js"></script>
     <script src="js/controllers/database.js"></script>
     <script src="js/controllers/plugins.js"></script>
+    <script src="js/controllers/logs.js"></script>
 
 </body>
 

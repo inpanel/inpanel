@@ -8,16 +8,19 @@
 # The full license can be found in 'LICENSE'.
 '''文件管理模块'''
 
+import asyncio
 import os
-import shelve
+import shutil
 import stat
+from configparser import RawConfigParser
 from grp import getgrgid, getgrnam
 from mimetypes import guess_type
 from pathlib import Path
 from pwd import getpwnam, getpwuid
 from time import time
 from uuid import uuid4
-from ..base import kernel_name, history_path, os_name
+from ..base import kernel_name, filespath_log, os_name, data_path
+from . import logs
 
 try:
     import imghdr
@@ -40,19 +43,18 @@ charsets = ('utf-8', 'gb2312', 'gbk', 'gb18030', 'big5', 'euc-jp', 'euc-kr',
             'iso-8859-2', 'shift_jis')
 
 
-def safe_shelve_open(filename, flag='c'):
-    try:
-        return shelve.open(filename, flag)
-    except Exception:
-        from dbm import error as dbm_error
-        try:
-            Path(filename).unlink(missing_ok=True)
-            db_files = Path(filename).parent.glob(filename + '.*')
-            for f in db_files:
-                f.unlink(missing_ok=True)
-        except:
-            pass
-        return shelve.open(filename, 'n')
+TRASH_DIR_NAME = '.inpanel_trash'
+TRASH_META_DIR = str(Path(data_path) / 'trash')
+
+
+def _get_trash_meta_dir():
+    """获取并创建元信息目录"""
+    meta_dir = Path(TRASH_META_DIR)
+    meta_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    return meta_dir
+
+
+# ========== 回收站核心函数 ==========
 
 
 def get_default_bookmarks():
@@ -159,10 +161,24 @@ def web_handler(context):
             context.write({'code': -1, 'msg': '移除常用目录失败！'})
 
     elif action == 'history':
+        # 从 filespath_log 读取全部浏览记录，提取最近30条去重路径
         paths = []
-        if Path(history_path).exists():
-            with open(history_path, 'r', encoding='utf-8') as f:
-                paths = [line.strip() for line in f.readlines() if line.strip()]
+        if Path(filespath_log).exists():
+            with open(filespath_log, 'r', encoding='utf-8', errors='replace') as f:
+                lines = f.readlines()
+            # 格式: "时间 | 路径"，倒序读取，去重保留最新
+            seen = set()
+            for line in reversed(lines):
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split('|', 1)
+                p = parts[1].strip() if len(parts) == 2 else line
+                if p and p not in seen:
+                    seen.add(p)
+                    paths.append(p)
+                    if len(paths) >= 30:
+                        break
         context.write({'code': 0, 'msg': '', 'data': paths})
 
     elif action == 'add_history':
@@ -171,21 +187,26 @@ def web_handler(context):
             context.write({'code': -1, 'msg': '路径不能为空！'})
             return
         
+        # 写入文件访问路径日志（记录所有历史）
+        logs.write_file_access_log(path)
+        
+        # 返回最近30条去重路径
         paths = []
-        if Path(history_path).exists():
-            with open(history_path, 'r', encoding='utf-8') as f:
-                paths = [line.strip() for line in f.readlines() if line.strip()]
-        
-        if path in paths:
-            paths.remove(path)
-        paths.insert(0, path)
-        
-        if len(paths) > 30:
-            paths = paths[:30]
-        
-        Path(history_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(history_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(paths))
+        if Path(filespath_log).exists():
+            with open(filespath_log, 'r', encoding='utf-8', errors='replace') as f:
+                lines = f.readlines()
+            seen = set()
+            for line in reversed(lines):
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split('|', 1)
+                p = parts[1].strip() if len(parts) == 2 else line
+                if p and p not in seen:
+                    seen.add(p)
+                    paths.append(p)
+                    if len(paths) >= 30:
+                        break
         
         context.write({'code': 0, 'msg': '', 'data': paths})
 
@@ -225,8 +246,10 @@ def web_handler(context):
                 context.lastfile.set('file', 'lastfile', path)
             charset, content = decode(path)
             if not charset:
+                logs.write_file_operation_log('查看', path, '失败')
                 context.write({'code': -1, 'msg': '不可识别的文件编码 ！'})
                 return
+            logs.write_file_operation_log('查看', path, '成功')
             data = {
                 'filename': str(Path(path).name),
                 'filepath': path,
@@ -258,8 +281,10 @@ def web_handler(context):
             context.write({'code': -1, 'msg': '文件编码转换出错，保存失败！'})
             return
         if fsave(path, content):
+            logs.write_file_operation_log('修改', path, '成功')
             context.write({'code': 0, 'msg': '文件保存成功！'})
         else:
+            logs.write_file_operation_log('修改', path, '失败')
             context.write({'code': -1, 'msg': '文件保存失败！'})
 
     elif action == 'createfolder':
@@ -271,9 +296,12 @@ def web_handler(context):
                 context.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
                 return
 
+        fullpath = str(Path(path) / name)
         if dadd(path, name):
+            logs.write_file_operation_log('创建', fullpath, '成功')
             context.write({'code': 0, 'msg': '文件夹创建成功！'})
         else:
+            logs.write_file_operation_log('创建', fullpath, '失败')
             context.write({'code': -1, 'msg': '文件夹创建失败！'})
 
     elif action == 'createfile':
@@ -285,9 +313,12 @@ def web_handler(context):
                 context.write({'code': -1, 'msg': '演示模式不允许修改除 /var/www 以外的目录！'})
                 return
 
+        fullpath = str(Path(path) / name)
         if fadd(path, name):
+            logs.write_file_operation_log('创建', fullpath, '成功')
             context.write({'code': 0, 'msg': '文件创建成功！'})
         else:
+            logs.write_file_operation_log('创建', fullpath, '失败')
             context.write({'code': -1, 'msg': '文件创建失败！'})
 
     elif action == 'rename':
@@ -300,14 +331,22 @@ def web_handler(context):
                 return
 
         if rename(path, name):
+            old_name = str(Path(path).name)
+            new_path = str(Path(path).parent / name)
+            logs.write_file_operation_log('重命名', path, '成功', f'{old_name} → {name}')
             context.write({'code': 0, 'msg': '重命名成功！'})
         else:
+            logs.write_file_operation_log('重命名', path, '失败')
             context.write({'code': -1, 'msg': '重命名失败！'})
 
     elif action == 'exist':
         path = context.get_argument('path', '')
         name = context.get_argument('name', '')
-        context.write({'code': 0, 'msg': '', 'data': str(Path(path) / name)})
+        fullpath = Path(path) / name
+        if fullpath.exists():
+            context.write({'code': 0, 'msg': '', 'data': str(fullpath)})
+        else:
+            context.write({'code': 0, 'msg': '', 'data': ''})
 
     elif action == 'link':
         srcpath = context.get_argument('srcpath', '')
@@ -319,8 +358,10 @@ def web_handler(context):
                 return
 
         if link(srcpath, despath):
+            logs.write_file_operation_log('创建链接', despath, '成功')
             context.write({'code': 0, 'msg': f'链接 {despath} 创建成功 ！'})
         else:
+            logs.write_file_operation_log('创建链接', despath, '失败')
             context.write({'code': -1, 'msg': f'链接 {despath} 创建失败 ！'})
 
     elif action == 'delete':
@@ -336,47 +377,51 @@ def web_handler(context):
         if len(paths) == 1:
             path = paths[0]
             if delete(path):
+                logs.write_file_operation_log('删除', path, '成功')
                 context.write({'code': 0, 'msg': f'已将 {path} 移入回收站'})
             else:
+                logs.write_file_operation_log('删除', path, '失败')
                 context.write({'code': -1, 'msg': f'将 {path} 移入回收站失败'})
         else:
             for path in paths:
                 if not delete(path):
+                    logs.write_file_operation_log('删除', path, '失败')
                     context.write({'code': -1, 'msg': f'将 {path} 移入回收站失败'})
                     return
+                logs.write_file_operation_log('删除', path, '成功')
             context.write({'code': 0, 'msg': '批量移入回收站成功！'})
 
     elif action == 'tlist':
         context.write({'code': 0, 'msg': '', 'data': tlist()})
 
-    elif action == 'trashs':
-        context.write({'code': 0, 'msg': '', 'data': trashs()})
-
     elif action == 'titem':
-        mount = context.get_argument('mount', '')
         uuid = context.get_argument('uuid', '')
-        info = titem(mount, uuid)
+        info = titem(uuid)
         if info:
             context.write({'code': 0, 'msg': '', 'data': info})
         else:
             context.write({'code': -1, 'msg': '获取项目信息失败！'})
 
     elif action == 'trestore':
-        mount = context.get_argument('mount', '')
         uuid = context.get_argument('uuid', '')
-        info = titem(mount, uuid)
-        if info and trestore(mount, uuid):
+        info = titem(uuid)
+        if info and trestore(uuid):
+            logs.write_file_operation_log('还原', info['path'], '成功')
             context.write({'code': 0, 'msg': f'已还原 {info["name"]} 到 {info["path"]} ！'})
         else:
+            if info:
+                logs.write_file_operation_log('还原', info['path'], '失败')
             context.write({'code': -1, 'msg': '还原失败！'})
 
     elif action == 'tdelete':
-        mount = context.get_argument('mount', '')
         uuid = context.get_argument('uuid', '')
-        info = titem(mount, uuid)
-        if info and tdelete(mount, uuid):
+        info = titem(uuid)
+        if info and tdelete(uuid):
+            logs.write_file_operation_log('彻底删除', info['path'], '成功')
             context.write({'code': 0, 'msg': f'已删除 {info["name"]} ！'})
         else:
+            if info:
+                logs.write_file_operation_log('彻底删除', info['path'], '失败')
             context.write({'code': -1, 'msg': '删除失败！'})
 
 
@@ -390,6 +435,8 @@ def listdir(path, showdotfiles=False, onlydir=None):
         items = [item for item in items if not item.startswith('.')]
     for i, item in enumerate(items):
         items[i] = getitem(str(Path(path) / item))
+    # 过滤掉 getitem 返回 False 的项（文件不存在或无权限）
+    items = [item for item in items if item is not False]
     # let folders list before files
     rt = []
     for i in range(len(items) - 1, -1, -1):
@@ -576,7 +623,7 @@ def fsave(path, content, bakup=True):
     try:
         if bakup:
             dname = str(Path(path).parent)
-            filename = '.%s.bak' % Path(path).name
+            filename = f'.{Path(path).name}.bak'
             Path(path).rename(str(Path(dname) / filename))
         with open(path, 'wb') as f:
             f.write(content)
@@ -608,136 +655,340 @@ def encode(content, charset):
 
 
 def delete(path):
-    '''Move files to the Recycle Bin'''
+    '''Move files to the Recycle Bin
+
+    流程：
+    1. 获取文件所属挂载点 mount
+    2. 尝试在 mount 下创建 .inpanel_trash/ 目录（同盘 rename，速度快）
+    3. 若 mount 下无写权限，fallback 到 data/trash/files/ 目录（跨盘复制）
+    4. 生成 uuid，移动文件到回收站目录
+    5. 写元信息到 data/trash/{uuid}.ini
+    '''
+    path = str(Path(path))
     if not Path(path).exists():
         return False
-    path = str(Path(path))
-    mounts = _getmounts()
-    if kernel_name == 'Darwin':
-        trashpath = str(Path.home() / '.deleted_files')
-    else:
-        mount = ''
-        for m in mounts:
-            if path.startswith(m):
-                mount = m
-                break
-        if not mount:
-            return False
-        trashpath = str(Path(mount) / '.deleted_files')
-    _inittrash(mounts)
-    try:
-        uuid = str(uuid4())
-        filename = Path(path).name
-        with safe_shelve_open(str(Path(trashpath) / '.fileinfo'), 'c') as db:
-            db[uuid] = '\t'.join([filename, path, str(int(time()))])
 
-        Path(path).rename(str(Path(trashpath) / uuid))
-        dname = str(Path(path).parent)
-        bakfilepath = str(Path(dname) / ('.%s.bak' % filename))
-        if Path(bakfilepath).exists():
-            return delete(bakfilepath)
-        return True
-    except:
+    mount = _get_mount_for_path(path)
+    if not mount:
         return False
+
+    trash_dir = _ensure_trash_dir(mount)
+
+    if trash_dir is not None:
+        # 同盘 rename，速度最快
+        uuid = str(uuid4())
+        target = trash_dir / uuid
+        try:
+            Path(path).rename(target)
+        except OSError:
+            return False
+        used_fallback = False
+    else:
+        # mount 下无写权限（如根目录 /），fallback 到 data/trash/files/
+        fallback_dir = _get_trash_meta_dir() / 'files'
+        try:
+            fallback_dir.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            return False
+
+        uuid = str(uuid4())
+        target = fallback_dir / uuid
+        try:
+            if Path(path).is_dir():
+                shutil.move(path, str(target))
+            else:
+                shutil.move(path, str(target))
+        except OSError:
+            return False
+        # 更新 mount 为 data_path，方便还原时定位
+        mount = data_path
+        used_fallback = True
+
+    _write_meta(uuid, {
+        'uuid': uuid,
+        'name': Path(path).name,
+        'path': path,
+        'mount': mount,
+        'time': str(int(time())),
+        'isdir': str(target.is_dir()),
+        'size': str(_get_file_size(target)),
+    })
+
+    # 清理备份文件
+    dname = str(Path(path).parent)
+    bakfilepath = str(Path(dname) / (f'.{Path(path).name}.bak'))
+    if Path(bakfilepath).exists():
+        return delete(bakfilepath)
+    return True
 
 
 def _getmounts():
+    '''获取系统挂载点列表（按路径长度降序，用于最长前缀匹配）。
+
+    Linux:   从 /proc/mounts 读取，过滤 ext/xfs/btrfs 等文件系统
+    macOS:   返回 [用户主目录]
+    Windows: 返回可用盘符列表
+    '''
     if kernel_name == 'Darwin':
         return [str(Path.home())]
+    elif kernel_name == 'Windows':
+        return _get_windows_drives()
     else:
         mounts = server.ServerInfo.mounts()
         mounts = [mount['path'] for mount in mounts]
-        # let the longest path at the first
-        # mounts.sort(lambda x, y: cmp(len(y), len(x)))
-        return sorted(mounts, key=lambda x: len(x), reverse=False)
-        # return mounts
+        return sorted(mounts, key=lambda x: len(x), reverse=True)
 
 
-def _inittrash(mounts=None):
-    # initialize the trash
-    if not mounts:
-        mounts = _getmounts()
-    for mount in mounts:
-        trashpath = str(Path(mount) / '.deleted_files')
-        if not Path(trashpath).exists():
-            Path(trashpath).mkdir(parents=True, exist_ok=True)
-            metafile = str(Path(trashpath) / '.fileinfo')
-            safe_shelve_open(metafile, 'c').close()
+def _get_windows_drives():
+    '''获取 Windows 可用盘符列表'''
+    drives = []
+    try:
+        import string
+        from ctypes import windll
+        bitmask = windll.kernel32.GetLogicalDrives()
+        for letter in string.ascii_uppercase:
+            if bitmask & 1:
+                drives.append(f'{letter}:\\')
+            bitmask >>= 1
+    except:
+        pass
+    return sorted(drives, key=len, reverse=True)
 
 
-def trashs():
-    """Return trash path list.
-    """
+def _get_mount_for_path(path):
+    '''匹配文件所属的挂载点（取最长前缀匹配）。'''
     mounts = _getmounts()
-    return [str(Path(mount) / '.deleted_files') for mount in mounts]
+    matched = ''
+    for m in mounts:
+        if path.startswith(m) and len(m) > len(matched):
+            matched = m
+    return matched
+
+
+def _ensure_trash_dir(mount):
+    '''获取或创建挂载点下的回收站目录。
+
+    Returns:
+        Path or None: 成功返回目录路径，无权限则返回 None
+    '''
+    trash = Path(mount) / TRASH_DIR_NAME
+    try:
+        trash.mkdir(mode=0o700, exist_ok=True)
+    except PermissionError:
+        return None
+    return trash
+
+
+def _get_file_size(path):
+    '''获取文件/目录大小（字节）'''
+    p = Path(path)
+    if not p.exists():
+        return 0
+    if p.is_file() or p.is_symlink():
+        return p.stat().st_size
+    if p.is_dir():
+        total = 0
+        try:
+            for f in p.rglob('*'):
+                if f.is_file() or f.is_symlink():
+                    total += f.stat().st_size
+        except:
+            pass
+        return total
+    return 0
+
+
+def _write_meta(uuid, meta_dict):
+    '''写元信息 INI 文件到 data/trash/{uuid}.ini'''
+    meta_dir = _get_trash_meta_dir()
+    meta_path = meta_dir / f'{uuid}.ini'
+    cfg = RawConfigParser()
+    cfg.add_section('info')
+    for key, value in meta_dict.items():
+        cfg.set('info', key, value)
+    with open(meta_path, 'w', encoding='utf-8') as f:
+        cfg.write(f)
+
+
+def _read_meta(uuid):
+    '''读取元信息 INI 文件，返回 dict 或 None'''
+    meta_path = _get_trash_meta_dir() / f'{uuid}.ini'
+    if not meta_path.exists():
+        return None
+    try:
+        cfg = RawConfigParser()
+        cfg.read(str(meta_path), encoding='utf-8')
+        return dict(cfg.items('info'))
+    except:
+        return None
+
+
+def _remove_meta(uuid):
+    '''删除元信息文件'''
+    meta_path = _get_trash_meta_dir() / f'{uuid}.ini'
+    meta_path.unlink(missing_ok=True)
 
 
 def tlist():
-    mounts = _getmounts()
-    _inittrash(mounts)
-    # gather informations in each mount point's trash
+    '''列出回收站中所有已删除文件。
+
+    只遍历 data/trash/*.ini，读取每个元信息文件。
+    同时检查物理文件是否存在，补充 size 和 exists 字段。
+
+    Returns:
+        list[dict]: 已删除文件列表，按删除时间倒序排列
+    '''
+    meta_dir = _get_trash_meta_dir()
     items = []
-    for mount in mounts:
-        trashfile = str(Path(mount) / '.deleted_files' / '.fileinfo')
-        with safe_shelve_open(trashfile, 'c') as db:
-            for uuid, info in db.items():
-                fields = info.split('\t')
-                item = {
-                    'uuid': uuid,
-                    'name': fields[0],
-                    'path': fields[1],
-                    'time': ftime(float(fields[2])),
-                    'mount': mount
-                }
-                filepath = str(Path(mount) / '.deleted_files' / uuid)
-                if Path(filepath).exists():
-                    mode = Path(filepath).stat().st_mode
-                    item['isdir'] = stat.S_ISDIR(mode)
-                    item['isreg'] = stat.S_ISREG(mode)
-                    item['islnk'] = stat.S_ISLNK(mode)
-                items.append(item)
-    # items.sort(lambda x, y: cmp(y['time'], x['time']))
+    for meta_file in sorted(meta_dir.glob('*.ini')):
+        uuid = meta_file.stem
+        meta = _read_meta(uuid)
+        if meta is None:
+            continue
+
+        mount = meta.get('mount', '')
+        # 定位物理文件：同盘在 {mount}/.inpanel_trash/，fallback 在 data/trash/files/
+        if mount == data_path:
+            file_path = _get_trash_meta_dir() / 'files' / uuid
+        else:
+            file_path = Path(mount) / TRASH_DIR_NAME / uuid
+
+        if file_path.exists():
+            meta['exists'] = True
+            meta['size'] = str(_get_file_size(file_path))
+            meta['isdir'] = str(file_path.is_dir())
+        else:
+            meta['exists'] = False
+
+        # 时间格式化
+        try:
+            meta['time'] = ftime(float(meta.get('time', '0')))
+        except:
+            pass
+
+        items.append(meta)
+
+    items.sort(key=lambda x: x.get('time', ''), reverse=True)
     return items
 
 
-def titem(mount, uuid):
-    try:
-        trashpath = str(Path(mount) / '.deleted_files')
-        with safe_shelve_open(str(Path(trashpath) / '.fileinfo'), 'c') as db:
-            info = db[uuid]
-        fields = info.split('\t')
-        info = {
-            'uuid': uuid,
-            'name': fields[0],
-            'path': fields[1],
-            'time': ftime(float(fields[2])),
-            'mount': mount
-        }
-        info['originpath'] = str(Path(trashpath) / uuid)
-        return info
-    except:
+def titem(uuid):
+    '''获取单个回收站项目信息。
+
+    Args:
+        uuid: 文件唯一标识
+
+    Returns:
+        dict or False
+    '''
+    meta = _read_meta(uuid)
+    if meta is None:
         return False
 
+    mount = meta.get('mount', '')
+    # 定位物理文件：同盘在 {mount}/.inpanel_trash/，fallback 在 data/trash/files/
+    if mount == data_path:
+        originpath = str(_get_trash_meta_dir() / 'files' / uuid)
+    else:
+        originpath = str(Path(mount) / TRASH_DIR_NAME / uuid)
+    meta['originpath'] = originpath
 
-def trestore(mount, uuid):
     try:
-        info = titem(mount, uuid)
-        trashpath = str(Path(mount) / '.deleted_files')
-        Path(str(Path(trashpath) / uuid)).rename(info['path'])
-        with safe_shelve_open(str(Path(trashpath) / '.fileinfo'), 'c') as db:
-            del db[uuid]
+        meta['time'] = ftime(float(meta.get('time', '0')))
+    except:
+        pass
+
+    return meta
+
+
+def trestore(uuid):
+    '''从回收站还原文件。
+
+    流程：
+    1. 读取 data/trash/{uuid}.ini 获取元信息
+    2. 定位物理文件位置（同盘或 fallback）
+    3. 尝试 rename 还原，失败则跨盘 copy + delete
+    4. 删除元信息文件 data/trash/{uuid}.ini
+
+    Args:
+        uuid: 文件唯一标识
+
+    Returns:
+        bool
+    '''
+    meta = _read_meta(uuid)
+    if meta is None:
+        return False
+
+    mount = meta.get('mount', '')
+    original_path = meta.get('path', '')
+
+    # 定位物理文件：同盘在 {mount}/.inpanel_trash/，fallback 在 data/trash/files/
+    if mount == data_path:
+        src = _get_trash_meta_dir() / 'files' / uuid
+    else:
+        src = Path(mount) / TRASH_DIR_NAME / uuid
+
+    if not src.exists():
+        return False
+
+    # 确保目标父目录存在
+    Path(original_path).parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        src.rename(original_path)
+        _remove_meta(uuid)
         return True
-    except:
-        return False
+    except OSError:
+        # 跨盘回退到 copy + delete
+        try:
+            if src.is_dir():
+                shutil.copytree(src, original_path, symlinks=True)
+                shutil.rmtree(src)
+            else:
+                shutil.copy2(src, original_path)
+                src.unlink()
+            _remove_meta(uuid)
+            return True
+        except:
+            return False
 
 
-def tdelete(mount, uuid):
-    try:
-        with safe_shelve_open(str(Path(mount) / '.deleted_files' / '.fileinfo'), 'c') as db:
-            del db[uuid]
-        return True
-    except:
+def tdelete(uuid):
+    '''从回收站彻底删除文件。
+
+    流程：
+    1. 读取 data/trash/{uuid}.ini 获取 mount
+    2. 定位物理文件位置（同盘或 fallback）
+    3. 物理删除文件
+    4. 删除元信息文件 data/trash/{uuid}.ini
+
+    Args:
+        uuid: 文件唯一标识
+
+    Returns:
+        bool
+    '''
+    meta = _read_meta(uuid)
+    if meta is None:
         return False
+
+    mount = meta.get('mount', '')
+
+    # 定位物理文件：同盘在 {mount}/.inpanel_trash/，fallback 在 data/trash/files/
+    if mount == data_path:
+        file_path = _get_trash_meta_dir() / 'files' / uuid
+    else:
+        file_path = Path(mount) / TRASH_DIR_NAME / uuid
+
+    # 物理删除
+    if file_path.is_dir():
+        shutil.rmtree(file_path, ignore_errors=True)
+    elif file_path.is_file() or file_path.is_symlink():
+        file_path.unlink(missing_ok=True)
+
+    _remove_meta(uuid)
+    return True
 
 
 def chown(path, user, group, recursively=False):
@@ -809,8 +1060,10 @@ async def file_copy(tm, srcpath, despath):
     result, output = await shell.async_command(cmd)
 
     if result == 0:
+        logs.write_file_operation_log('复制', srcpath, '成功', f'{srcpath} → {despath}')
         tm._finish_job(jobname, 0, f'复制 {srcpath} 到 {despath} 完成！')
     else:
+        logs.write_file_operation_log('复制', srcpath, '失败')
         tm._finish_job(jobname, -1,
                        f'复制 {srcpath} 到 {despath} 失败！',
                        data=output.strip().replace('\n', '<br>'))
@@ -849,6 +1102,7 @@ async def file_move(tm, srcpath, despath):
             msg = f'移动 {srcpath} 到 {despath} 失败！'
             data = output2.strip().replace('\n', '<br>')
 
+    logs.write_file_operation_log('移动', srcpath, '成功' if code == 0 else '失败', f'{srcpath} → {despath}')
     tm._finish_job(jobname, code, msg, data=data)
 
 
@@ -890,11 +1144,20 @@ async def file_compress(tm, zippath, paths):
     elif zippath.endswith('.tar.bz2'):
         cmd = f'tar jcf {sh_quote(zippath)} -C {sh_quote(basepath)} {path}'
     elif zippath.endswith('.zip'):
-        if not Path('/usr/bin/zip').exists():
+        if not Path('/usr/bin/zip').exists() and not shutil.which('zip'):
             tm._update_job(jobname, 2, '正在安装 zip...')
-            result, _ = await shell.async_command('yum install -y zip unzip')
-            if result != 0:
-                tm._finish_job(jobname, -1, 'zip 安装失败！')
+            from .package import get_package_manager
+            pm = get_package_manager()
+            if pm is None:
+                tm._finish_job(jobname, -1, '未检测到可用的包管理器，无法安装 zip！')
+                return
+            loop = asyncio.get_event_loop()
+            ok, output = await loop.run_in_executor(None, pm.install, ['zip', 'unzip'])
+            if not ok:
+                if 'Permission denied' in output or 'are you root' in output.lower():
+                    tm._finish_job(jobname, -1, '安装 zip 失败：当前运行权限不足，无法执行包管理器的安装操作，请以 root 用户运行 InPanel，或手动安装 zip 后再试')
+                else:
+                    tm._finish_job(jobname, -1, f'zip 安装失败：{output}')
                 return
         cmd = f'cd {sh_quote(basepath)}; zip -rq9 {sh_quote(zippath)} {path}'
     elif zippath.endswith('.gz'):
@@ -912,8 +1175,10 @@ async def file_compress(tm, zippath, paths):
 
     result, output = await shell.async_command(cmd)
     if result == 0:
+        logs.write_file_operation_log('压缩', zippath, '成功')
         tm._finish_job(jobname, 0, f'压缩到 {zippath} 成功！')
     else:
+        logs.write_file_operation_log('压缩', zippath, '失败')
         tm._finish_job(jobname, -1, '压缩失败！',
                        data=output.strip().replace('\n', '<br>'))
 
@@ -930,11 +1195,20 @@ async def file_decompress(tm, zippath, despath=''):
     elif zippath.endswith('.tar.bz2'):
         cmd = f'tar jxf {sh_quote(zippath)} -C {sh_quote(despath)}'
     elif zippath.endswith('.zip'):
-        if not Path('/usr/bin/unzip').is_file():
+        if not Path('/usr/bin/unzip').is_file() and not shutil.which('unzip'):
             tm._update_job(jobname, 2, '正在安装 unzip...')
-            result, _ = await shell.async_command('yum install -y zip unzip')
-            if result != 0:
-                tm._finish_job(jobname, -1, 'unzip 安装失败！')
+            from .package import get_package_manager
+            pm = get_package_manager()
+            if pm is None:
+                tm._finish_job(jobname, -1, '未检测到可用的包管理器，无法安装 unzip！')
+                return
+            loop = asyncio.get_event_loop()
+            ok, output = await loop.run_in_executor(None, pm.install, ['unzip'])
+            if not ok:
+                if 'Permission denied' in output or 'are you root' in output.lower():
+                    tm._finish_job(jobname, -1, '安装 unzip 失败：当前运行权限不足，无法执行包管理器的安装操作，请以 root 用户运行 InPanel，或手动安装 unzip 后再试')
+                else:
+                    tm._finish_job(jobname, -1, f'unzip 安装失败：{output}')
                 return
         cmd = f'unzip -q -o {sh_quote(zippath)} -d {sh_quote(despath)}'
     elif zippath.endswith('.gz'):
@@ -945,8 +1219,10 @@ async def file_decompress(tm, zippath, despath=''):
 
     result, output = await shell.async_command(cmd)
     if result == 0:
+        logs.write_file_operation_log('解压', zippath, '成功', f'解压到 {despath}' if despath else '')
         tm._finish_job(jobname, 0, f'解压 {zippath} 成功！')
     else:
+        logs.write_file_operation_log('解压', zippath, '失败')
         tm._finish_job(jobname, -1, f'解压 {zippath} 失败！',
                        data=output.strip().replace('\n', '<br>'))
 
@@ -962,13 +1238,19 @@ async def file_chown(tm, paths, user, group, recursively=''):
 
     code, msg = 0, ''
     for path in paths:
+        old_item = getitem(path)
+        old_uname = old_item['uname'] if old_item else ''
+        old_gname = old_item['gname'] if old_item else ''
         result = await shell.async_task(chown, path, user, group, recursively == 'on')
         if result:
             code = 0
             msg = '设置用户和用户组成功！'
+            detail = f'{old_uname}:{old_gname} → {user}:{group}'
+            logs.write_file_operation_log('修改权限', path, '成功', detail)
         else:
             code = -1
             msg = f'设置 {path} 的用户和用户组时失败！'
+            logs.write_file_operation_log('修改权限', path, '失败')
             break
     tm._finish_job(jobname, code, msg)
 
@@ -990,13 +1272,18 @@ async def file_chmod(tm, paths, perms, recursively=''):
 
     code, msg = 0, ''
     for path in paths:
+        old_item = getitem(path)
+        old_perms = old_item['perms'] if old_item else ''
         result = await shell.async_task(chmod, path, perms_int, recursively == 'on')
         if result:
             code = 0
             msg = '权限修改成功！'
+            detail = f'{old_perms} → {perms}'
+            logs.write_file_operation_log('修改权限', path, '成功', detail)
         else:
             code = -1
             msg = f'修改 {path} 的权限时失败！'
+            logs.write_file_operation_log('修改权限', path, '失败')
             break
     tm._finish_job(jobname, code, msg)
 
@@ -1015,8 +1302,10 @@ async def file_wget(tm, url, path):
         cmd = f'wget -q {sh_quote(url)} -O {sh_quote(path)}'
     result, output = await shell.async_command(cmd)
     if result == 0:
+        logs.write_file_operation_log('下载', path, '成功', f'来源: {url}')
         tm._finish_job(jobname, 0, '下载成功！')
     else:
+        logs.write_file_operation_log('下载', path, '失败')
         tm._finish_job(jobname, -1, '下载失败！',
                        data=output.strip().replace('\n', '<br>'))
 
@@ -1027,8 +1316,8 @@ if __name__ == '__main__':
     items = listdir(path)
     if items is not False:
         for item in items:
-            print('  name: %s' % item['name'])
-            print('  isdir: %s' % str(item['isdir']))
+            print(f"  name: {item['name']}")
+            print(f"  isdir: {item['isdir']!s}")
             # print('  isreg: %s' % str(item['isreg']))
             # print('  islnk: %s' % str(item['islnk']))
             # print('  perms: %s' % str(item['perms']))
@@ -1044,5 +1333,5 @@ if __name__ == '__main__':
             # t = guess_type(f)[0]
             # print(t)
             # print(t.startswith('text'))
-            print('  istext: %s' % str(istext(f)))
+            print(f'  istext: {istext(f)!s}')
             # print('  mimetype: %s' % mimetype(f))

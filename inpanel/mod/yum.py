@@ -8,7 +8,7 @@
 '''YUM 管理模块
 
 概念说明：
-- 镜像源（mirror）：基础发行版仓库的 URL 地址，切换本质是修改已有 .repo 文件中 baseurl 的域名。
+- 镜像站（mirror）：基础发行版仓库的 URL 地址，切换本质是修改已有 .repo 文件中 baseurl 的域名。
 - 软件仓库（repo）：完整的 .repo 配置文件，可以添加自定义仓库来安装特定软件（如 remi、epel）。
 '''
 
@@ -91,15 +91,15 @@ def _extract_domain(url):
     """从 URL 中提取域名（scheme://host）"""
     try:
         p = urlparse(url)
-        return '%s://%s' % (p.scheme, p.netloc)
+        return f'{p.scheme}://{p.netloc}'
     except Exception:
         return url
 
 
 def get_mirrors():
-    """获取镜像源列表（用于镜像URL切换）
+    """获取镜像站列表（用于镜像URL切换）
 
-    从 sources_yum.json 读取所有已注册的镜像源，结合当前系统
+    从 sources_yum.json 读取所有已注册的镜像站，结合当前系统
     检测哪个源是激活状态。
     """
     sources = _load_sources_config()
@@ -223,7 +223,7 @@ def get_repo_release(os_versint, os_name, arch):
             cmds.append('yum install -y centos-release')
     else:
         for rpm in yum_reporpms['base'][os_versint][arch]:
-            cmds.append('rpm -U %s' % rpm)
+            cmds.append(f'rpm -U {rpm}')
 
         if Path('/etc/issue.inpanel').exists():
             cmds.append('cp -f /etc/issue.inpanel /etc/issue')
@@ -246,7 +246,7 @@ def get_repo_epel(os_versint, os_name, arch):
             cmds.append('yum install -y epel-release')
     else:
         for rpm in yum_reporpms['epel'][os_versint][arch]:
-            cmds.append('rpm -U %s' % rpm)
+            cmds.append(f'rpm -U {rpm}')
 
     return cmds
 
@@ -292,7 +292,7 @@ def refresh_cache():
     status, output = getstatusoutput('yum makecache 2>&1')
     if status == 0:
         return {'code': 0, 'msg': 'yum 缓存已更新！'}
-    return {'code': -1, 'msg': 'yum 缓存更新失败：%s' % output}
+    return {'code': -1, 'msg': f'yum 缓存更新失败：{output}'}
 
 
 def get_repo_list():
@@ -366,10 +366,10 @@ def install_package(name):
         return {'code': -1, 'msg': '软件名称不能为空！'}
     if not is_installed():
         return {'code': -1, 'msg': 'yum 未安装！'}
-    status, output = getstatusoutput('yum install -y %s 2>&1' % name)
+    status, output = getstatusoutput(f'yum install -y {name} 2>&1')
     if status == 0:
-        return {'code': 0, 'msg': '软件 %s 安装成功！' % name, 'data': output}
-    return {'code': -1, 'msg': '软件 %s 安装失败：%s' % (name, output)}
+        return {'code': 0, 'msg': f'软件 {name} 安装成功！', 'data': output}
+    return {'code': -1, 'msg': f'软件 {name} 安装失败：{output}'}
 
 
 # ==================================================================
@@ -381,10 +381,10 @@ def web_handler(context, action):
 
     支持的 action：
     - overview / refresh / list / item / search / install  : 通用操作
-    - mirrors       : 获取镜像源列表（用于URL切换）
+    - mirrors       : 获取镜像站列表（用于URL切换）
     - mirror-add    : 添加自定义镜像URL
     - mirror-del    : 删除自定义镜像URL
-    - switch        : 切换镜像源（修改已有 .repo 文件中的 baseurl 域名）
+    - switch        : 切换镜像站（修改已有 .repo 文件中的 baseurl 域名）
     - repo-add      : 添加仓库（写入新的 .repo 文件）
     - repo-edit     : 编辑仓库
     - repo-del      : 删除仓库（删除 .repo 文件）
@@ -416,7 +416,7 @@ def web_handler(context, action):
     elif action == 'install':
         context.write(install_package(repo))
 
-    # --- 镜像源管理 ---
+    # --- 镜像站管理 ---
     elif action == 'mirrors':
         context.write({'code': 0, 'msg': '', 'data': get_mirrors()})
 
@@ -436,11 +436,11 @@ def web_handler(context, action):
                 return
         sources.append({'name': source_name, 'url': url, 'builtin': False})
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': 'YUM 镜像源已添加：%s' % url})
+        context.write({'code': 0, 'msg': f'YUM 镜像站已添加：{url}'})
 
     elif action == 'mirror-del':
         if not repo:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
             return
         sources = _load_sources_config()
         found = None
@@ -449,17 +449,17 @@ def web_handler(context, action):
                 found = s
                 break
         if found is None:
-            context.write({'code': -1, 'msg': '镜像源不存在！'})
+            context.write({'code': -1, 'msg': '镜像站不存在！'})
             return
         if found.get('builtin'):
-            context.write({'code': -1, 'msg': '内置镜像源不可删除！'})
+            context.write({'code': -1, 'msg': '内置镜像站不可删除！'})
             return
         sources = [s for s in sources if s['name'] != repo]
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': '镜像源「%s」已删除' % repo})
+        context.write({'code': 0, 'msg': f'镜像源「{repo}」已删除'})
 
     elif action == 'switch':
-        """切换镜像源：替换已有 .repo 文件中 baseurl 的域名部分"""
+        """切换镜像站：替换已有 .repo 文件中 baseurl 的域名部分"""
         url = context.get_argument('url', '').strip()
         source_name = context.get_argument('name', '') or context.get_argument('repo', '')
         if not url and not source_name:
@@ -472,7 +472,7 @@ def web_handler(context, action):
                     url = s['url']
                     break
         if not url:
-            context.write({'code': -1, 'msg': '未找到该镜像源的地址！'})
+            context.write({'code': -1, 'msg': '未找到该镜像站的地址！'})
             return
 
         new_url = url.rstrip('/')
@@ -513,7 +513,7 @@ def web_handler(context, action):
                 pass
 
         if modified_count > 0:
-            context.write({'code': 0, 'msg': 'YUM 镜像源已切换至：%s（修改了 %d 个仓库文件）' % (source_name or url, modified_count)})
+            context.write({'code': 0, 'msg': f'YUM 镜像站已切换至：{source_name or url}（修改了 {modified_count} 个仓库文件）'})
         else:
             context.write({'code': -1, 'msg': '没有找到需要切换的 .repo 文件'})
 
@@ -533,7 +533,7 @@ def web_handler(context, action):
             return
         repo_file = context.get_argument('repo', '')
         if not repo_file:
-            repo_file = '%s.repo' % serverid
+            repo_file = f'{serverid}.repo'
 
         enabled = context.get_argument('enabled', True)
         gpgcheck = context.get_argument('gpgcheck', False)
@@ -550,9 +550,9 @@ def web_handler(context, action):
         }
 
         if item_exists(repo_file):
-            context.write({'code': -1, 'msg': '仓库文件「%s」已存在！' % repo_file})
+            context.write({'code': -1, 'msg': f'仓库文件「{repo_file}」已存在！'})
         elif add_item(repo_file, data) is True:
-            context.write({'code': 0, 'msg': '仓库「%s」添加成功！' % repo_file})
+            context.write({'code': 0, 'msg': f'仓库「{repo_file}」添加成功！'})
         else:
             context.write({'code': -1, 'msg': '仓库添加失败！'})
 
@@ -600,11 +600,11 @@ def web_handler(context, action):
         elif not item_exists(repo):
             context.write({'code': -1, 'msg': '仓库文件不存在！'})
         elif del_item(repo):
-            context.write({'code': 0, 'msg': '仓库「%s」已删除' % repo})
+            context.write({'code': 0, 'msg': f'仓库「{repo}」已删除'})
         else:
             context.write({'code': -1, 'msg': '仓库删除失败！'})
 
-    # --- 第三方专用源 ---
+    # --- 第三方软件仓库 ---
     elif action == 'third_party':
         context.write(_get_third_party('rhel'))
 
@@ -617,14 +617,14 @@ def web_handler(context, action):
 
 
 # ==================================================================
-# 第三方专用源（共享）
+# 第三方软件仓库（共享）
 # ==================================================================
 
 _THIRD_PARTY_CACHE = None
 
 
 def _load_third_party():
-    """加载第三方专用源配置文件"""
+    """加载第三方软件仓库配置文件"""
     global _THIRD_PARTY_CACHE
     if _THIRD_PARTY_CACHE is not None:
         return _THIRD_PARTY_CACHE
@@ -651,7 +651,7 @@ def _get_installed_repo_files(pm_type):
 
 
 def _get_third_party(platform):
-    """获取适配当前平台的第三方专用源列表"""
+    """获取适配当前平台的第三方软件仓库列表"""
     sources = _load_third_party()
     installed_files = _get_installed_repo_files('yum')
 
@@ -712,7 +712,7 @@ def _get_el_version():
 
 
 def _install_third_party(source_id, platform):
-    """安装第三方专用源"""
+    """安装第三方软件仓库"""
     sources = _load_third_party()
     source = None
     for s in sources:
@@ -720,11 +720,11 @@ def _install_third_party(source_id, platform):
             source = s
             break
     if not source:
-        return {'code': -1, 'msg': '第三方专用源不存在！'}
+        return {'code': -1, 'msg': '第三方软件仓库不存在！'}
 
     platforms = source.get('platform', [])
     if platform not in platforms:
-        return {'code': -1, 'msg': '该第三方专用源不支持当前系统平台！'}
+        return {'code': -1, 'msg': '该第三方软件仓库不支持当前系统平台！'}
 
     if platform == 'rhel':
         rhel_cfg = source.get('rhel', {})
@@ -745,24 +745,24 @@ def _install_third_party(source_id, platform):
 
     # 如果 repo_url 是 .rpm 文件，则通过 rpm 安装
     if repo_url.endswith('.rpm'):
-        status, output = getstatusoutput('rpm -U %s 2>&1' % repo_url)
+        status, output = getstatusoutput(f'rpm -U {repo_url} 2>&1')
         if status == 0:
-            return {'code': 0, 'msg': '第三方专用源「%s」安装成功！' % source['name']}
-        return {'code': -1, 'msg': '第三方专用源安装失败：%s' % output}
+            return {'code': 0, 'msg': f"第三方软件仓库「{source['name']}」安装成功！"}
+        return {'code': -1, 'msg': f'第三方软件仓库安装失败：{output}'}
 
     # 如果是脚本地址（如 mariadb_repo_setup）
     if 'mariadb_repo_setup' in repo_url:
-        status, output = getstatusoutput('curl -sSL %s | bash 2>&1' % repo_url)
+        status, output = getstatusoutput(f'curl -sSL {repo_url} | bash 2>&1')
         if status == 0:
-            return {'code': 0, 'msg': '第三方专用源「%s」安装成功！' % source['name']}
-        return {'code': -1, 'msg': '第三方专用源安装失败：%s' % output}
+            return {'code': 0, 'msg': f"第三方软件仓库「{source['name']}」安装成功！"}
+        return {'code': -1, 'msg': f'第三方软件仓库安装失败：{output}'}
 
     # 如果是 nodesource setup 脚本
     if 'nodesource' in repo_url and 'setup' in repo_url:
-        status, output = getstatusoutput('curl -fsSL %s | bash - 2>&1' % repo_url)
+        status, output = getstatusoutput(f'curl -fsSL {repo_url} | bash - 2>&1')
         if status == 0:
-            return {'code': 0, 'msg': '第三方专用源「%s」安装成功！' % source['name']}
-        return {'code': -1, 'msg': '第三方专用源安装失败：%s' % output}
+            return {'code': 0, 'msg': f"第三方软件仓库「{source['name']}」安装成功！"}
+        return {'code': -1, 'msg': f'第三方软件仓库安装失败：{output}'}
 
     # 其他情况：创建 .repo 文件
     if repo_url:
@@ -772,16 +772,16 @@ def _install_third_party(source_id, platform):
             try:
                 with open(repo_path, 'w', encoding='utf-8') as f:
                     f.write(content)
-                return {'code': 0, 'msg': '第三方专用源「%s」添加成功！' % source['name']}
+                return {'code': 0, 'msg': f"第三方软件仓库「{source['name']}」添加成功！"}
             except Exception as e:
-                return {'code': -1, 'msg': '第三方专用源添加失败：%s' % str(e)}
-        return {'code': -1, 'msg': '第三方专用源添加失败！'}
+                return {'code': -1, 'msg': f'第三方软件仓库添加失败：{e!s}'}
+        return {'code': -1, 'msg': '第三方软件仓库添加失败！'}
 
-    return {'code': -1, 'msg': '不支持的第三方专用源安装方式！'}
+    return {'code': -1, 'msg': '不支持的第三方软件仓库安装方式！'}
 
 
 def _generate_repo_content(source, platform, resolved_url=None):
-    """根据第三方专用源配置生成 .repo 文件内容"""
+    """根据第三方软件仓库配置生成 .repo 文件内容"""
     if platform == 'rhel':
         rhel_cfg = source.get('rhel', {})
         baseurl = resolved_url or rhel_cfg.get('repo_url', source.get('repo_url', ''))
@@ -794,13 +794,13 @@ def _generate_repo_content(source, platform, resolved_url=None):
         return None
 
     serverid = source['id']
-    lines = ['[%s]' % serverid]
-    lines.append('name=%s' % source['name'])
-    lines.append('baseurl=%s' % baseurl)
+    lines = [f'[{serverid}]']
+    lines.append(f"name={source['name']}")
+    lines.append(f'baseurl={baseurl}')
     lines.append('enabled=1')
     lines.append('gpgcheck=1' if gpgkey else 'gpgcheck=0')
     if gpgkey:
-        lines.append('gpgkey=%s' % gpgkey)
+        lines.append(f'gpgkey={gpgkey}')
     lines.append('')
     return '\n'.join(lines)
 

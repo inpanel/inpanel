@@ -39,15 +39,15 @@ def _inpanel_install(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, i
         s.sendline('/usr/bin/inpanel config loginlock on')
         s.prompt()
         if accesskey != None:
-            s.sendline('/usr/bin/inpanel config accesskey %s' % accesskey)
+            s.sendline(f'/usr/bin/inpanel config accesskey {accesskey}')
             s.prompt()
             s.sendline('/usr/bin/inpanel config accesskeyenable on')
             s.prompt()
         if inpanel_ip != None:
-            s.sendline('/usr/bin/inpanel config ip %s' % inpanel_ip)
+            s.sendline(f'/usr/bin/inpanel config ip {inpanel_ip}')
             s.prompt()
         if inpanel_port != None:
-            s.sendline('/usr/bin/inpanel config port %s' % inpanel_port)
+            s.sendline(f'/usr/bin/inpanel config port {inpanel_port}')
             s.prompt()
         s.sendline('service inpanel restart')
         s.prompt()
@@ -80,25 +80,25 @@ def _inpanel_config(ssh_ip, ssh_port, ssh_user, ssh_password, accesskey=None, ac
         s.sendline('service inpanel stop')
         s.prompt()
         if accesskey != None:
-            s.sendline('/usr/bin/inpanel config accesskey %s' % accesskey)
+            s.sendline(f'/usr/bin/inpanel config accesskey {accesskey}')
             s.prompt()
         if accesskeyenable != None:
-            s.sendline('/usr/bin/inpanel config accesskeyenable %s' % (accesskeyenable and 'on' or 'off'))
+            s.sendline(f"/usr/bin/inpanel config accesskeyenable {'on' if accesskeyenable else 'off'}")
             s.prompt()
         if username != None:
-            s.sendline('/usr/bin/inpanel config username %s' % username)
+            s.sendline(f'/usr/bin/inpanel config username {username}')
             s.prompt()
         if password != None:
-            s.sendline('/usr/bin/inpanel config password %s' % password)
+            s.sendline(f'/usr/bin/inpanel config password {password}')
             s.prompt()
         if loginlock != None:
-            s.sendline('/usr/bin/inpanel config loginlock %s' % (loginlock and 'on' or 'off'))
+            s.sendline(f"/usr/bin/inpanel config loginlock {'on' if loginlock else 'off'}")
             s.prompt()
         if inpanel_ip != None:
-            s.sendline('/usr/bin/inpanel config ip %s' % inpanel_ip)
+            s.sendline(f'/usr/bin/inpanel config ip {inpanel_ip}')
             s.prompt()
         if inpanel_port != None:
-            s.sendline('/usr/bin/inpanel config port %s' % inpanel_port)
+            s.sendline(f'/usr/bin/inpanel config port {inpanel_port}')
             s.prompt()
         s.logout()
         return True

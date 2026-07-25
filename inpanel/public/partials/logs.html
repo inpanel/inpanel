@@ -1,0 +1,442 @@
+<div navbar ng-init="currentItem='utils.logs'"></div>
+<div ng-show="!loaded">
+    <div loading></div>
+</div>
+
+<div id="main" ng-show="loaded" style="display:none">
+    <div class="module-header">
+        <h3>日志管理</h3>
+    </div>
+
+    <div ng-init="load()">
+        <!-- 主分类标签 -->
+        <ul class="nav nav-tabs" style="margin-bottom: 15px;">
+            <li ng-class="'active' | iftrue:activeTab=='inpanel'">
+                <a href="#/logs/inpanel" ng-click="switchTab('inpanel')">面板日志</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTab=='ssh'">
+                <a href="#/logs/ssh" ng-click="switchTab('ssh')">SSH登录日志</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTab=='website'">
+                <a href="#/logs/website" ng-click="switchTab('website')">网站日志</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTab=='service'">
+                <a href="#/logs/service" ng-click="switchTab('service')">服务日志</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTab=='files'">
+                <a href="#/logs/files" ng-click="switchTab('files')">文件日志</a>
+            </li>
+            <li ng-class="'active' | iftrue:activeTab=='cron'">
+                <a href="#/logs/cron" ng-click="switchTab('cron')">计划任务日志</a>
+            </li>
+        </ul>
+
+        <!-- ========== 面板日志 ========== -->
+        <div ng-show="activeTab=='inpanel'">
+            <!-- 子功能标签 -->
+            <ul class="nav nav-pills" style="margin-bottom: 15px;">
+                <li ng-class="'active' | iftrue:panelSubTab=='operation'">
+                    <a href ng-click="switchPanelSubTab('operation')">操作日志</a>
+                </li>
+                <li ng-class="'active' | iftrue:panelSubTab=='login'">
+                    <a href ng-click="switchPanelSubTab('login')">登录日志</a>
+                </li>
+                <li ng-class="'active' | iftrue:panelSubTab=='error'">
+                    <a href ng-click="switchPanelSubTab('error')">错误日志</a>
+                </li>
+                <li ng-class="'active' | iftrue:panelSubTab=='task'">
+                    <a href ng-click="switchPanelSubTab('task')">后台异步任务日志</a>
+                </li>
+            </ul>
+
+            <!-- 操作日志 -->
+            <div ng-show="panelSubTab=='operation'">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            面板操作日志
+                            <span class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="loadOperationLogs()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                            </span>
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th style="width:160px;">时间</th>
+                                        <th style="width:80px;">级别</th>
+                                        <th>消息</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="log in operationLogs" ng-show="operationLogs.length > 0">
+                                        <td>{{log.time}}</td>
+                                        <td><span class="label" ng-class="{'label-danger': log.level=='ERROR', 'label-warning': log.level=='WARNING', 'label-info': log.level=='INFO', 'label-default': true}">{{log.level}}</span></td>
+                                        <td style="word-break: break-all;">{{log.message}}</td>
+                                    </tr>
+                                    <tr ng-show="operationLogs.length == 0">
+                                        <td colspan="3" class="text-center">暂无操作日志</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 登录日志 -->
+            <div ng-show="panelSubTab=='login'">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            面板登录日志
+                            <span class="pull-right">
+                                <div class="btn-group btn-group-xs">
+                                    <button class="btn btn-default" ng-class="'active' | iftrue:loginFilter=='all'" ng-click="filterLoginLogs('all')">全部</button>
+                                    <button class="btn btn-default" ng-class="'active' | iftrue:loginFilter=='success'" ng-click="filterLoginLogs('success')">成功</button>
+                                    <button class="btn btn-default" ng-class="'active' | iftrue:loginFilter=='fail'" ng-click="filterLoginLogs('fail')">失败</button>
+                                    <button class="btn btn-default" ng-click="loadLoginLogs()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                                </div>
+                            </span>
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th style="width:160px;">时间</th>
+                                        <th style="width:80px;">级别</th>
+                                        <th>消息</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="log in loginLogs" ng-show="loginLogs.length > 0">
+                                        <td>{{log.time}}</td>
+                                        <td><span class="label" ng-class="{'label-danger': log.level=='ERROR', 'label-warning': log.level=='WARNING', 'label-info': log.level=='INFO', 'label-default': true}">{{log.level}}</span></td>
+                                        <td style="word-break: break-all;">{{log.message}}</td>
+                                    </tr>
+                                    <tr ng-show="loginLogs.length == 0">
+                                        <td colspan="3" class="text-center">暂无登录日志</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 错误日志 -->
+            <div ng-show="panelSubTab=='error'">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            面板错误日志
+                            <span class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="loadErrorLog()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                            </span>
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <pre style="max-height: 500px; overflow-y: auto; background: #1e1e1e; color: #f48771; padding: 15px; border-radius: 4px;">{{errorLogContent || '暂无错误日志'}}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 后台异步任务日志 -->
+            <div ng-show="panelSubTab=='task'">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            后台异步任务日志
+                            <span class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="loadTaskLogs()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                            </span>
+                        </h4>
+                    </div>
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-hover table-bordered table-condensed">
+                            <thead>
+                                <tr>
+                                    <th style="width:160px;">时间</th>
+                                    <th style="width:120px;">任务名称</th>
+                                    <th style="width:80px;">状态</th>
+                                    <th style="width:80px;">结果</th>
+                                    <th style="width:160px;">描述</th>
+                                    <th style="width:80px;">耗时(秒)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="log in taskLogs" ng-show="taskLogs.length > 0">
+                                    <td>{{log.time}}</td>
+                                    <td>{{log.name || log.message}}</td>
+                                    <td><span class="label" ng-class="{'label-success': log.status=='finish', 'label-warning': log.status=='running', 'label-danger': log.status=='cancel', 'label-default': true}">{{log.status}}</span></td>
+                                    <td><span class="label" ng-class="{'label-success': log.result=='ok', 'label-danger': log.result!='ok'}">{{log.result}}</span></td>
+                                    <td style="word-break: break-all;">{{log.desc || ''}}</td>
+                                    <td>{{log.duration || ''}}</td>
+                                </tr>
+                                <tr ng-show="taskLogs.length == 0">
+                                    <td colspan="6" class="text-center">暂无任务日志</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== SSH登录日志 ========== -->
+        <div ng-show="activeTab=='ssh'">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        SSH 登录日志
+                        <span class="pull-right">
+                            <div class="btn-group btn-group-xs">
+                                <button class="btn btn-default" ng-class="'active' | iftrue:sshFilter=='all'" ng-click="filterSSHLogs('all')">全部</button>
+                                <button class="btn btn-default" ng-class="'active' | iftrue:sshFilter=='success'" ng-click="filterSSHLogs('success')">成功</button>
+                                <button class="btn btn-default" ng-class="'active' | iftrue:sshFilter=='fail'" ng-click="filterSSHLogs('fail')">失败</button>
+                            </div>
+                            <button class="btn btn-default btn-xs" ng-click="loadSSHLogs()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                        </span>
+                    </h4>
+                </div>
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-hover table-bordered table-condensed">
+                        <thead>
+                            <tr>
+                                <th style="width:160px;">时间</th>
+                                <th style="width:160px;">IP地址:端口</th>
+                                <th style="width:120px;">归属地</th>
+                                <th style="width:120px;">用户账号</th>
+                                <th style="width:80px;">登录状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="log in sshLogs" ng-show="sshLogs.length > 0">
+                                <td>{{log.time}}</td>
+                                <td>{{log.ip}}<span ng-show="log.port">:{{log.port}}</span></td>
+                                <td>{{log.location || '-'}}</td>
+                                <td>{{log.user || '-'}}</td>
+                                <td><span class="label" ng-class="{'label-success': log.status=='成功', 'label-danger': log.status=='失败', 'label-default': log.status!='成功' && log.status!='失败'}">{{log.status}}</span></td>
+                            </tr>
+                            <tr ng-show="sshLogs.length == 0">
+                                <td colspan="5" class="text-center">暂无SSH登录日志</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- <div class="panel-body">这里写loading</div> -->
+            </div>
+        </div>
+
+        <!-- ========== 网站日志 ========== -->
+        <div ng-show="activeTab=='website'">
+            <!-- 服务器类型选择 -->
+            <div style="margin-bottom: 15px;">
+                <span style="margin-right: 10px;">服务器类型：</span>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-default" ng-class="'btn-primary' | iftrue:websiteServerType=='nginx'" ng-click="websiteServerType='nginx'; loadWebsiteLogs(websiteSubTab)">Nginx</button>
+                    <button class="btn btn-default" ng-class="'btn-primary' | iftrue:websiteServerType=='apache'" ng-click="websiteServerType='apache'; loadWebsiteLogs(websiteSubTab)">Apache</button>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        {{websiteServerType | uppercase}} <span ng-show="websiteSubTab=='runtime'">运行日志</span><span ng-show="websiteSubTab=='error'">异常日志</span>
+                        <span class="pull-right">
+                            <ul class="nav nav-pills" style="display: inline-block; margin: -5px 0; vertical-align: middle;">
+                                <li ng-class="'active' | iftrue:websiteSubTab=='runtime'" style="margin-right: 4px;">
+                                    <a href ng-click="switchWebsiteSubTab('runtime')" style="padding: 3px 10px; font-size: 12px;">运行日志</a>
+                                </li>
+                                <li ng-class="'active' | iftrue:websiteSubTab=='error'" style="margin-right: 8px;">
+                                    <a href ng-click="switchWebsiteSubTab('error')" style="padding: 3px 10px; font-size: 12px;">异常日志</a>
+                                </li>
+                            </ul>
+                            <button class="btn btn-default btn-xs" ng-click="refreshWebsiteLogs()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                            <button class="btn btn-default btn-xs" ng-click="exportWebsiteLogs()"><span class="glyphicon glyphicon-download-alt"></span> 导出</button>
+                        </span>
+                    </h4>
+                </div>
+                <div class="panel-body">
+                    <pre ng-show="websiteSubTab=='runtime'" style="max-height: 500px; overflow-y: auto; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px;">{{websiteRuntimeContent || '暂无日志内容'}}</pre>
+                    <pre ng-show="websiteSubTab=='error'" style="max-height: 500px; overflow-y: auto; background: #1e1e1e; color: #f48771; padding: 15px; border-radius: 4px;">{{websiteErrorContent || '暂无异常日志'}}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 服务日志 ========== -->
+        <div ng-show="activeTab=='service'">
+            <div class="row">
+                <div class="col-md-3 col-sm-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">服务列表</h4>
+                        </div>
+                        <div class="list-group" style="margin-bottom: 0; max-height: 500px; overflow-y: auto;">
+                            <a class="list-group-item" ng-repeat="svc in serviceList" ng-class="'active' | iftrue:selectedService.id==svc.id" ng-click="selectService(svc)" style="cursor: pointer;">
+                                {{svc.name}}
+                                <span class="badge pull-right" ng-show="svc.available">可用</span>
+                                <span class="badge pull-right" ng-show="!svc.available" style="background:#ccc;">无日志</span>
+                            </a>
+                            <div class="list-group-item text-center" ng-show="serviceList.length == 0">
+                                暂无可用服务日志
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-9 col-sm-8">
+                    <div class="panel panel-default" ng-show="selectedService">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                {{selectedService.name}} 日志
+                                <span class="pull-right" ng-show="selectedService.logs.length > 1">
+                                    <select class="form-control" ng-model="selectedLogPath" ng-change="selectServiceLogFile({path: selectedLogPath})" style="font-size:12px;">
+                                        <option ng-repeat="logFile in selectedService.logs" value="{{logFile.path}}">{{logFile.name}}</option>
+                                    </select>
+                                </span>
+                            </h4>
+                        </div>
+                        <div class="panel-body">
+                            <pre style="max-height: 500px; overflow-y: auto; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px;">{{serviceLogContent || '暂无日志内容'}}</pre>
+                        </div>
+                    </div>
+                    <div class="text-center text-muted" ng-show="!selectedService" style="padding: 50px 0;">
+                        <p>请从左侧选择一个服务查看日志</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 文件日志 ========== -->
+        <div ng-show="activeTab=='files'">
+            <!-- 子功能标签 -->
+            <ul class="nav nav-pills" style="margin-bottom: 15px;">
+                <li ng-class="'active' | iftrue:fileSubTab=='operation'">
+                    <a href ng-click="switchFileSubTab('operation')">文件操作日志</a>
+                </li>
+                <li ng-class="'active' | iftrue:fileSubTab=='access'">
+                    <a href ng-click="switchFileSubTab('access')">文件访问日志</a>
+                </li>
+            </ul>
+
+            <!-- 文件操作日志 -->
+            <div ng-show="fileSubTab=='operation'">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            文件操作日志
+                            <span class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="loadFilesLogs()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                            </span>
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th style="width:160px;">时间</th>
+                                        <th style="width:200px;">文件路径</th>
+                                        <th style="width:80px;">操作</th>
+                                        <th style="width:60px;">结果</th>
+                                        <th>变更内容</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="log in filesLogs" ng-show="filesLogs.length > 0">
+                                        <td>{{log.time}}</td>
+                                        <td style="word-break: break-all;">{{log.path}}</td>
+                                        <td>{{log.operation}}</td>
+                                        <td><span class="label" ng-class="{'label-success': log.result=='成功', 'label-danger': log.result=='失败'}">{{log.result}}</span></td>
+                                        <td style="word-break: break-all;">{{log.detail || '-'}}</td>
+                                    </tr>
+                                    <tr ng-show="filesLogs.length == 0">
+                                        <td colspan="5" class="text-center">暂无文件操作日志</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件访问日志 -->
+            <div ng-show="fileSubTab=='access'">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            文件访问日志（路径浏览记录）
+                            <span class="pull-right">
+                                <button class="btn btn-default btn-xs" ng-click="loadFilesAccessLogs()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                            </span>
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover table-bordered table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th style="width:60px;">序号</th>
+                                        <th style="width:180px;">时间</th>
+                                        <th>浏览路径</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="log in filesAccessLogs" ng-show="filesAccessLogs.length > 0">
+                                        <td>{{$index + 1}}</td>
+                                        <td>{{log.time}}</td>
+                                        <td style="word-break: break-all;">{{log.path}}</td>
+                                    </tr>
+                                    <tr ng-show="filesAccessLogs.length == 0">
+                                        <td colspan="3" class="text-center">暂无文件访问记录</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 计划任务日志 ========== -->
+        <div ng-show="activeTab=='cron'">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        计划任务日志
+                        <span class="pull-right">
+                            <button class="btn btn-default btn-xs" ng-click="loadCronLogs()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+                        </span>
+                    </h4>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-hover table-bordered table-condensed">
+                            <thead>
+                                <tr>
+                                    <th style="width:160px;">时间</th>
+                                    <th style="width:80px;">级别</th>
+                                    <th>消息</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="log in cronLogs" ng-show="cronLogs.length > 0">
+                                    <td>{{log.time}}</td>
+                                    <td><span class="label label-default">{{log.level || 'INFO'}}</span></td>
+                                    <td style="word-break: break-all;">{{log.message}}</td>
+                                </tr>
+                                <tr ng-show="cronLogs.length == 0">
+                                    <td colspan="3" class="text-center">暂无计划任务日志</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

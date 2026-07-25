@@ -28,19 +28,19 @@
                         <td><a class="btn btn-default btn-xs" href="#/utils/time">进入设置</a></td>
                     </tr>
                     <tr>
-                        <td><a href="#/utils/sources">软件源</a></td>
-                        <td class="muted">软件源的管理</td>
-                        <td><a class="btn btn-default btn-xs" href="#/utils/sources">进入设置</a></td>
-                    </tr>
-                    <tr>
                         <td><a href="#/utils/cron">定时任务</a></td>
                         <td class="muted">管理系统定时任务</td>
                         <td><a class="btn btn-default btn-xs" href="#/utils/cron">进入管理</a></td>
                     </tr>
                     <tr>
-                        <td><a href="#/utils/task">后台异步任务</a></td>
+                        <td><a href="#/utils/task">后台任务</a></td>
                         <td class="muted">查看和管理后台异步任务</td>
                         <td><a class="btn btn-default btn-xs" href="#/utils/task">进入管理</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/utils/shell">执行命令</a></td>
+                        <td class="muted">执行 SHELL 命令</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/shell">进入操作</a></td>
                     </tr>
                 </tbody>
             </table>
@@ -69,14 +69,14 @@
                         <td><a class="btn btn-default btn-xs" href="#/ecs" ng-disabled="true">正在开发</a></td>
                     </tr>
                     <tr>
+                        <td><a href="#/utils/sources">软件源管理</a></td>
+                        <td class="muted">软件源的管理</td>
+                        <td><a class="btn btn-default btn-xs" href="#/utils/sources">进入设置</a></td>
+                    </tr>
+                    <tr>
                         <td><a href="#/ftp">FTP 管理</a></td>
                         <td class="muted">FTP 用户及进程管理</td>
                         <td><a class="btn btn-default btn-xs" href="#/ftp" ng-disabled="true">正在开发</a></td>
-                    </tr>
-                    <tr>
-                        <td><a href="#/utils/shell">执行命令</a></td>
-                        <td class="muted">执行 SHELL 命令</td>
-                        <td><a class="btn btn-default btn-xs" href="#/utils/shell">进入操作</a></td>
                     </tr>
                 </tbody>
             </table>
@@ -105,14 +105,19 @@
                         <td><a class="btn btn-default btn-xs" href="#/utils/firewall">进入设置</a></td>
                     </tr>
                     <tr>
-                        <td><a href="#/log">日志维护</a></td>
+                        <td><a href="#/logs">日志维护</a></td>
                         <td class="muted">维护系统日志</td>
-                        <td><a class="btn btn-default btn-xs" href="#/log" ng-disabled="true">正在开发</a></td>
+                        <td><a class="btn btn-default btn-xs" href="#/logs">打开查看</a></td>
                     </tr>
                     <tr>
                         <td><a href="#/secure">安全优化</a></td>
                         <td class="muted">优化系统增强安全</td>
                         <td><a class="btn btn-default btn-xs" href="#/secure" ng-disabled="true">正在开发</a></td>
+                    </tr>
+                    <tr>
+                        <td><a href="#/storage/backup">备份管理</a></td>
+                        <td class="muted">重要文件数据的备份和管理</td>
+                        <td><a class="btn btn-default btn-xs" href="#/storage/backup" ng-disabled="true">正在开发</a></td>
                     </tr>
                 </tbody>
             </table>
@@ -121,7 +126,7 @@
             <table class="table table-hover table-condensed">
                 <thead>
                     <tr>
-                        <th colspan="3">磁盘存储</th>
+                        <th colspan="3">文件磁盘存储</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,11 +134,6 @@
                         <td style="width:120px;"><a href="#/storage">磁盘管理</a></td>
                         <td style="width:380px;" class="muted">对磁盘进行分区、格式化、挂载以及网络磁盘的管理等操作</td>
                         <td style="width:100px;"><a class="btn btn-default btn-xs" href="#/storage">进入管理</a></td>
-                    </tr>
-                    <tr>
-                        <td><a href="#/storage/backup">备份管理</a></td>
-                        <td class="muted">重要文件数据的备份和管理</td>
-                        <td><a class="btn btn-default btn-xs" href="#/storage/backup" ng-disabled="true">正在开发</a></td>
                     </tr>
                     <tr style="display:none" ng-show="virt != 'Virtuozzo/OpenVZ' && virt != '?'">
                         <td><a href="#/storage/autofm">自动挂载</a></td>
@@ -153,7 +153,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-md-6 col-xs-12">
+        <div class="col-md-12 col-xs-12">
             <table class="table table-hover table-condensed">
                 <thead>
                     <tr>

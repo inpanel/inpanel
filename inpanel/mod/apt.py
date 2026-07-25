@@ -8,7 +8,7 @@
 '''APT 软件源管理模块
 
 概念说明：
-- 镜像源（mirror）：基础发行版仓库的 URL 地址，切换本质是修改已有 .list 文件中 deb URL 的域名。
+- 镜像站（mirror）：基础发行版仓库的 URL 地址，切换本质是修改已有 .list 文件中 deb URL 的域名。
 - 软件仓库（repo）：完整的 .list 配置文件，可以添加自定义仓库来安装特定软件（如 PHP SURY、NodeSource）。
 '''
 
@@ -102,13 +102,13 @@ def _extract_domain(url):
     """从 URL 中提取域名（scheme://host）"""
     try:
         p = urlparse(url)
-        return '%s://%s' % (p.scheme, p.netloc)
+        return f'{p.scheme}://{p.netloc}'
     except Exception:
         return url
 
 
 def get_mirrors():
-    """获取镜像源列表"""
+    """获取镜像站列表"""
     sources = _load_sources_config()
     active_url = _get_active_url()
     active_domain = _extract_domain(active_url) if active_url else ''
@@ -376,7 +376,7 @@ def refresh_cache():
     status, output = getstatusoutput('apt update 2>&1')
     if status == 0:
         return {'code': 0, 'msg': 'apt 索引已更新！'}
-    return {'code': -1, 'msg': 'apt 索引更新失败：%s' % output}
+    return {'code': -1, 'msg': f'apt 索引更新失败：{output}'}
 
 
 def get_repo_list():
@@ -436,10 +436,10 @@ def install_package(name):
         return {'code': -1, 'msg': '软件名称不能为空！'}
     if not is_installed():
         return {'code': -1, 'msg': 'apt 未安装！'}
-    status, output = getstatusoutput('apt install -y %s 2>&1' % name)
+    status, output = getstatusoutput(f'apt install -y {name} 2>&1')
     if status == 0:
-        return {'code': 0, 'msg': '软件 %s 安装成功！' % name, 'data': output}
-    return {'code': -1, 'msg': '软件 %s 安装失败：%s' % (name, output)}
+        return {'code': 0, 'msg': f'软件 {name} 安装成功！', 'data': output}
+    return {'code': -1, 'msg': f'软件 {name} 安装失败：{output}'}
 
 
 # ==================================================================
@@ -475,7 +475,7 @@ def web_handler(context, action):
     elif action == 'install':
         context.write(install_package(source))
 
-    # --- 镜像源管理 ---
+    # --- 镜像站管理 ---
     elif action == 'mirrors':
         context.write({'code': 0, 'msg': '', 'data': get_mirrors()})
 
@@ -495,11 +495,11 @@ def web_handler(context, action):
                 return
         sources.append({'name': source_name, 'url': url, 'builtin': False})
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': 'APT 镜像源已添加：%s' % url})
+        context.write({'code': 0, 'msg': f'APT 镜像站已添加：{url}'})
 
     elif action == 'mirror-del':
         if not source:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
             return
         sources = _load_sources_config()
         found = None
@@ -508,17 +508,17 @@ def web_handler(context, action):
                 found = s
                 break
         if found is None:
-            context.write({'code': -1, 'msg': '镜像源不存在！'})
+            context.write({'code': -1, 'msg': '镜像站不存在！'})
             return
         if found.get('builtin'):
-            context.write({'code': -1, 'msg': '内置镜像源不可删除！'})
+            context.write({'code': -1, 'msg': '内置镜像站不可删除！'})
             return
         sources = [s for s in sources if s['name'] != source]
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': '镜像源「%s」已删除' % source})
+        context.write({'code': 0, 'msg': f'镜像站「{source}」已删除'})
 
     elif action == 'switch':
-        """切换镜像源：替换已有 .list 文件中 deb URL 的域名"""
+        """切换镜像站：替换已有 .list 文件中 deb URL 的域名"""
         url = context.get_argument('url', '').strip()
         source_name = context.get_argument('name', '') or context.get_argument('source', '')
         if not url and not source_name:
@@ -531,7 +531,7 @@ def web_handler(context, action):
                     url = s['url']
                     break
         if not url:
-            context.write({'code': -1, 'msg': '未找到该镜像源的地址！'})
+            context.write({'code': -1, 'msg': '未找到该镜像站的地址！'})
             return
 
         new_url = url.rstrip('/')
@@ -578,7 +578,7 @@ def web_handler(context, action):
                 pass
 
         if modified_count > 0:
-            context.write({'code': 0, 'msg': 'APT 镜像源已切换至：%s（修改了 %d 个源文件）' % (source_name or url, modified_count)})
+            context.write({'code': 0, 'msg': f'APT 镜像站已切换至：{source_name or url}（修改了 {modified_count} 个源文件）'})
         else:
             context.write({'code': -1, 'msg': '没有找到需要切换的源文件'})
 
@@ -598,9 +598,9 @@ def web_handler(context, action):
             repo_file = 'sources.list.d/' + repo_file
 
         if item_exists(repo_file):
-            context.write({'code': -1, 'msg': '仓库文件「%s」已存在！' % repo_file})
+            context.write({'code': -1, 'msg': f'仓库文件「{repo_file}」已存在！'})
         elif add_item(repo_file, {'content': content}) is True:
-            context.write({'code': 0, 'msg': '仓库「%s」添加成功！' % repo_file})
+            context.write({'code': 0, 'msg': f'仓库「{repo_file}」添加成功！'})
         else:
             context.write({'code': -1, 'msg': '仓库添加失败！'})
 
@@ -625,7 +625,7 @@ def web_handler(context, action):
         elif not item_exists(source):
             context.write({'code': -1, 'msg': '仓库文件不存在！'})
         elif del_item(source):
-            context.write({'code': 0, 'msg': '仓库「%s」已删除' % source})
+            context.write({'code': 0, 'msg': f'仓库「{source}」已删除'})
         else:
             context.write({'code': -1, 'msg': '仓库删除失败！'})
 
@@ -642,7 +642,7 @@ def web_handler(context, action):
         content = generate_sources(sources)
         context.write({'code': 0, 'msg': '', 'data': {'content': content}})
 
-    # --- 第三方专用源 ---
+    # --- 第三方软件仓库 ---
     elif action == 'third_party':
         context.write(_get_apt_third_party())
 
@@ -655,14 +655,14 @@ def web_handler(context, action):
 
 
 # ==================================================================
-# APT 第三方专用源
+# APT 第三方软件仓库
 # ==================================================================
 
 _APT_THIRD_PARTY_CACHE = None
 
 
 def _load_apt_third_party():
-    """加载第三方专用源配置文件"""
+    """加载第三方软件仓库配置文件"""
     global _APT_THIRD_PARTY_CACHE
     if _APT_THIRD_PARTY_CACHE is not None:
         return _APT_THIRD_PARTY_CACHE
@@ -689,7 +689,7 @@ def _get_installed_list_files():
 
 
 def _get_apt_third_party():
-    """获取适配 Debian/Ubuntu 的第三方专用源列表"""
+    """获取适配 Debian/Ubuntu 的第三方软件仓库列表"""
     sources = _load_apt_third_party()
     installed_files = _get_installed_list_files()
 
@@ -724,7 +724,7 @@ def _get_apt_third_party():
 
 
 def _install_apt_third_party(source_id):
-    """安装 APT 第三方专用源"""
+    """安装 APT 第三方软件仓库"""
     sources = _load_apt_third_party()
     source = None
     for s in sources:
@@ -732,11 +732,11 @@ def _install_apt_third_party(source_id):
             source = s
             break
     if not source:
-        return {'code': -1, 'msg': '第三方专用源不存在！'}
+        return {'code': -1, 'msg': '第三方软件仓库不存在！'}
 
     platforms = source.get('platform', [])
     if 'debian' not in platforms:
-        return {'code': -1, 'msg': '该第三方专用源不支持当前系统平台！'}
+        return {'code': -1, 'msg': '该第三方软件仓库不支持当前系统平台！'}
 
     debian_cfg = source.get('debian', {})
     repo_file = debian_cfg.get('repo_file', source.get('repo_file', ''))
@@ -744,7 +744,7 @@ def _install_apt_third_party(source_id):
     gpgkey_url = debian_cfg.get('gpgkey', source.get('gpgkey', ''))
 
     if not repo_file:
-        return {'code': -1, 'msg': '第三方专用源配置信息不完整！'}
+        return {'code': -1, 'msg': '第三方软件仓库配置信息不完整！'}
 
     # 对于有现成安装命令的源，使用专用函数
     source_id_lower = source_id.lower()
@@ -771,16 +771,16 @@ def _install_apt_third_party(source_id):
 
     # 通用安装：使用 repo_line 写入 .list 文件
     if not repo_line:
-        return {'code': -1, 'msg': '该第三方专用源暂无自动安装脚本，请手动添加源配置！'}
+        return {'code': -1, 'msg': '该第三方软件仓库暂无自动安装脚本，请手动添加源配置！'}
 
     # 下载 GPG key
     if gpgkey_url:
         keyring_name = source_id.replace('-', '_') + '.gpg'
         keyring_path = '/usr/share/keyrings/' + keyring_name
         status, output = getstatusoutput(
-            'curl -fsSL %s | gpg --dearmor -o %s 2>&1' % (gpgkey_url, keyring_path))
+            f'curl -fsSL {gpgkey_url} | gpg --dearmor -o {keyring_path} 2>&1')
         if status != 0:
-            return {'code': -1, 'msg': 'GPG 密钥下载失败：%s' % output}
+            return {'code': -1, 'msg': f'GPG 密钥下载失败：{output}'}
 
     # 写入 .list 文件
     list_path = str(Path(sources_list_d_path) / repo_file)
@@ -791,13 +791,13 @@ def _install_apt_third_party(source_id):
         with open(list_path, 'w', encoding='utf-8') as f:
             f.write(repo_line + '\n')
     except Exception as e:
-        return {'code': -1, 'msg': '写入源文件失败：%s' % str(e)}
+        return {'code': -1, 'msg': f'写入源文件失败：{e!s}'}
 
     # apt update
     status, output = getstatusoutput('apt-get update 2>&1')
     if status == 0:
-        return {'code': 0, 'msg': '第三方专用源「%s」安装成功！' % source['name']}
-    return {'code': -1, 'msg': 'apt update 失败：%s' % output}
+        return {'code': 0, 'msg': f"第三方软件仓库「{source['name']}」安装成功！"}
+    return {'code': -1, 'msg': f'apt update 失败：{output}'}
 
 
 def _exec_apt_install_cmds(cmds, repo_name):
@@ -805,8 +805,8 @@ def _exec_apt_install_cmds(cmds, repo_name):
     for cmd in cmds:
         status, output = getstatusoutput(cmd + ' 2>&1')
         if status != 0:
-            return {'code': -1, 'msg': '仓库「%s」安装失败：%s' % (repo_name, output)}
-    return {'code': 0, 'msg': '仓库「%s」安装成功！' % repo_name}
+            return {'code': -1, 'msg': f'仓库「{repo_name}」安装失败：{output}'}
+    return {'code': 0, 'msg': f'仓库「{repo_name}」安装成功！'}
 
 
 if __name__ == '__main__':

@@ -67,7 +67,7 @@ var FileCtrl = [
         };
 
         $scope.addBookmark = function(curpath, name, item_type) {
-            console.log('addBookmark', curpath, name, item_type);
+            // console.log('addBookmark', curpath, name, item_type);
             var path = curpath === '/' ? '/' + name : curpath + '/' + name;
             Request.post('/api/operation/file', {
                 'action': 'add_bookmark',
@@ -245,6 +245,78 @@ var FileCtrl = [
             patharr.pop();
             $scope.listdir(patharr.join('/') + '/', true);
         };
+        // 文件扩展名 → CodeMirror mode 名称
+        var extToMode = {
+            'py': 'python', 'pyw': 'python',
+            'pl': 'perl', 'pm': 'perl',
+            'rb': 'ruby',
+            'lua': 'lua',
+            'go': 'go',
+            'rs': 'rust',
+            'c': 'clike', 'h': 'clike',
+            'cpp': 'clike', 'cxx': 'clike', 'cc': 'clike', 'hpp': 'clike',
+            'java': 'clike',
+            'cs': 'clike',
+            'scala': 'clike',
+            'kt': 'clike', 'kts': 'clike',
+            'php': 'php', 'php3': 'php', 'php4': 'php', 'php5': 'php', 'phtml': 'php',
+            'html': 'htmlmixed', 'htm': 'htmlmixed', 'shtml': 'htmlmixed',
+            'css': 'css', 'less': 'css', 'scss': 'css',
+            'js': 'javascript', 'json': 'javascript', 'jsx': 'javascript', 'ts': 'javascript', 'tsx': 'javascript',
+            'sh': 'shell', 'bash': 'shell', 'zsh': 'shell', 'fish': 'shell',
+            'sql': 'sql',
+            'yaml': 'yaml', 'yml': 'yaml',
+            'toml': 'toml',
+            'ini': 'properties', 'cfg': 'properties', 'conf': 'properties',
+            'md': 'markdown', 'markdown': 'markdown',
+            'xml': 'xml', 'svg': 'xml', 'wsdl': 'xml',
+            'diff': 'diff', 'patch': 'diff',
+            'log': 'null', 'txt': 'null'
+        };
+
+        var loadedModes = {};
+
+        var getModeInfo = function(filepath, mimetype) {
+            // 优先按文件扩展名匹配
+            var parts = filepath.split('.');
+            var ext = parts.length > 1 ? parts.pop().toLowerCase() : '';
+            if (ext && extToMode[ext]) {
+                return {name: extToMode[ext], mime: mimetype || ''};
+            }
+            // 其次按 MIME 类型，直接用 CM 内置查找
+            if (!mimetype) return null;
+            var mime = mimetype.split(';')[0].trim();
+            var info = CodeMirror.findModeByMIME(mime);
+            if (info) {
+                return {name: info.mode, mime: mime};
+            }
+            return null;
+        };
+
+        var loadMode = function(modeInfo, callback) {
+            if (!modeInfo) {
+                callback();
+                return;
+            }
+            var modeName = modeInfo.name;
+            if (modeName === 'null' || modeName === 'clike') {
+                // null 不需要加载，clike 是 CM 内置的
+                callback();
+                return;
+            }
+            // 已加载
+            if (CodeMirror.modes[modeName] || loadedModes[modeName]) {
+                callback();
+                return;
+            }
+            loadedModes[modeName] = true;
+            var script = document.createElement('script');
+            script.src = 'lib/codemirror/mode/' + modeName + '/' + modeName + '.min.js';
+            script.onload = function() { callback(); };
+            script.onerror = function() { callback(); };
+            document.head.appendChild(script);
+        };
+
         $scope.editfile = function(path) {
             Request.post('/api/operation/file', {
                 'action': 'fread',
@@ -258,12 +330,22 @@ var FileCtrl = [
                     $scope.filepath = filedata.filepath;
                     $scope.filecharset = filedata.charset;
                     $scope.filecharset_org = filedata.charset;
-                    editor.setValue('');
                     $('#list').hide();
                     $('#edit').show();
-                    editor.setOption('mode', filedata.mimetype);
-                    editor.setValue(filedata.content);
-                    hasChange = false;
+                    var modeInfo = getModeInfo(filedata.filepath, filedata.mimetype);
+                    loadMode(modeInfo, function() {
+                        if (modeInfo && modeInfo.name !== 'null') {
+                            // clike 需要 MIME 来区分语言
+                            var mode = modeInfo.name === 'clike' ? modeInfo.mime : modeInfo.name;
+                            editor.setOption('mode', mode);
+                        }
+                        editor.setValue(filedata.content);
+                        originalContent = filedata.content;
+                        hasChange = false;
+                        editor.refresh();
+                        editor.focus();
+                        editor.setCursor(0, 0);
+                    });
                 }
             });
         };
@@ -285,7 +367,8 @@ var FileCtrl = [
             }
         };
         $scope.savefile = function() {
-            if (!hasChange && $scope.filecharset == $scope.filecharset_org) {
+            var currentContent = editor.getValue();
+            if (currentContent === originalContent && $scope.filecharset == $scope.filecharset_org) {
                 Message.setInfo('文件未修改，无须保存！');
                 return;
             }
@@ -293,10 +376,11 @@ var FileCtrl = [
                 'action': 'fwrite',
                 'path': $scope.filepath,
                 'charset': $scope.filecharset,
-                'content': editor.getValue()
+                'content': currentContent
             }, function(data) {
                 if (data.code == 0) {
                     hasChange = false;
+                    originalContent = currentContent;
                     $scope.getitem($scope.filename);
                 }
             });
@@ -866,22 +950,20 @@ var FileCtrl = [
         };
 
         var hasChange = false;
+        var originalContent = '';  // 保存原始内容，用于保存时精确比较
         var editor = CodeMirror(document.getElementById('editor'), {
             value: '',
             lineNumbers: true,
             lineWrapping: true,
             matchBrackets: true,
-            onCursorActivity: function() {
-                editor.setLineClass(hlLine, null, null);
-                hlLine = editor.setLineClass(editor.getCursor().line, null, 'activeline');
-                // disable match highlight in IE, or it will slow down the page
-                if (!/msie/.test(navigator.userAgent.toLowerCase())) editor.matchHighlight('CodeMirror-matchhighlight');
-            },
-            onChange: function() {
-                hasChange = true;
-            }
+            highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true},
+            styleActiveLine: true,
+            tabSize: 4,
+            indentWithTabs: false
         });
-        var hlLine = editor.setLineClass(0, 'activeline');
+        editor.on('change', function() {
+            hasChange = true;
+        });
     }
 ];
 
@@ -895,6 +977,19 @@ var FileTrashCtrl = [
 
         $scope.confirm = function() {};
 
+        $scope.formatSize = function(size) {
+            if (!size || size === '0') return '0 B';
+            var bytes = parseInt(size);
+            if (isNaN(bytes)) return size;
+            var units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            var i = 0;
+            while (bytes >= 1024 && i < units.length - 1) {
+                bytes /= 1024;
+                i++;
+            }
+            return bytes.toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
+        };
+
         $scope.fileloading = false;
         $scope.tlist = function() {
             $scope.fileloading = true;
@@ -907,10 +1002,9 @@ var FileTrashCtrl = [
                 }
             });
         };
-        $scope.restore = function(mount, uuid) {
+        $scope.restore = function(uuid) {
             Request.post('/api/operation/file', {
                 'action': 'trestore',
-                'mount': mount,
                 'uuid': uuid
             }, function(data) {
                 if (data.code == 0) {
@@ -918,18 +1012,17 @@ var FileTrashCtrl = [
                 }
             });
         };
-        $scope.tdeleteconfirm = function(name, mount, uuid) {
+        $scope.tdeleteconfirm = function(name, uuid) {
             $scope.confirm_title = '删除确认';
             $scope.confirm_body = '<p>删除后文件将不可恢复！</p><p>确认要删除 ' + name + ' 吗？</p>';
             $('#confirm').modal();
             $scope.confirm = function() {
-                $scope.tdelete(mount, uuid);
+                $scope.tdelete(uuid);
             };
         };
-        $scope.tdelete = function(mount, uuid) {
+        $scope.tdelete = function(uuid) {
             Request.post('/api/operation/file', {
                 'action': 'titem',
-                'mount': mount,
                 'uuid': uuid
             }, function(data) {
                 if (data.code == 0) {
@@ -944,7 +1037,6 @@ var FileTrashCtrl = [
                         function() {
                             Request.post('/api/operation/file', {
                                 'action': 'tdelete',
-                                'mount': mount,
                                 'uuid': uuid
                             }, function(data) {
                                 if (data.code == 0) {
@@ -965,24 +1057,29 @@ var FileTrashCtrl = [
             };
         };
         $scope.tclean = function() {
-            Request.post('/api/operation/file', {
-                'action': 'trashs'
-            }, function(data) {
-                if (data.code == 0) {
-                    var trashs = data.data.join(',');
-                    Task.call(
-                        $scope,
-                        module,
-                        '/api/task/file.remove',
-                        '/api/task/file.remove_' + trashs, {
-                            'paths': trashs
-                        },
-                        function() {
-                            Message.setSuccess('清空回收站完成！');
-                            $scope.tlist();
-                        }
-                    );
-                }
+            if (!$scope.items || $scope.items.length == 0) {
+                Message.setSuccess('回收站已经是空的！');
+                return;
+            }
+            // 收集所有 uuid，逐个彻底删除
+            var uuids = [];
+            angular.forEach($scope.items, function(item) {
+                uuids.push(item.uuid);
+            });
+            // 批量提交 tdelete
+            var count = 0;
+            var total = uuids.length;
+            angular.forEach(uuids, function(uuid) {
+                Request.post('/api/operation/file', {
+                    'action': 'tdelete',
+                    'uuid': uuid
+                }, function(data) {
+                    count++;
+                    if (count >= total) {
+                        Message.setSuccess('清空回收站完成！');
+                        $scope.tlist();
+                    }
+                });
             });
         };
     }

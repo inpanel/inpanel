@@ -214,6 +214,7 @@ class FileDownloadHandler(StaticFileHandler):
 class FileUploadHandler(RequestHandler):
     def post(self):
         self.authed()
+        from .mod import logs
         path = self.get_argument('path', '/')
 
         self.write('<body style="font-size:14px;overflow:hidden;margin:0;padding:0;">')
@@ -224,9 +225,15 @@ class FileUploadHandler(RequestHandler):
             self.write('正在上传...<br>')
             for item in self.request.files['ufile']:
                 filename = re.split(r'[\\/]', item['filename'])[-1]
-                with open(str(Path(path) / filename), 'wb') as f:
-                    f.write(item['body'])
-                self.write('%s 上传成功！<br>' % item['filename'])
+                fullpath = str(Path(path) / filename)
+                try:
+                    with open(fullpath, 'wb') as f:
+                        f.write(item['body'])
+                    logs.write_file_operation_log('上传', fullpath, '成功')
+                    self.write(f"{item['filename']} 上传成功！<br>")
+                except Exception:
+                    logs.write_file_operation_log('上传', fullpath, '失败')
+                    self.write(f"{item['filename']} 上传失败！<br>")
 
         self.write('</body>')
 
@@ -382,15 +389,15 @@ class SitePackageHandler(RequestHandler):
             self.write({'code': -1, 'msg': '获取安装包下载地址失败！'})
             return
 
-        filename = '%s-%s' % (name, version)
+        filename = f'{name}-{version}'
         workpath = str(Path(self.settings['package_path']) / filename)
         if not Path(workpath).exists(): Path(workpath).mkdir(parents=True, exist_ok=True)
 
-        filenameext = '%s%s' % (filename, package['ext'])
+        filenameext = f"{filename}{package['ext']}"
         filepath = str(Path(self.settings['package_path']) / filenameext)
 
         self.write({'code': 0, 'msg': '', 'data': {
-            'url': '%s&name=%s&version=%s' % (app_api['download_package'], name, version),
+            'url': f"{app_api['download_package']}&name={name}&version={version}",
             'path': filepath,
             'temp': workpath,
         }})
@@ -648,6 +655,9 @@ class OperationHandler(RequestHandler):
     def mysql(self):
         _get_mod('mysql').web_handler(self)
 
+    def redis(self):
+        _get_mod('redis').web_handler(self)
+
     def php(self):
         _get_mod('php').web_handler(self)
 
@@ -705,7 +715,7 @@ class PageHandler(RequestHandler):
             # =PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000 (PHP Credits)
             # 将它们重定向到 http://mod.php.net/index.php?***
             if self.request.query.startswith('=PHP'):
-                self.redirect('http://www.mod.php.net/index.php?%s' % self.request.query)
+                self.redirect(f'http://www.mod.php.net/index.php?{self.request.query}')
             else:
                 self.write(_get_mod('php').phpinfo())
 
@@ -721,7 +731,7 @@ class BackupHandler(RequestHandler):
         path = str(Path(self.settings['data_path']) / 'config.ini')
         if Path(path).is_file():
             self.set_header('Content-Type', 'application/octet-stream')
-            self.set_header('Content-disposition', 'attachment; filename=inpanel_backup_%s.bak' % time.strftime('%Y%m%d'))
+            self.set_header('Content-disposition', f"attachment; filename=inpanel_backup_{time.strftime('%Y%m%d')}.bak")
             self.set_header('Content-Transfer-Encoding', 'binary')
             with open(path, encoding='utf-8') as f:
                 self.write(f.read())
@@ -909,7 +919,7 @@ class ECSHandler(RequestHandler):
             srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
             result, data, reqid = await _get_mod('shell').async_task(srv.DescribeRegions)
             if not result:
-                self.write({'code': -1, 'msg': '地域列表加载失败！（%s）' % data['Message']})
+                self.write({'code': -1, 'msg': f"地域列表加载失败！（{data['Message']}）"})
                 self.finish()
                 return
 
@@ -934,7 +944,7 @@ class ECSHandler(RequestHandler):
             srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
             result, data, reqid = await _get_mod('shell').async_task(srv.DescribeZones, RegionCode=region_code)
             if not result:
-                self.write({'code': -1, 'msg': '可用区列表加载失败！（%s）' % data['Message']})
+                self.write({'code': -1, 'msg': f"可用区列表加载失败！（{data['Message']}）"})
                 self.finish()
                 return
 
@@ -961,7 +971,7 @@ class ECSHandler(RequestHandler):
             srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
             result, data, reqid = await _get_mod('shell').async_task(srv.DescribeInstances, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
             if not result:
-                self.write({'code': -1, 'msg': '云服务器列表加载失败！（%s）' % data['Message']})
+                self.write({'code': -1, 'msg': f"云服务器列表加载失败！（{data['Message']}）"})
                 self.finish()
                 return
 
@@ -993,7 +1003,7 @@ class ECSHandler(RequestHandler):
             srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
             result, data, reqid = await _get_mod('shell').async_task(srv.DescribeImages, RegionCode=region_code, PageNumber=page_number, PageSize=page_size)
             if not result:
-                self.write({'code': -1, 'msg': '系统镜像列表加载失败！（%s）' % data['Message']})
+                self.write({'code': -1, 'msg': f"系统镜像列表加载失败！（{data['Message']}）"})
                 self.finish()
                 return
 
@@ -1023,7 +1033,7 @@ class ECSHandler(RequestHandler):
             srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
             result, data, reqid = await _get_mod('shell').async_task(srv.DescribeDisks, InstanceName=instance_name)
             if not result:
-                self.write({'code': -1, 'msg': '磁盘列表加载失败！（%s）' % data['Message']})
+                self.write({'code': -1, 'msg': f"磁盘列表加载失败！（{data['Message']}）"})
                 self.finish()
                 return
 
@@ -1049,7 +1059,7 @@ class ECSHandler(RequestHandler):
             srv = _get_mod('aliyuncs').ECS(access_key_id, access_key_secret)
             result, data, reqid = await _get_mod('shell').async_task(srv.DescribeSnapshots, InstanceName=instance_name, DiskCode=disk_code)
             if not result:
-                self.write({'code': -1, 'msg': '磁盘快照列表加载失败！（%s）' % data['Message']})
+                self.write({'code': -1, 'msg': f"磁盘快照列表加载失败！（{data['Message']}）"})
                 self.finish()
                 return
 
@@ -1123,11 +1133,11 @@ class ECSHandler(RequestHandler):
             elif section == 'resetinstance':
                 result, data, reqid = await _get_mod('shell').async_task(srv.ResetInstance, instance_name, ImageCode=image_code)
             if not result:
-                self.write({'code': -1, 'msg': '云服务器 %s %s失败！（%s）' % (instance_name, opstr[section], data['Message'])})
+                self.write({'code': -1, 'msg': f"云服务器 {instance_name} {opstr[section]}失败！（{data['Message']}）"})
                 self.finish()
                 return
 
-            self.write({'code': 0, 'msg': '云服务器%s指令发送成功！' % opstr[section], 'data': data})
+            self.write({'code': 0, 'msg': f'云服务器{opstr[section]}指令发送成功！', 'data': data})
             self.finish()
 
         elif section in ('createsnapshot', 'deletesnapshot', 'cancelsnapshot', 'rollbacksnapshot'):
@@ -1161,11 +1171,11 @@ class ECSHandler(RequestHandler):
             elif section == 'rollbacksnapshot':
                 result, data, reqid = await _get_mod('shell').async_task(srv.RollbackSnapshot, InstanceName=instance_name, DiskCode=disk_code, SnapshotCode=snapshot_code)
             if not result:
-                self.write({'code': -1, 'msg': '快照%s失败！（%s）' % (opstr[section], data['Message'])})
+                self.write({'code': -1, 'msg': f"快照{opstr[section]}失败！（{data['Message']}）"})
                 self.finish()
                 return
 
-            self.write({'code': 0, 'msg': '快照%s指令发送成功！' % opstr[section], 'data': data})
+            self.write({'code': 0, 'msg': f'快照{opstr[section]}指令发送成功！', 'data': data})
             self.finish()
 
         elif section == 'accessinfo':
@@ -1185,7 +1195,7 @@ class ECSHandler(RequestHandler):
                 self.finish()
                 return
 
-            self.config.set('inpanel', instance_name, '%s|%s|%s' % (accesskey, accessnet, accessport))
+            self.config.set('inpanel', instance_name, f'{accesskey}|{accessnet}|{accessport}')
 
             self.write({'code': 0, 'msg': 'InPanel 远程控制设置保存成功！'})
             self.finish()
@@ -1229,9 +1239,7 @@ class InPanelHandler(RequestHandler):
         try:
             tornado.httpclient.AsyncHTTPClient().fetch(
                 tornado.httpclient.HTTPRequest(
-                    url = "%s://%s:%s%s" % (
-                        self.request.protocol, host or "127.0.0.1",
-                        port or 80, self.request.uri),
+                    url = f"{self.request.protocol}://{host or '127.0.0.1'}:{port or 80}{self.request.uri}",
                     method=self.request.method,
                     body=self.request.body,
                     headers=self.request.headers,
@@ -1260,7 +1268,7 @@ class InPanelHandler(RequestHandler):
         key = accesskey[:24]
         iv = accesskey[24:]
         k = pyDes.triple_des(key, pyDes.CBC, iv, pad=None, padmode=pyDes.PAD_PKCS5)
-        access_token = k.encrypt('timestamp:%d' % int(time.time()))
+        access_token = k.encrypt(f'timestamp:{int(time.time())}')
         access_token = b64encode(access_token)
         return access_token
 
@@ -1304,7 +1312,7 @@ class RepoYumHandler(RequestHandler):
             self.write({'code': -1, 'msg': '演示模式不允许设置 YUM ！'})
             return
 
-        if action in ('switch', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'third_party', 'third_party-install'):
+        if action in ('switch', 'enable', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'third_party', 'third_party-install'):
             yum.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
@@ -1334,7 +1342,7 @@ class RepoDnfHandler(RequestHandler):
             self.write({'code': -1, 'msg': '演示模式不允许设置 DNF ！'})
             return
 
-        if action in ('switch', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'third_party', 'third_party-install'):
+        if action in ('switch', 'enable', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'third_party', 'third_party-install'):
             dnf.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
@@ -1364,7 +1372,7 @@ class RepoAptHandler(RequestHandler):
             self.write({'code': -1, 'msg': '演示模式不允许设置 APT ！'})
             return
 
-        if action in ('switch', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'parse', 'generate', 'third_party', 'third_party-install'):
+        if action in ('switch', 'enable', 'mirror-add', 'mirror-del', 'repo-add', 'repo-edit', 'repo-del', 'edit', 'parse', 'generate', 'third_party', 'third_party-install'):
             apt.web_handler(self, action)
         else:
             self.write({'code': -1, 'msg': '未定义的操作！'})
@@ -1638,20 +1646,6 @@ class SSLTLSHandler(RequestHandler):
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
 
-
-    def post(self, sec, x=None):
-        self.authed()
-        if self.config.get('runtime', 'mode') == 'demo':
-            self.write({'code': -1, 'msg': '演示模式不允许设置 SSL ！'})
-            return
-        action = self.get_argument('action', '')
-        certs = Certificate()
-
-        if sec == 'keys':
-            if action == 'add_domain_keys':
-                self.write({'code': 0, 'msg': u'创建测试私钥成功！(正在测试的功能)'})
-
-
 class PluginStaticFileHandler(StaticFileHandler):
     '''插件的静态文件处理器（含认证检查）。'''
     
@@ -1738,4 +1732,35 @@ class PluginHandler(RequestHandler):
             self.write({'code': -1, 'msg': '未定义的操作！'})
 
 
+class LogsHandler(RequestHandler):
+    """日志维护管理处理器。
 
+    路由：/api/logs/<action>
+
+    GET 支持：
+        - operation: 面板操作日志
+        - login: 面板登录日志（参数: status=all/success/fail）
+        - error: 面板错误日志
+        - task: 后台异步任务日志
+        - files: 文件操作日志
+        - files_access: 文件访问日志
+        - cron: 计划任务日志
+        - ssh: SSH 登录日志（参数: status=all/success/fail）
+        - website_runtime: 网站运行日志（参数: type=nginx/apache）
+        - website_error: 网站异常日志（参数: type=nginx/apache）
+        - service_list: 服务日志列表
+        - service_log: 服务日志内容（参数: id, path）
+    """
+
+    def get(self, action):
+        self.authed()
+        from .mod.logs import web_handler as logs_handler
+        # 将 URL 路径中的 action 注入到 arguments 中，供 logs_handler 通过 get_argument 获取
+        self.request.arguments['action'] = [action.encode()]
+        logs_handler(self)
+
+    def post(self, action):
+        self.authed()
+        from .mod.logs import web_handler as logs_handler
+        self.request.arguments['action'] = [action.encode()]
+        logs_handler(self)

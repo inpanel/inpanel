@@ -84,29 +84,20 @@ body {
     width: 116px;
 }
 
-/* CodeMirror patch */
+/* CodeMirror 5 */
 .CodeMirror {
-    font-family: "Courier New", "Lucida Console", "Lucida Sans Typewriter", "Consolas";
+    font-family: "Courier New", "Lucida Console", "Consolas", monospace;
     border: 1px solid #ddd;
     font-size: 13px;
-}
-
-.activeline {
-    background: #e8f2ff !important;
+    height: auto;
+    min-height: 300px;
 }
 
 .CodeMirror-scroll {
     height: auto;
+    min-height: 300px;
     overflow-y: hidden;
     overflow-x: auto;
-}
-
-span.CodeMirror-matchhighlight {
-    background: #e9e9e9;
-}
-
-.CodeMirror-focused span.CodeMirror-matchhighlight {
-    background: #e7e4ff !important;
 }
 
 .shell-form {

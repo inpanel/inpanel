@@ -95,7 +95,8 @@ inpanel.config(['$routeProvider', function ($routeProvider) {
     when('/plugins/:name', _r('plugins/detail', PluginDetailCtrl)).
     when('/plugins/:name/config', _r('plugins/config', PluginConfigCtrl)).
     when('/plugins/:name/info', _r('plugins/info', PluginInfoCtrl)).
-    when('/log', _r('log', LogCtrl)).
+    when('/logs', _r('logs', LogsCtrl)).
+    when('/logs/:tab', _r('logs', LogsCtrl)).
     when('/logout', _r('logout', LogoutCtrl)).
     when('/sorry', _r('sorry', SorryCtrl)).
     otherwise({

@@ -31,7 +31,6 @@
                     <div class="panel-body">
                         <p><strong>版本：</strong>{{overview.brew && overview.brew.version || '-'}}</p>
                         <p><strong>安装路径：</strong>{{overview.brew && overview.brew.prefix || '-'}}</p>
-                    
                         <button class="btn btn-default btn-sm" ng-click="refresh('brew')" ng-disabled="loading.brew">
                             <i class="glyphicon glyphicon-refresh"></i> 更新索引
                         </button>
@@ -47,13 +46,13 @@
                     </div>
                 </div>
 
-                <!-- 镜像源管理 -->
+                <!-- 镜像站管理 -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>Homebrew 镜像源</strong>
+                        <strong>Homebrew 镜像站</strong>
                         <span class="pull-right">
                             <button class="btn btn-success btn-xs" ng-click="add_brew_mirror()" ng-disabled="loadingMirrors.brew">
-                                <i class="glyphicon glyphicon-plus"></i> 添加镜像源
+                                <i class="glyphicon glyphicon-plus"></i> 添加镜像站
                             </button>
                             <button class="btn btn-default btn-xs" ng-click="load_brew_mirrors()" ng-disabled="loadingMirrors.brew" style="margin-left:8px;">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新
@@ -89,7 +88,7 @@
                                 </td>
                             </tr>
                             <tr ng-show="!brewMirrors || brewMirrors.length==0">
-                                <td colspan="5" class="text-center text-muted">暂无镜像源数据</td>
+                                <td colspan="5" class="text-center text-muted">暂无镜像站数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -143,10 +142,10 @@
                     </table>
                 </div>
 
-                <!-- 第三方专用源 -->
+                <!-- 第三方软件仓库 -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>第三方专用源</strong>
+                        <strong>第三方软件仓库</strong>
                         <span class="pull-right">
                             <button class="btn btn-default btn-xs" ng-click="load_brew_third_party()" ng-disabled="loadingThirdParty.brew" style="margin-left:8px;">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新
@@ -160,7 +159,7 @@
                         <thead>
                             <tr>
                                 <th style="width:50px;">序号</th>
-                                <th style="width:160px;">源名称</th>
+                                <th style="width:160px;">仓库名称</th>
                                 <th>描述</th>
                                 <th style="width:80px;">状态</th>
                                 <th style="width:100px;">操作</th>
@@ -183,13 +182,13 @@
                                 </td>
                             </tr>
                             <tr ng-show="!brewThirdParty || brewThirdParty.length==0">
-                                <td colspan="5" class="text-center text-muted">暂无第三方专用源数据</td>
+                                <td colspan="5" class="text-center text-muted">暂无第三方仓库数据</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <!-- 仓库详情（含镜像源切换） -->
+                <!-- 仓库详情（含镜像站切换） -->
                 <div class="panel panel-default" ng-show="detail.brew || loadingDetail.brew">
                     <div class="panel-heading">
                         <strong>仓库详情<span ng-show="detail.brew && detail.brew.name"> - {{detail.brew.name}}</span></strong>
@@ -206,14 +205,14 @@
                                 <span class="label label-default" ng-show="!detail.brew.builtin">自定义仓库</span>
                             </p>
 
-                            <!-- 内置仓库：显示镜像源切换 -->
+                            <!-- 内置仓库：显示镜像站切换 -->
                             <div ng-show="detail.brew.builtin" style="background:#fcf8e3; padding:12px; border:1px solid #faf2cc; border-radius:4px; margin-bottom:15px;">
-                                <strong>切换镜像源 URL</strong>
+                                <strong>切换镜像站 URL</strong>
                                 <p style="margin-top:5px;"><strong>当前地址：</strong><code style="font-size:11px;">{{detail.brew.current_mirror_url || '未知'}}</code></p>
                                 <div class="input-group input-group-sm" style="width:100%; margin-top:8px;">
-                                    <span class="input-group-addon">选择镜像</span>
+                                    <span class="input-group-addon">选择镜像站</span>
                                     <select class="form-control" ng-model="brewDetailMirror">
-                                        <option value="">请选择镜像源</option>
+                                        <option value="">请选择镜像站</option>
                                         <option ng-repeat="m in detail.brew.mirrors" value="{{m.name}}">{{m.name}} ({{m.url}})</option>
                                     </select>
                                     <span class="input-group-btn">
@@ -295,16 +294,16 @@
                                 <p><strong>配置路径：</strong>{{overview.yum && overview.yum.config_path || '-'}}</p>
                             </div>
                             <div class="col-md-6 text-right">
-                                <div class="input-group input-group-sm" style="width:360px; margin-bottom:10px;">
-                                    <span class="input-group-addon">快速切换镜像</span>
+                                <div class="input-group input-group-sm" style="width:360px;">
+                                    <span class="input-group-addon">快速切换镜像站</span>
                                     <select class="form-control" ng-model="selectedMirror.yum">
-                                        <option value="">请选择镜像源</option>
-                                        <option ng-repeat="mirror in sources.yum" value="{{mirror.name}}">
-                                            {{mirror.name}}
+                                        <option value="">请选择镜像站</option>
+                                        <option ng-repeat="mirror in yumMirrors" value="{{mirror.name}}">
+                                            {{mirror.name}} ({{mirror.url}})
                                         </option>
                                     </select>
                                     <span class="input-group-btn">
-                                        <button class="btn btn-primary" type="button" ng-click="switch_mirror('yum')" ng-disabled="!selectedMirror.yum || loading.yum">确定</button>
+                                        <button class="btn btn-primary" type="button" ng-click="switch_yum_mirror()" ng-disabled="!selectedMirror.yum || loading.yum">确定</button>
                                     </span>
                                 </div>
                                 <button class="btn btn-default btn-sm" ng-click="refresh('yum')" ng-disabled="loading.yum">
@@ -317,10 +316,10 @@
 
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>YUM 软件源列表</strong>
+                        <strong>YUM 软件仓库</strong>
                         <span class="pull-right">
                             <button class="btn btn-success btn-xs" ng-click="add_source('yum')" ng-disabled="loading.yum">
-                                <i class="glyphicon glyphicon-plus"></i> 添加源
+                                <i class="glyphicon glyphicon-plus"></i> 添加仓库
                             </button>
                             <button class="btn btn-default btn-xs" ng-click="load_list('yum', true)" ng-disabled="loading.yum" style="margin-left:8px;">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新列表
@@ -334,8 +333,8 @@
                         <thead>
                             <tr>
                                 <th style="width:50px;">序号</th>
-                                <th style="width:110px;">软件源名称</th>
-                                <th>地址</th>
+                                <th style="width:110px;">仓库名称</th>
+                                <th>路径</th>
                                 <th style="width:70px;">状态</th>
                                 <th style="width:130px;">操作</th>
                             </tr>
@@ -343,19 +342,19 @@
                         <tbody>
                             <tr ng-repeat="repo in sources.yum" ng-class="{'success': repo.status == 'active'}">
                                 <td class="text-right">{{$index+1}}</td>
-                                <td>{{repo.name}}</td>
+                                <td><a href="" ng-click="show_detail('yum', repo.name)">{{repo.name}}</a></td>
                                 <td><code style="font-size:11px;">{{repo.path}}</code></td>
                                 <td>
                                     <span class="label label-success" ng-show="repo.status == 'active'">已启用</span>
                                     <span class="label label-default" ng-show="repo.status != 'active'">未启用</span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-primary btn-xs" ng-click="switch_mirror_confirm('yum', repo)" ng-show="repo.status != 'active'">切换</button>
+                                    <button class="btn btn-default btn-xs" ng-click="show_detail('yum', repo.name)">详情</button>
                                     <button class="btn btn-danger btn-xs" ng-click="delete_source('yum', repo.name)" ng-show="!repo.builtin">删除</button>
                                 </td>
                             </tr>
                             <tr ng-show="!sources.yum || sources.yum.length==0">
-                                <td colspan="5" class="text-center text-muted">暂无数据</td>
+                                <td colspan="5" class="text-center text-muted">暂无仓库数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -363,7 +362,7 @@
 
                 <div class="panel panel-default" ng-show="detail.yum || loadingDetail.yum">
                     <div class="panel-heading">
-                        <strong>YUM 软件源详情<span ng-show="detail.yum && detail.yum.name"> - {{detail.yum.name}}</span></strong>
+                        <strong>YUM 软件仓库详情<span ng-show="detail.yum && detail.yum.name"> - {{detail.yum.name}}</span></strong>
                         <button class="btn btn-default btn-xs pull-right" ng-click="detail.yum=null">关闭</button>
                     </div>
                     <div class="panel-body">
@@ -426,10 +425,10 @@
                     </div>
                 </div>
 
-                <!-- 第三方专用源 -->
+                <!-- YUM 第三方软件仓库 -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>YUM 第三方专用源</strong>
+                        <strong>YUM 第三方软件仓库</strong>
                         <span class="pull-right">
                             <button class="btn btn-default btn-xs" ng-click="load_third_party('yum')" ng-disabled="loadingThirdParty.yum">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新
@@ -444,7 +443,7 @@
                             <tr>
                                 <th style="width:50px;">序号</th>
                                 <th style="width:140px;">分类</th>
-                                <th style="width:160px;">源名称</th>
+                                <th style="width:160px;">仓库名称</th>
                                 <th>描述</th>
                                 <th style="width:80px;">多版本</th>
                                 <th style="width:80px;">状态</th>
@@ -473,7 +472,7 @@
                                 </td>
                             </tr>
                             <tr ng-show="!thirdPartySources.yum || thirdPartySources.yum.length==0">
-                                <td colspan="7" class="text-center text-muted">暂无第三方专用源数据</td>
+                                <td colspan="7" class="text-center text-muted">暂无第三方仓库数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -496,16 +495,16 @@
                                 <p><strong>配置路径：</strong>{{overview.dnf && overview.dnf.config_path || '-'}}</p>
                             </div>
                             <div class="col-md-6 text-right">
-                                <div class="input-group input-group-sm" style="width:360px; margin-bottom:10px;">
-                                    <span class="input-group-addon">快速切换镜像</span>
+                                <div class="input-group input-group-sm" style="width:360px;">
+                                    <span class="input-group-addon">快速切换镜像站</span>
                                     <select class="form-control" ng-model="selectedMirror.dnf">
-                                        <option value="">请选择镜像源</option>
-                                        <option ng-repeat="mirror in sources.dnf" value="{{mirror.name}}">
-                                            {{mirror.name}}
+                                        <option value="">请选择镜像站</option>
+                                        <option ng-repeat="mirror in dnfMirrors" value="{{mirror.name}}">
+                                            {{mirror.name}} ({{mirror.url}})
                                         </option>
                                     </select>
                                     <span class="input-group-btn">
-                                        <button class="btn btn-primary" type="button" ng-click="switch_mirror('dnf')" ng-disabled="!selectedMirror.dnf || loading.dnf">确定</button>
+                                        <button class="btn btn-primary" type="button" ng-click="switch_dnf_mirror()" ng-disabled="!selectedMirror.dnf || loading.dnf">确定</button>
                                     </span>
                                 </div>
                                 <button class="btn btn-default btn-sm" ng-click="refresh('dnf')" ng-disabled="loading.dnf">
@@ -518,10 +517,10 @@
 
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>DNF 软件源列表</strong>
+                        <strong>DNF 软件仓库</strong>
                         <span class="pull-right">
                             <button class="btn btn-success btn-xs" ng-click="add_source('dnf')" ng-disabled="loading.dnf">
-                                <i class="glyphicon glyphicon-plus"></i> 添加源
+                                <i class="glyphicon glyphicon-plus"></i> 添加仓库
                             </button>
                             <button class="btn btn-default btn-xs" ng-click="load_list('dnf', true)" ng-disabled="loading.dnf" style="margin-left:8px;">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新列表
@@ -535,8 +534,8 @@
                         <thead>
                             <tr>
                                 <th style="width:50px;">序号</th>
-                                <th style="width:110px;">软件源名称</th>
-                                <th>地址</th>
+                                <th style="width:110px;">仓库名称</th>
+                                <th>路径</th>
                                 <th style="width:70px;">状态</th>
                                 <th style="width:130px;">操作</th>
                             </tr>
@@ -544,19 +543,19 @@
                         <tbody>
                             <tr ng-repeat="repo in sources.dnf" ng-class="{'success': repo.status == 'active'}">
                                 <td class="text-right">{{$index+1}}</td>
-                                <td>{{repo.name}}</td>
+                                <td><a href="" ng-click="show_detail('dnf', repo.name)">{{repo.name}}</a></td>
                                 <td><code style="font-size:11px;">{{repo.path}}</code></td>
                                 <td>
                                     <span class="label label-success" ng-show="repo.status == 'active'">已启用</span>
                                     <span class="label label-default" ng-show="repo.status != 'active'">未启用</span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-primary btn-xs" ng-click="switch_mirror_confirm('dnf', repo)" ng-show="repo.status != 'active'">切换</button>
+                                    <button class="btn btn-default btn-xs" ng-click="show_detail('dnf', repo.name)">详情</button>
                                     <button class="btn btn-danger btn-xs" ng-click="delete_source('dnf', repo.name)" ng-show="!repo.builtin">删除</button>
                                 </td>
                             </tr>
                             <tr ng-show="!sources.dnf || sources.dnf.length==0">
-                                <td colspan="5" class="text-center text-muted">暂无数据</td>
+                                <td colspan="5" class="text-center text-muted">暂无仓库数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -564,7 +563,7 @@
 
                 <div class="panel panel-default" ng-show="detail.dnf || loadingDetail.dnf">
                     <div class="panel-heading">
-                        <strong>DNF 软件源详情<span ng-show="detail.dnf && detail.dnf.name"> - {{detail.dnf.name}}</span></strong>
+                        <strong>DNF 软件仓库详情<span ng-show="detail.dnf && detail.dnf.name"> - {{detail.dnf.name}}</span></strong>
                         <button class="btn btn-default btn-xs pull-right" ng-click="detail.dnf=null">关闭</button>
                     </div>
                     <div class="panel-body">
@@ -575,7 +574,7 @@
                                     <p><strong>路径：</strong><code style="font-size:11px;">{{detail.dnf.path}}</code></p>
                                     <p><strong>创建时间：</strong>{{detail.dnf.created || '-'}}</p>
                                 </div>
-                                <div class="col-md-4 text-right">
+                                <div class="col-md-4">
                                     <form class="form-inline" style="display:inline-block;" onsubmit="return false;" ng-submit="install_pkg('dnf')">
                                         <div class="input-group input-group-sm" style="width:250px;">
                                             <input type="text" class="form-control" placeholder="安装软件包名称..." ng-model="installPkg.dnf">
@@ -627,10 +626,10 @@
                     </div>
                 </div>
 
-                <!-- 第三方专用源 -->
+                <!-- DNF 第三方软件仓库 -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>DNF 第三方专用源</strong>
+                        <strong>DNF 第三方软件仓库</strong>
                         <span class="pull-right">
                             <button class="btn btn-default btn-xs" ng-click="load_third_party('dnf')" ng-disabled="loadingThirdParty.dnf">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新
@@ -645,7 +644,7 @@
                             <tr>
                                 <th style="width:50px;">序号</th>
                                 <th style="width:140px;">分类</th>
-                                <th style="width:160px;">源名称</th>
+                                <th style="width:160px;">仓库名称</th>
                                 <th>描述</th>
                                 <th style="width:80px;">多版本</th>
                                 <th style="width:80px;">状态</th>
@@ -674,7 +673,7 @@
                                 </td>
                             </tr>
                             <tr ng-show="!thirdPartySources.dnf || thirdPartySources.dnf.length==0">
-                                <td colspan="7" class="text-center text-muted">暂无第三方专用源数据</td>
+                                <td colspan="7" class="text-center text-muted">暂无第三方仓库数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -696,17 +695,17 @@
                                 <p><strong>版本：</strong>{{overview.apt && overview.apt.version || '-'}}</p>
                                 <p><strong>配置路径：</strong>{{overview.apt && overview.apt.config_path || '-'}}</p>
                             </div>
-                            <div class="col-md-6 text-right">
-                                <div class="input-group input-group-sm" style="width:360px; margin-bottom:10px;">
-                                    <span class="input-group-addon">快速切换镜像</span>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-sm" style="width:360px;">
+                                    <span class="input-group-addon">快速切换镜像站</span>
                                     <select class="form-control" ng-model="selectedMirror.apt">
-                                        <option value="">请选择镜像源</option>
-                                        <option ng-repeat="mirror in sources.apt" value="{{mirror.name}}">
-                                            {{mirror.name}}
+                                        <option value="">请选择镜像站</option>
+                                        <option ng-repeat="mirror in aptMirrors" value="{{mirror.name}}">
+                                            {{mirror.name}} ({{mirror.url || mirror.path}})
                                         </option>
                                     </select>
                                     <span class="input-group-btn">
-                                        <button class="btn btn-primary" type="button" ng-click="switch_mirror('apt')" ng-disabled="!selectedMirror.apt || loading.apt">确定</button>
+                                        <button class="btn btn-primary" type="button" ng-click="switch_apt_mirror()" ng-disabled="!selectedMirror.apt || loadingMirrors.apt">确定</button>
                                     </span>
                                 </div>
                                 <button class="btn btn-default btn-sm" ng-click="refresh('apt')" ng-disabled="loading.apt">
@@ -717,12 +716,56 @@
                     </div>
                 </div>
 
+                <!-- APT 镜像站 -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>APT 软件源列表</strong>
+                        <strong>APT 镜像站</strong>
+                        <span class="pull-right">
+                            <button class="btn btn-default btn-xs" ng-click="load_apt_mirrors()" ng-disabled="loadingMirrors.apt" style="margin-left:8px;">
+                                <i class="glyphicon glyphicon-refresh"></i> 刷新
+                            </button>
+                        </span>
+                    </div>
+                    <div ng-show="loadingMirrors.apt" class="panel-body">
+                        <div><div waiting></div></div>
+                    </div>
+                    <table class="table table-hover table-bordered table-condensed" ng-hide="loadingMirrors.apt">
+                        <thead>
+                            <tr>
+                                <th style="width:50px;">序号</th>
+                                <th style="width:140px;">镜像名称</th>
+                                <th>镜像地址</th>
+                                <th style="width:70px;">状态</th>
+                                <th style="width:100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="mirror in aptMirrors" ng-class="{'success': mirror.status == 'active'}">
+                                <td class="text-right">{{$index+1}}</td>
+                                <td>{{mirror.name}}</td>
+                                <td><code style="font-size:11px;">{{mirror.url || mirror.path}}</code></td>
+                                <td>
+                                    <span class="label label-success" ng-show="mirror.status == 'active'">已启用</span>
+                                    <span class="label label-default" ng-show="mirror.status != 'active'">未启用</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-xs" ng-click="switch_apt_mirror_by_item(mirror)" ng-show="mirror.status != 'active'">切换</button>
+                                </td>
+                            </tr>
+                            <tr ng-show="!aptMirrors || aptMirrors.length==0">
+                                <td colspan="5" class="text-center text-muted">暂无镜像站数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- APT 软件仓库 -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <strong>APT 软件仓库</strong>
                         <span class="pull-right">
                             <button class="btn btn-success btn-xs" ng-click="add_source('apt')" ng-disabled="loading.apt">
-                                <i class="glyphicon glyphicon-plus"></i> 添加源
+                                <i class="glyphicon glyphicon-plus"></i> 添加仓库
                             </button>
                             <button class="btn btn-default btn-xs" ng-click="load_list('apt', true)" ng-disabled="loading.apt" style="margin-left:8px;">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新列表
@@ -736,8 +779,8 @@
                         <thead>
                             <tr>
                                 <th style="width:50px;">序号</th>
-                                <th style="width:110px;">软件源名称</th>
-                                <th>地址</th>
+                                <th style="width:110px;">仓库名称</th>
+                                <th>路径</th>
                                 <th style="width:70px;">状态</th>
                                 <th style="width:130px;">操作</th>
                             </tr>
@@ -745,19 +788,19 @@
                         <tbody>
                             <tr ng-repeat="repo in sources.apt" ng-class="{'success': repo.status == 'active'}">
                                 <td class="text-right">{{$index+1}}</td>
-                                <td>{{repo.name}}</td>
+                                <td><a href="" ng-click="show_detail('apt', repo.name)">{{repo.name}}</a></td>
                                 <td><code style="font-size:11px;">{{repo.path}}</code></td>
                                 <td>
                                     <span class="label label-success" ng-show="repo.status == 'active'">已启用</span>
                                     <span class="label label-default" ng-show="repo.status != 'active'">未启用</span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-primary btn-xs" ng-click="switch_mirror_confirm('apt', repo)" ng-show="repo.status != 'active'">切换</button>
+                                    <button class="btn btn-default btn-xs" ng-click="show_detail('apt', repo.name)">详情</button>
                                     <button class="btn btn-danger btn-xs" ng-click="delete_source('apt', repo.name)" ng-show="!repo.builtin">删除</button>
                                 </td>
                             </tr>
                             <tr ng-show="!sources.apt || sources.apt.length==0">
-                                <td colspan="5" class="text-center text-muted">暂无数据</td>
+                                <td colspan="5" class="text-center text-muted">暂无仓库数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -765,7 +808,7 @@
 
                 <div class="panel panel-default" ng-show="detail.apt || loadingDetail.apt">
                     <div class="panel-heading">
-                        <strong>APT 软件源详情<span ng-show="detail.apt && detail.apt.name"> - {{detail.apt.name}}</span></strong>
+                        <strong>APT 软件仓库详情<span ng-show="detail.apt && detail.apt.name"> - {{detail.apt.name}}</span></strong>
                         <button class="btn btn-default btn-xs pull-right" ng-click="detail.apt=null">关闭</button>
                     </div>
                     <div class="panel-body">
@@ -826,10 +869,10 @@
                     </div>
                 </div>
 
-                <!-- 第三方专用源 -->
+                <!-- APT 第三方软件仓库 -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>APT 第三方专用源</strong>
+                        <strong>APT 第三方软件仓库</strong>
                         <span class="pull-right">
                             <button class="btn btn-default btn-xs" ng-click="load_third_party('apt')" ng-disabled="loadingThirdParty.apt">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新
@@ -844,7 +887,7 @@
                             <tr>
                                 <th style="width:50px;">序号</th>
                                 <th style="width:140px;">分类</th>
-                                <th style="width:160px;">源名称</th>
+                                <th style="width:160px;">仓库名称</th>
                                 <th>描述</th>
                                 <th style="width:80px;">多版本</th>
                                 <th style="width:80px;">状态</th>
@@ -873,7 +916,7 @@
                                 </td>
                             </tr>
                             <tr ng-show="!thirdPartySources.apt || thirdPartySources.apt.length==0">
-                                <td colspan="7" class="text-center text-muted">暂无第三方专用源数据</td>
+                                <td colspan="7" class="text-center text-muted">暂无第三方仓库数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -890,19 +933,25 @@
                         </span>
                     </div>
                     <div class="panel-body">
-                        <p><strong>版本：</strong>{{overview.pip && overview.pip.version || '-'}}</p>
-                        <p><strong>Python：</strong>{{overview.pip && overview.pip.python || '-'}}</p>
-                        <div class="input-group input-group-sm" style="width:360px; margin-bottom:10px;">
-                            <span class="input-group-addon">快速切换镜像</span>
-                            <select class="form-control" ng-model="selectedMirror.pip">
-                                <option value="">请选择镜像源</option>
-                                <option ng-repeat="mirror in sources.pip" value="{{mirror.name}}">
-                                    {{mirror.name}}
-                                </option>
-                            </select>
-                            <span class="input-group-btn">
-                                <button class="btn btn-primary" type="button" ng-click="switch_mirror('pip')" ng-disabled="!selectedMirror.pip || loading.pip">确定</button>
-                            </span>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>版本：</strong>{{overview.pip && overview.pip.version || '-'}}</p>
+                                <p><strong>Python：</strong>{{overview.pip && overview.pip.python || '-'}}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-sm" style="width:360px;">
+                                    <span class="input-group-addon">快速切换镜像站</span>
+                                    <select class="form-control" ng-model="selectedMirror.pip">
+                                        <option value="">请选择镜像站</option>
+                                        <option ng-repeat="mirror in sources.pip" value="{{mirror.name}}">
+                                            {{mirror.name}}
+                                        </option>
+                                    </select>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-primary" type="button" ng-click="switch_mirror('pip')" ng-disabled="!selectedMirror.pip || loading.pip">确定</button>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         <button class="btn btn-default btn-sm" ng-click="refresh('pip')" ng-disabled="loading.pip">
                             <i class="glyphicon glyphicon-refresh"></i> 刷新
@@ -912,10 +961,10 @@
 
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>PIP 软件源列表</strong>
+                        <strong>PIP 镜像站</strong>
                         <span class="pull-right">
                             <button class="btn btn-success btn-xs" ng-click="add_source('pip')" ng-disabled="loading.pip">
-                                <i class="glyphicon glyphicon-plus"></i> 添加源
+                                <i class="glyphicon glyphicon-plus"></i> 添加镜像站
                             </button>
                             <button class="btn btn-default btn-xs" ng-click="load_list('pip', true)" ng-disabled="loading.pip" style="margin-left:8px;">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新列表
@@ -929,7 +978,7 @@
                         <thead>
                             <tr>
                                 <th style="width:50px;">序号</th>
-                                <th style="width:110px;">软件源名称</th>
+                                <th style="width:110px;">镜像名称</th>
                                 <th>地址</th>
                                 <th style="width:70px;">状态</th>
                                 <th style="width:130px;">操作</th>
@@ -951,7 +1000,7 @@
                                 </td>
                             </tr>
                             <tr ng-show="!sources.pip || sources.pip.length==0">
-                                <td colspan="5" class="text-center text-muted">暂无数据</td>
+                                <td colspan="5" class="text-center text-muted">暂无镜像站数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -959,7 +1008,7 @@
 
                 <div class="panel panel-default" ng-show="detail.pip || loadingDetail.pip">
                     <div class="panel-heading">
-                        <strong>PIP 软件源详情<span ng-show="detail.pip && detail.pip.name"> - {{detail.pip.name}}</span></strong>
+                        <strong>PIP 镜像站详情<span ng-show="detail.pip && detail.pip.name"> - {{detail.pip.name}}</span></strong>
                         <button class="btn btn-default btn-xs pull-right" ng-click="detail.pip=null">关闭</button>
                     </div>
                     <div class="panel-body">
@@ -1024,42 +1073,48 @@
             <div class="tab-pane" ng-class="'active' | iftrue:activeTabName=='docker'" id="docker" ng-show="supported.docker">
                 <div class="panel panel-default" style="margin-top:15px;">
                     <div class="panel-heading">
-                        <strong>Docker 镜像源管理</strong>
+                        <strong>Docker 镜像站管理</strong>
                         <span class="pull-right">
                             <span class="label label-success" ng-show="overview.docker && overview.docker.running">运行中</span>
                             <span class="label label-danger" ng-show="!overview.docker || !overview.docker.running">未运行</span>
                         </span>
                     </div>
                     <div class="panel-body">
-                        <p><strong>配置文件：</strong><code style="font-size:11px;">{{overview.docker && overview.docker.config_path || '-'}}</code></p>
-                        <p><strong>当前镜像：</strong>
-                            <span ng-repeat="mirror in overview.docker.active_mirrors">
-                                <code style="font-size:11px;">{{mirror}}</code>
-                            </span>
-                            <span ng-show="!overview.docker || !overview.docker.active_mirrors || overview.docker.active_mirrors.length==0" class="text-muted">使用 Docker Hub 官方源</span>
-                        </p>
-                        <div class="input-group input-group-sm" style="width:360px; margin-bottom:10px;">
-                            <span class="input-group-addon">快速切换镜像</span>
-                            <select class="form-control" ng-model="selectedMirror.docker">
-                                <option value="">请选择镜像源</option>
-                                <option ng-repeat="mirror in sources.docker" value="{{mirror.name}}">
-                                    {{mirror.name}}
-                                </option>
-                            </select>
-                            <span class="input-group-btn">
-                                <button class="btn btn-primary" type="button" ng-click="switch_mirror('docker')" ng-disabled="!selectedMirror.docker || loading.docker">确定</button>
-                            </span>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>配置文件：</strong><code style="font-size:11px;">{{overview.docker && overview.docker.config_path || '-'}}</code></p>
+                                <p><strong>当前镜像站：</strong>
+                                    <span ng-repeat="mirror in overview.docker.active_mirrors">
+                                        <code style="font-size:11px;">{{mirror}}</code>
+                                    </span>
+                                    <span ng-show="!overview.docker || !overview.docker.active_mirrors || overview.docker.active_mirrors.length==0" class="text-muted">使用 Docker Hub 官方源</span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-sm" style="width:360px;">
+                                    <span class="input-group-addon">快速切换镜像站</span>
+                                    <select class="form-control" ng-model="selectedMirror.docker">
+                                        <option value="">请选择镜像站</option>
+                                        <option ng-repeat="mirror in sources.docker" value="{{mirror.name}}">
+                                            {{mirror.name}}
+                                        </option>
+                                    </select>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-primary" type="button" ng-click="switch_mirror('docker')" ng-disabled="!selectedMirror.docker || loading.docker">确定</button>
+                                    </span>
+                                </div>
+                                <p class="text-muted small"><i class="glyphicon glyphicon-info-sign"></i> 切换镜像站后需重启 Docker 服务生效。</p>
+                            </div>
                         </div>
-                        <p class="text-muted small"><i class="glyphicon glyphicon-info-sign"></i> 切换镜像源后需重启 Docker 服务生效。</p>
                     </div>
                 </div>
 
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <strong>Docker 镜像源列表</strong>
+                        <strong>Docker 镜像站</strong>
                         <span class="pull-right">
                             <button class="btn btn-success btn-xs" ng-click="add_source('docker')" ng-disabled="loading.docker">
-                                <i class="glyphicon glyphicon-plus"></i> 添加源
+                                <i class="glyphicon glyphicon-plus"></i> 添加镜像站
                             </button>
                             <button class="btn btn-default btn-xs" ng-click="load_list('docker', true)" ng-disabled="loading.docker" style="margin-left:8px;">
                                 <i class="glyphicon glyphicon-refresh"></i> 刷新列表
@@ -1073,8 +1128,8 @@
                         <thead>
                             <tr>
                                 <th style="width:50px;">序号</th>
-                                <th style="width:140px;">镜像源名称</th>
-                                <th>地址</th>
+                                <th style="width:140px;">镜像名称</th>
+                                <th>镜像地址</th>
                                 <th style="width:70px;">状态</th>
                                 <th style="width:160px;">操作</th>
                             </tr>
@@ -1095,7 +1150,7 @@
                                 </td>
                             </tr>
                             <tr ng-show="!sources.docker || sources.docker.length==0">
-                                <td colspan="5" class="text-center text-muted">暂无镜像源数据</td>
+                                <td colspan="5" class="text-center text-muted">暂无镜像站数据</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1112,28 +1167,28 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title" ng-show="currentSource && currentSource.action == 'add' && currentSource.pm == 'brew'">添加Homebrew软件源</h4>
-                <h4 class="modal-title" ng-show="currentSource && currentSource.action == 'add' && currentSource.pm == 'pip'">添加PIP软件源</h4>
-                <h4 class="modal-title" ng-show="currentSource && currentSource.action == 'add' && currentSource.pm == 'docker'">添加Docker镜像源</h4>
-                <h4 class="modal-title" ng-show="currentSource && currentSource.action == 'add' && currentSource.pm != 'pip' && currentSource.pm != 'brew' && currentSource.pm != 'docker'">添加软件源</h4>
-                <h4 class="modal-title" ng-show="currentSource && currentSource.action != 'add'">编辑软件源</h4>
+                <h4 class="modal-title" ng-show="currentSource && currentSource.action == 'add' && currentSource.pm == 'pip'">添加PIP镜像站</h4>
+                <h4 class="modal-title" ng-show="currentSource && currentSource.action == 'add' && currentSource.pm == 'docker'">添加Docker镜像站</h4>
+                <h4 class="modal-title" ng-show="currentSource && currentSource.action == 'add' && currentSource.pm != 'pip' && currentSource.pm != 'brew' && currentSource.pm != 'docker'">添加软件仓库</h4>
+                <h4 class="modal-title" ng-show="currentSource && currentSource.action != 'add'">编辑软件仓库</h4>
             </div>
             <div class="modal-body">
-                <!-- PIP/Brew/Docker 添加源：简洁模式，只需要名称和链接 -->
+                <!-- PIP/Brew/Docker 添加：简洁模式，只需要名称和链接 -->
                 <form class="form-horizontal" onsubmit="return false;" ng-show="(currentSource.pm == 'pip' || currentSource.pm == 'brew' || currentSource.pm == 'docker') && currentSource.action == 'add'">
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">源名称</label>
+                        <label class="col-sm-3 control-label">名称</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" ng-model="currentSource.name" placeholder="如: 自定义镜像源">
+                            <input type="text" class="form-control" ng-model="currentSource.name" placeholder="如: 自定义镜像站">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">源地址</label>
+                        <label class="col-sm-3 control-label">地址</label>
                         <div class="col-sm-9">
                             <input type="text" class="form-control" ng-model="currentSource.baseurl" placeholder="如: https://mirrors.example.com/">
                         </div>
                     </div>
                 </form>
-                <!-- YUM/DNF/APT 添加/编辑源：完整模式 -->
+                <!-- YUM/DNF/APT 添加/编辑仓库：完整模式 -->
                 <form class="form-horizontal" onsubmit="return false;" ng-show="(currentSource.pm != 'pip' && currentSource.pm != 'brew' && currentSource.pm != 'docker') || currentSource.action != 'add'">
                     <div class="form-group">
                         <label class="col-sm-3 control-label">配置文件名</label>
@@ -1142,19 +1197,19 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">源标识ID</label>
+                        <label class="col-sm-3 control-label">仓库标识ID</label>
                         <div class="col-sm-9">
                             <input type="text" class="form-control" ng-model="currentSource.serverid" placeholder="如: custom">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">源描述</label>
+                        <label class="col-sm-3 control-label">仓库描述</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" ng-model="currentSource.description" placeholder="源的描述名称">
+                            <input type="text" class="form-control" ng-model="currentSource.description" placeholder="仓库的描述名称">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">源地址</label>
+                        <label class="col-sm-3 control-label">仓库地址</label>
                         <div class="col-sm-9">
                             <input type="text" class="form-control" ng-model="currentSource.baseurl" placeholder="如: https://mirrors.example.com/centos/7/os/x86_64/">
                         </div>

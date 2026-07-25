@@ -67,7 +67,7 @@ def handle_query(items):
             for q in qs:
                 if q not in server_items:
                     continue
-                result['%s.%s' % (sec, q)] = getattr(server.ServerInfo, q)()
+                result[f'{sec}.{q}'] = getattr(server.ServerInfo, q)()
         elif sec == 'service':
             # 使用新的服务管理接口
             manager = service.Service._get_manager()
@@ -90,7 +90,7 @@ def handle_query(items):
                 if q not in service_items:
                     continue
                 status = all_status.get(q)
-                result['%s.%s' % (sec, q)] = status and {
+                result[f'{sec}.{q}'] = status and {
                     'status': status,
                     'autostart': q in autostart_services,
                 } or None
@@ -105,7 +105,7 @@ def handle_query(items):
                     params = params.split(',')
                 if q not in config_items:
                     continue
-                result['%s.%s' % (sec, q)] = getattr(server.ServerInfo, q)(*params)
+                result[f'{sec}.{q}'] = getattr(server.ServerInfo, q)(*params)
         elif sec == 'tool':
             for q in qs:
                 params = []
@@ -117,6 +117,6 @@ def handle_query(items):
                     params = params.split(',')
                 if q not in tool_items:
                     continue
-                result['%s.%s' % (sec, q)] = getattr(server.ServerTool, q)(*params)
+                result[f'{sec}.{q}'] = getattr(server.ServerTool, q)(*params)
 
     return result
