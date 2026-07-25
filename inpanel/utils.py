@@ -69,10 +69,10 @@ def ipv4_cidr_to_netmask(bits):
         if i:
             netmask += '.'
         if bits >= 8:
-            netmask += '%d' % (2**8-1)
+            netmask += str(2**8-1)
             bits -= 8
         else:
-            netmask += '%d' % (256-2**(8-bits))
+            netmask += str(256-2**(8-bits))
             bits = 0
     return netmask
 
@@ -91,8 +91,8 @@ def b2h(n):
     for s in reversed(symbols):
         if n >= prefix[s]:
             value = float(n) / prefix[s]
-            return '%.1f%s' % (value, s)
-    return "%sB" % n
+            return f'{value:.1f}{s}'
+    return f"{n}B"
 
 
 def ftime(secs):
@@ -124,7 +124,7 @@ def version_get(v1, v2):
 def valid_filename(filename):
     """检查文件名是否合法
     """
-    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    valid_chars = f"-_.() {string.ascii_letters}{string.digits}"
     return not any([c for c in filename if c not in valid_chars])
 
 
@@ -234,10 +234,9 @@ def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
                                 pass
                             else:
                                 # 注释该行
-                                lines.append('#%s%s%s\n' %
-                                             (item, delimiter, value))
+                                lines.append(f'#{item}{delimiter}{value}\n')
                         else:
-                            lines.append('%s%s%s\n' % (item, delimiter, value))
+                            lines.append(f'{item}{delimiter}{value}\n')
                     else:
                         if commented:
                             # 不允许更改已注释的值
@@ -246,7 +245,7 @@ def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
                         else:
                             # 在注释行后追加新行
                             lines.append(line)
-                            lines.append('%s%s%s\n' % (item, delimiter, value))
+                            lines.append(f'{item}{delimiter}{value}\n')
                 else:
                     lines.append(line)
         with open(v['file'], 'w', encoding='utf-8') as f:
@@ -254,7 +253,7 @@ def cfg_set(cfgfile, item, value, delimiter, commented=False, config=None):
     else:
         # 追加到文件末尾
         with open(cfgfile, 'a', encoding='utf-8') as f:
-            f.write('\n%s%s%s\n' % (item, delimiter, value))
+            f.write(f'\n{item}{delimiter}{value}\n')
 
     return True
 

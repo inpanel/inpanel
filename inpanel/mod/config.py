@@ -259,7 +259,7 @@ def raw_saveconfig(filepath, config, sortlist=[], delimiter='=', quoter='"'):
     if len(sortlist) > 0:
         for k in sortlist:
             if k in config:
-                line = '%s%s%s%s%s\n' % (k, delimiter, quoter, config[k], quoter)
+                line = f'{k}{delimiter}{quoter}{config[k]}{quoter}\n'
                 del config[k]
                 lines.append(line)
 
@@ -267,10 +267,10 @@ def raw_saveconfig(filepath, config, sortlist=[], delimiter='=', quoter='"'):
     for k, v in config.items():
         if isinstance(v, list):
             for vv in v:
-                line = '%s%s%s%s%s\n' % (k, delimiter, quoter, vv, quoter)
+                line = f'{k}{delimiter}{quoter}{vv}{quoter}\n'
                 lines.append(line)
         else:
-            line = '%s%s%s%s%s\n' % (k, delimiter, quoter, v, quoter)
+            line = f'{k}{delimiter}{quoter}{v}{quoter}\n'
             lines.append(line)
 
     with open(filepath, 'w', encoding='utf-8') as f:

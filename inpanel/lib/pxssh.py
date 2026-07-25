@@ -186,8 +186,8 @@ class pxssh (spawn):
         if self.force_password:
             ssh_options = ssh_options + ' ' + self.SSH_OPTS
         if port is not None:
-            ssh_options = ssh_options + ' -p %s'%(str(port))
-        cmd = "ssh %s -l %s %s" % (ssh_options, username, server)
+            ssh_options = ssh_options + f' -p {port!s}'
+        cmd = f"ssh {ssh_options} -l {username} {server}"
 
         # This does not distinguish between a remote server 'password' prompt
         # and a local ssh 'passphrase' prompt (for unlocking a private key).

@@ -119,7 +119,7 @@ Examples:
             key = md5(randstr().encode('utf-8')).hexdigest()
             md5_password = md5(value.encode('utf-8')).hexdigest()
             pwd = hmac_new(key.encode('utf-8'), md5_password.encode('utf-8'), md5).hexdigest()
-            value = '%s:%s' % (pwd, key)
+            value = f'{pwd}:{key}'
             logger.info(f'Password hash generated, key length: {len(key)}, hash length: {len(pwd)}')
         
         result = config.set(section, option, value)

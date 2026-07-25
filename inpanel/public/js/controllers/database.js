@@ -8,25 +8,49 @@ var DatabaseCtrl = [
         var section = Module.getSection();
         $scope.has_dbserver = false;
         $scope.mysql_supported = false;
+        $scope.redis_supported = false;
+        $scope.processing = false;
 
+        // =============================================================
+        // 初始化加载：检测 MySQL 和 Redis
+        // =============================================================
         $scope.load = function() {
+            var checked = 0;
+            var totalCheck = 2;
+            function checkDone() {
+                checked++;
+                if (checked >= totalCheck) {
+                    $scope.has_dbserver = $scope.mysql_supported || $scope.redis_supported;
+                    if ($scope.has_dbserver) {
+                        if (section) {
+                            var validSections = [];
+                            if ($scope.mysql_supported) validSections.push('mysql');
+                            if ($scope.redis_supported) validSections.push('redis');
+                            if (validSections.indexOf(section) >= 0) {
+                                Module.setSection(section);
+                            } else {
+                                Module.setSection(validSections[0]);
+                            }
+                        } else {
+                            Module.setSection($scope.mysql_supported ? 'mysql' : ($scope.redis_supported ? 'redis' : 'mysql'));
+                        }
+                    }
+                    $scope.loaded = true;
+                }
+            }
             Request.get('/api/service/detail/mysqld', function(data) {
                 if (data.code === 0 && data.data) $scope.mysql_supported = true;
-                $scope.has_dbserver = $scope.mysql_supported;
-                if ($scope.has_dbserver) {
-                    if (section) {
-                        if (section == 'mysqld' && $scope.mysql_supported)
-                            Module.setSection('mysqld');
-                        else
-                            Module.setSection($scope.mysql_supported ? 'mysql' : 'mysql');
-                    } else {
-                        Module.setSection($scope.mysql_supported ? 'mysql' : 'mysql');
-                    }
-                }
-                $scope.loaded = true;
+                checkDone();
+            });
+            Request.get('/api/service/detail/redis', function(data) {
+                if (data.code === 0 && data.data) $scope.redis_supported = true;
+                checkDone();
             });
         };
 
+        // =============================================================
+        // MySQL 部分
+        // =============================================================
         $scope.validate_password = function() {
             $scope.processing = true;
             Request.post('/api/operation/mysql', {
@@ -86,6 +110,228 @@ var DatabaseCtrl = [
             $scope.loaddbs();
             $scope.loadusers();
         }
+
+        // =============================================================
+        // Redis 部分
+        // =============================================================
+        if (!$rootScope.$redis) {
+            $rootScope.$redis = {
+                host: '127.0.0.1',
+                port: '6379',
+                password: '',
+                connected: false
+            };
+        }
+
+        $scope.redisLoading = { info: false, dbs: false, detail: false, key: false };
+        $scope.redisInfo = null;
+        $scope.redisDbs = [];
+        $scope.redisDetail = { db: null, keys: null, keyInfo: null, keyCount: 0 };
+
+        $scope.redis_connect = function() {
+            $scope.processing = true;
+            var params = {
+                'action': 'checkpwd',
+                'password': $rootScope.$redis.password,
+                'host': $rootScope.$redis.host || '127.0.0.1',
+                'port': $rootScope.$redis.port || '6379'
+            };
+            Request.post('/api/operation/redis', params, function(data) {
+                $scope.processing = false;
+                if (data.code == 0) {
+                    $rootScope.$redis.connected = true;
+                    Message.setSuccess('Redis 连接成功！');
+                    $scope.redis_load_info();
+                    $scope.redis_load_dbs();
+                } else {
+                    Message.setError(data.msg || 'Redis 连接失败！');
+                }
+            });
+        };
+
+        $scope.redis_disconnect = function() {
+            $rootScope.$redis.connected = false;
+            $scope.redisInfo = null;
+            $scope.redisDbs = [];
+            $scope.redisDetail = { db: null, keys: null, keyInfo: null, keyCount: 0 };
+        };
+
+        $scope.redis_load_info = function() {
+            if (!$rootScope.$redis.connected) return;
+            $scope.redisLoading.info = true;
+            var params = {
+                'password': $rootScope.$redis.password,
+                'host': $rootScope.$redis.host || '127.0.0.1',
+                'port': $rootScope.$redis.port || '6379'
+            };
+            Task.call($scope, module,
+                '/api/task/redis.info',
+                '/api/task/redis.info', params, {
+                    'success': function(data) {
+                        $scope.redisInfo = data.data;
+                        $scope.redisLoading.info = false;
+                    },
+                    'error': function() {
+                        $scope.redisLoading.info = false;
+                    }
+                }
+            );
+        };
+
+        $scope.redis_load_dbs = function() {
+            if (!$rootScope.$redis.connected) return;
+            $scope.redisLoading.dbs = true;
+            var params = {
+                'password': $rootScope.$redis.password,
+                'host': $rootScope.$redis.host || '127.0.0.1',
+                'port': $rootScope.$redis.port || '6379'
+            };
+            Task.call($scope, module,
+                '/api/task/redis.databases',
+                '/api/task/redis.databases', params, {
+                    'success': function(data) {
+                        $scope.redisDbs = data.data || [];
+                        $scope.redisLoading.dbs = false;
+                    },
+                    'error': function() {
+                        $scope.redisLoading.dbs = false;
+                    }
+                }
+            );
+        };
+
+        $scope.redis_show_db = function(db) {
+            if (!$rootScope.$redis.connected) return;
+            $scope.redisDetail.db = db;
+            $scope.redisDetail.keys = null;
+            $scope.redisDetail.keyInfo = null;
+            $scope.redisLoading.detail = true;
+            var params = {
+                'password': $rootScope.$redis.password,
+                'host': $rootScope.$redis.host || '127.0.0.1',
+                'port': $rootScope.$redis.port || '6379',
+                'db': db.index
+            };
+            Task.call($scope, module,
+                '/api/task/redis.dbinfo_' + db.index,
+                '/api/task/redis.dbinfo_' + db.index, params, {
+                    'success': function(data) {
+                        var info = data.data;
+                        $scope.redisDetail.keys = info ? info.key_details || [] : [];
+                        $scope.redisDetail.keyCount = info ? info.key_count || 0 : 0;
+                        $scope.redisLoading.detail = false;
+                    },
+                    'error': function() {
+                        $scope.redisLoading.detail = false;
+                    }
+                }
+            );
+        };
+
+        $scope.redis_show_key = function(k) {
+            if (!$rootScope.$redis.connected) return;
+            $scope.redisDetail.keyInfo = null;
+            $scope.redisLoading.key = true;
+            var params = {
+                'password': $rootScope.$redis.password,
+                'host': $rootScope.$redis.host || '127.0.0.1',
+                'port': $rootScope.$redis.port || '6379',
+                'db': $scope.redisDetail.db ? $scope.redisDetail.db.index : 0,
+                'key': k.name
+            };
+            Task.call($scope, module,
+                '/api/task/redis.get_key_' + k.name,
+                '/api/task/redis.get_key_' + k.name, params, {
+                    'success': function(data) {
+                        $scope.redisDetail.keyInfo = data.data;
+                        $scope.redisLoading.key = false;
+                    },
+                    'error': function() {
+                        $scope.redisLoading.key = false;
+                    }
+                }
+            );
+        };
+
+        $scope.redis_del_key_confirm = function(k) {
+            if (!confirm('确定要删除 Key「' + k.name + '」吗？此操作不可恢复！')) return;
+            var params = {
+                'password': $rootScope.$redis.password,
+                'host': $rootScope.$redis.host || '127.0.0.1',
+                'port': $rootScope.$redis.port || '6379',
+                'db': $scope.redisDetail.db ? $scope.redisDetail.db.index : 0,
+                'key': k.name
+            };
+            $scope.redisLoading.detail = true;
+            Task.call($scope, module,
+                '/api/task/redis.del_key_' + k.name,
+                '/api/task/redis.del_key_' + k.name, params, {
+                    'success': function(data) {
+                        $scope.redis_show_db($scope.redisDetail.db);
+                        $scope.redis_load_dbs();
+                    },
+                    'error': function() {
+                        $scope.redisLoading.detail = false;
+                    }
+                }
+            );
+        };
+
+        $scope.redis_flushdb_confirm = function(db) {
+            if (!confirm('确定要清空数据库「' + db.name + '」吗？所有数据将被永久删除！')) return;
+            var params = {
+                'password': $rootScope.$redis.password,
+                'host': $rootScope.$redis.host || '127.0.0.1',
+                'port': $rootScope.$redis.port || '6379',
+                'db': db.index
+            };
+            $scope.redisLoading.dbs = true;
+            Task.call($scope, module,
+                '/api/task/redis.flushdb_' + db.index,
+                '/api/task/redis.flushdb_' + db.index, params, {
+                    'success': function(data) {
+                        $scope.redis_load_dbs();
+                        $scope.redisDetail = { db: null, keys: null, keyInfo: null, keyCount: 0 };
+                    },
+                    'error': function() {
+                        $scope.redisLoading.dbs = false;
+                    }
+                }
+            );
+        };
+
+        $scope.redis_flushall_confirm = function() {
+            if (!confirm('确定要清空所有 Redis 数据库吗？所有数据将被永久删除且不可恢复！')) return;
+            var params = {
+                'password': $rootScope.$redis.password,
+                'host': $rootScope.$redis.host || '127.0.0.1',
+                'port': $rootScope.$redis.port || '6379'
+            };
+            $scope.redisLoading.dbs = true;
+            Task.call($scope, module,
+                '/api/task/redis.flushall',
+                '/api/task/redis.flushall', params, {
+                    'success': function(data) {
+                        $scope.redis_load_dbs();
+                        $scope.redisDetail = { db: null, keys: null, keyInfo: null, keyCount: 0 };
+                    },
+                    'error': function() {
+                        $scope.redisLoading.dbs = false;
+                    }
+                }
+            );
+        };
+
+        // 页面加载时如果已连接则加载数据
+        if ($rootScope.$redis && $rootScope.$redis.connected) {
+            $scope.redis_load_info();
+            $scope.redis_load_dbs();
+        }
+
+        // 判断是否为对象类型（用于 redisInfo 展示）
+        $scope.isObject = function(val) {
+            return val !== null && typeof val === 'object' && !Array.isArray(val);
+        };
     }
 ];
 

@@ -152,7 +152,7 @@ def fupdatepwd(pwd):
         return False
     
     try:
-        if not _sql(child, 'UPDATE mysql.user SET Password=PASSWORD("%s") WHERE User="root"' % _escape(pwd)): raise Exception()
+        if not _sql(child, f'UPDATE mysql.user SET Password=PASSWORD("{_escape(pwd)}") WHERE User="root"'): raise Exception()
         if not _sql(child, 'FLUSH PRIVILEGES'): raise Exception()
     except:
         _exit(child)
@@ -186,25 +186,25 @@ def show_databases(pwd, fullinfo=True):
         dbs = [db[0] for db in dbs if db[0] not in ignore_tables]
     else:
         # REF: http://stackoverflow.com/questions/184560/how-to-monitor-mysql-space
-        sql = '''
+        sql = f'''
 SELECT schema_name name, charset, collation,
 IFNULL(tables, 0) tables,
 IFNULL(datsum, 0) datasize,
 IFNULL(ndxsum, 0) indexsize,
 IFNULL(totsum, 0) totalsize
 FROM (
-	SELECT schema_name, default_character_set_name charset, default_collation_name collation
-	FROM information_schema.SCHEMATA
-	WHERE schema_name NOT IN %s
+    SELECT schema_name, default_character_set_name charset, default_collation_name collation
+    FROM information_schema.SCHEMATA
+    WHERE schema_name NOT IN {ignore_tables!r}
 ) A LEFT JOIN (
-	SELECT db, COUNT(1) tables, SUM(dat) datsum, SUM(ndx) ndxsum, SUM(dat+ndx) totsum
-	FROM (
-		SELECT table_schema db, data_length dat, index_length ndx
-		FROM information_schema.tables WHERE engine IS NOT NULL
-		AND table_schema NOT IN %s
-	) AA
-	GROUP BY db
-) B ON A.schema_name=B.db''' % (repr(ignore_tables), repr(ignore_tables))
+    SELECT db, COUNT(1) tables, SUM(dat) datsum, SUM(ndx) ndxsum, SUM(dat+ndx) totsum
+    FROM (
+        SELECT table_schema db, data_length dat, index_length ndx
+        FROM information_schema.tables WHERE engine IS NOT NULL
+        AND table_schema NOT IN {ignore_tables!r}
+    ) AA
+    GROUP BY db
+) B ON A.schema_name=B.db'''
         dbs = _sql(child, sql)
 
     _exit(child)
@@ -216,25 +216,25 @@ def show_database(pwd, dbname):
     child = _mysql(pwd)
     if not child: return False
     
-    sql = '''
+    sql = f'''
 SELECT schema_name name, charset, collation,
 IFNULL(tables, 0) tables,
 IFNULL(datsum, 0) datasize,
 IFNULL(ndxsum, 0) indexsize,
 IFNULL(totsum, 0) totalsize
 FROM (
-	SELECT schema_name, default_character_set_name charset, default_collation_name collation
-	FROM information_schema.SCHEMATA
-	WHERE schema_name='%s'
+    SELECT schema_name, default_character_set_name charset, default_collation_name collation
+    FROM information_schema.SCHEMATA
+    WHERE schema_name='{_escape(dbname)}'
 ) A LEFT JOIN (
-	SELECT db, COUNT(1) tables, SUM(dat) datsum, SUM(ndx) ndxsum, SUM(dat+ndx) totsum
-	FROM (
-		SELECT table_schema db, data_length dat, index_length ndx
-		FROM information_schema.tables WHERE engine IS NOT NULL
-		AND table_schema='%s'
-	) AA
-	GROUP BY db
-) B ON A.schema_name=B.db''' % (_escape(dbname), _escape(dbname))
+    SELECT db, COUNT(1) tables, SUM(dat) datsum, SUM(ndx) ndxsum, SUM(dat+ndx) totsum
+    FROM (
+        SELECT table_schema db, data_length dat, index_length ndx
+        FROM information_schema.tables WHERE engine IS NOT NULL
+        AND table_schema='{_escape(dbname)}'
+    ) AA
+    GROUP BY db
+) B ON A.schema_name=B.db'''
     dbinfo = _sql(child, sql)
     if dbinfo: dbinfo = dbinfo[0]
 
@@ -246,8 +246,7 @@ def create_database(pwd, dbname, charset='utf8', collation='utf8_general_ci'):
     """
     child = _mysql(pwd)
     if not child: return False
-    sql = 'CREATE DATABASE %s CHARACTER SET %s COLLATE %s' % \
-          (_escape(dbname), _escape(charset), _escape(collation))
+    sql = f'CREATE DATABASE {_escape(dbname)} CHARACTER SET {_escape(charset)} COLLATE {_escape(collation)}'
     if not _sql(child, sql):
         _exit(child)
         return False
@@ -259,8 +258,7 @@ def alter_database(pwd, dbname, charset='utf8', collation='utf8_general_ci'):
     """
     child = _mysql(pwd)
     if not child: return False
-    sql = 'ALTER DATABASE %s CHARACTER SET %s COLLATE %s' % \
-          (_escape(dbname), _escape(charset), _escape(collation))
+    sql = f'ALTER DATABASE {_escape(dbname)} CHARACTER SET {_escape(charset)} COLLATE {_escape(collation)}'
     if not _sql(child, sql):
         _exit(child)
         return False
@@ -274,19 +272,19 @@ def rename_database(pwd, dbname, newname):
     if not child: return False
     
     try:
-        create_sql = _sql(child, 'SHOW CREATE DATABASE %s' % _escape(dbname), includefields=False)
+        create_sql = _sql(child, f'SHOW CREATE DATABASE {_escape(dbname)}', includefields=False)
         if not create_sql: raise Exception()
         create_sql = create_sql[0][1]
-        if not _sql(child, 'USE %s' % _escape(dbname)): raise Exception()
+        if not _sql(child, f'USE {_escape(dbname)}'): raise Exception()
         tables = _sql(child, 'SHOW TABLES', includefields=False)
         if tables == False: raise Exception()
         
         if not _sql(child, create_sql.replace(dbname, newname)): raise Exception()
         for table in tables:
             table = table[0]
-            sql = 'RENAME TABLE `%s`.`%s` TO `%s`.`%s`' % (_escape(dbname), table, _escape(newname), table)
+            sql = f'RENAME TABLE `{_escape(dbname)}`.`{table}` TO `{_escape(newname)}`.`{table}`'
             if not _sql(child, sql): raise Exception()
-        if not _sql(child, 'DROP DATABASE %s' % _escape(dbname)): raise Exception()
+        if not _sql(child, f'DROP DATABASE {_escape(dbname)}'): raise Exception()
     except:
         _exit(child)
         return False
@@ -299,7 +297,7 @@ def drop_database(pwd, dbname):
     """
     child = _mysql(pwd)
     if not child: return False
-    if not _sql(child, 'DROP DATABASE %s' % _escape(dbname)):
+    if not _sql(child, f'DROP DATABASE {_escape(dbname)}'):
         _exit(child)
         return False
     _exit(child)
@@ -312,8 +310,8 @@ def export_database(pwd, dbname, exportpath):
     filepath = str(Path(exportpath) / filename)
     if not valid_filename(filename): return False
 
-    cmd = 'mysqldump -uroot -p %s' % dbname
-    cmd = '/bin/bash -c "%s > %s"' % (cmd, filepath)
+    cmd = f'mysqldump -uroot -p {dbname}'
+    cmd = f'/bin/bash -c "{cmd} > {filepath}"'
     child = pexpect.spawn(cmd)
 
     i = child.expect(['Enter password', pexpect.EOF])
@@ -338,25 +336,26 @@ def show_users(pwd, dbname=None):
     if not dbname:
         sql = "SELECT *, IF(`Password` = _latin1 '', 'N', 'Y') AS 'Password' FROM `mysql`.`user` ORDER BY `User` ASC, `Host` ASC"
     else:
-        sql = '''
+        sql = f'''
 (SELECT `User`, `Host`, `Select_priv`, `Insert_priv`, `Update_priv`, `Delete_priv`, `Create_priv`, `Drop_priv`,
 `Grant_priv`, `Index_priv`, `Alter_priv`, `References_priv`, `Create_tmp_table_priv`, `Lock_tables_priv`,
 `Create_view_priv`, `Show_view_priv`, `Create_routine_priv`, `Alter_routine_priv`, `Execute_priv`, `Event_priv`, `Trigger_priv`, `Db`
-FROM `mysql`.`db` WHERE '%s' LIKE `Db` AND NOT (
-	`Select_priv` = 'N' AND `Insert_priv` = 'N' AND `Update_priv` = 'N' AND `Delete_priv` = 'N' AND `Create_priv` = 'N' AND `Drop_priv` = 'N'
-	AND `Grant_priv` = 'N' AND `References_priv` = 'N' AND `Create_tmp_table_priv` = 'N' AND `Lock_tables_priv` = 'N' AND `Create_view_priv` = 'N'
-	AND `Show_view_priv` = 'N' AND `Create_routine_priv` = 'N' AND `Alter_routine_priv` = 'N' AND `Execute_priv` = 'N' AND `Event_priv` = 'N'
-	AND `Trigger_priv` = 'N'
+FROM `mysql`.`db` WHERE '{_escape(dbname)}' LIKE `Db` AND NOT (
+    `Select_priv` = 'N' AND `Insert_priv` = 'N' AND `Update_priv` = 'N' AND `Delete_priv` = 'N' AND `Create_priv` = 'N' AND `Drop_priv` = 'N'
+    AND `Grant_priv` = 'N' AND `References_priv` = 'N' AND `Create_tmp_table_priv` = 'N' AND `Lock_tables_priv` = 'N' AND `Create_view_priv` = 'N'
+    AND `Show_view_priv` = 'N' AND `Create_routine_priv` = 'N' AND `Alter_routine_priv` = 'N' AND `Execute_priv` = 'N' AND `Event_priv` = 'N'
+    AND `Trigger_priv` = 'N'
 )) UNION (
 SELECT `User`, `Host`, `Select_priv`, `Insert_priv`, `Update_priv`, `Delete_priv`, `Create_priv`, `Drop_priv`,
 `Grant_priv`, `Index_priv`, `Alter_priv`, `References_priv`, `Create_tmp_table_priv`, `Lock_tables_priv`,
 `Create_view_priv`, `Show_view_priv`, `Create_routine_priv`, `Alter_routine_priv`, `Execute_priv`, `Event_priv`, `Trigger_priv`, '*' AS `Db`
 FROM `mysql`.`user` WHERE NOT (
-	`Select_priv` = 'N' AND `Insert_priv` = 'N' AND `Update_priv` = 'N' AND `Delete_priv` = 'N' AND `Create_priv` = 'N' AND `Drop_priv` = 'N'
-	AND `Grant_priv` = 'N' AND `References_priv` = 'N' AND `Create_tmp_table_priv` = 'N' AND `Lock_tables_priv` = 'N' AND `Create_view_priv` = 'N'
-	AND `Show_view_priv` = 'N' AND `Create_routine_priv` = 'N' AND `Alter_routine_priv` = 'N' AND `Execute_priv` = 'N' AND `Event_priv` = 'N'
-	AND `Trigger_priv` = 'N'
-)) ORDER BY `User` ASC, `Host` ASC, `Db` ASC''' % _escape(dbname)
+    `Select_priv` = 'N' AND `Insert_priv` = 'N' AND `Update_priv` = 'N' AND `Delete_priv` = 'N' AND `Create_priv` = 'N' AND `Drop_priv` = 'N'
+    AND `Grant_priv` = 'N' AND `References_priv` = 'N' AND `Create_tmp_table_priv` = 'N' AND `Lock_tables_priv` = 'N' AND `Create_view_priv` = 'N'
+    AND `Show_view_priv` = 'N' AND `Create_routine_priv` = 'N' AND `Alter_routine_priv` = 'N' AND `Execute_priv` = 'N' AND `Event_priv` = 'N'
+    AND `Trigger_priv` = 'N'
+)) ORDER BY `User` ASC, `Host` ASC, `Db` ASC'''
+
 
     privs = _sql(child, sql)
 
@@ -369,7 +368,7 @@ def show_user_globalprivs(pwd, user, host):
     child = _mysql(pwd)
     if not child: return False
 
-    sql = "SELECT * FROM `mysql`.`user` WHERE `User` = '%s' AND `Host` = '%s'" % (_escape(user), _escape(host))
+    sql = f"SELECT * FROM `mysql`.`user` WHERE `User` = '{_escape(user)}' AND `Host` = '{_escape(host)}'"
     privs = _sql(child, sql)
     privs = privs and privs[0] or False
 
@@ -383,9 +382,9 @@ def show_user_dbprivs(pwd, user, host, dbname=None):
     if not child: return False
 
     if not dbname:
-        sql = "SELECT * FROM `mysql`.`db` WHERE `User` = '%s' AND `Host` = '%s' ORDER BY `Db` ASC" % (_escape(user), _escape(host))
+        sql = f"SELECT * FROM `mysql`.`db` WHERE `User` = '{_escape(user)}' AND `Host` = '{_escape(host)}' ORDER BY `Db` ASC"
     else:
-        sql = "SELECT * FROM `mysql`.`db` WHERE `User` = '%s' AND `Host` = '%s' AND '%s' LIKE `Db`" % (_escape(user), _escape(host), _escape(dbname))
+        sql = f"SELECT * FROM `mysql`.`db` WHERE `User` = '{_escape(user)}' AND `Host` = '{_escape(host)}' AND '{_escape(dbname)}' LIKE `Db`"
 
     privs = _sql(child, sql)
     if privs and dbname: privs = privs[0]
@@ -402,12 +401,12 @@ def revoke_user_privs(pwd, user, host, dbname=None):
     if not dbname:
         dbexpr = '*.*'
     else:
-        dbexpr = '`%s`.*' % _escape(dbname)
+        dbexpr = f'`{_escape(dbname)}`.*'
 
     try:
-        sql = "REVOKE ALL PRIVILEGES ON %s FROM '%s'@'%s'" % (dbexpr, _escape(user), _escape(host))
+        sql = f"REVOKE ALL PRIVILEGES ON {dbexpr} FROM '{_escape(user)}'@'{_escape(host)}'"
         if not _sql(child, sql, False): raise Exception()
-        sql = "REVOKE GRANT OPTION ON %s FROM '%s'@'%s'" % (dbexpr, _escape(user), _escape(host))
+        sql = f"REVOKE GRANT OPTION ON {dbexpr} FROM '{_escape(user)}'@'{_escape(host)}'"
         if not _sql(child, sql, False): raise Exception()
         if not dbname:
             sql = "GRANT USAGE ON *.* TO '%s'@'%s' " \
@@ -444,7 +443,7 @@ def update_user_privs(pwd, user, host, privs, dbname=None):
         ])
         dbexpr = '*.*'
     else:
-        dbexpr = '`%s`.*' % _escape(dbname)
+        dbexpr = f'`{_escape(dbname)}`.*'
 
     privs = filter(lambda a: a in allprivs, privs)
     
@@ -459,15 +458,15 @@ def update_user_privs(pwd, user, host, privs, dbname=None):
     else:
         grant_option = ''
     if len(privs) == len(allprivs)-1:
-        grant_sql = "GRANT ALL PRIVILEGES ON %s TO '%s'@'%s' %s" % (dbexpr, _escape(user), _escape(host), grant_option)
+        grant_sql = f"GRANT ALL PRIVILEGES ON {dbexpr} TO '{_escape(user)}'@'{_escape(host)}' {grant_option}"
     else:
-        grant_sql = "GRANT %s ON %s TO '%s'@'%s' %s" % (','.join(privs), dbexpr, _escape(user), _escape(host), grant_option)
+        grant_sql = f"GRANT {','.join(privs)} ON {dbexpr} TO '{_escape(user)}'@'{_escape(host)}' {grant_option}"
 
     try:
         # don't check revoke result, the user may not exists
-        sql = "REVOKE ALL PRIVILEGES ON %s FROM '%s'@'%s'" % (dbexpr, _escape(user), _escape(host))
+        sql = f"REVOKE ALL PRIVILEGES ON {dbexpr} FROM '{_escape(user)}'@'{_escape(host)}'"
         _sql(child, sql, False)
-        sql = "REVOKE GRANT OPTION ON %s FROM '%s'@'%s'" % (dbexpr, _escape(user), _escape(host))
+        sql = f"REVOKE GRANT OPTION ON {dbexpr} FROM '{_escape(user)}'@'{_escape(host)}'"
         _sql(child, sql, False)
         if not _sql(child, grant_sql, False): raise Exception()
     except:
@@ -484,9 +483,9 @@ def create_user(pwd, user, host, password=None):
     if not child: return False
 
     if password:
-        sql = "CREATE USER '%s'@'%s' IDENTIFIED BY '%s'" % (_escape(user), _escape(host), _escape(password))
+        sql = f"CREATE USER '{_escape(user)}'@'{_escape(host)}' IDENTIFIED BY '{_escape(password)}'"
     else:
-        sql = "CREATE USER '%s'@'%s'" % (_escape(user), _escape(host))
+        sql = f"CREATE USER '{_escape(user)}'@'{_escape(host)}'"
     rs = _sql(child, sql, False)
 
     _exit(child)
@@ -499,7 +498,7 @@ def drop_user(pwd, user, host):
     if not child:
         return False
 
-    rs = _sql(child, "DROP USER '%s'@'%s'" % (_escape(user), _escape(host)), False)
+    rs = _sql(child, f"DROP USER '{_escape(user)}'@'{_escape(host)}'", False)
 
     _exit(child)
     return rs
@@ -511,9 +510,9 @@ def set_user_password(pwd, user, host, password=None):
     if not child: return False
 
     if password:
-        sql = "SET PASSWORD FOR '%s'@'%s' = PASSWORD('%s')" % (_escape(user), _escape(host), _escape(password))
+        sql = f"SET PASSWORD FOR '{_escape(user)}'@'{_escape(host)}' = PASSWORD('{_escape(password)}')"
     else:
-        sql = "SET PASSWORD FOR '%s'@'%s' = ''" % (_escape(user), _escape(host))
+        sql = f"SET PASSWORD FOR '{_escape(user)}'@'{_escape(host)}' = ''"
     rs = _sql(child, sql, False)
 
     _exit(child)
@@ -661,7 +660,7 @@ async def mysql_fupdatepwd(tm, password):
     if not cmd:
         if error:
             code = -1
-            msg = '%sOK' % msg
+            msg = f'{msg}OK'
         else:
             code = 0
             msg = 'root 密码重置成功！'
@@ -670,14 +669,14 @@ async def mysql_fupdatepwd(tm, password):
         if result == 0:
             if error:
                 code = -1
-                msg = '%sOK' % msg
+                msg = f'{msg}OK'
             else:
                 code = 0
                 msg = 'root 密码重置成功！'
         else:
             if error:
                 code = -1
-                msg = '%sOK' % msg
+                msg = f'{msg}OK'
             else:
                 code = -1
                 msg = 'root 密码重置成功，但在操作服务时出错！'
@@ -745,14 +744,14 @@ async def mysql_dbinfo(tm, password, dbname):
 
     from . import shell
 
-    tm._update_job(jobname, 2, '正在获取数据库 %s 的信息...' % dbname)
+    tm._update_job(jobname, 2, f'正在获取数据库 {dbname} 的信息...')
     dbinfo = await shell.async_task(show_database, password, dbname)
     if dbinfo:
         code = 0
-        msg = '获取数据库 %s 的信息成功！' % dbname
+        msg = f'获取数据库 {dbname} 的信息成功！'
     else:
         code = -1
-        msg = '获取数据库 %s 的信息失败！' % dbname
+        msg = f'获取数据库 {dbname} 的信息失败！'
 
     tm._finish_job(jobname, code, msg, dbinfo)
 

@@ -286,7 +286,7 @@ def web_handler(context):
                     try:
                         mkdir(diret['path'])
                     except:
-                        context.write({'code': -1, 'msg': '路径 %s 创建失败！' % diret['path']})
+                        context.write({'code': -1, 'msg': f"路径 {diret['path']} 创建失败！"})
                         return
             else:
                 context.write({'code': -1, 'msg': '请选择路径！'})
@@ -639,7 +639,7 @@ def replace_docroot(vhost, new_docroot):
         if in_vhost and (curr_vhost == vhost):
             docroot_match = docroot_re.search(line)
             if docroot_match:
-                sub_line = docroot_re.sub(r'\1%s' % new_docroot, line)
+                sub_line = docroot_re.sub(rf'\1{new_docroot}', line)
                 line = sub_line
             vhost_end_match = vhost_end.search(line)
             if vhost_end_match:
@@ -717,10 +717,10 @@ def _context_getupstreams(server_name, config=None, disabled=None, getlineinfo=T
     if not upstreams: return False
     if getlineinfo:
         upstreams = [upstream for upstream in upstreams 
-            if upstream['_param']['value'].startswith('backend_of_%s_' % server_name)]
+            if upstream['_param']['value'].startswith(f'backend_of_{server_name}_')]
     else:
         upstreams = [upstream for upstream in upstreams 
-            if upstream['_param'].startswith('backend_of_%s_' % server_name)]
+            if upstream['_param'].startswith(f'backend_of_{server_name}_')]
 
     if disabled == None or not getlineinfo:
         return upstreams
@@ -996,7 +996,7 @@ def http_set(directive, values, config=None):
         values = []
     elif isinstance(values, str):
         values = [values]
-    values = ['%s %s;' % (directive, v) for v in values]
+    values = [f'{directive} {v};' for v in values]
 
     if directive in hcontext:
         # update or delete value
@@ -1078,7 +1078,7 @@ def addserver(serveraname, ip, port, serveralias=None, serveradmin=None, documen
         servercfg.append(f'    CustomLog {customlog}')
     if directory and len(directory) > 0:
         d = _extend_directory(directory)
-        servercfg.extend(['    %s' % i for i in d])
+        servercfg.extend([f'    {i}' for i in d])
     # end of server context
     servercfg.append('</VirtualHost>')
 
@@ -1104,12 +1104,12 @@ def _extend_directory(directory):
     ----------
     > d = _extend_directory(directory)\n
     > servercfg.extend(d) # for Apache Config\n
-    > servercfg.extend(['    %s' % i for i in d]) # for VirtualHost Config
+    > servercfg.extend([f'    {i}' for i in d]) # for VirtualHost Config
     '''
     drct_cfg = []
     for drct in directory:
         if 'path' in drct and drct['path']:
-            drct_cfg.append('<Directory %s>' % drct['path'])
+            drct_cfg.append(f"<Directory {drct['path']}>")
         else:
             continue
         options = []
@@ -1124,9 +1124,9 @@ def _extend_directory(directory):
         if drct.get('order'):
             drct_cfg.append('    Order ' + drct['order'])
         if len(drct.get('allow', [])) > 0:
-            drct_cfg.extend(['    allow from %s' % i for i in drct['allow']])
+            drct_cfg.extend([f'    allow from {i}' for i in drct['allow']])
         if len(drct.get('deny', [])) > 0:
-            drct_cfg.extend(['    deny from %s' % i for i in drct['deny']])
+            drct_cfg.extend([f'    deny from {i}' for i in drct['deny']])
         drct_cfg.append('</Directory>')
     return drct_cfg
 

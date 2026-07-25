@@ -111,9 +111,9 @@ def cfg_set(item, value, commented=False, config=None):
                                 pass
                             else:
                                 # comment this line
-                                lines.append('#%s %s\n' % (item, value))
+                                lines.append(f'#{item} {value}\n')
                         else:
-                            lines.append('%s %s\n' % (item, value))
+                            lines.append(f'{item} {value}\n')
                     else:
                         if commented:
                             # do not allow change comment value
@@ -122,7 +122,7 @@ def cfg_set(item, value, commented=False, config=None):
                         else:
                             # append a new line after comment line
                             lines.append(line)
-                            lines.append('%s %s\n' % (item, value))
+                            lines.append(f'{item} {value}\n')
                 else:
                     lines.append(line)
         with open(v['file'], 'w', encoding='utf-8') as f:
@@ -130,7 +130,7 @@ def cfg_set(item, value, commented=False, config=None):
     else:
         # append to the end of file
         with open(inifile, 'a', encoding='utf-8') as f:
-            f.write('\n%s%s = %s\n' % (commented and '#' or '', item, value))
+            f.write(f"\n{'#' if commented else ''}{item} = {value}\n")
 
     return True
 

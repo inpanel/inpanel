@@ -12,7 +12,7 @@ Docker 镜像加速源管理：通过 /etc/docker/daemon.json 中的 registry-mi
 配置镜像加速地址，加速 docker pull 操作。
 
 交互流程：
-  镜像源列表 → 选择镜像 → 切换启用 → 重启 Docker 服务生效
+  镜像站列表 → 选择镜像 → 切换启用 → 重启 Docker 服务生效
 """
 
 import json
@@ -39,7 +39,7 @@ def _get_docker_sources_file():
 def _load_sources_config():
     """加载 sources_docker.json 配置文件。
 
-    如果配置文件不存在，用内置镜像源初始化并写入。
+    如果配置文件不存在，用内置镜像站初始化并写入。
     返回源列表（list of dict），每个 dict 包含 name、url、builtin。
     """
     filepath = _get_docker_sources_file()
@@ -113,14 +113,14 @@ def _get_active_mirrors():
     """获取当前 Docker daemon 配置中的 registry-mirrors
 
     Returns:
-        list: 当前配置的镜像源 URL 列表
+        list: 当前配置的镜像站 URL 列表
     """
     daemon_config = _read_daemon_json()
     return daemon_config.get('registry-mirrors', [])
 
 
 def get_mirror_list():
-    """获取 Docker 镜像源列表。
+    """获取 Docker 镜像站列表。
 
     从 sources_docker.json 读取所有已注册的源，结合当前 daemon.json
     中的 registry-mirrors 检测哪些源是激活状态：
@@ -192,7 +192,7 @@ def get_mirror_list():
 
 
 def get_mirror_detail(name):
-    """获取镜像源详情"""
+    """获取镜像站详情"""
     repos = get_mirror_list()
     for r in repos:
         if r['name'] == name:
@@ -201,13 +201,13 @@ def get_mirror_detail(name):
 
 
 def switch_mirror(name, url):
-    """切换 Docker 镜像源。
+    """切换 Docker 镜像站。
 
     将 daemon.json 的 registry-mirrors 设置为指定的镜像 URL。
 
     Args:
-        name: 镜像源名称
-        url: 镜像源 URL
+        name: 镜像站名称
+        url: 镜像站 URL
 
     Returns:
         dict: {'code': 0/-1, 'msg': '...'}
@@ -228,17 +228,17 @@ def switch_mirror(name, url):
 
     return {
         'code': 0,
-        'msg': f'Docker 镜像源已切换至：{name or url}（需要重启 Docker 服务生效）',
+        'msg': f'Docker 镜像站已切换至：{name or url}（需要重启 Docker 服务生效）',
         'need_restart': True,
     }
 
 
 def add_mirror(name, url):
-    """添加 Docker 镜像源到配置文件
+    """添加 Docker 镜像站到配置文件
 
     Args:
-        name: 镜像源名称
-        url: 镜像源 URL
+        name: 镜像站名称
+        url: 镜像站 URL
 
     Returns:
         dict: {'code': 0/-1, 'msg': '...'}
@@ -257,20 +257,20 @@ def add_mirror(name, url):
     sources.append({'name': name, 'url': url, 'builtin': False})
     _save_sources_config(sources)
 
-    return {'code': 0, 'msg': f'Docker 镜像源已添加：{url}'}
+    return {'code': 0, 'msg': f'Docker 镜像站已添加：{url}'}
 
 
 def delete_mirror(name):
-    """删除 Docker 镜像源
+    """删除 Docker 镜像站
 
     Args:
-        name: 镜像源名称
+        name: 镜像站名称
 
     Returns:
         dict: {'code': 0/-1, 'msg': '...'}
     """
     if not name:
-        return {'code': -1, 'msg': '镜像源名称不能为空！'}
+        return {'code': -1, 'msg': '镜像站名称不能为空！'}
 
     sources = _load_sources_config()
     found = None
@@ -280,21 +280,21 @@ def delete_mirror(name):
             break
 
     if found is None:
-        return {'code': -1, 'msg': '镜像源不存在！'}
+        return {'code': -1, 'msg': '镜像站不存在！'}
     if found.get('builtin'):
-        return {'code': -1, 'msg': '内置镜像源不可删除！'}
+        return {'code': -1, 'msg': '内置镜像站不可删除！'}
 
     sources = [s for s in sources if s['name'] != name]
     _save_sources_config(sources)
 
-    return {'code': 0, 'msg': f'镜像源「{name}」已删除'}
+    return {'code': 0, 'msg': f'镜像站「{name}」已删除'}
 
 
 def edit_mirror(name, new_name, new_url):
-    """编辑 Docker 镜像源
+    """编辑 Docker 镜像站
 
     Args:
-        name: 原镜像源名称
+        name: 原镜像站名称
         new_name: 新名称
         new_url: 新 URL
 
@@ -302,7 +302,7 @@ def edit_mirror(name, new_name, new_url):
         dict: {'code': 0/-1, 'msg': '...'}
     """
     if not name:
-        return {'code': -1, 'msg': '镜像源名称不能为空！'}
+        return {'code': -1, 'msg': '镜像站名称不能为空！'}
     if not new_url:
         return {'code': -1, 'msg': '镜像地址不能为空！'}
     if not new_name:
@@ -316,16 +316,16 @@ def edit_mirror(name, new_name, new_url):
             break
 
     if found is None:
-        return {'code': -1, 'msg': '镜像源不存在！'}
+        return {'code': -1, 'msg': '镜像站不存在！'}
     if found.get('builtin'):
-        return {'code': -1, 'msg': '内置镜像源不可编辑！'}
+        return {'code': -1, 'msg': '内置镜像站不可编辑！'}
 
     found['url'] = new_url
     if new_name != name:
         found['name'] = new_name
     _save_sources_config(sources)
 
-    return {'code': 0, 'msg': '镜像源已更新'}
+    return {'code': 0, 'msg': '镜像站已更新'}
 
 
 def web_handler(context, action):
@@ -352,11 +352,11 @@ def web_handler(context, action):
 
     elif action == 'item':
         if not name:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
         else:
             data = get_mirror_detail(name)
             if data is None:
-                context.write({'code': -1, 'msg': '镜像源不存在！'})
+                context.write({'code': -1, 'msg': '镜像站不存在！'})
             else:
                 context.write({'code': 0, 'msg': '', 'data': data})
 
@@ -373,7 +373,7 @@ def web_handler(context, action):
                     url = s['url']
                     break
         if not url:
-            context.write({'code': -1, 'msg': '未找到该镜像源的地址！'})
+            context.write({'code': -1, 'msg': '未找到该镜像站的地址！'})
             return
         context.write(switch_mirror(source_name, url))
 
@@ -387,7 +387,7 @@ def web_handler(context, action):
 
     elif action == 'edit':
         if not name:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
             return
         new_url = context.get_argument('url', '').strip()
         new_name = context.get_argument('new_name', '').strip()
@@ -398,7 +398,7 @@ def web_handler(context, action):
 
     elif action == 'del':
         if not name:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
             return
         context.write(delete_mirror(name))
 

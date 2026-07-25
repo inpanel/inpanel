@@ -31,7 +31,7 @@ class FTPClient():
         try:
             self.ftp = FTP(self.host)
             self.ftp.login(self.user, self.pswd)
-            print('connected: "%s"' % self.host)
+            print(f'connected: "{self.host}"')
             return self.ftp
         except:
             print('connect failed.')
@@ -42,7 +42,7 @@ class FTPClient():
         '''reconnect to ftp'''
         try:
             self.ftp.login(self.user, self.pswd)
-            print('reconnected: "%s"' % self.host)
+            print(f'reconnected: "{self.host}"')
         except:
             print('reconnect failed')
             return False
@@ -75,7 +75,7 @@ class FTPClient():
         try:
             return self.ftp.cwd(path)
         except:
-            print('change directory failed: "%s"' % path)
+            print(f'change directory failed: "{path}"')
             return False
 
     def pwd(self):
@@ -93,7 +93,7 @@ class FTPClient():
                 return self.ftp.nlst()
             return self.ftp.dir(path)
         except:
-            print('get list failed: "%s"' % path)
+            print(f'get list failed: "{path}"')
             return None
 
     def mkd(self, path):
@@ -104,16 +104,16 @@ class FTPClient():
         try:
             return self.ftp.mkd(path)
         except:
-            print('create failed: "%s"' % path)
+            print(f'create failed: "{path}"')
             return False
 
     def rename(self, oldname, newname):
         '''rename a file or directory.'''
         try:
             self.ftp.rename(oldname, newname)
-            print('rename successful: from "%s" to "%s"' % (oldname, newname))
+            print(f'rename successful: from "{oldname}" to "{newname}"')
         except:
-            print('rename failed: from "%s" to "%s"' % (oldname, newname))
+            print(f'rename failed: from "{oldname}" to "{newname}"')
             return False
         return True
 
@@ -121,26 +121,26 @@ class FTPClient():
         '''delete a file or directory.'''
         try:
             if self.ftp.delete(filename):
-                print('delete successful: "%s"' % filename)
+                print(f'delete successful: "{filename}"')
                 return True
             else:
-                print('delete failed: "%s"' % filename)
+                print(f'delete failed: "{filename}"')
                 return False
         except:
-            print('delete error: "%s"' % filename)
+            print(f'delete error: "{filename}"')
             return False
 
     def rmd(self, filename):
         '''delete a file or directory.'''
         try:
             if self.ftp.delete(filename):
-                print('delete successful: "%s"' % filename)
+                print(f'delete successful: "{filename}"')
                 return True
             else:
-                print('delete failed: "%s"' % filename)
+                print(f'delete failed: "{filename}"')
                 return False
         except:
-            print('delete failed: "%s"' % filename)
+            print(f'delete failed: "{filename}"')
             return False
 
     def upload(self, filepath):
@@ -148,11 +148,11 @@ class FTPClient():
         try:
             with open(filepath, 'rb') as source:
                 target = Path(filepath).name
-                self.ftp.storbinary('STOR %s' % target, source)
+                self.ftp.storbinary(f'STOR {target}', source)
         except:
-            print('upload failed: "%s"' % filepath)
+            print(f'upload failed: "{filepath}"')
             return False
-        print('upload successful: "%s"' % filepath)
+        print(f'upload successful: "{filepath}"')
         return True
 
     def download(self, filename, localfile=''):
@@ -160,11 +160,11 @@ class FTPClient():
         localfile = str(Path(filename if not localfile else localfile))
         try:
             with open(localfile, 'wb') as target:
-                self.ftp.retrbinary("RETR %s" % filename, target.write)
+                self.ftp.retrbinary(f"RETR {filename}", target.write)
         except:
-            print('download failed: from "%s" to "%s"' % (filename, localfile))
+            print(f'download failed: from "{filename}" to "{localfile}"')
             return False
-        print('download successful: from "%s" to "%s"' % (filename, localfile))
+        print(f'download successful: from "{filename}" to "{localfile}"')
         return True
 
     def find(self, filename):

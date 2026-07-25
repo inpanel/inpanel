@@ -1560,7 +1560,7 @@ var UtilsSourceCtrl = [
             brew: []
         };
 
-        // 第三方专用源
+        // 第三方软件仓库
         $scope.thirdPartySources = {
             yum: [],
             dnf: [],
@@ -1572,6 +1572,14 @@ var UtilsSourceCtrl = [
             dnf: false,
             apt: false,
             brew: false
+        };
+
+        // 镜像站加载状态
+        $scope.loadingMirrors = {
+            brew: false,
+            apt: false,
+            yum: false,
+            dnf: false
         };
 
         $scope.load = function () {
@@ -1618,7 +1626,7 @@ var UtilsSourceCtrl = [
             if (!$scope.sources[section] || $scope.sources[section].length === 0) {
                 $scope.load_list(section, true);
             }
-            // brew 额外加载镜像源列表和第三方专用源
+            // brew 额外加载镜像站列表和第三方软件仓库
             if (section === 'brew') {
                 if ($scope.brewMirrors.length === 0) {
                     $scope.load_brew_mirrors();
@@ -1627,7 +1635,24 @@ var UtilsSourceCtrl = [
                     $scope.load_brew_third_party();
                 }
             }
-            // yum/dnf/apt 加载第三方专用源
+            // yum/dnf 额外加载镜像站列表
+            if (section === 'yum') {
+                if (!$scope.yumMirrors || $scope.yumMirrors.length === 0) {
+                    $scope.load_yum_mirrors();
+                }
+            }
+            if (section === 'dnf') {
+                if (!$scope.dnfMirrors || $scope.dnfMirrors.length === 0) {
+                    $scope.load_dnf_mirrors();
+                }
+            }
+            // apt 额外加载镜像站列表
+            if (section === 'apt') {
+                if (!$scope.aptMirrors || $scope.aptMirrors.length === 0) {
+                    $scope.load_apt_mirrors();
+                }
+            }
+            // yum/dnf/apt 加载第三方软件仓库
             if (['yum', 'dnf', 'apt'].indexOf(section) > -1) {
                 if (!$scope.thirdPartySources[section] || $scope.thirdPartySources[section].length === 0) {
                     $scope.load_third_party(section);
@@ -1769,7 +1794,7 @@ var UtilsSourceCtrl = [
         };
 
         $scope.delete_source = function(pm, name) {
-            if (!confirm('确定要删除软件源配置文件 ' + name + ' 吗？')) {
+            if (!confirm('确定要删除软件仓库 ' + name + ' 吗？')) {
                 return;
             }
             $scope.loading[pm] = true;
@@ -1837,6 +1862,140 @@ var UtilsSourceCtrl = [
             $scope.filter_packages(pm);
         };
 
+        // =============================================================
+        // YUM 镜像站
+        // =============================================================
+        $scope.yumMirrors = [];
+
+        $scope.load_yum_mirrors = function() {
+            $scope.loadingMirrors.yum = true;
+            Request.get('/api/sources/yum/mirrors', function(res) {
+                $scope.loadingMirrors.yum = false;
+                if (res && res.code == 0) {
+                    $scope.yumMirrors = res.data || [];
+                }
+            }, null, true);
+        };
+
+        $scope.switch_yum_mirror = function() {
+            var mirrorName = $scope.selectedMirror.yum;
+            if (!mirrorName) return;
+            var mirror = null;
+            angular.forEach($scope.yumMirrors, function(m) {
+                if (m.name == mirrorName) {
+                    mirror = m;
+                }
+            });
+            if (!mirror) return;
+            if (!confirm('确定要将 YUM 镜像站切换到 ' + mirror.name + ' 吗？\n新地址：' + mirror.url)) return;
+            $scope.loading.yum = true;
+            Request.post('/api/sources/yum/switch', {
+                name: mirror.name,
+                url: mirror.url
+            }, function(res) {
+                $scope.loading.yum = false;
+                if (res && res.code == 0) {
+                    $scope.selectedMirror.yum = '';
+                    $scope.load_yum_mirrors();
+                }
+            });
+        };
+
+        // =============================================================
+        // DNF 镜像站
+        // =============================================================
+        $scope.dnfMirrors = [];
+
+        $scope.load_dnf_mirrors = function() {
+            $scope.loadingMirrors.dnf = true;
+            Request.get('/api/sources/dnf/mirrors', function(res) {
+                $scope.loadingMirrors.dnf = false;
+                if (res && res.code == 0) {
+                    $scope.dnfMirrors = res.data || [];
+                }
+            }, null, true);
+        };
+
+        $scope.switch_dnf_mirror = function() {
+            var mirrorName = $scope.selectedMirror.dnf;
+            if (!mirrorName) return;
+            var mirror = null;
+            angular.forEach($scope.dnfMirrors, function(m) {
+                if (m.name == mirrorName) {
+                    mirror = m;
+                }
+            });
+            if (!mirror) return;
+            if (!confirm('确定要将 DNF 镜像站切换到 ' + mirror.name + ' 吗？\n新地址：' + mirror.url)) return;
+            $scope.loading.dnf = true;
+            Request.post('/api/sources/dnf/switch', {
+                name: mirror.name,
+                url: mirror.url
+            }, function(res) {
+                $scope.loading.dnf = false;
+                if (res && res.code == 0) {
+                    $scope.selectedMirror.dnf = '';
+                    $scope.load_dnf_mirrors();
+                }
+            });
+        };
+
+        // =============================================================
+        // APT 镜像站
+        // =============================================================
+        $scope.aptMirrors = [];
+
+        $scope.load_apt_mirrors = function() {
+            $scope.loadingMirrors.apt = true;
+            Request.get('/api/sources/apt/mirrors', function(res) {
+                $scope.loadingMirrors.apt = false;
+                if (res && res.code == 0) {
+                    $scope.aptMirrors = res.data || [];
+                }
+            }, null, true);
+        };
+
+        // APT 镜像站切换（替换 sources.list 中的 URL 域名）
+        $scope.switch_apt_mirror = function() {
+            var mirrorName = $scope.selectedMirror.apt;
+            if (!mirrorName) return;
+            var mirror = null;
+            angular.forEach($scope.aptMirrors, function(m) {
+                if (m.name == mirrorName) {
+                    mirror = m;
+                }
+            });
+            if (!mirror) return;
+            if (!confirm('确定要将 APT 镜像站切换到 ' + mirror.name + ' 吗？\n新地址：' + mirror.url)) return;
+            $scope.loadingMirrors.apt = true;
+            Request.post('/api/sources/apt/switch', {
+                name: mirror.name,
+                url: mirror.url
+            }, function(res) {
+                $scope.loadingMirrors.apt = false;
+                if (res && res.code == 0) {
+                    $scope.selectedMirror.apt = '';
+                    $scope.load_apt_mirrors();
+                }
+            });
+        };
+
+        // APT 镜像站面板中直接点击切换
+        $scope.switch_apt_mirror_by_item = function(mirror) {
+            if (!mirror) return;
+            if (!confirm('确定要切换到镜像站「' + mirror.name + '」吗？')) return;
+            $scope.loadingMirrors.apt = true;
+            Request.post('/api/sources/apt/switch', {
+                name: mirror.name,
+                url: mirror.url || mirror.path
+            }, function(res) {
+                $scope.loadingMirrors.apt = false;
+                if (res && res.code == 0) {
+                    $scope.load_apt_mirrors();
+                }
+            });
+        };
+
         $scope.switch_mirror = function(pm, mirrorName) {
             // 如果没传 mirrorName，从下拉框 selectedMirror 获取
             if (!mirrorName) {
@@ -1855,7 +2014,7 @@ var UtilsSourceCtrl = [
             if (!mirror) {
                 return;
             }
-            if (!confirm('确定要切换到 ' + mirror.name + ' 吗？')) {
+            if (!confirm('确定要切换到镜像站「' + mirror.name + '」吗？')) {
                 return;
             }
             $scope.loading[pm] = true;
@@ -1875,7 +2034,7 @@ var UtilsSourceCtrl = [
         // 列表中直接点击切换按钮
         $scope.switch_mirror_confirm = function(pm, repo) {
             if (!repo) return;
-            if (!confirm('确定要切换到 ' + repo.name + ' 吗？')) {
+            if (!confirm('确定要切换到镜像站「' + repo.name + '」吗？')) {
                 return;
             }
             $scope.loading[pm] = true;
@@ -1892,7 +2051,7 @@ var UtilsSourceCtrl = [
         };
 
         // =============================================================
-        // Homebrew 专用：镜像源管理
+        // Homebrew 专用：镜像站管理
         // =============================================================
 
         $scope.brewMirrors = [];
@@ -1912,9 +2071,9 @@ var UtilsSourceCtrl = [
         };
 
         $scope.add_brew_mirror = function() {
-            var name = prompt('请输入镜像源名称：');
+            var name = prompt('请输入镜像站名称：');
             if (!name || !name.trim()) return;
-            var url = prompt('请输入镜像源地址：', 'https://');
+            var url = prompt('请输入镜像站地址：', 'https://');
             if (!url || !url.trim()) return;
             $scope.loadingMirrors.brew = true;
             Request.post('/api/sources/brew/mirror-add', { name: name.trim(), url: url.trim() }, function(res) {
@@ -1927,9 +2086,9 @@ var UtilsSourceCtrl = [
 
         $scope.edit_brew_mirror = function(mirror) {
             if (!mirror) return;
-            var newName = prompt('修改镜像源名称：', mirror.name);
+            var newName = prompt('修改镜像站名称：', mirror.name);
             if (!newName || !newName.trim()) return;
-            var newUrl = prompt('修改镜像源地址：', mirror.url || mirror.path);
+            var newUrl = prompt('修改镜像站地址：', mirror.url || mirror.path);
             if (!newUrl || !newUrl.trim()) return;
             $scope.loadingMirrors.brew = true;
             Request.post('/api/sources/brew/mirror-edit', {
@@ -1945,7 +2104,7 @@ var UtilsSourceCtrl = [
         };
 
         $scope.delete_brew_mirror = function(mirror) {
-            if (!mirror || !confirm('确定要删除镜像源「' + mirror.name + '」吗？')) return;
+            if (!mirror || !confirm('确定要删除镜像站「' + mirror.name + '」吗？')) return;
             $scope.loadingMirrors.brew = true;
             Request.post('/api/sources/brew/mirror-del', { name: mirror.name }, function(res) {
                 $scope.loadingMirrors.brew = false;
@@ -1956,7 +2115,7 @@ var UtilsSourceCtrl = [
         };
 
         $scope.brew_switch_mirror = function(mirror) {
-            if (!mirror || !confirm('确定要切换到镜像源「' + mirror.name + '」吗？')) return;
+            if (!mirror || !confirm('确定要切换到镜像站「' + mirror.name + '」吗？')) return;
             $scope.loadingMirrors.brew = true;
             Request.post('/api/sources/brew/enable', {
                 name: mirror.name,
@@ -2011,7 +2170,7 @@ var UtilsSourceCtrl = [
             });
         };
 
-        // 仓库详情中切换镜像源
+        // 仓库详情中切换镜像站
         $scope.brew_detail_switch_mirror = function() {
             var selectedName = $scope.brewDetailMirror;
             if (!selectedName) return;
@@ -2024,7 +2183,7 @@ var UtilsSourceCtrl = [
                 }
             }
             if (!mirror) return;
-            if (!confirm('确定要将仓库「' + $scope.detail.brew.name + '」的镜像源切换到「' + selectedName + '」吗？新地址：' + (mirror.url || mirror.path))) return;
+            if (!confirm('确定要将仓库「' + $scope.detail.brew.name + '」的镜像站切换到「' + selectedName + '」吗？新地址：' + (mirror.url || mirror.path))) return;
             $scope.loadingDetail.brew = true;
             Request.post('/api/sources/brew/switch', {
                 name: selectedName,
@@ -2044,7 +2203,7 @@ var UtilsSourceCtrl = [
         $scope.brew_detail_switch_custom = function() {
             var url = ($scope.brewCustomMirrorUrl || '').trim();
             if (!url) return;
-            if (!confirm('确定要将仓库「' + $scope.detail.brew.name + '」的镜像源切换到自定义地址吗？' + url)) return;
+            if (!confirm('确定要将仓库「' + $scope.detail.brew.name + '」的镜像站切换到自定义地址吗？' + url)) return;
             $scope.loadingDetail.brew = true;
             Request.post('/api/sources/brew/switch', {
                 name: '自定义镜像',
@@ -2072,7 +2231,7 @@ var UtilsSourceCtrl = [
         };
 
         $scope.install_brew_third_party = function(source) {
-            if (!source || !confirm('确定要安装第三方专用源「' + source.name + '」吗？')) return;
+            if (!source || !confirm('确定要安装第三方软件仓库「' + source.name + '」吗？')) return;
             $scope.loadingThirdParty.brew = true;
             Request.post('/api/sources/brew/third_party-install', { id: source.id }, function(res) {
                 $scope.loadingThirdParty.brew = false;
@@ -2084,7 +2243,7 @@ var UtilsSourceCtrl = [
         };
 
         // =============================================================
-        // 通用第三方专用源（yum/dnf/apt）
+        // 通用第三方软件仓库（yum/dnf/apt）
         // =============================================================
 
         $scope.load_third_party = function(pm) {
@@ -2100,7 +2259,7 @@ var UtilsSourceCtrl = [
 
         $scope.install_third_party = function(pm, source) {
             if (!pm || !source) return;
-            if (!confirm('确定要安装第三方专用源「' + source.name + '」吗？' +(source.note || '') + '安装后将执行源更新。')) return;
+            if (!confirm('确定要安装第三方软件仓库「' + source.name + '」吗？' +(source.note || '') + '安装后将执行源更新。')) return;
             $scope.loadingThirdParty[pm] = true;
             Request.post('/api/sources/' + pm + '/third_party-install', { id: source.id }, function(res) {
                 $scope.loadingThirdParty[pm] = false;
@@ -2112,14 +2271,14 @@ var UtilsSourceCtrl = [
         };
 
         // =============================================================
-        // Docker 专用：镜像源编辑/删除
+        // Docker 专用：镜像站编辑/删除
         // =============================================================
 
         $scope.edit_docker_mirror = function(mirror) {
             if (!mirror) return;
-            var newName = prompt('修改镜像源名称：', mirror.name);
+            var newName = prompt('修改镜像站名称：', mirror.name);
             if (!newName || !newName.trim()) return;
-            var newUrl = prompt('修改镜像源地址：', mirror.url || mirror.path);
+            var newUrl = prompt('修改镜像站地址：', mirror.url || mirror.path);
             if (!newUrl || !newUrl.trim()) return;
             $scope.loading.docker = true;
             Request.post('/api/sources/docker/edit', {
@@ -2135,7 +2294,7 @@ var UtilsSourceCtrl = [
         };
 
         $scope.delete_docker_mirror = function(mirror) {
-            if (!mirror || !confirm('确定要删除镜像源「' + mirror.name + '」吗？')) return;
+            if (!mirror || !confirm('确定要删除镜像站「' + mirror.name + '」吗？')) return;
             $scope.loading.docker = true;
             Request.post('/api/sources/docker/del', { name: mirror.name }, function(res) {
                 $scope.loading.docker = false;

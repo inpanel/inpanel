@@ -149,9 +149,9 @@ def ini_set(item, value, commented=False, config=None, initype='php'):
                                 pass
                             else:
                                 # comment this line
-                                lines.append(';%s = %s\n' % (item, value))
+                                lines.append(f';{item} = {value}\n')
                         else:
-                            lines.append('%s = %s\n' % (item, value))
+                            lines.append(f'{item} = {value}\n')
                     else:
                         if commented:
                             # do not allow change comment value
@@ -160,7 +160,7 @@ def ini_set(item, value, commented=False, config=None, initype='php'):
                         else:
                             # append a new line after comment line
                             lines.append(line)
-                            lines.append('%s = %s\n' % (item, value))
+                            lines.append(f'{item} = {value}\n')
                 else:
                     lines.append(line)
         with open(v['file'], 'w', encoding='utf-8') as f:
@@ -168,7 +168,7 @@ def ini_set(item, value, commented=False, config=None, initype='php'):
     else:
         # append to the end of file
         with open(inifile, 'a', encoding='utf-8') as f:
-            f.write('\n%s%s = %s\n' % (commented and ';' or '', item, value))
+            f.write(f"\n{commented and ';' or ''}{item} = {value}\n")
 
     return True
 
@@ -211,9 +211,9 @@ def web_handler(context):
             context.write({'code': -1, 'msg': 'upload_max_filesize 必须为数字！'})
             return
 
-        memory_limit = '%sM' % memory_limit
-        post_max_size = '%sM' % post_max_size
-        upload_max_filesize = '%sM' % upload_max_filesize
+        memory_limit = f'{memory_limit}M'
+        post_max_size = f'{post_max_size}M'
+        upload_max_filesize = f'{upload_max_filesize}M'
 
         ini_set('short_open_tag', short_open_tag, initype='php')
         ini_set('expose_php', expose_php, initype='php')

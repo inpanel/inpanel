@@ -44,7 +44,7 @@ class Certificate():
         out, err = proc.communicate(cmd_input)
         out = out if out else err
         if proc.returncode != 0:
-            raise IOError("{0}\n{1}".format(err_msg, err))
+            raise IOError(f"{err_msg}\n{err}")
         return out.decode('utf8')
 
     def _check_key(self, key):
@@ -123,20 +123,20 @@ class Certificate():
         if Path(c).is_file() and forced == False:
             return {'code': -1, 'msg': 'csr_exists'}
 
-        subj = '/CN=%s' % domain[0]
+        subj = f'/CN={domain[0]}'
         print(subj)
         cmd = ['openssl', 'req', '-new', '-sha256', '-key', k, '-subj', subj]
         conf_tmp = None
         if len(domain) > 1:
-            san = ['DNS:%s' % domain[0]]
+            san = [f'DNS:{domain[0]}']
             for item in domain[1:]:
-                san.append('DNS:%s' % item)
-            san = 'subjectAltName=%s' % (','.join(san))
+                san.append(f'DNS:{item}')
+            san = f"subjectAltName={','.join(san)}"
             opssl_conf = '/etc/pki/tls/openssl.cnf'
             conf_tmp = str(Path(self.path_home) / Path(opssl_conf).name)
             copy(opssl_conf, conf_tmp)
             with open(conf_tmp, 'a', encoding='utf-8') as f:
-                f.writelines(['\n[SAN]', '\n%s' % san])
+                f.writelines(['\n[SAN]', f'\n{san}'])
             # config = '<(cat %s <(printf "[SAN]\\n%s"))' % (opssl_conf, san)
             cmd.extend(['-reqexts', 'SAN', '-config', conf_tmp])
         out = self._cmd(cmd, err_msg="Create csr error")
@@ -183,7 +183,7 @@ class Certificate():
         acc = self.path_acc
         csr = str(Path(self.path_csr) / (domain + '.csr'))
         crt = str(Path(self.path_crt) / (domain + '.crt'))
-        ckdir = '/var/www/%s/.well-known/acme-challenge' % domain
+        ckdir = f'/var/www/{domain}/.well-known/acme-challenge'
         print(acc, csr, crt, ckdir)
         if not Path(ckdir).exists():
             Path(ckdir).mkdir(parents=True, exist_ok=True)

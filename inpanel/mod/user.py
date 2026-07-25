@@ -51,7 +51,7 @@ def listuser(fullinfo=True):
 
 def passwd(username, password):
     try:
-        cmd = shlex.split('passwd \'%s\'' % username)
+        cmd = shlex.split(f'passwd \'{username}\'')
     except:
         return False
     child = pexpect.spawn(cmd[0], cmd[1:])
@@ -287,9 +287,9 @@ def web_handler(context):
         else:
             rt = getattr(sys.modules[__name__], action)(gr_name)
         if rt:
-            context.write({'code': 0, 'msg': '用户组%s成功！' % actionstr[action]})
+            context.write({'code': 0, 'msg': f'用户组{actionstr[action]}成功！'})
         else:
-            context.write({'code': -1, 'msg': '用户组%s失败！' % actionstr[action]})
+            context.write({'code': -1, 'msg': f'用户组{actionstr[action]}失败！'})
 
     elif action in ('groupmems_add', 'groupmems_del'):
         if context.config.get('runtime', 'mode') == 'demo':
@@ -301,6 +301,6 @@ def web_handler(context):
         option = action.split('_')[1]
         optionstr = {'add': '添加', 'del': '删除'}
         if groupmems(gr_name, option, mem):
-            context.write({'code': 0, 'msg': '用户组成员%s成功！' % optionstr[option]})
+            context.write({'code': 0, 'msg': f'用户组成员{optionstr[option]}成功！'})
         else:
-            context.write({'code': -1, 'msg': '用户组成员%s失败！' % optionstr[option]})
+            context.write({'code': -1, 'msg': f'用户组成员{optionstr[option]}失败！'})

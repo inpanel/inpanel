@@ -125,7 +125,7 @@ def cmd_start():
                 force_https = config.getboolean('server', 'forcehttps')
                 print(f'InPanel: running on: http{"s" if force_https else ""}://*:{server_port}')
             else:
-                print('InPanel: failed to start, check log file: %s' % logfile)
+                print(f'InPanel: failed to start, check log file: {logfile}')
                 sys.exit(1)
             return
     except OSError as e:
@@ -384,6 +384,7 @@ def run_server():
         (r'/api/service/(.+?)(?:/(.+))?', web.ServiceHandler),
         (r'/api/firewall/(.+)', web.FirewallHandler),
         (r'/api/setting/(.+)', web.SettingHandler),
+        (r'/api/logs/(.+)', web.LogsHandler),
         (r'/api/operation/(.+)', web.OperationHandler),
         (r'/api/task/(.+)', web.TaskHandler),
         (r'/api/sitepackage/(.+)', web.SitePackageHandler),

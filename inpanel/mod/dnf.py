@@ -8,7 +8,7 @@
 '''DNF 软件源管理模块
 
 概念说明：
-- 镜像源（mirror）：基础发行版仓库的 URL 地址，切换本质是修改已有 .repo 文件中 baseurl 的域名。
+- 镜像站（mirror）：基础发行版仓库的 URL 地址，切换本质是修改已有 .repo 文件中 baseurl 的域名。
 - 软件仓库（repo）：完整的 .repo 配置文件，可以添加自定义仓库来安装特定软件。
 '''
 
@@ -93,13 +93,13 @@ def _extract_domain(url):
     """从 URL 中提取域名（scheme://host）"""
     try:
         p = urlparse(url)
-        return '%s://%s' % (p.scheme, p.netloc)
+        return f'{p.scheme}://{p.netloc}'
     except Exception:
         return url
 
 
 def get_mirrors():
-    """获取镜像源列表"""
+    """获取镜像站列表"""
     sources = _load_sources_config()
     active_url = _get_active_url()
     active_domain = _extract_domain(active_url) if active_url else ''
@@ -208,10 +208,10 @@ def get_repo_release(os_versint, os_name, arch):
     cmds = []
     if os_versint >= 8:
         if os_name in ('centos', 'almalinux', 'rocky', 'rhel', 'fedora'):
-            cmds.append('dnf install -y %s-release' % os_name)
+            cmds.append(f'dnf install -y {os_name}-release')
     else:
         for rpm in dnf_reporpms['base'][os_versint][arch]:
-            cmds.append('rpm -U %s' % rpm)
+            cmds.append(f'rpm -U {rpm}')
     return cmds
 
 
@@ -222,7 +222,7 @@ def get_repo_epel(os_versint, os_name, arch):
         cmds.append('dnf install -y epel-release')
     else:
         for rpm in dnf_reporpms['epel'][os_versint][arch]:
-            cmds.append('rpm -U %s' % rpm)
+            cmds.append(f'rpm -U {rpm}')
     return cmds
 
 
@@ -242,7 +242,7 @@ def get_repo_remi(os_versint, os_name, arch):
     '''install remi repository'''
     cmds = []
     if os_versint >= 8:
-        cmds.append('dnf install -y https://rpms.remirepo.net/enterprise/remi-release-%d.rpm' % os_versint)
+        cmds.append(f'dnf install -y https://rpms.remirepo.net/enterprise/remi-release-{os_versint}.rpm')
     return cmds
 
 
@@ -287,7 +287,7 @@ def refresh_cache():
     status, output = getstatusoutput('dnf makecache 2>&1')
     if status == 0:
         return {'code': 0, 'msg': 'dnf 缓存已更新！'}
-    return {'code': -1, 'msg': 'dnf 缓存更新失败：%s' % output}
+    return {'code': -1, 'msg': f'dnf 缓存更新失败：{output}'}
 
 
 def get_repo_list():
@@ -360,10 +360,10 @@ def install_package(name):
         return {'code': -1, 'msg': '软件名称不能为空！'}
     if not is_installed():
         return {'code': -1, 'msg': 'dnf 未安装！'}
-    status, output = getstatusoutput('dnf install -y %s 2>&1' % name)
+    status, output = getstatusoutput(f'dnf install -y {name} 2>&1')
     if status == 0:
-        return {'code': 0, 'msg': '软件 %s 安装成功！' % name, 'data': output}
-    return {'code': -1, 'msg': '软件 %s 安装失败：%s' % (name, output)}
+        return {'code': 0, 'msg': f'软件 {name} 安装成功！', 'data': output}
+    return {'code': -1, 'msg': f'软件 {name} 安装失败：{output}'}
 
 
 # ==================================================================
@@ -399,7 +399,7 @@ def web_handler(context, action):
     elif action == 'install':
         context.write(install_package(repo))
 
-    # --- 镜像源管理 ---
+    # --- 镜像站管理 ---
     elif action == 'mirrors':
         context.write({'code': 0, 'msg': '', 'data': get_mirrors()})
 
@@ -419,11 +419,11 @@ def web_handler(context, action):
                 return
         sources.append({'name': source_name, 'url': url, 'builtin': False})
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': 'DNF 镜像源已添加：%s' % url})
+        context.write({'code': 0, 'msg': f'DNF 镜像站已添加：{url}'})
 
     elif action == 'mirror-del':
         if not repo:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
             return
         sources = _load_sources_config()
         found = None
@@ -432,17 +432,17 @@ def web_handler(context, action):
                 found = s
                 break
         if found is None:
-            context.write({'code': -1, 'msg': '镜像源不存在！'})
+            context.write({'code': -1, 'msg': '镜像站不存在！'})
             return
         if found.get('builtin'):
-            context.write({'code': -1, 'msg': '内置镜像源不可删除！'})
+            context.write({'code': -1, 'msg': '内置镜像站不可删除！'})
             return
         sources = [s for s in sources if s['name'] != repo]
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': '镜像源「%s」已删除' % repo})
+        context.write({'code': 0, 'msg': f'镜像站「{repo}」已删除'})
 
     elif action == 'switch':
-        """切换镜像源：替换已有 .repo 文件中 baseurl 的域名"""
+        """切换镜像站：替换已有 .repo 文件中 baseurl 的域名"""
         url = context.get_argument('url', '').strip()
         source_name = context.get_argument('name', '') or context.get_argument('repo', '')
         if not url and not source_name:
@@ -455,7 +455,7 @@ def web_handler(context, action):
                     url = s['url']
                     break
         if not url:
-            context.write({'code': -1, 'msg': '未找到该镜像源的地址！'})
+            context.write({'code': -1, 'msg': '未找到该镜像站的地址！'})
             return
 
         new_url = url.rstrip('/')
@@ -495,7 +495,7 @@ def web_handler(context, action):
                 pass
 
         if modified_count > 0:
-            context.write({'code': 0, 'msg': 'DNF 镜像源已切换至：%s（修改了 %d 个仓库文件）' % (source_name or url, modified_count)})
+            context.write({'code': 0, 'msg': f'DNF 镜像站已切换至：{source_name or url}（修改了 {modified_count} 个仓库文件）'})
         else:
             context.write({'code': -1, 'msg': '没有找到需要切换的 .repo 文件'})
 
@@ -515,7 +515,7 @@ def web_handler(context, action):
             return
         repo_file = context.get_argument('repo', '')
         if not repo_file:
-            repo_file = '%s.repo' % serverid
+            repo_file = f'{serverid}.repo'
 
         enabled = context.get_argument('enabled', True)
         gpgcheck = context.get_argument('gpgcheck', False)
@@ -532,9 +532,9 @@ def web_handler(context, action):
         }
 
         if item_exists(repo_file):
-            context.write({'code': -1, 'msg': '仓库文件「%s」已存在！' % repo_file})
+            context.write({'code': -1, 'msg': f'仓库文件「{repo_file}」已存在！'})
         elif add_item(repo_file, data) is True:
-            context.write({'code': 0, 'msg': '仓库「%s」添加成功！' % repo_file})
+            context.write({'code': 0, 'msg': f'仓库「{repo_file}」添加成功！'})
         else:
             context.write({'code': -1, 'msg': '仓库添加失败！'})
 
@@ -582,11 +582,11 @@ def web_handler(context, action):
         elif not item_exists(repo):
             context.write({'code': -1, 'msg': '仓库文件不存在！'})
         elif del_item(repo):
-            context.write({'code': 0, 'msg': '仓库「%s」已删除' % repo})
+            context.write({'code': 0, 'msg': f'仓库「{repo}」已删除'})
         else:
             context.write({'code': -1, 'msg': '仓库删除失败！'})
 
-    # --- 第三方专用源（复用 yum 的第三方源函数）---
+    # --- 第三方软件仓库（复用 yum 的第三方源函数）---
     elif action == 'third_party':
         from . import yum
         context.write(yum._get_third_party('rhel'))

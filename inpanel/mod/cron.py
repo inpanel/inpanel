@@ -70,15 +70,15 @@ def save_config(filepath, config):
         line = lines.pop(0)
         out = line.strip()
         if not out or out.startswith('#'):
-            output.append('%s' % (line))
+            output.append(f'{line}')
             continue
 
         k = out.split('=')[0]
         if k:
             if k in config:
-                output.append('%s=%s\n' % (k, config[k]))
+                output.append(f'{k}={config[k]}\n')
             else:
-                output.append('%s' % (line))
+                output.append(f'{line}')
 
     with open(filepath, 'w', encoding='utf-8') as f:
         f.writelines(output)
@@ -147,11 +147,11 @@ def cron_add(user, minute, hour, day, month, weekday, command, level):
         if user is None or user == '' or len(user) == 0:
             return False
         spool = crontab
-        line = "%s %s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, user, command)
+        line = f"{minute} {hour} {day} {month} {weekday} {user} {command}\n"
     else:
         user = user or 'root'
         spool = str(Path(cronspool) / user)
-        line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
+        line = f"{minute} {hour} {day} {month} {weekday} {command}\n"
 
     with open(spool, 'a+', encoding='utf-8') as f:
         f.write(line)
@@ -167,10 +167,10 @@ def cron_mod(user, id, minute, hour, day, month, weekday, command, level, currli
         return False
     if level == 'system':
         spool = crontab
-        cron_line = "%s %s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, user, command)
+        cron_line = f"{minute} {hour} {day} {month} {weekday} {user} {command}\n"
     else:
         spool = str(Path(cronspool) / user)
-        cron_line = "%s %s %s %s %s %s\n" % (minute, hour, day, month, weekday, command)
+        cron_line = f"{minute} {hour} {day} {month} {weekday} {command}\n"
 
     with open(spool, 'r', encoding='utf-8') as f:
         lines = f.readlines()

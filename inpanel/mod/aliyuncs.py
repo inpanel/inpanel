@@ -32,8 +32,7 @@ class ECS(object):
     def _sign(self, params):
         paramstrings = []
         for k, v in sorted(params.items()):
-            paramstrings.append('%s=%s' %
-                                (ECS._urlencode(k), ECS._urlencode(v)))
+            paramstrings.append(f'{ECS._urlencode(k)}={ECS._urlencode(v)}')
         datastrings = [
             ECS._urlencode('GET'),
             ECS._urlencode('/'),
@@ -240,7 +239,7 @@ if __name__ == '__main__':
         print()
 
         for region in regions['Regions']:
-            print('## Zones in %s\n' % region['RegionCode'])
+            print(f"## Zones in {region['RegionCode']}\n")
             zones = ecs.DescribeZones(region['RegionCode'])
             if not zones[0]:
                 pp.pprint(zones)
@@ -250,7 +249,7 @@ if __name__ == '__main__':
             print()
 
             for zone in zones['Zones']:
-                print('## Instances in %s\n' % zone['ZoneCode'])
+                print(f"## Instances in {zone['ZoneCode']}\n")
                 instances = ecs.DescribeInstanceStatus(
                     region['RegionCode'], zone['ZoneCode'])[1]
                 pp.pprint(instances)

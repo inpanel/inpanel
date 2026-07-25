@@ -34,7 +34,7 @@ def add(disk, size=''):
     fdisk.add('/dev/sdb', '5G') # create a partition with at most 5G space
     """
     try:
-        cmd = split('fdisk \'%s\'' % disk)
+        cmd = split(f'fdisk \'{disk}\'')
     except:
         return False
 
@@ -58,7 +58,7 @@ def add(disk, size=''):
 
         i = child.expect(['Partition number', 'Selected partition'])
         if i == 0:
-            child.sendline('%d' % partno)
+            child.sendline(str(partno))
 
         i = child.expect(['First cylinder', '(m for help)'])
         if i == 0:
@@ -73,7 +73,7 @@ def add(disk, size=''):
     if rt:
         child.sendline('')
         child.expect('Last cylinder')
-        child.sendline('+%s' % size)
+        child.sendline(f'+{size}')
         i = child.expect(
             ['(m for help)', 'Value out of range', 'Last cylinder'])
         if i == 1:
@@ -105,7 +105,7 @@ def delete(partition):
     disk = partition[:-1]
     partno = partition[-1:]
     try:
-        cmd = split('fdisk \'%s\'' % disk)
+        cmd = split(f'fdisk \'{disk}\'')
     except:
         return False
 
@@ -121,7 +121,7 @@ def delete(partition):
     rt = True
     i = child.expect([
         'Partition number',
-        'Selected partition %s' % partno,
+        f'Selected partition {partno}',
         'No partition is defined yet',
         pexpect.TIMEOUT
     ], timeout=1)
@@ -154,7 +154,7 @@ def scan(disk, size=''):
     fdisk.scan('/dev/sdb')
     """
     try:
-        cmd = split('fdisk \'%s\'' % disk)
+        cmd = split(f'fdisk \'{disk}\'')
     except:
         return False
 
@@ -207,25 +207,25 @@ def handle_fdisk(action, devname, size='', unit=''):
             if unit == 'G' and size - int(size) > 0:
                 size *= 1024
                 unit = 'M'
-            size = '%d%s' % (round(size), unit)
+            size = f'{round(size)}{unit}'
 
-        if add('/dev/%s' % devname, size):
-            return {'code': 0, 'msg': '在 %s 设备上创建分区成功！' % devname}
+        if add(f'/dev/{devname}', size):
+            return {'code': 0, 'msg': f'在 {devname} 设备上创建分区成功！'}
         else:
-            return {'code': -1, 'msg': '在 %s 设备上创建分区失败！' % devname}
+            return {'code': -1, 'msg': f'在 {devname} 设备上创建分区失败！'}
 
     elif action == 'delete':
-        if delete('/dev/%s' % devname):
+        if delete(f'/dev/{devname}'):
             fstab(devname, {'devname': devname, 'mount': None})
-            return {'code': 0, 'msg': '分区 %s 删除成功！' % devname}
+            return {'code': 0, 'msg': f'分区 {devname} 删除成功！'}
         else:
-            return {'code': -1, 'msg': '分区 %s 删除失败！' % devname}
+            return {'code': -1, 'msg': f'分区 {devname} 删除失败！'}
 
     elif action == 'scan':
-        if scan('/dev/%s' % devname):
-            return {'code': 0, 'msg': '扫描设备 %s 的分区成功！' % devname}
+        if scan(f'/dev/{devname}'):
+            return {'code': 0, 'msg': f'扫描设备 {devname} 的分区成功！'}
         else:
-            return {'code': -1, 'msg': '扫描设备 %s 的分区失败！' % devname}
+            return {'code': -1, 'msg': f'扫描设备 {devname} 的分区失败！'}
 
     else:
         return {'code': -1, 'msg': '未定义的操作！'}
@@ -280,14 +280,11 @@ def _write_fstab(line, **params):
     if not 'mount' in config or config['mount'] is None:
         return None  # remove line
     if line is None:  # new line
-        return '/dev/%s %s                %s    defaults        1 2' % \
-            (params['devname'], config['mount'], config['fstype'])
+        return f"/dev/{params['devname']} {config['mount']}                {config['fstype']}    defaults        1 2"
     else:  # update existing line
         fields = line.split()
-        return '%s %s                %s    %s        %s %s' % \
-            (fields[0], config['mount'],
-             'fstype' in config and config['fstype'] or fields[2],
-             fields[3], fields[4], fields[5])
+        fstype = config['fstype'] if 'fstype' in config else fields[2]
+        return f'{fields[0]} {config["mount"]}                {fstype}    {fields[3]}        {fields[4]} {fields[5]}'
 
 
 def fstab(devname, config=None):

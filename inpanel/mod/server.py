@@ -45,7 +45,7 @@ def strfdelta(tdelta, fmt):
 def div_percent(a, b):
     if b == 0:
         return '0%'
-    return '%.2f%%' % (round(float(a) / b, 4) * 100)
+    return f'{round(float(a) / b, 4) * 100:.2f}%'
 
 
 class ServerInfo(object):
@@ -512,7 +512,7 @@ class ServerInfo(object):
                         hwtype = hwinfo[16:18]
                         netiface['encap'] = encaps[bytes.decode(hwtype)]
                         # netiface['mac'] = ':'.join(['%02X' % ord(str(char)) for char in hwinfo[18:24]])
-                        netiface['mac'] = ':'.join(['%02X' % i for i in hwinfo[18:24]])
+                        netiface['mac'] = ':'.join([f'{i:02X}' for i in hwinfo[18:24]])
 
                         if not netiface['name'].startswith('venet'):
                             break
@@ -527,7 +527,7 @@ class ServerInfo(object):
                             guest_iface_i += 1
 
                         netiface = {
-                            'name': '%s:%d' % (guess_iface_name, guess_iface_i),
+                            'name': f'{guess_iface_name}:{guess_iface_i}',
                             'rx': '0B',
                             'tx': '0B',
                             'timestamp': 0,
@@ -1191,7 +1191,7 @@ class ServerInfo(object):
         if os_name == 'CentOS':
             if saveconfig('/etc/sysconfig/network', {'HOSTNAME': hostname}) and \
                 raw_saveconfig('/etc/hosts', { '127.0.0.1': hostname, '::1': hostname }, delimiter=' ', quoter='') and \
-                run(str('hostname %s' % hostname)) == 0:
+                run(str(f'hostname {hostname}')) == 0:
                 return True
             else:
                 return False
@@ -1203,7 +1203,7 @@ class ServerInfo(object):
                     '127.0.0.1': ['localhost', hostname],
                     '::1': ['localhost', hostname]
                 }
-                if run('hostnamectl set-hostname %s' % hostname) == 0 and \
+                if run(f'hostnamectl set-hostname {hostname}') == 0 and \
                     raw_saveconfig('/etc/hosts', newdata, delimiter=' ', quoter=''):
                     return True
                 else:
@@ -1230,7 +1230,7 @@ class ServerInfo(object):
         """
         dist = cls.dist()
         if dist['name'] in ('centos', 'redhat'):
-            cfile = '/etc/sysconfig/network-scripts/ifcfg-%s' % ifname
+            cfile = f'/etc/sysconfig/network-scripts/ifcfg-{ifname}'
             cmap = {
                 'DEVICE': 'name',
                 'HWADDR': 'mac',
@@ -1314,11 +1314,11 @@ class ServerInfo(object):
             gw = args.get('gw', '')
 
             if not utils.is_valid_ip(ip):
-                return {'code': -1, 'msg': '%s 不是有效的IP地址！' % ip}
+                return {'code': -1, 'msg': f'{ip} 不是有效的IP地址！'}
             if not utils.is_valid_netmask(mask):
-                return {'code': -1, 'msg': '%s 不是有效的子网掩码！' % mask}
+                return {'code': -1, 'msg': f'{mask} 不是有效的子网掩码！'}
             if gw != '' and not utils.is_valid_ip(gw):
-                return {'code': -1, 'msg': '网关IP %s 不是有效的IP地址！' % gw}
+                return {'code': -1, 'msg': f'网关IP {gw} 不是有效的IP地址！'}
 
             if cls.ifconfig(ifname, {'ip': ip, 'mask': mask, 'gw': gw}):
                 return {'code': 0, 'msg': 'IP设置保存成功！'}
@@ -1334,7 +1334,7 @@ class ServerInfo(object):
                     del nameservers[i]
                     continue
                 if not utils.is_valid_ip(nameserver):
-                    return {'code': -1, 'msg': '%s 不是有效的IP地址！' % nameserver}
+                    return {'code': -1, 'msg': f'{nameserver} 不是有效的IP地址！'}
 
             if cls.set_nameservers(nameservers):
                 return {'code': 0, 'msg': 'DNS设置保存成功！'}
@@ -1381,7 +1381,7 @@ class ServerInfo(object):
                 for zonefile in regionpath.iterdir():
                     if not zonefile.is_file():
                         continue
-                    timezones.append('%s/%s' % (region, zonefile.name))
+                    timezones.append(f'{region}/{zonefile.name}')
         else:
             regionpath = zonepath / region
             if not regionpath.exists():
@@ -1431,7 +1431,7 @@ class ServerInfo(object):
                     continue
                 with open(zonefile, 'rb') as f:
                     if hashlib.md5(f.read()).hexdigest() == tzdata:
-                        return '%s/%s' % (region, zonefile.name)
+                        return f'{region}/{zonefile.name}'
         return ''
 
     @classmethod
@@ -1507,7 +1507,7 @@ class ServerTool(object):
         support_list = []
         for fstype in ('ext2', 'ext3', 'ext4', 'xfs', 'jfs', 'reiserfs',
                        'btrfs'):
-            if Path('/sbin/mkfs.%s' % fstype).exists():
+            if Path(f'/sbin/mkfs.{fstype}').exists():
                 support_list.append(fstype)
         support_list.append('swap')
         return support_list
@@ -1564,164 +1564,159 @@ async def server_ntpdate(tm, server):
 
 if __name__ == '__main__':
     print('')
-    print('* Hostname: %s' % ServerInfo.hostname())
+    print(f'* Hostname: {ServerInfo.hostname()}')
     print('')
 
-    print('* Server time: %s' % ServerInfo.datetime())
+    print(f'* Server time: {ServerInfo.datetime()}')
     print('')
 
     uptime = ServerInfo.uptime()
-    print('* Uptime: %s' % uptime['up'])
-    print('* Idletime: %s' % uptime['idle'])
-    print('* Idlerate: %s' % uptime['idle_rate'])
+    print(f"* Uptime: {uptime['up']}")
+    print(f"* Idletime: {uptime['idle']}")
+    print(f"* Idlerate: {uptime['idle_rate']}")
     print('')
 
     loadavg = ServerInfo.loadavg()
-    print('* Last 1 min processes: %s' % loadavg['1min'])
-    print('* Last 15 min processes: %s' % loadavg['5min'])
-    print('* Last 15 min processes: %s' % loadavg['15min'])
+    print(f"* Last 1 min processes: {loadavg['1min']}")
+    print(f"* Last 15 min processes: {loadavg['5min']}")
+    print(f"* Last 15 min processes: {loadavg['15min']}")
     print('')
 
     cpustat = ServerInfo.cpustat()
     tstat = cpustat['total']
     print('* Total CPU stats:')
     for k, v in tstat.items():
-        print('  %s: %d' % (k, v))
+        print(f'  {k}: {v}')
     for i, tstat in enumerate(cpustat['cpus']):
-        print('* CPU-%d stats:' % i)
+        print(f'* CPU-{i} stats:')
         for k, v in tstat.items():
-            print('  %s: %d' % (k, v))
+            print(f'  {k}: {v}')
     print('')
 
     meminfo = ServerInfo.meminfo()
-    print('* Memory total: %s' % meminfo['mem_total'])
-    print('* Memory used: %s (%s)' % (meminfo['mem_used'], meminfo['mem_used_rate']))
-    print('* Memory free: %s (%s)' % (meminfo['mem_free'], meminfo['mem_free_rate']))
-    print('* Memory available: %s (%s)' % (meminfo['mem_available'], meminfo['mem_available_rate']))
-    print('* Memory buffers: %s' % meminfo['mem_buffers'])
-    print('* Memory cached: %s' % meminfo['mem_cached'])
-    print('* Memory slab: %s' % meminfo['mem_slab'])
-    print('* Swap total: %s' % meminfo['swap_total'])
-    print('* Swap used: %s (%s)' % (meminfo['swap_used'], meminfo['swap_used_rate']))
-    print('* Swap free: %s (%s)' % (meminfo['swap_free'], meminfo['swap_free_rate']))
-    print('* Swappiness: %s' % meminfo['swap_swappiness'])
+    print(f"* Memory total: {meminfo['mem_total']}")
+    print(f"* Memory used: {meminfo['mem_used']} ({meminfo['mem_used_rate']})")
+    print(f"* Memory free: {meminfo['mem_free']} ({meminfo['mem_free_rate']})")
+    print(f"* Memory available: {meminfo['mem_available']} ({meminfo['mem_available_rate']})")
+    print(f"* Memory buffers: {meminfo['mem_buffers']}")
+    print(f"* Memory cached: {meminfo['mem_cached']}")
+    print(f"* Memory slab: {meminfo['mem_slab']}")
+    print(f"* Swap total: {meminfo['swap_total']}")
+    print(f"* Swap used: {meminfo['swap_used']} ({meminfo['swap_used_rate']})")
+    print(f"* Swap free: {meminfo['swap_free']} ({meminfo['swap_free_rate']})")
+    print(f"* Swappiness: {meminfo['swap_swappiness']}")
     print()
     print('')
     mounts = ServerInfo.mounts(True)
     for mount in mounts:
-        print('* Mount device: %s' % mount['dev'])
+        print(f"* Mount device: {mount['dev']}")
         if 'major' in mount:
-            print('* Dev node: (%d, %d)' % (mount['major'], mount['minor']))
-        print('* Mount point: %s' % mount['path'])
-        print('* Total space: %s' % mount['total'])
-        print('* Free space: %s' % mount['free'])
-        print('* Used space: %s (%s)' % (mount['used'], mount['used_rate']))
+            print(f"* Dev node: ({mount['major']}, {mount['minor']})")
+        print(f"* Mount point: {mount['path']}")
+        print(f"* Total space: {mount['total']}")
+        print(f"* Free space: {mount['free']}")
+        print(f"* Used space: {mount['used']} ({mount['used_rate']})")
         print('')
 
     netifaces = ServerInfo.netifaces()
     for netiface in netifaces:
-        print('* Interface name: %s' % netiface['name'])
-        print('* Interface status: %s' % netiface['status'])
-        print('* Link encap: %s' % netiface['encap'])
-        print('* IP address: %s' % netiface['ip'])
-        print('* Broadcast: %s' % netiface['bcast'])
-        print('* Network mask: %s' % netiface['mask'])
+        print(f"* Interface name: {netiface['name']}")
+        print(f"* Interface status: {netiface['status']}")
+        print(f"* Link encap: {netiface['encap']}")
+        print(f"* IP address: {netiface['ip']}")
+        print(f"* Broadcast: {netiface['bcast']}")
+        print(f"* Network mask: {netiface['mask']}")
         if 'gw' in netiface:
-            print('* Default gateway: %s' % netiface['gw'])
-        print('* MAC address: %s' % netiface['mac'])
-        print('* Data receive: %s' % netiface['rx'])
-        print('* Data transmit: %s' % netiface['tx'])
+            print(f"* Default gateway: {netiface['gw']}")
+        print(f"* MAC address: {netiface['mac']}")
+        print(f"* Data receive: {netiface['rx']}")
+        print(f"* Data transmit: {netiface['tx']}")
         print('')
 
     nameservers = ServerInfo.nameservers()
     print('* Name servers:')
     for nameserver in nameservers:
-        print('  %s' % nameserver)
+        print(f'  {nameserver}')
     print('')
 
     uname = ServerInfo.uname()
-    print('* Kernel name: %s' % uname['kernel_name'])
-    print('* Kernel release: %s' % uname['kernel_release'])
-    print('* Kernel version: %s' % uname['kernel_version'])
-    print('* Machine: %s' % uname['machine'])
+    print(f"* Kernel name: {uname['kernel_name']}")
+    print(f"* Kernel release: {uname['kernel_release']}")
+    print(f"* Kernel version: {uname['kernel_version']}")
+    print(f"* Machine: {uname['machine']}")
     print('')
 
     cpuinfo = ServerInfo.cpuinfo()
-    print('* CPU count: %d' % cpuinfo['cpu_count'])
-    print('* CPU cores: %d' % cpuinfo['core_count'])
+    print(f"* CPU count: {cpuinfo['cpu_count']}")
+    print(f"* CPU cores: {cpuinfo['core_count']}")
     for c in cpuinfo['cores']:
-        print('* CPU core: %s (%s)' % (c['model'], c['bits']))
+        print(f"* CPU core: {c['model']} ({c['bits']})")
     print('')
 
     diskinfo = ServerInfo.diskinfo()
     count = diskinfo['count']
     totalsize = diskinfo['totalsize']
     partitions = diskinfo['partitions']
-    print('* %d disks detected, total size: %s' % (count, totalsize))
+    print(f'* {count} disks detected, total size: {totalsize}')
     print('')
     for partition in partitions:
-        print('* Partition name: %s (%d, %d)' %
-              (partition['name'], partition['major'], partition['minor']))
+        print(f"* Partition name: {partition['name']} ({partition['major']}, {partition['minor']})")
         if 'vname' in partition:
-            print('  Volumn name: %s' % partition['vname'])
-        print('  Partition size: %s (%s free)' %
-              (partition['size'], partition['unpartition']))
+            print(f"  Volumn name: {partition['vname']}")
+        print(f"  Partition size: {partition['size']} ({partition['unpartition']} free)")
         if 'uuid' in partition:
-            print('  Partition UUID: %s' % partition['uuid'])
+            print(f"  Partition UUID: {partition['uuid']}")
         if 'fstype' in partition:
-            print('  Partition fstype: %s' % partition['fstype'])
-        print('  Partition is PV: %s' % partition['is_pv'])
-        print('  Partition is LV: %s' % partition['is_lv'])
-        print('  Partition is HW: %s' % partition['is_hw'])
+            print(f"  Partition fstype: {partition['fstype']}")
+        print(f"  Partition is PV: {partition['is_pv']}")
+        print(f"  Partition is LV: {partition['is_lv']}")
+        print(f"  Partition is HW: {partition['is_hw']}")
         if 'mount' in partition:
-            print('  Mount point: %s' % partition['mount'])
+            print(f"  Mount point: {partition['mount']}")
         if partition['is_hw']:
-            print('  Partition count: %d' % partition['partcount'])
+            print(f"  Partition count: {partition['partcount']}")
         print()
         for subpartition in partition['partitions']:
-            print('  - Subpartition name: %s (%d, %d)' %
-                  (subpartition['name'], subpartition['major'],
-                   subpartition['minor']))
+            print(f"  - Subpartition name: {subpartition['name']} ({subpartition['major']}, {subpartition['minor']})")
             if 'vname' in subpartition:
-                print('  - Volumn name: %s' % subpartition['vname'])
-            print('  - Subpartition size: %s' % subpartition['size'])
+                print(f"  - Volumn name: {subpartition['vname']}")
+            print(f"  - Subpartition size: {subpartition['size']}")
             if 'uuid' in subpartition:
-                print('  - Subpartition UUID: %s' % subpartition['uuid'])
+                print(f"  - Subpartition UUID: {subpartition['uuid']}")
             if 'fstype' in subpartition:
-                print('  - Subpartition fstype: %s' % subpartition['fstype'])
-            print('  - Subpartition is PV: %s' % subpartition['is_pv'])
-            print('  - Subpartition is LV: %s' % subpartition['is_lv'])
-            print('  - Subpartition is HW: %s' % subpartition['is_hw'])
+                print(f"  - Subpartition fstype: {subpartition['fstype']}")
+            print(f"  - Subpartition is PV: {subpartition['is_pv']}")
+            print(f"  - Subpartition is LV: {subpartition['is_lv']}")
+            print(f"  - Subpartition is HW: {subpartition['is_hw']}")
             if 'mount' in subpartition:
-                print('  - Mount point: %s' % subpartition['mount'])
+                print(f"  - Mount point: {subpartition['mount']}")
             if subpartition['is_hw']:
-                print('  - Subpartition count: %d' % subpartition['partcount'])
+                print(f"  - Subpartition count: {subpartition['partcount']}")
             print()
         print()
 
     print('* LVM partitions:')
     for partition in diskinfo['lvm']['partitions']:
-        print('  - Partition name: %s (%d, %d)' %
-              (partition['name'], partition['major'], partition['minor']))
+        print(f"  - Partition name: {partition['name']} ({partition['major']}, {partition['minor']})")
         if 'vname' in partition:
-            print('  - Volumn name: %s' % partition['vname'])
-        print('  - Partition size: %s' % partition['size'])
+            print(f"  - Volumn name: {partition['vname']}")
+        print(f"  - Partition size: {partition['size']}")
         if 'uuid' in partition:
-            print('  - Partition UUID: %s' % partition['uuid'])
+            print(f"  - Partition UUID: {partition['uuid']}")
         if 'fstype' in partition:
-            print('  - Partition fstype: %s' % partition['fstype'])
-        print('  - Partition is PV: %s' % partition['is_pv'])
-        print('  - Partition is LV: %s' % partition['is_lv'])
-        print('  - Partition is HW: %s' % partition['is_hw'])
+            print(f"  - Partition fstype: {partition['fstype']}")
+        print(f"  - Partition is PV: {partition['is_pv']}")
+        print(f"  - Partition is LV: {partition['is_lv']}")
+        print(f"  - Partition is HW: {partition['is_hw']}")
         if 'mount' in partition:
-            print('  - Mount point: %s' % partition['mount'])
+            print(f"  - Mount point: {partition['mount']}")
         if partition['is_hw']:
-            print('  - Partition count: %d' % partition['partcount'])
+            print(f"  - Partition count: {partition['partcount']}")
         print()
 
     print('* Support file systems:')
     for fstype in ServerTool.supportfs():
-        print('  - %s' % fstype)
+        print(f'  - {fstype}')
     print()
 
-    print('* Virtual Tech: %s' % ServerInfo.virt())
+    print(f'* Virtual Tech: {ServerInfo.virt()}')

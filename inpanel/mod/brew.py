@@ -10,10 +10,10 @@
 概念说明：
 - 软件仓库（repository / tap）：brew tap 管理的仓库。内置官方仓库（homebrew/core、
   homebrew/cask）不可编辑/不可删除，自定义仓库可添加/删除。
-- 镜像源（mirror）：内置官方仓库的 git remote URL。在仓库详情中可切换镜像源 URL。
+- 镜像站（mirror）：内置官方仓库的 git remote URL。在仓库详情中可切换镜像源 URL。
 
 交互流程：
-  仓库列表 → 点击"详情" → 查看仓库信息 → 如果是内置仓库，可切换镜像源 URL
+  仓库列表 → 点击"详情" → 查看仓库信息 → 如果是内置仓库，可切换镜像站 URL
 '''
 
 import json
@@ -83,7 +83,7 @@ def _get_active_url():
 
 
 def get_mirrors():
-    """获取镜像源列表"""
+    """获取镜像站列表"""
     sources = _load_sources_config()
     active_url = _get_active_url()
 
@@ -176,8 +176,8 @@ def service_control(action):
         else:
             status, output = getstatusoutput('brew services stop --all')
     if status == 0:
-        return {'code': 0, 'msg': 'brew 服务已%s' % action_msg.get(action, action)}
-    return {'code': -1, 'msg': 'brew 服务%s失败：%s' % (action_msg.get(action, action), output)}
+        return {'code': 0, 'msg': f'brew 服务已{action_msg.get(action, action)}'}
+    return {'code': -1, 'msg': f'brew 服务{action_msg.get(action, action)}失败：{output}'}
 
 
 def get_services():
@@ -286,7 +286,7 @@ def _list_formula_in_tap(tap_path):
 
 
 def get_tap_detail(name):
-    """获取某个 tap 的详情（含软件列表、是否内置、镜像源列表）"""
+    """获取某个 tap 的详情（含软件列表、是否内置、镜像站列表）"""
     if not name:
         return None
     path = _tap_path(name)
@@ -311,7 +311,7 @@ def get_tap_detail(name):
     if is_builtin:
         current_url = ''
         if path and Path(path).exists():
-            s, o = getstatusoutput('cd "%s" && git remote get-url origin 2>/dev/null' % path)
+            s, o = getstatusoutput(f'cd "{path}" && git remote get-url origin 2>/dev/null')
             if s == 0:
                 current_url = o.strip()
         result['current_mirror_url'] = current_url
@@ -333,10 +333,10 @@ def install_package(name):
     """通过 brew 安装软件"""
     if not name:
         return {'code': -1, 'msg': '软件名称不能为空！'}
-    status, output = _run('brew install %s' % name)
+    status, output = _run(f'brew install {name}')
     if status == 0:
-        return {'code': 0, 'msg': '软件 %s 安装成功！' % name, 'data': output}
-    return {'code': -1, 'msg': '软件 %s 安装失败：%s' % (name, output)}
+        return {'code': 0, 'msg': f'软件 {name} 安装成功！', 'data': output}
+    return {'code': -1, 'msg': f'软件 {name} 安装失败：{output}'}
 
 
 def refresh_cache():
@@ -344,7 +344,7 @@ def refresh_cache():
     status, output = _run('brew update')
     if status == 0:
         return {'code': 0, 'msg': 'brew 索引已更新！'}
-    return {'code': -1, 'msg': 'brew 索引更新失败：%s' % output}
+    return {'code': -1, 'msg': f'brew 索引更新失败：{output}'}
 
 
 def get_repo_list():
@@ -392,7 +392,7 @@ def web_handler(context, action):
     elif action == 'refresh':
         context.write(refresh_cache())
 
-    # --- 第三方专用源 ---
+    # --- 第三方软件仓库 ---
     elif action == 'third_party':
         installed_taps = {t['name'] for t in get_tap_list()}
         sources = []
@@ -409,7 +409,7 @@ def web_handler(context, action):
     elif action == 'third_party-install':
         source_id = context.get_argument('id', '')
         if not source_id:
-            context.write({'code': -1, 'msg': '第三方专用源ID不能为空！'})
+            context.write({'code': -1, 'msg': '第三方软件仓库ID不能为空！'})
             return
         source = None
         for t in _BREW_TAP_TEMPLATES:
@@ -417,20 +417,20 @@ def web_handler(context, action):
                 source = t
                 break
         if not source:
-            context.write({'code': -1, 'msg': '第三方专用源不存在！'})
+            context.write({'code': -1, 'msg': '第三方软件仓库不存在！'})
             return
-        status, output = getstatusoutput('brew tap %s 2>/dev/null' % source['name'])
+        status, output = getstatusoutput(f"brew tap {source['name']} 2>/dev/null")
         if status == 0:
-            context.write({'code': 0, 'msg': '第三方专用源「%s」安装成功！' % source['name']})
+            context.write({'code': 0, 'msg': f"第三方软件仓库「{source['name']}」安装成功！"})
         else:
-            context.write({'code': -1, 'msg': '第三方专用源安装失败：%s' % output})
+            context.write({'code': -1, 'msg': f'第三方软件仓库安装失败：{output}'})
 
-    # --- 镜像源管理 ---
+    # --- 镜像站管理 ---
     elif action == 'mirrors':
         context.write({'code': 0, 'msg': '', 'data': get_mirrors()})
 
     elif action == 'add':
-        # 添加镜像源（兼容旧接口）
+        # 添加镜像站（兼容旧接口）
         url = context.get_argument('url', '').strip()
         source_name = context.get_argument('name', '').strip()
         if not url:
@@ -446,7 +446,7 @@ def web_handler(context, action):
                 return
         sources.append({'name': source_name, 'url': url, 'builtin': False})
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': 'Homebrew 镜像源已添加：%s' % url})
+        context.write({'code': 0, 'msg': f'Homebrew 镜像站已添加：{url}'})
 
     elif action == 'mirror-add':
         url = context.get_argument('url', '').strip()
@@ -464,11 +464,11 @@ def web_handler(context, action):
                 return
         sources.append({'name': source_name, 'url': url, 'builtin': False})
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': 'Homebrew 镜像源已添加：%s' % url})
+        context.write({'code': 0, 'msg': f'Homebrew 镜像站已添加：{url}'})
 
     elif action == 'mirror-edit':
         if not name:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
             return
         new_url = context.get_argument('url', '').strip()
         new_name = context.get_argument('new_name', '').strip() or name
@@ -482,20 +482,20 @@ def web_handler(context, action):
                 found = s
                 break
         if found is None:
-            context.write({'code': -1, 'msg': '镜像源不存在！'})
+            context.write({'code': -1, 'msg': '镜像站不存在！'})
             return
         if found.get('builtin'):
-            context.write({'code': -1, 'msg': '内置镜像源不可编辑！'})
+            context.write({'code': -1, 'msg': '内置镜像站不可编辑！'})
             return
         found['url'] = new_url
         if new_name != name:
             found['name'] = new_name
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': '镜像源已更新'})
+        context.write({'code': 0, 'msg': '镜像站已更新'})
 
     elif action == 'mirror-del' or action == 'del':
         if not name:
-            context.write({'code': -1, 'msg': '镜像源名称不能为空！'})
+            context.write({'code': -1, 'msg': '镜像站名称不能为空！'})
             return
         sources = _load_sources_config()
         found = None
@@ -504,17 +504,17 @@ def web_handler(context, action):
                 found = s
                 break
         if found is None:
-            context.write({'code': -1, 'msg': '镜像源不存在！'})
+            context.write({'code': -1, 'msg': '镜像站不存在！'})
             return
         if found.get('builtin'):
-            context.write({'code': -1, 'msg': '内置镜像源不可删除！'})
+            context.write({'code': -1, 'msg': '内置镜像站不可删除！'})
             return
         sources = [s for s in sources if s['name'] != name]
         _save_sources_config(sources)
-        context.write({'code': 0, 'msg': '镜像源「%s」已删除' % name})
+        context.write({'code': 0, 'msg': f'镜像站「{name}」已删除'})
 
     elif action == 'enable' or action == 'switch':
-        """切换镜像源：修改指定 tap 的 git remote URL"""
+        """切换镜像站：修改指定 tap 的 git remote URL"""
         url = context.get_argument('url', '').strip()
         source_name = context.get_argument('name', '') or context.get_argument('repo', '')
         tap_name = context.get_argument('repo', '') or context.get_argument('tap', '')  # 指定切换哪个 tap 的镜像
@@ -529,7 +529,7 @@ def web_handler(context, action):
                     url = s['url']
                     break
         if not url:
-            context.write({'code': -1, 'msg': '未找到该镜像源的地址！'})
+            context.write({'code': -1, 'msg': '未找到该镜像站的地址！'})
             return
 
         # 确定要切换的 tap 路径
@@ -538,27 +538,27 @@ def web_handler(context, action):
 
         tap_path = _tap_path(tap_name)
         if not tap_path or not Path(tap_path).exists():
-            context.write({'code': -1, 'msg': '未找到 tap「%s」的路径，请确认该仓库已安装' % tap_name})
+            context.write({'code': -1, 'msg': f'未找到 tap「{tap_name}」的路径，请确认该仓库已安装'})
             return
 
         status, output = getstatusoutput(
-            'cd "%s" && git remote set-url origin %s 2>/dev/null' % (tap_path, url)
+            f'cd "{tap_path}" && git remote set-url origin {url} 2>/dev/null'
         )
         if status == 0:
-            context.write({'code': 0, 'msg': 'tap「%s」镜像源已切换至：%s' % (tap_name, source_name or url)})
+            context.write({'code': 0, 'msg': f'tap「{tap_name}」镜像站已切换至：{source_name or url}'})
         else:
-            context.write({'code': -1, 'msg': '切换失败：%s' % output})
+            context.write({'code': -1, 'msg': f'切换失败：{output}'})
 
     # --- 软件仓库管理（tap 操作）---
     elif action == 'tap-add':
         if not name:
             context.write({'code': -1, 'msg': 'tap 名称不能为空！'})
             return
-        status, output = getstatusoutput('brew tap %s 2>/dev/null' % name)
+        status, output = getstatusoutput(f'brew tap {name} 2>/dev/null')
         if status == 0:
-            context.write({'code': 0, 'msg': 'tap「%s」添加成功！' % name})
+            context.write({'code': 0, 'msg': f'tap「{name}」添加成功！'})
         else:
-            context.write({'code': -1, 'msg': 'tap 添加失败：%s' % output})
+            context.write({'code': -1, 'msg': f'tap 添加失败：{output}'})
 
     elif action == 'tap-del':
         if not name:
@@ -567,11 +567,11 @@ def web_handler(context, action):
         if name in _BREW_BUILTIN_TAPS:
             context.write({'code': -1, 'msg': '内置仓库不可删除！'})
             return
-        status, output = getstatusoutput('brew untap %s 2>/dev/null' % name)
+        status, output = getstatusoutput(f'brew untap {name} 2>/dev/null')
         if status == 0:
-            context.write({'code': 0, 'msg': 'tap「%s」已删除' % name})
+            context.write({'code': 0, 'msg': f'tap「{name}」已删除'})
         else:
-            context.write({'code': -1, 'msg': 'tap 删除失败：%s' % output})
+            context.write({'code': -1, 'msg': f'tap 删除失败：{output}'})
 
     # --- 仓库编辑（自定义仓库编辑 tap 的 URL，即修改 git remote）---
     elif action == 'repo-edit':
@@ -579,7 +579,7 @@ def web_handler(context, action):
             context.write({'code': -1, 'msg': '仓库名称不能为空！'})
             return
         if name in _BREW_BUILTIN_TAPS:
-            context.write({'code': -1, 'msg': '内置仓库不可编辑，请在详情中切换镜像源！'})
+            context.write({'code': -1, 'msg': '内置仓库不可编辑，请在详情中切换镜像站！'})
             return
         new_url = context.get_argument('url', '').strip()
         if not new_url:
@@ -587,15 +587,15 @@ def web_handler(context, action):
             return
         tap_path = _tap_path(name)
         if not tap_path or not Path(tap_path).exists():
-            context.write({'code': -1, 'msg': '未找到 tap「%s」的路径' % name})
+            context.write({'code': -1, 'msg': f'未找到 tap「{name}」的路径'})
             return
         status, output = getstatusoutput(
-            'cd "%s" && git remote set-url origin %s 2>/dev/null' % (tap_path, new_url)
+            f'cd "{tap_path}" && git remote set-url origin {new_url} 2>/dev/null'
         )
         if status == 0:
-            context.write({'code': 0, 'msg': 'tap「%s」地址已更新' % name})
+            context.write({'code': 0, 'msg': f'tap「{name}」地址已更新'})
         else:
-            context.write({'code': -1, 'msg': '编辑失败：%s' % output})
+            context.write({'code': -1, 'msg': f'编辑失败：{output}'})
 
     else:
         context.write({'code': -1, 'msg': '未定义的操作！'})
