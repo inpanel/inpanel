@@ -270,17 +270,64 @@ inpanel run
 
 ### Build Packages
 
+Use the provided build scripts to build various installation packages:
+
 ```bash
-# Build pip package
-pip install build
-python -m build
+# Enter project directory
+cd inpanel
 
-# Build RPM package (requires rpmbuild)
-rpmbuild -bb rpmbuild.spec
+# Build pip package (wheel + sdist)
+bash scripts/build_pip.sh
 
-# Build DEB package (requires debuild)
-debuild -us -uc
+# Build and upload pip package to PyPI
+bash scripts/build_pip.sh upload
+
+# Build both RPM and DEB packages
+bash scripts/build_package.sh
+
+# Or build individually
+bash scripts/build_rpm.sh     # Build RPM only
+bash scripts/build_deb.sh     # Build DEB only
 ```
+
+#### Build Dependencies
+
+The build scripts depend on the following tools. Install them according to your system:
+
+| Dependency | Purpose | Install Command |
+|------------|---------|-----------------|
+| `python3` | Python runtime | Usually pre-installed |
+| `python3-build` | Build Python packages (wheel/sdist) | `pip install build` |
+| `twine` | Upload pip packages to PyPI | `pip install twine` |
+| `rpmbuild` | RPM package build (CentOS/RHEL) | `yum install rpm-build` |
+| `dpkg-buildpackage` | DEB package build (Debian/Ubuntu) | `apt-get install dpkg-dev` |
+| `debhelper` | DEB build helper tools | `apt-get install debhelper` |
+| `python3-all` | DEB Python compatibility | `apt-get install python3-all` |
+| `python3-setuptools` | DEB setuptools support | `apt-get install python3-setuptools` |
+
+#### Complete Installation Examples
+
+**All platforms** (build pip / upload to PyPI):
+
+```bash
+pip install build twine
+```
+
+**Debian / Ubuntu** (build DEB package):
+
+```bash
+sudo apt-get install -y debhelper python3-all python3-setuptools dpkg-dev
+pip install build
+```
+
+**CentOS / RHEL** (build RPM package):
+
+```bash
+sudo yum install -y rpm-build
+pip install build
+```
+
+Build artifacts are output to the `packages/` directory under the project root by default.
 
 ## License
 

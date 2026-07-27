@@ -1,170 +1,117 @@
 #!/bin/bash
+#
+# 统一构建入口脚本 - 依次构建 RPM 和 DEB 包，汇总两个结果
+# 用法：./build_package.sh [SOURCE_DIR] [BUILD_DIR] [PACKAGE_DIR]
+#
 
 set -e
 
-SOURCE_DIR="${SOURCE_DIR:-$(dirname "$(readlink -f "$0")")/..}"
-BUILD_DIR="${BUILD_DIR:-./build}"
-PACKAGE_DIR="${PACKAGE_DIR:-./packages}"
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+SOURCE_DIR="$(readlink -f "${1:-$SCRIPT_DIR/..}")"
+BUILD_DIR="$(readlink -f "${2:-$SOURCE_DIR/build}")"
+PACKAGE_DIR="$(readlink -f "${3:-$SOURCE_DIR/packages}")"
 
 OK='\033[1;32mOK\033[0m'
 FAILED='\033[1;31mFAILED\033[0m'
 INFO='\033[1;34mINFO\033[0m'
+WARN='\033[1;33mWARN\033[0m'
 
-info() {
-    echo -e "[$INFO] $1"
-}
+info()    { echo -e "[$INFO] $1"; }
+success() { echo -e "[$OK] $1"; }
+fail()    { echo -e "[$FAILED] $1"; }
+warn()    { echo -e "[$WARN] $1"; }
 
-success() {
-    echo -e "[$OK] $1"
-}
+RPM_RESULT="SKIP"
+RPM_MSG=""
+DEB_RESULT="SKIP"
+DEB_MSG=""
 
-fail() {
-    echo -e "[$FAILED] $1"
-    exit 1
-}
-
-check_dependencies() {
-    info "Checking build dependencies..."
-    
-    local missing=()
-    
-    if ! command -v python3 &>/dev/null; then
-        missing+=("python3")
-    fi
-    
-    if ! command -v pip3 &>/dev/null; then
-        missing+=("pip3")
-    fi
-    
-    if [ ${#missing[@]} -gt 0 ]; then
-        fail "Missing dependencies: ${missing[*]}"
-    fi
-    
-    success "Dependencies check passed"
-}
-
-create_build_structure() {
-    info "Creating build structure..."
-    
-    mkdir -p "$BUILD_DIR"
-    mkdir -p "$PACKAGE_DIR/rpm"
-    mkdir -p "$PACKAGE_DIR/deb"
-    
-    success "Build structure created"
-}
-
-build_sdist() {
-    info "Building source distribution..."
-    
-    cd "$SOURCE_DIR"
-    
-    if [ -f pyproject.toml ]; then
-        python3 -m build --sdist --outdir "$BUILD_DIR" || fail "Failed to build source distribution"
+run_rpm() {
+    if command -v rpmbuild &>/dev/null; then
+        info "开始构建 RPM 包..."
+        if bash "$SCRIPT_DIR/build_rpm.sh" "$SOURCE_DIR" "$BUILD_DIR" "$PACKAGE_DIR"; then
+            RPM_RESULT="成功"
+            RPM_MSG="RPM 包构建成功"
+        else
+            RPM_RESULT="失败"
+            RPM_MSG="RPM 包构建失败，请查看上方日志"
+        fi
     else
-        python3 setup.py sdist --dist-dir "$BUILD_DIR" || fail "Failed to build source distribution"
+        warn "未检测到 rpmbuild，跳过 RPM 构建"
+        RPM_RESULT="跳过"
+        RPM_MSG="未安装 rpmbuild"
     fi
-    
-    SDIST_FILE=$(find "$BUILD_DIR" -name '*.tar.gz' | head -1)
-    [ -f "$SDIST_FILE" ] || fail "Source distribution file not found"
-    
-    success "Source distribution built: $(basename "$SDIST_FILE")"
 }
 
-build_rpm() {
-    info "Building RPM package..."
-    
-    local sdist_file=$(find "$BUILD_DIR" -name '*.tar.gz' | head -1)
-    [ -f "$sdist_file" ] || fail "Source distribution file not found"
-    
-    local rpmbuild_dir="$BUILD_DIR/rpmbuild"
-    mkdir -p "$rpmbuild_dir/SOURCES" "$rpmbuild_dir/SPECS" "$rpmbuild_dir/RPMS" "$rpmbuild_dir/SRPMS"
-    
-    cp "$sdist_file" "$rpmbuild_dir/SOURCES/"
-    
-    if [ -f "$SOURCE_DIR/rpmbuild.spec" ]; then
-        cp "$SOURCE_DIR/rpmbuild.spec" "$rpmbuild_dir/SPECS/"
-        rpmbuild --define "_topdir $rpmbuild_dir" -ba "$rpmbuild_dir/SPECS/rpmbuild.spec" || fail "Failed to build RPM"
+run_deb() {
+    if command -v dpkg-buildpackage &>/dev/null; then
+        info "开始构建 DEB 包..."
+        if bash "$SCRIPT_DIR/build_deb.sh" "$SOURCE_DIR" "$BUILD_DIR" "$PACKAGE_DIR"; then
+            DEB_RESULT="成功"
+            DEB_MSG="DEB 包构建成功"
+        else
+            DEB_RESULT="失败"
+            DEB_MSG="DEB 包构建失败，请查看上方日志"
+        fi
     else
-        fail "RPM spec file not found"
+        warn "未检测到 dpkg-buildpackage，跳过 DEB 构建"
+        DEB_RESULT="跳过"
+        DEB_MSG="未安装 dpkg-buildpackage"
     fi
-    
-    cp "$rpmbuild_dir/RPMS"/*/*.rpm "$PACKAGE_DIR/rpm/" 2>/dev/null || true
-    cp "$rpmbuild_dir/SRPMS"/*.rpm "$PACKAGE_DIR/rpm/" 2>/dev/null || true
-    
-    success "RPM package built"
 }
 
-build_deb() {
-    info "Building DEB package..."
-    
-    local sdist_file=$(find "$BUILD_DIR" -name '*.tar.gz' | head -1)
-    [ -f "$sdist_file" ] || fail "Source distribution file not found"
-    
-    local deb_build_dir="$BUILD_DIR/deb"
-    mkdir -p "$deb_build_dir"
-    
-    cd "$deb_build_dir"
-    tar xzf "$sdist_file" || fail "Failed to extract source"
-    
-    local pkg_dir=$(find . -maxdepth 1 -type d -name 'inpanel-*' | head -1)
-    [ -d "$pkg_dir" ] || fail "Package directory not found after extraction"
-    
-    cd "$pkg_dir"
-    
-    if [ -d "$SOURCE_DIR/debian" ]; then
-        cp -r "$SOURCE_DIR/debian" .
-    else
-        fail "Debian directory not found"
+print_summary() {
+    echo ""
+    echo "============================================="
+    echo "          构建结果汇总"
+    echo "============================================="
+    echo ""
+    printf "  %-12s %s\n" "RPM:" "$RPM_RESULT"
+    printf "  %-12s %s\n" "DEB:" "$DEB_RESULT"
+    echo ""
+    echo "  输出目录: $PACKAGE_DIR"
+    echo ""
+
+    if [ -d "$PACKAGE_DIR/rpm" ] && ls "$PACKAGE_DIR/rpm/"*.rpm &>/dev/null 2>&1; then
+        echo "  RPM 文件:"
+        ls -1 "$PACKAGE_DIR/rpm/" 2>/dev/null | sed 's/^/    /'
+        echo ""
     fi
-    
-    local version=$(grep '^version =' "$SOURCE_DIR/pyproject.toml" | sed 's/version = "\(.*\)"/\1/')
-    
-    cat > debian/changelog << EOF
-inpanel (${version}-1) unstable; urgency=medium
 
-  * Build from pyproject.toml version ${version}
+    if [ -d "$PACKAGE_DIR/deb" ] && ls "$PACKAGE_DIR/deb/"*.deb &>/dev/null 2>&1; then
+        echo "  DEB 文件:"
+        ls -1 "$PACKAGE_DIR/deb/" 2>/dev/null | sed 's/^/    /'
+        echo ""
+    fi
 
- -- Jackson Dou <jksdou@qq.com>  $(date -R)
-EOF
-    
-    dpkg-buildpackage -b -us -uc || fail "Failed to build DEB"
-    
-    cd "$deb_build_dir"
-    cp *.deb "$PACKAGE_DIR/deb/" 2>/dev/null || true
-    
-    success "DEB package built"
+    echo "============================================="
+
+    # 如果两个都跳过了，说明没有构建环境
+    if [ "$RPM_RESULT" = "跳过" ] && [ "$DEB_RESULT" = "跳过" ]; then
+        echo ""
+        warn "当前环境不支持 RPM 和 DEB 构建，请安装 rpmbuild 或 dpkg-buildpackage"
+        exit 1
+    fi
 }
 
 main() {
-    check_dependencies
-    create_build_structure
-    build_sdist
-    
-    if command -v rpmbuild &>/dev/null; then
-        build_rpm
-    else
-        info "rpmbuild not found, skipping RPM build"
-    fi
-    
-    if command -v dpkg-buildpackage &>/dev/null; then
-        build_deb
-    else
-        info "dpkg-buildpackage not found, skipping DEB build"
-    fi
-    
     echo ""
     echo "============================================="
-    echo "          Package Build Complete"
+    echo "         InPanel 安装包构建"
     echo "============================================="
     echo ""
-    echo "Packages location: $PACKAGE_DIR"
+    echo "  源码目录: $SOURCE_DIR"
+    echo "  构建目录: $BUILD_DIR"
+    echo "  输出目录: $PACKAGE_DIR"
     echo ""
-    echo "RPM packages:"
-    ls -la "$PACKAGE_DIR/rpm/" 2>/dev/null || echo "  (none)"
-    echo ""
-    echo "DEB packages:"
-    ls -la "$PACKAGE_DIR/deb/" 2>/dev/null || echo "  (none)"
-    echo ""
+
+    # 创建目录结构
+    mkdir -p "$BUILD_DIR"
+    mkdir -p "$PACKAGE_DIR"
+
+    run_rpm
+    run_deb
+    print_summary
 }
 
 main "$@"

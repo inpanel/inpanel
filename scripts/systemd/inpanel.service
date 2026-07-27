@@ -1,21 +1,30 @@
 [Unit]
-Description = InPanel Control Panel
-After = network.target
+Description=InPanel Control Panel
+Documentation=https://inpanel.org
+After=network.target network-online.target
+Wants=network-online.target
 
 [Service]
-Type = simple
-User = root
-Group = root
-ExecStart = /usr/bin/inpanel run
-ExecStop = /usr/bin/inpanel stop
-ExecReload = /usr/bin/inpanel reload
-PIDFile = /var/run/inpanel.pid
-Restart = always
-RestartSec = 5
-StartLimitInterval = 30min
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/inpanel run
+ExecStop=/usr/bin/inpanel stop
+ExecReload=/usr/bin/inpanel reload
+PIDFile=/var/run/inpanel.pid
+Restart=always
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/etc/inpanel /var/log/inpanel /var/lib/inpanel /var/run
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
 
 [Install]
-WantedBy = multi-user.target
-
-# /lib/systemd/system/inpanel.service
-# systemctl start inpanel.service && systemctl enable inpanel.service
+WantedBy=multi-user.target

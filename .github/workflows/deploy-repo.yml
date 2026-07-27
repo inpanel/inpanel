@@ -1,0 +1,95 @@
+name: Deploy to repo.inpanel.org
+
+on:
+  workflow_call:
+
+jobs:
+  deploy:
+    name: Repo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Install repository tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y createrepo-c reprepro gnupg
+
+      - name: Configure GPG
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          if [ -n "$GPG_PRIVATE_KEY" ]; then
+            echo "$GPG_PRIVATE_KEY" | base64 -d | gpg --import --batch --no-tty || true
+          fi
+
+      - name: Clone repo.inpanel.org
+        env:
+          REPO_DEPLOY_TOKEN: ${{ secrets.REPO_DEPLOY_TOKEN }}
+        run: |
+          git clone "https://${REPO_DEPLOY_TOKEN}@github.com/inpanel/repo.inpanel.org.git" repo
+
+      # ---- RPM 仓库 ----
+      - name: Build RPM repository
+        run: |
+          for dir in artifacts/rpm-*; do
+            if [ ! -d "$dir" ]; then continue; fi
+
+            distro=$(basename "$dir" | sed 's/rpm-//')
+            mkdir -p "repo/rpm/${distro}"
+
+            find "$dir" -name '*.rpm' -exec cp {} "repo/rpm/${distro}/" \; 2>/dev/null || true
+
+            if ls "repo/rpm/${distro}/"/*.rpm >/dev/null 2>&1; then
+              createrepo_c "repo/rpm/${distro}"
+            fi
+          done
+
+      # ---- DEB 仓库 ----
+      - name: Build DEB repository
+        run: |
+          mkdir -p repo/deb/conf
+
+          # 确保有 distributions 配置
+          if [ ! -f repo/deb/conf/distributions ]; then
+            cat > repo/deb/conf/distributions << 'DIST'
+          Origin: InPanel
+          Label: InPanel
+          Suite: stable
+          Codename: focal
+          Version: 1.0
+          Architectures: all source
+          Components: main
+          Description: InPanel Debian/Ubuntu Repository
+          DIST
+          fi
+
+          # 导入 DEB 包
+          find artifacts -name '*.deb' -exec reprepro -b repo/deb -C main includedeb focal {} \; 2>/dev/null || true
+
+      # ---- GPG 公钥 ----
+      - name: Export GPG public key
+        env:
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        run: |
+          if [ -n "$GPG_KEY_ID" ]; then
+            mkdir -p repo/gpg
+            gpg --armor --export "$GPG_KEY_ID" > repo/gpg/inpanel.gpg.key 2>/dev/null || true
+          fi
+
+      # ---- 推送 ----
+      - name: Push to repo.inpanel.org
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          cd repo
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "Update packages for ${TAG_NAME}"
+          git push origin gh-pages
