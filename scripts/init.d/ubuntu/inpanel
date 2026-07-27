@@ -6,7 +6,7 @@
 # InPanel is distributed under the terms of The New BSD License.
 # The full license can be found in 'LICENSE'.
 #
-# InPanel control script for Ubuntu.
+# InPanel init.d control script for Debian / Ubuntu.
 #
 ### BEGIN INIT INFO
 # Provides:          inpanel
@@ -26,11 +26,11 @@ DAEMON='/usr/bin/inpanel'
 PIDFILE='/var/run/inpanel.pid'
 
 # Source LSB function library.
-if [ -f /lib/lsb/init-functions ];then
-   . /lib/lsb/init-functions
+if [ -f /lib/lsb/init-functions ]; then
+    . /lib/lsb/init-functions
 else
-   echo 'not found file /lib/lsb/init-functions'
-   exit 1
+    echo 'not found file /lib/lsb/init-functions'
+    exit 1
 fi
 
 show_help() {

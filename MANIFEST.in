@@ -1,2 +1,6 @@
 exclude test/*
 exclude tests/*
+prune inpanel/data
+prune inpanel/data/plugins
+global-exclude *.pyc
+global-exclude __pycache__

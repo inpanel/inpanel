@@ -1,4 +1,34 @@
-## InPanel v1.2.7 (2026-07-25)
+## InPanel v1.2.8 (2026-07-28)
+
+**版本更新：**
+
+- 发布 InPanel v1.2.8
+
+**打包与分发体系重构：**
+
+- GitHub Actions workflow 拆分为独立文件：`build-sdist.yml`、`build-deb.yml`、`build-rpm.yml`、`publish-pypi.yml`、`publish-release.yml`、`deploy-repo.yml`，由 `build.yml` 统一编排调度
+- 新增 `scripts/build_deb.sh`：DEB 包独立构建脚本，支持 `build` / `clean` / `build-all` 子命令
+- 新增 `scripts/build_rpm.sh`：RPM 包独立构建脚本，支持 `build` / `clean` / `build-all` 子命令
+- 新增 `scripts/build_pip.sh`：pip 源码分发包构建与上传脚本
+- `scripts/build_package.sh` 重构：DEB/RPM 构建逻辑委托给独立脚本，保留统一入口
+- 新增 RPM 多版本矩阵构建（centos7/8/9），输出 `noarch.rpm` 包
+- `debian/rules` 优化：构建前自动清理 `__pycache__` 和 `.pyc` 文件，避免打包残留
+- `debian/control` 依赖调整，`debian/postinst` / `postrm` 增强卸载清理逻辑
+- `pyproject.toml` 配置优化：新增 `[build-system]` 声明，修正 `package-data` 引号，精简打包文件匹配
+- `MANIFEST.in` 和 `.gitignore` 更新，排除 `packages/` 和构建产物
+
+**systemd 服务配置增强：**
+
+- 更新 `inpanel.service`：新增 `RestartSec`、`ExecReload`、资源限制（`LimitNOFILE` / `LimitNPROC`）
+- 更新 init.d 脚本兼容性
+
+**代码修复：**
+
+- `mod/server.py`：修复 `lvs` 读取 bytes 解码问题，添加 `decode('utf-8', errors='replace')`
+- `mod/service.py`：服务分类逻辑优化，按模板配置归类并补充"其他"服务
+
+
+## InPanel v1.2.7 (2026-07-26)
 
 **版本更新：**
 

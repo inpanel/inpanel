@@ -846,6 +846,7 @@ class ServerInfo(object):
                 line = lvs.readline()
                 if not line:
                     break
+                line = line.decode('utf-8', errors='replace')
                 if 'LV Name' in line or 'LV Path' in line:
                     devlink = line.replace('LV Name',
                                            '').replace('LV Path', '').strip()

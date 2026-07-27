@@ -292,19 +292,20 @@ def get_service_list():
 
     # 构建 categories 数组（按 order 排序）
     categories_result = []
-    for cat in sorted(categories_config, key=lambda x: x.get('order', 99)):
-        cat_id = cat['id']
-        if cat_id == 'other':
-            continue  # "其他" 单独处理
-        if cat_id not in categorized:
-            continue
-        categories_result.append({
-            'id': cat_id,
-            'name': cat['name'],
-            'icon': cat.get('icon', ''),
-            'order': cat.get('order', 99),
-            'services': categorized[cat_id],
-        })
+    if categories_config:
+        for cat in sorted(categories_config, key=lambda x: x.get('order', 99)):
+            cat_id = cat['id']
+            if cat_id == 'other':
+                continue  # "其他" 单独处理
+            if cat_id not in categorized:
+                continue
+            categories_result.append({
+                'id': cat_id,
+                'name': cat['name'],
+                'icon': cat.get('icon', ''),
+                'order': cat.get('order', 99),
+                'services': categorized[cat_id],
+            })
 
     # 获取"其他"服务
     other_services = manager.get_other_services()

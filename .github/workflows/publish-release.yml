@@ -1,0 +1,41 @@
+name: Publish GitHub Release
+
+on:
+  workflow_call:
+
+jobs:
+  publish:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Flatten and organize packages
+        run: |
+          mkdir -p release
+
+          # 收集所有 .deb
+          find artifacts -name '*.deb' -exec cp {} release/ \; 2>/dev/null || true
+
+          # 收集所有 .rpm（按发行版分目录）
+          for dir in artifacts/rpm-*; do
+            if [ -d "$dir" ]; then
+              find "$dir" -name '*.rpm' -exec cp {} release/ \; 2>/dev/null || true
+            fi
+          done
+
+          echo "=== Release files ==="
+          ls -la release/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

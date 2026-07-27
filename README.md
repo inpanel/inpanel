@@ -302,17 +302,64 @@ inpanel run
 
 ### 构建安装包
 
+使用项目提供的构建脚本构建各类安装包：
+
 ```bash
-# 构建 pip 包
-pip install build
-python -m build
+# 进入项目目录
+cd inpanel
 
-# 构建 RPM 包（需要 rpmbuild）
-rpmbuild -bb rpmbuild.spec
+# 构建 pip 包（wheel + sdist）
+bash scripts/build_pip.sh
 
-# 构建 DEB 包（需要 debuild）
-debuild -us -uc
+# 构建并上传 pip 包到 PyPI
+bash scripts/build_pip.sh upload
+
+# 一键构建 RPM 和 DEB 包
+bash scripts/build_package.sh
+
+# 或单独构建
+bash scripts/build_rpm.sh     # 仅构建 RPM
+bash scripts/build_deb.sh     # 仅构建 DEB
 ```
+
+#### 构建依赖
+
+构建脚本依赖以下工具，请根据系统安装：
+
+| 依赖 | 用途 | 安装命令 |
+|------|------|----------|
+| `python3` | Python 运行环境 | 系统通常已自带 |
+| `python3-build` | 构建 Python 包（wheel/sdist） | `pip install build` |
+| `twine` | 上传 pip 包到 PyPI | `pip install twine` |
+| `rpmbuild` | RPM 包构建（CentOS/RHEL） | `yum install rpm-build` |
+| `dpkg-buildpackage` | DEB 包构建（Debian/Ubuntu） | `apt-get install dpkg-dev` |
+| `debhelper` | DEB 包构建辅助工具 | `apt-get install debhelper` |
+| `python3-all` | DEB 包 Python 兼容性 | `apt-get install python3-all` |
+| `python3-setuptools` | DEB 包 setuptools 支持 | `apt-get install python3-setuptools` |
+
+#### 完整依赖安装示例
+
+**所有平台**（构建 pip 包 / 上传 PyPI）：
+
+```bash
+pip install build twine
+```
+
+**Debian / Ubuntu**（构建 DEB 包）：
+
+```bash
+sudo apt-get install -y debhelper python3-all python3-setuptools dpkg-dev
+pip install build
+```
+
+**CentOS / RHEL**（构建 RPM 包）：
+
+```bash
+sudo yum install -y rpm-build
+pip install build
+```
+
+构建产物默认输出到项目目录下的 `packages/` 目录。
 
 ## 账号和密码
 

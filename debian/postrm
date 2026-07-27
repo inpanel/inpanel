@@ -5,6 +5,10 @@ set -e
 case "$1" in
     purge)
         rm -rf /etc/inpanel
+        rm -rf /var/lib/inpanel
+        rm -rf /var/log/inpanel
+        rm -rf /usr/lib/python3/dist-packages/inpanel
+        rm -rf /usr/lib/python3.*/dist-packages/inpanel
         ;;
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)

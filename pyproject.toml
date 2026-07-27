@@ -1,9 +1,13 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "InPanel"
-version = "1.2.7"
+version = "1.2.8"
 description = "InPanel - A Server Management Tool"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {"BSD-3-Clause"}
 authors = [{name = "Jackson Dou", email = "jksdou@qq.com"}]
 maintainers = [{name = "Jackson Dou", email = "jksdou@qq.com"}]
 keywords = ["server", "management", "admin", "panel", "linux"]
@@ -12,7 +16,6 @@ classifiers = [
     "Environment :: Web Environment",
     "Framework :: AsyncIO",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.6",
@@ -51,8 +54,6 @@ exclude = ["test*", "tests*"]
 [tool.setuptools.package-data]
 inpanel = [
     "public/**/*",
-    "templates/**/*",
-    "plugins/**/*",
-    "data/**/*",
+    "templates/services/*.json",
+    "templates/sources/*.json",
 ]
-
