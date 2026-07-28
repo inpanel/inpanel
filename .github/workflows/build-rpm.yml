@@ -36,12 +36,12 @@ jobs:
               fi
               if command -v dnf >/dev/null 2>&1; then
                 dnf clean all
-                dnf install -y rpm-build python3 python3-pip python3-devel python3-setuptools python3-wheel make gcc
+                dnf install -y rpm-build python3 python3-pip python3-devel python3-setuptools make gcc
               else
                 yum clean all
                 yum install -y rpm-build python3 python3-pip python3-devel python3-setuptools python3-wheel make gcc
               fi
-              pip3 install build
+              python3 -m pip install build
               mkdir -p /rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
               cp dist/*.tar.gz /rpmbuild/SOURCES/
               cp rpmbuild.spec /rpmbuild/SPECS/
