@@ -32,8 +32,9 @@ jobs:
         env:
           REPO_DEPLOY_TOKEN: ${{ secrets.REPO_DEPLOY_TOKEN }}
         run: |
-          git clone --branch gh-pages "https://${REPO_DEPLOY_TOKEN}@github.com/inpanel/repo.inpanel.org.git" repo || \
-          git clone "https://${REPO_DEPLOY_TOKEN}@github.com/inpanel/repo.inpanel.org.git" repo && cd repo && git checkout --orphan gh-pages
+          git clone "https://${REPO_DEPLOY_TOKEN}@github.com/inpanel/repo.inpanel.org.git" repo
+          cd repo
+          git fetch origin gh-pages 2>/dev/null && git checkout gh-pages || git checkout --orphan gh-pages
 
       # ---- RPM 仓库 ----
       - name: Build RPM repository
