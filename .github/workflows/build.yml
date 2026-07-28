@@ -30,7 +30,6 @@ jobs:
     name: Build DEB
     needs: build-sdist
     uses: ./.github/workflows/build-deb.yml
-    continue-on-error: true
 
   # ============================================================
   # RPM 包 → GitHub Release & YUM 仓库
@@ -39,7 +38,6 @@ jobs:
     name: Build RPM
     needs: build-sdist
     uses: ./.github/workflows/build-rpm.yml
-    continue-on-error: true
 
   # ============================================================
   # GitHub Release (汇集 DEB + RPM)
@@ -47,6 +45,7 @@ jobs:
   publish-release:
     name: Publish GitHub Release
     needs: [build-deb, build-rpm]
+    if: always() && needs.build-sdist.result == 'success'
     uses: ./.github/workflows/publish-release.yml
     secrets: inherit
 
@@ -56,5 +55,6 @@ jobs:
   deploy-repo:
     name: Deploy to repo.inpanel.org
     needs: [build-deb, build-rpm]
+    if: always() && needs.build-sdist.result == 'success'
     uses: ./.github/workflows/deploy-repo.yml
     secrets: inherit

@@ -7,7 +7,9 @@ jobs:
   build:
     name: RPM
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         distro: [centos7, centos8, centos9]
     steps:
