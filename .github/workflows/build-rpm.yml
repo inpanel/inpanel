@@ -26,34 +26,52 @@ jobs:
           DOCKER_TAG=$(echo ${{ matrix.distro }} | sed 's/centos7/7/;s/centos8/stream8/;s/centos9/stream9/')
           VERSION=$(ls dist/*.tar.gz | head -1 | sed 's/.*-\([0-9.]*\)\.tar\.gz/\1/')
           echo "Detected version: $VERSION"
+
           docker run --rm \
             -e "VERSION=$VERSION" \
             -v "$PWD:/workspace" \
             -w /workspace \
             quay.io/centos/centos:$DOCKER_TAG \
             /bin/bash -exc '
+              # 配置 yum 源（CentOS 已 EOL，使用 vault 源）
               if [ -d /etc/yum.repos.d ]; then
                 sed -i "s|^mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*.repo 2>/dev/null || true
                 sed -i "s|^#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*.repo 2>/dev/null || true
                 sed -i "s|http://vault.centos.org/\\$contentdir|http://vault.centos.org/centos|g" /etc/yum.repos.d/CentOS-*.repo 2>/dev/null || true
               fi
+
+              # 安装构建依赖
               if command -v dnf >/dev/null 2>&1; then
                 dnf clean all
                 dnf install -y rpm-build python3 python3-pip python3-devel python3-setuptools make gcc
               else
                 yum clean all
-                yum install -y rpm-build python3 python3-pip python3-devel python3-setuptools python3-wheel make gcc
+                yum install -y rpm-build python3 python3-pip python3-devel python3-setuptools make gcc
               fi
-              python3 -m pip install build
+
+              # 确保 setuptools>=42 和 wheel 可用
+              python3 -m pip install "setuptools>=42" wheel
+
+              # 准备 rpmbuild 目录
               mkdir -p /rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+              # 复制源码和 spec
               cp dist/*.tar.gz /rpmbuild/SOURCES/
               cp rpmbuild.spec /rpmbuild/SPECS/
-              rpmbuild --define "_topdir /rpmbuild" --define "pyproject_version ${VERSION}" -ba /rpmbuild/SPECS/rpmbuild.spec
-              cp /rpmbuild/RPMS/noarch/*.rpm dist/
+
+              # 构建 RPM（--define "version" 使用 spec 里的 %{version} 宏）
+              rpmbuild \
+                --define "_topdir /rpmbuild" \
+                --define "version ${VERSION}" \
+                -ba /rpmbuild/SPECS/rpmbuild.spec
+
+              # 复制 RPM 产物到 dist 目录
+              cp /rpmbuild/RPMS/noarch/*.rpm dist/ 2>/dev/null || \
+              find /rpmbuild/RPMS -name "*.rpm" -exec cp {} dist/ \;
             '
 
       - name: Upload RPM artifact
         uses: actions/upload-artifact@v4
         with:
           name: rpm-${{ matrix.distro }}
-          path: dist/*.noarch.rpm
+          path: dist/*.rpm

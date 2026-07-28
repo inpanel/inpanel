@@ -1,3 +1,30 @@
+## InPanel v1.2.9 (2026-07-28)
+
+**版本更新：**
+
+- 发布 InPanel v1.2.9
+
+**RPM 打包构建修复：**
+
+- 修复 `rpmbuild.spec` 中版本宏未展开问题：`%{pyproject_version}` → `%{version}`，由构建脚本通过 `--define "version x.x.x"` 传入
+- 修复 `pip3 wheel` 构建隔离环境网络连接失败问题：添加 `--no-build-isolation` 参数
+- 修复 `setuptools>=75` 要求过高导致旧系统无法构建的问题：降低为 `>=42`
+- 修复 RPM 构建环境中 `python3 -m build` 模块缺失问题：改用 `pip3 wheel` 直接构建
+- 移除 `python3-wheel` RPM 包依赖（RockyOS 等系统无此包），改为 pip 安装
+- 禁用 RPM `brp-python-bytecompile` 自动字节码编译（`__pycache__` 运行时自动生成，无需打包）
+- 新增 `%install` 阶段清理 wheel 自带 `__pycache__` 目录和 `.pyc` 文件
+- 新增 `InPanel-*.dist-info` 到 `%files` 文件列表，修复未打包文件报错
+- `scripts/build_rpm.sh` 增强：新增 `extract_version()` 函数，支持从 `pyproject.toml` 提取版本号
+- `scripts/build_rpm.sh` 增强：`check_dependencies()` 增加 setuptools/wheel 版本检测与安装
+- `scripts/build_deb.sh` 同步增强依赖检查和 `--no-isolation` 支持
+
+**GitHub Actions 修复：**
+
+- 修复 `build-rpm.yml` 中 `--define "pyproject_version"` → `--define "version"`，与 spec 文件宏名称一致
+- 新增 `pip install setuptools>=42 wheel` 步骤，与本地构建脚本保持一致
+- 优化 RPM 产物复制逻辑，增加 fallback 查找
+
+
 ## InPanel v1.2.8 (2026-07-28)
 
 **版本更新：**
