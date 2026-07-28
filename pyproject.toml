@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=75", "wheel"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "InPanel"
-version = "1.2.8.5"
+version = "1.2.9"
 description = "InPanel - A Server Management Tool"
 readme = "README.md"
 license = {text = "BSD-3-Clause"}

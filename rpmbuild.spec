@@ -3,9 +3,11 @@
 %define arch noarch
 %define summary InPanel - A Web-based Linux Server Management Tool
 %define desc InPanel is a web-based Linux server management tool
+# 禁用 RPM 自动 Python 字节码编译（__pycache__ 运行时自动生成，无需打包）
+%global __brp_python_bytecompile %{nil}
 
 Name: %{name}
-Version: %{pyproject_version}
+Version: %{version}
 Release: %{release}
 Summary: %{summary}
 License: BSD
@@ -13,7 +15,7 @@ URL: https://inpanel.org
 Group: System/Administration
 BuildArch: %{arch}
 Source0: InPanel-%{version}.tar.gz
-BuildRequires: python3-devel python3-setuptools python3-wheel python3-pip
+BuildRequires: python3-devel python3-setuptools python3-pip
 Requires: python3 >= 3.6 python3-tornado python3-psutil python3-pexpect python3-cryptography
 
 %description
@@ -23,10 +25,17 @@ Requires: python3 >= 3.6 python3-tornado python3-psutil python3-pexpect python3-
 %autosetup -p1 -n InPanel-%{version}
 
 %build
-python3 -m build --wheel --no-isolation
+pip3 install wheel setuptools
+pip3 wheel --no-deps --no-build-isolation --wheel-dir=dist .
 
 %install
 python3 -m pip install --no-deps --root=%{buildroot} --prefix=/usr dist/*.whl
+
+# 清理 wheel 自带的 __pycache__，运行时自动生成，无需打包进 RPM
+find %{buildroot} -type d -name __pycache__ -exec chmod -R u+w {} + 2>/dev/null || true
+find %{buildroot} -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+find %{buildroot} -type f -name '*.pyc' -delete 2>/dev/null || true
+
 mkdir -p %{buildroot}/usr/lib/systemd/system
 mkdir -p %{buildroot}/etc/init.d
 mkdir -p %{buildroot}/var/log/inpanel
@@ -109,6 +118,7 @@ fi
 %defattr(-,root,root)
 /usr/bin/inpanel
 %{python3_sitelib}/inpanel*
+%{python3_sitelib}/InPanel-*.dist-info
 /usr/lib/systemd/system/inpanel.service
 /etc/init.d/inpanel
 %dir /var/log/inpanel
