@@ -12,23 +12,21 @@ License: BSD
 URL: https://inpanel.org
 Group: System/Administration
 BuildArch: %{arch}
-BuildRequires: python3-devel python3-setuptools python3-wheel
+Source0: InPanel-%{version}.tar.gz
+BuildRequires: python3-devel python3-setuptools python3-wheel python3-pip
 Requires: python3 >= 3.6 python3-tornado python3-psutil python3-pexpect python3-cryptography
 
 %description
 %{desc}
 
 %prep
-%autosetup -p1
-
-%generate_buildrequires
-%pyproject_buildrequires
+%autosetup -p1 -n InPanel-%{version}
 
 %build
-%pyproject_wheel
+python3 -m build --wheel --no-isolation
 
 %install
-%pyproject_install
+python3 -m pip install --no-deps --root=%{buildroot} --prefix=/usr dist/*.whl
 mkdir -p %{buildroot}/usr/lib/systemd/system
 mkdir -p %{buildroot}/etc/init.d
 mkdir -p %{buildroot}/var/log/inpanel
