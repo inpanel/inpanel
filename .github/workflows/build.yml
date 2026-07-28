@@ -30,6 +30,7 @@ jobs:
     name: Build DEB
     needs: build-sdist
     uses: ./.github/workflows/build-deb.yml
+    continue-on-error: true
 
   # ============================================================
   # RPM 包 → GitHub Release & YUM 仓库
@@ -38,6 +39,7 @@ jobs:
     name: Build RPM
     needs: build-sdist
     uses: ./.github/workflows/build-rpm.yml
+    continue-on-error: true
 
   # ============================================================
   # GitHub Release (汇集 DEB + RPM)

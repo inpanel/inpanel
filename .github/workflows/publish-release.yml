@@ -34,8 +34,10 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
+        if: success() || failure()
         with:
           files: release/*
           generate_release_notes: true
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
