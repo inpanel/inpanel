@@ -88,8 +88,10 @@ jobs:
       - name: Push to repo.inpanel.org
         env:
           TAG_NAME: ${{ github.ref_name }}
+          REPO_DEPLOY_TOKEN: ${{ secrets.REPO_DEPLOY_TOKEN }}
         run: |
           cd repo
+          git remote set-url origin "https://${REPO_DEPLOY_TOKEN}@github.com/inpanel/repo.inpanel.org.git"
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add -A
